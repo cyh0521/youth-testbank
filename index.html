@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>幼獅題庫系統 — 登入</title>
+<link rel="stylesheet" href="css/theme.css">
+<script>if(localStorage.getItem("sidebarCollapsed")==="1")document.documentElement.classList.add("sidebar-collapsed");</script>
+<style>
+body{background:var(--primary-dark);display:flex;align-items:center;justify-content:center;min-height:100vh;
+background-image:radial-gradient(ellipse at 20% 50%,rgba(44,95,138,.45) 0%,transparent 60%),
+radial-gradient(ellipse at 80% 20%,rgba(200,146,42,.25) 0%,transparent 50%)}
+.wrap{width:100%;max-width:460px;padding:20px}
+.logo-area{text-align:center;margin-bottom:22px}
+.logo-icon{display:inline-flex;align-items:center;justify-content:center;width:68px;height:68px;border-radius:18px;background:linear-gradient(135deg,var(--accent),var(--accent-light));font-size:2.2rem;margin-bottom:12px;box-shadow:0 8px 28px rgba(200,146,42,.45)}
+.logo-area h1{font-family:var(--font-serif);font-size:1.55rem;color:white;font-weight:700}
+.logo-area p{color:rgba(255,255,255,.45);font-size:.82rem;letter-spacing:.12em;margin-top:3px}
+.card{background:rgba(255,255,255,.97);border-radius:var(--radius-lg);box-shadow:0 20px 60px rgba(0,0,0,.45);overflow:hidden}
+/* Mode tabs */
+.mode-tabs{display:flex;background:var(--bg-base);border-bottom:1px solid var(--border)}
+.mode-tab{flex:1;padding:12px 8px;font-size:.84rem;font-weight:500;color:var(--text-secondary);cursor:pointer;border:none;background:transparent;font-family:var(--font-sans);border-bottom:3px solid transparent;transition:all .15s}
+.mode-tab.active{background:white;color:var(--primary);font-weight:700;border-bottom-color:var(--accent)}
+/* panels */
+.panel{display:none;padding:20px 24px 16px}.panel.active{display:block}
+/* role radio */
+.role-radio-row{display:flex;gap:10px;margin-bottom:16px}
+.role-radio{flex:1;display:flex;align-items:center;gap:8px;padding:9px 12px;border:2px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:all .15s;font-size:.88rem;font-weight:500}
+.role-radio:hover{border-color:var(--primary-light);background:#f0f4ff}
+.role-radio.selected{border-color:var(--primary);background:#e8eef6;color:var(--primary)}
+.role-radio input{display:none}
+/* msg */
+.msg{border-radius:var(--radius);padding:9px 13px;font-size:.83rem;margin-bottom:12px;display:none;border:1px solid}
+.msg.show{display:block}
+.msg.err{background:#fef0ef;color:#c0392b;border-color:#f5c6c2}
+.msg.ok{background:#f0faf4;color:#1a5c33;border-color:#a8d5b5}
+.msg.warn{background:#fef9e7;color:#7c5000;border-color:#ffe082}
+/* form */
+.form-group{margin-bottom:13px}
+.form-label{display:block;font-size:.8rem;font-weight:500;color:var(--text-secondary);margin-bottom:5px}
+.req{color:var(--danger);margin-left:2px}
+.form-control{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius);font-size:.88rem;font-family:var(--font-sans);color:var(--text-primary);background:white;transition:border-color .15s,box-shadow .15s}
+.form-control:focus{outline:none;border-color:var(--primary-light);box-shadow:0 0 0 3px rgba(44,95,138,.12)}
+.big-btn{width:100%;padding:12px;border:none;border-radius:var(--radius);font-size:.95rem;font-weight:700;cursor:pointer;font-family:var(--font-sans);margin-top:2px;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s}
+.big-btn.primary{background:var(--primary);color:white}
+.big-btn.primary:hover:not(:disabled){background:var(--primary-light);transform:translateY(-1px)}
+.big-btn.accent{background:var(--accent);color:white}
+.big-btn.accent:hover:not(:disabled){background:var(--accent-light);transform:translateY(-1px)}
+.big-btn:disabled{opacity:.6;cursor:not-allowed;transform:none!important}
+.hint{background:var(--bg-base);border:1px dashed var(--border);border-radius:var(--radius);padding:10px 13px;font-size:.75rem;color:var(--text-secondary);line-height:1.8;margin-top:12px}
+.hint strong{color:var(--primary);display:block;margin-bottom:2px}
+.divider{display:flex;align-items:center;gap:10px;margin:14px 0;font-size:.78rem;color:var(--text-muted)}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:white;border-radius:50%;animation:spin .6s linear infinite}
+#fbStatus{text-align:center;font-size:.75rem;margin-top:10px;color:rgba(255,255,255,.4)}
+#fbStatus.err{color:#ff8a80}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="logo-area">
+    <div class="logo-icon">📚</div>
+    <h1>幼獅題庫系統</h1>
+    <p>YOUTH LION TESTBANK</p>
+  </div>
+
+  <div class="card">
+
+
+    <!-- ── 登入 ── -->
+    <div class="panel active" id="panel-login">
+      <div class="msg err" id="loginErr"></div>
+      <div class="msg ok"  id="loginOk"></div>
+
+      <!-- 身份選擇 -->
+      <div class="role-radio-row">
+        <label class="role-radio selected" id="rl-teacher" onclick="selectRole('teacher')">
+          <input type="radio" name="loginRole" value="teacher" checked>
+          <span>🎓</span><span>教師 / 管理員</span>
+        </label>
+        <label class="role-radio" id="rl-student" onclick="selectRole('student')">
+          <input type="radio" name="loginRole" value="student">
+          <span>🧑‍🎓</span><span>學生</span>
+        </label>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">電子信箱 <span class="req">*</span></label>
+        <input class="form-control" type="email" id="loginEmail" placeholder="請輸入電子信箱"
+               onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">密碼 <span class="req">*</span></label>
+        <input class="form-control" type="password" id="loginPw" placeholder="請輸入密碼"
+               onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <button class="big-btn primary" id="loginBtn" onclick="doLogin()">登　入</button>
+      <!-- 教師/管理員 說明 -->
+      <div class="hint" id="hintTeacher">
+        <strong>說明</strong>
+        教師帳號請聯繫幼獅業務同仁協助申請。
+      </div>
+      <!-- 學生 說明與註冊連結 -->
+      <div id="hintStudent" style="display:none;text-align:center;margin-top:12px;font-size:.82rem;color:var(--text-secondary)">
+        學生還沒有帳號？
+        <a onclick="showTab('register')" style="color:var(--accent-light);cursor:pointer;font-weight:600">點此加入</a>
+      </div>
+    </div>
+
+    <!-- ── 學生自助加入 ── -->
+    <div class="panel" id="panel-register">
+      <div class="msg err"  id="regErr"></div>
+      <div class="msg ok"   id="regOk"></div>
+      <div class="form-group">
+        <label class="form-label">電子信箱 <span class="req">*</span></label>
+        <input class="form-control" type="email" id="regEmail" placeholder="登入用信箱">
+      </div>
+      <div class="form-group">
+        <label class="form-label">姓名 <span class="req">*</span></label>
+        <input class="form-control" id="regName" placeholder="您的姓名">
+      </div>
+      <div class="form-group">
+        <label class="form-label">密碼 <span class="req">*</span></label>
+        <input class="form-control" type="password" id="regPw" placeholder="至少 6 字元">
+      </div>
+      <div class="form-group">
+        <label class="form-label">確認密碼 <span class="req">*</span></label>
+        <input class="form-control" type="password" id="regPw2" placeholder="再次輸入密碼">
+      </div>
+      <button class="big-btn accent" id="regBtn" onclick="doRegister()">建立學生帳號</button>
+      <div style="text-align:center;margin-top:12px;font-size:.82rem;color:var(--text-secondary)">
+        已有帳號？<a onclick="showTab('login')" style="color:var(--primary);cursor:pointer;font-weight:600">返回登入</a>
+      </div>
+    </div>
+
+    <!-- ── 初始化管理員 ── -->
+    <div class="panel" id="panel-init">
+      <div class="msg err" id="initErr"></div>
+      <div style="background:#fef9e7;border:1px solid #ffe082;border-radius:var(--radius);padding:9px 13px;font-size:.8rem;color:#7c5000;margin-bottom:14px">
+        ⚠ 僅供第一次建立系統管理員帳號使用。
+      </div>
+      <div class="form-group">
+        <label class="form-label">管理員驗證碼 <span class="req">*</span></label>
+        <input class="form-control" type="password" id="initCode" placeholder="admin2024">
+      </div>
+      <div class="form-group">
+        <label class="form-label">電子信箱 <span class="req">*</span></label>
+        <input class="form-control" type="email" id="initEmail">
+      </div>
+      <div class="form-group">
+        <label class="form-label">姓名 <span class="req">*</span></label>
+        <input class="form-control" id="initName">
+      </div>
+      <div class="form-group">
+        <label class="form-label">密碼 <span class="req">*</span></label>
+        <input class="form-control" type="password" id="initPw" placeholder="至少 6 字元">
+      </div>
+      <div class="form-group">
+        <label class="form-label">確認密碼 <span class="req">*</span></label>
+        <input class="form-control" type="password" id="initPw2">
+      </div>
+      <button class="big-btn primary" id="initBtn" onclick="doInitAdmin()">建立管理員帳號</button>
+    </div>
+  </div>
+  <div id="fbStatus">連線中…</div>
+</div>
+
+<script type="module">
+import { initializeApp }                          from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, doc, getDoc, setDoc,
+         serverTimestamp, collection, query,
+         where, getDocs }                          from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { getAuth, signInWithEmailAndPassword,
+         createUserWithEmailAndPassword,
+         signOut, onAuthStateChanged,
+         setPersistence, browserSessionPersistence } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+
+const firebaseConfig = {
+  apiKey:            "AIzaSyAESI-xumpIXZTymeKHNnJMhBwZ5V6OQiQ",
+  authDomain:        "youth-testbank.firebaseapp.com",
+  projectId:         "youth-testbank",
+  storageBucket:     "youth-testbank.firebasestorage.app",
+  messagingSenderId: "703759738861",
+  appId:             "1:703759738861:web:6e6e75eca40f67d808e9e4",
+};
+
+let app, db, auth;
+try {
+  app  = initializeApp(firebaseConfig);
+  db   = getFirestore(app);
+  auth = getAuth(app);
+  
+  // 設定 Session 持久性：關閉瀏覽器分頁後登入狀態失效
+  await setPersistence(auth, browserSessionPersistence);
+  
+  document.getElementById('fbStatus').textContent = '';
+  onAuthStateChanged(auth, async u => {
+    if (!u) return;
+    try {
+      const snap = await getDoc(doc(db, 'users', u.uid));
+      if (snap.exists()) window.location.href = 'dashboard.html';
+    } catch(e) {}
+  });
+} catch(e) {
+  document.getElementById('fbStatus').textContent = '⚠ Firebase 連線失敗：'+e.message;
+  document.getElementById('fbStatus').className = 'err';
+}
+
+// ── Tab & Role ────────────────────────────────────
+window.showTab = name => {
+  ['login','register','init'].forEach(n => {
+    document.getElementById('tab-'+n).classList.toggle('active', n===name);
+    document.getElementById('panel-'+n).classList.toggle('active', n===name);
+  });
+  ['loginErr','loginOk','regErr','regOk','initErr'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.className = el.className.replace(' show',''); }
+  });
+};
+
+let loginRole = 'teacher';
+window.selectRole = role => {
+  loginRole = role;
+  document.getElementById('rl-teacher').classList.toggle('selected', role==='teacher');
+  document.getElementById('rl-student').classList.toggle('selected', role==='student');
+  // 切換顯示不同的說明
+  document.getElementById('hintTeacher').style.display = role==='teacher' ? 'block' : 'none';
+  document.getElementById('hintStudent').style.display = role==='student' ? 'block' : 'none';
+};
+
+function showMsg(id, text, type='err') {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = text;
+  el.className = `msg ${type} show`;
+}
+function hideMsg(id) {
+  const el = document.getElementById(id);
+  if (el) el.className = el.className.replace(' show','');
+}
+
+// ── 登入 ─────────────────────────────────────────
+window.doLogin = async () => {
+  hideMsg('loginErr'); hideMsg('loginOk');
+  const email = document.getElementById('loginEmail').value.trim();
+  const pw    = document.getElementById('loginPw').value;
+  const btn   = document.getElementById('loginBtn');
+  if (!email) return showMsg('loginErr','請輸入電子信箱');
+  if (!pw)    return showMsg('loginErr','請輸入密碼');
+
+  btn.disabled = true; btn.innerHTML = '<div class="spin"></div> 登入中…';
+  try {
+    const cred = await signInWithEmailAndPassword(auth, email, pw);
+    const snap = await getDoc(doc(db, 'users', cred.user.uid));
+    if (!snap.exists()) {
+      await signOut(auth);
+      btn.disabled=false; btn.textContent='登　入';
+      return showMsg('loginErr','找不到使用者資料，請聯絡管理員');
+    }
+    // 嚴格驗證身份，不符合則拒絕登入
+    const role = snap.data().role;
+    const isStaff = role==='admin'||role==='teacher';
+    if (loginRole==='student' && isStaff) {
+      await signOut(auth);
+      btn.disabled=false; btn.textContent='登　入';
+      return showMsg('loginErr','此帳號為教師/管理員，請選擇「教師/管理員」身份登入','warn');
+    }
+    if (loginRole==='teacher' && role==='student') {
+      await signOut(auth);
+      btn.disabled=false; btn.textContent='登　入';
+      return showMsg('loginErr','此帳號為學生，請選擇「學生」身份登入','warn');
+    }
+    window.location.href = 'dashboard.html';
+  } catch(e) {
+    btn.disabled=false; btn.innerHTML='登　入';
+    const m = {
+      'auth/user-not-found':'帳號不存在',
+      'auth/wrong-password':'密碼錯誤',
+      'auth/invalid-credential':'帳號或密碼錯誤',
+      'auth/invalid-email':'電子信箱格式錯誤',
+      'auth/too-many-requests':'嘗試次數過多，請稍後再試',
+      'auth/network-request-failed':'網路連線失敗',
+    };
+    showMsg('loginErr', m[e.code]||('登入失敗：'+e.message));
+  }
+};
+
+// ── 學生自助加入 ─────────────────────────────────
+window.doRegister = async () => {
+  hideMsg('regErr'); hideMsg('regOk');
+  const email  = document.getElementById('regEmail').value.trim();
+  const name   = document.getElementById('regName').value.trim();
+  const pw     = document.getElementById('regPw').value;
+  const pw2    = document.getElementById('regPw2').value;
+  const btn    = document.getElementById('regBtn');
+
+  if (!email)        return showMsg('regErr','請輸入電子信箱');
+  if (!name)         return showMsg('regErr','請輸入姓名');
+  if (pw.length < 6) return showMsg('regErr','密碼至少 6 字元');
+  if (pw !== pw2)    return showMsg('regErr','兩次密碼不一致');
+
+  btn.disabled=true; btn.innerHTML='<div class="spin"></div> 建立中…';
+  try {
+    // 建立帳號
+    const cred = await createUserWithEmailAndPassword(auth, email, pw);
+    await setDoc(doc(db, 'users', cred.user.uid), {
+      email, displayName: name, role: 'student',
+      school: null, classIds: [], createdAt: serverTimestamp()
+    });
+    await signOut(auth);
+
+    btn.disabled=false; btn.textContent='建立學生帳號';
+    ['regEmail','regName','regPw','regPw2'].forEach(id => {
+      const el=document.getElementById(id); if(el) el.value='';
+    });
+    showTab('login');
+    document.getElementById('loginEmail').value = email;
+    selectRole('student');
+    showMsg('loginOk',`✅ 帳號「${name}」建立成功！請選擇「學生」身份並輸入密碼登入。`,'ok');
+  } catch(e) {
+    btn.disabled=false; btn.textContent='建立學生帳號';
+    const m = {
+      'auth/email-already-in-use':'此信箱已被使用，請直接登入',
+      'auth/invalid-email':'電子信箱格式錯誤',
+      'auth/weak-password':'密碼強度不足',
+      'auth/network-request-failed':'網路連線失敗',
+    };
+    showMsg('regErr', m[e.code]||('建立失敗：'+e.message));
+  }
+};
+
+// ── 初始化管理員 ─────────────────────────────────
+window.doInitAdmin = async () => {
+  hideMsg('initErr');
+  const code = document.getElementById('initCode').value.trim();
+  const email= document.getElementById('initEmail').value.trim();
+  const name = document.getElementById('initName').value.trim();
+  const pw   = document.getElementById('initPw').value;
+  const pw2  = document.getElementById('initPw2').value;
+  const btn  = document.getElementById('initBtn');
+
+  if (code!=='admin2024') return showMsg('initErr','驗證碼錯誤');
+  if (!email)             return showMsg('initErr','請輸入電子信箱');
+  if (!name)              return showMsg('initErr','請輸入姓名');
+  if (pw.length<6)        return showMsg('initErr','密碼至少 6 字元');
+  if (pw!==pw2)           return showMsg('initErr','兩次密碼不一致');
+
+  btn.disabled=true; btn.innerHTML='<div class="spin"></div> 建立中…';
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, pw);
+    await setDoc(doc(db,'users',cred.user.uid),{
+      email, displayName:name, role:'admin', school:null, createdAt:serverTimestamp()
+    });
+    await signOut(auth);
+    btn.disabled=false; btn.textContent='建立管理員帳號';
+    ['initCode','initEmail','initName','initPw','initPw2'].forEach(id=>{
+      const el=document.getElementById(id); if(el) el.value='';
+    });
+    showTab('login');
+    document.getElementById('loginEmail').value = email;
+    selectRole('teacher');
+    showMsg('loginOk',`✅ 管理員帳號「${name}」建立成功！請選擇「教師/管理員」身份登入。`,'ok');
+  } catch(e) {
+    btn.disabled=false; btn.textContent='建立管理員帳號';
+    const m={
+      'auth/email-already-in-use':'此信箱已被使用',
+      'auth/invalid-email':'電子信箱格式錯誤',
+      'auth/network-request-failed':'網路連線失敗',
+    };
+    showMsg('initErr', m[e.code]||('建立失敗：'+e.message));
+  }
+};
+</script>
+</body>
+</html>

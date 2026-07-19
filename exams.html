@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>試卷管理 — 幼獅題庫系統</title>
+<link rel="stylesheet" href="css/theme.css">
+<script>if(localStorage.getItem("sidebarCollapsed")==="1")document.documentElement.classList.add("sidebar-collapsed");</script>
+<style>
+.exam-card{border:1px solid var(--border-light);border-radius:var(--radius-lg);background:white;padding:14px 16px;display:flex;align-items:flex-start;gap:12px;transition:box-shadow .15s;margin-bottom:10px}
+.exam-card:hover{box-shadow:var(--shadow-md)}
+.exam-icon{width:44px;height:44px;border-radius:var(--radius-lg);display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0}
+.icon-draft{background:#f5f5f5}.icon-active{background:#e8f4fd}.icon-closed{background:#f0f0f0}
+.exam-info{flex:1;min-width:0}
+.exam-title{font-weight:700;font-size:.95rem;color:var(--primary);margin-bottom:4px}
+.exam-meta{display:flex;gap:8px;flex-wrap:wrap;font-size:.78rem;color:var(--text-muted);align-items:center}
+.exam-actions{display:flex;gap:5px;flex-shrink:0;align-items:center;flex-wrap:wrap}
+.status-badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:.72rem;font-weight:600}
+.status-draft{background:#f5f5f5;color:#666}.status-active{background:#e8f4fd;color:#1a6fa8}.status-closed{background:#eafaf1;color:#1a7a4a}
+.filter-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
+.empty-exams{text-align:center;padding:60px 24px;color:var(--text-muted)}
+
+/* 試卷編輯 Modal */
+.edit-q-item{display:flex;align-items:flex-start;gap:8px;padding:9px 12px;border-bottom:1px solid var(--border-light);font-size:.83rem}
+.edit-q-item:last-child{border-bottom:none}
+.edit-q-item:hover{background:#faf8f5}
+.eq-num{color:var(--text-muted);font-size:.72rem;width:22px;flex-shrink:0;text-align:right;padding-top:2px}
+.eq-qnum{font-family:var(--font-mono);font-size:.72rem;background:#e8eef6;color:var(--primary);padding:1px 5px;border-radius:3px;flex-shrink:0}
+.eq-text{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.eq-remove{background:none;border:none;color:var(--text-muted);cursor:pointer;padding:0 3px;font-size:.9rem;flex-shrink:0}
+.eq-remove:hover{color:var(--danger)}
+.drag-handle{cursor:grab;color:var(--text-muted);font-size:.8rem;flex-shrink:0;padding-top:2px}
+.eq-item.dragging{opacity:.4}.eq-item.drag-over{border-top:2px solid var(--primary-light)}
+</style>
+</head>
+<body>
+<script src="js/icons.js"></script>
+<script src="js/core.js"></script>
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="main">
+    <div class="topbar">
+      <span class="topbar-title">試卷管理</span>
+      <div class="topbar-actions">
+        <button class="btn btn-outline btn-sm" onclick="nav('compose')"><span data-icon="auto20"></span> 電腦選題</button>
+        <button class="btn btn-primary btn-sm" onclick="nav('manual')"><span data-icon="edit20"></span> 人工選題</button>
+      </div>
+    </div>
+    <div class="page-content">
+      <div class="filter-row">
+        <input class="form-control" id="searchInput" placeholder="🔍 搜尋試卷名稱…" oninput="filterExams()" style="max-width:200px">
+        <select class="form-control" id="classFilter" onchange="filterExams()" style="max-width:180px">
+          <option value="">全部班級</option>
+        </select>
+        <select class="form-control" id="statusFilter" onchange="filterExams()" style="max-width:120px">
+          <option value="">全部狀態</option>
+          <option value="draft">草稿</option>
+          <option value="active">開放中</option>
+          <option value="closed">已結束</option>
+        </select>
+        <span style="font-size:.82rem;color:var(--text-muted);margin-left:auto" id="examCount"></span>
+      </div>
+      <div id="examList">
+        <div style="text-align:center;padding:60px;color:var(--text-muted)">載入中…</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 試卷編輯 Modal -->
+<div class="modal-overlay hidden" id="editModal">
+  <div class="modal modal-xl">
+    <div class="modal-header" style="position:sticky;top:0;background:white;z-index:10">
+      <h3 id="editTitle">編輯試卷</h3>
+      <div style="display:flex;gap:6px;align-items:center">
+        <button class="btn btn-ghost btn-sm" onclick="shuffleEditQs()" title="各題型內亂數排序">🔀 亂數排序</button>
+        <button class="btn btn-ghost btn-sm" onclick="openHeaderSettings()" title="設定試卷上方表頭資訊">✎ 試卷表頭</button>
+        <button class="btn btn-outline btn-sm" onclick="previewEdit()">👁 預覽</button>
+        <button class="btn btn-primary btn-sm" onclick="saveEdit()">💾 儲存</button>
+        <button class="modal-close" onclick="closeEdit()">✕</button>
+      </div>
+    </div>
+    <div class="modal-body" style="padding:16px 20px">
+      <!-- 基本資訊 -->
+      <div class="grid-2" style="margin-bottom:16px">
+        <div class="form-group">
+          <label class="form-label">試卷名稱 <span class="required">*</span></label>
+          <input class="form-control" id="editExamTitle">
+        </div>
+        <div class="form-group">
+          <label class="form-label">說明</label>
+          <input class="form-control" id="editExamDesc" placeholder="選填">
+        </div>
+        <div class="form-group">
+          <label class="form-label">考試時間（分鐘）</label>
+          <input class="form-control" type="number" id="editDuration" min="10" max="240">
+        </div>
+        <div class="form-group">
+          <label class="form-label">及格分數</label>
+          <input class="form-control" type="number" id="editPassScore" min="0" max="100">
+        </div>
+      </div>
+      <!-- 各題型分數 -->
+      <div style="margin-bottom:14px">
+        <label class="form-label">各題型分數設定</label>
+        <div id="editScoreRows" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:6px"></div>
+      </div>
+      <div style="font-size:.82rem;color:var(--text-secondary);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
+        <span>題目清單（可拖曳排序或移除）</span>
+        <span id="editQCount" style="font-weight:600;color:var(--primary)"></span>
+      </div>
+      <div id="editQList" style="border:1px solid var(--border);border-radius:var(--radius);max-height:400px;overflow-y:auto;background:white"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 指定班級 Modal -->
+<div class="modal-overlay hidden" id="assignModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>🏫 指定開放班級</h3>
+      <button class="modal-close" onclick="document.getElementById('assignModal').classList.add('hidden')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:.84rem;color:var(--text-secondary);margin-bottom:12px">
+        勾選要開放此試卷的班級。學生在對應班級中才能看到此試卷。<br>
+        留空表示不開放給任何班級（學生無法參加）。
+      </p>
+      <div id="assignClassList" style="max-height:260px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius);padding:8px;background:white;min-height:60px">
+        <span style="color:var(--text-muted);font-size:.82rem">載入中…</span>
+      </div>
+      <div style="font-size:.78rem;color:var(--text-muted);margin-top:8px" id="assignNote"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="document.getElementById('assignModal').classList.add('hidden')">取消</button>
+      <button class="btn btn-primary" id="assignSaveBtn" onclick="saveAssign()">儲存班級設定</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { guardPage } from './js/auth-guard.js';
+import { showExamPreview, exportToWord, showHeaderSettings } from './js/exam-preview.js';
+window.openHeaderSettings = showHeaderSettings;
+window._activeNav = 'exams';
+const user = await guardPage(['admin','teacher']);
+if (!user) throw new Error('not auth');
+const canEdit = DataService.isAdmin() || DataService.isTeacher();
+
+const STATUS_LABELS = { draft:'草稿', active:'開放中', closed:'已結束' };
+const STATUS_CSS    = { draft:'status-draft', active:'status-active', closed:'status-closed' };
+const STATUS_ICONS  = { draft:'icon-draft', active:'icon-active', closed:'icon-closed' };
+const STATUS_EMOJI  = { draft:'📝', active:'✅', closed:'🔒' };
+const TYPE_SCORES   = { T1:2, T2:2, T3:4, T4:2, T5:2, T6:10 };
+
+let allExams     = [];
+let allQuestions = {};  // id -> q
+let editExamId   = null;
+let editQOrder   = [];  // array of question ids
+let editQMap     = {};  // id -> q
+
+// ── 載入 ─────────────────────────────────────────
+let allClasses = [];
+
+async function init() {
+  try {
+    const [exams, qs, classes] = await Promise.all([
+      DataService.getExams(),
+      Promise.resolve([]),  // 題目改為按需載入，不預先全量讀取
+      DataService.getClasses({ teacherUid: user.uid }).catch(() => []),
+    ]);
+    
+    // 過濾試卷：管理員可看全部，教師只能看自己建立的
+    const isAdmin = DataService.isAdmin();
+    allExams = isAdmin ? exams : exams.filter(e => e.createdBy === user.uid);
+    
+    // allQuestions 改為按需載入
+    allClasses = classes;
+
+    // Populate class filter
+    const cf = document.getElementById('classFilter');
+    classes.forEach(c => {
+      cf.innerHTML += `<option value="${c.id}">${c.name}（${c.school||''}）</option>`;
+    });
+
+    filterExams();
+  } catch(e) {
+    document.getElementById('examList').innerHTML =
+      `<div style="text-align:center;padding:40px;color:var(--danger)">載入失敗：${e.message}</div>`;
+  }
+}
+
+window.filterExams = () => {
+  const kw  = document.getElementById('searchInput').value.toLowerCase();
+  const st  = document.getElementById('statusFilter').value;
+  const cls = document.getElementById('classFilter').value;
+  const list = allExams.filter(e =>
+    (!st  || (e.status||'draft')===st) &&
+    (!kw  || (e.title||'').toLowerCase().includes(kw)) &&
+    (!cls || (e.classIds||[]).includes(cls))
+  );
+  document.getElementById('examCount').textContent = `共 ${list.length} 份試卷`;
+  renderExams(list);
+};
+
+function renderExams(list) {
+  const el = document.getElementById('examList');
+  if (!list.length) {
+    el.innerHTML = `<div class="empty-exams">
+      <div style="font-size:3rem;opacity:.3;margin-bottom:14px">📁</div>
+      <p>尚無試卷，請先透過選題功能建立試卷</p>
+      <div style="margin-top:14px;display:flex;gap:10px;justify-content:center">
+        <button class="btn btn-outline" onclick="nav('compose')"><span data-icon="auto20"></span> 電腦選題</button>
+        <button class="btn btn-primary" onclick="nav('manual')"><span data-icon="edit20"></span> 人工選題</button>
+      </div>
+    </div>`;
+    return;
+  }
+  el.innerHTML = list.map(e => {
+    const status = e.status || 'draft';
+    return `<div class="exam-card">
+      <div class="exam-icon ${STATUS_ICONS[status]}">${STATUS_EMOJI[status]}</div>
+      <div class="exam-info">
+        <div class="exam-title">${e.title||'（未命名）'}</div>
+        <div class="exam-meta">
+          <span class="status-badge ${STATUS_CSS[status]}">${STATUS_LABELS[status]}</span>
+          <span>📊 ${e.questionCount||0} 題</span>
+          <span>💯 ${e.totalScore||0} 分</span>
+          <span>⏱ ${e.duration||50} 分鐘</span>
+          <span>${SUBJECT_CODES[e.subjectCode]||e.subjectCode||'—'}</span>
+          <span style="color:var(--text-muted)">${UI.formatDate(e.createdAt)}</span>
+        </div>
+        ${(e.classNames||[]).length ? `<div style="margin-top:5px;display:flex;gap:4px;flex-wrap:wrap">${(e.classNames).map(n=>`<span style="background:#e8eef6;color:var(--primary);font-size:.72rem;padding:1px 7px;border-radius:10px;font-weight:600">🏫 ${n}</span>`).join('')}</div>` : ''}
+        ${e.description?`<div style="font-size:.8rem;color:var(--text-secondary);margin-top:3px">${e.description}</div>`:''}
+      </div>
+      <div class="exam-actions">
+        <button class="btn btn-sm btn-outline" onclick="previewExam('${e.id}')">👁 預覽</button>
+        <button class="btn btn-sm btn-ghost"   onclick="downloadWord('${e.id}')">⬇ Word</button>
+        ${canEdit ? `<button class="btn btn-sm btn-outline" onclick="openEdit('${e.id}')">✏️ 編輯</button>` : ''}
+        ${canEdit ? `<button class="btn btn-sm btn-ghost" onclick="openAssign('${e.id}')" title="指定開放班級">🏫</button>` : ''}
+        ${canEdit ? `
+          ${status==='draft'?`<button class="btn btn-sm btn-success" onclick="setStatus('${e.id}','active')">開放</button>`:''}
+          ${status==='active'?`<button class="btn btn-sm btn-ghost" onclick="setStatus('${e.id}','closed')">關閉</button>`:''}
+          <button class="btn btn-sm btn-danger" onclick="deleteExam('${e.id}','${(e.title||'').replace(/'/g,'&apos;')}')">🗑</button>
+        `:'' }
+      </div>
+    </div>`;
+  }).join('');
+  UI.renderIcons(el);
+}
+
+// ── 取得試卷題目 ─────────────────────────────────
+async function loadExamQuestions(e) {
+  const ids = e.questionIds || [];
+  const qs = await DataService.getQuestionsByIds(ids);
+  qs.forEach(q => { allQuestions[q.id] = q; });
+}
+
+function getExamQuestions(e) {
+  // 從已快取的題目找，若無則回傳空（呼叫方需先用 loadExamQuestions）
+  return (e.questionIds||[]).map(id => allQuestions[id]).filter(Boolean);
+}
+
+// ── 預覽 ─────────────────────────────────────────
+window.previewExam = async (id) => {
+  const e = allExams.find(x => x.id===id); if (!e) return;
+  await loadExamQuestions(e);
+  const qs = getExamQuestions(e);
+  if (!qs.length) { UI.toast('此試卷無法載入題目', 'warning'); return; }
+  showExamPreview(e, qs);
+};
+
+// ── 輸出 Word ────────────────────────────────────
+window.downloadWord = async (id) => {
+  const e = allExams.find(x => x.id===id); if (!e) return;
+  await loadExamQuestions(e);
+  const qs = getExamQuestions(e);
+  if (!qs.length) { UI.toast('此試卷無法載入題目', 'warning'); return; }
+  exportToWord(e, qs);
+};
+
+// ── 開放 / 關閉 ──────────────────────────────────
+window.setStatus = async (id, status) => {
+  try {
+    await DataService.saveExam({ id, status });
+    UI.toast(status==='active'?'試卷已開放':'試卷已關閉', 'success');
+    await init();
+  } catch(e) { UI.toast('操作失敗：'+e.message, 'danger'); }
+};
+
+// ── 刪除 ─────────────────────────────────────────
+window.deleteExam = async (id, title) => {
+  if (!confirm(`確定要刪除試卷「${title}」？此操作無法復原。`)) return;
+  try {
+    await DataService.deleteExam(id);
+    UI.toast('試卷已刪除', 'success');
+    allExams = allExams.filter(e => e.id!==id);
+    filterExams();
+  } catch(e) { UI.toast('刪除失敗：'+e.message, 'danger'); }
+};
+
+// ── 編輯 Modal ───────────────────────────────────
+window.openEdit = (id) => {
+  const e = allExams.find(x => x.id===id); if (!e) return;
+  editExamId = id;
+  editQOrder = [...(e.questionIds||[])];
+  editQMap   = {};
+  editQOrder.forEach(qid => { if (allQuestions[qid]) editQMap[qid] = allQuestions[qid]; });
+  // Remove ids without question data
+  editQOrder = editQOrder.filter(qid => editQMap[qid]);
+
+  document.getElementById('editTitle').textContent = `編輯試卷：${e.title||''}`;
+  document.getElementById('editExamTitle').value  = e.title || '';
+  document.getElementById('editExamDesc').value   = e.description || '';
+  document.getElementById('editDuration').value   = e.duration || 50;
+  document.getElementById('editPassScore').value  = e.passScore || 60;
+
+  renderEditScoreRows(e.typeScores||{});
+  renderEditQList();
+  document.getElementById('editModal').classList.remove('hidden');
+};
+
+function renderEditScoreRows(typeScores) {
+  const types = [...new Set(editQOrder.map(id => editQMap[id]?.type).filter(Boolean))];
+  const TYPE_LABELS = {T1:'是非題',T2:'單選題',T3:'複選題',T4:'填空題',T5:'配合題',T6:'問答題'};
+  document.getElementById('editScoreRows').innerHTML = types.map(t => {
+    const score = typeScores[t] || TYPE_SCORES[t] || 2;
+    const cnt = editQOrder.filter(id => editQMap[id]?.type===t).length;
+    return `<div style="display:flex;align-items:center;gap:6px;white-space:nowrap;font-size:.82rem">
+      <span>${TYPE_LABELS[t]||t} ×${cnt}：</span>
+      <input class="form-control" type="number" id="escore-${t}" value="${score}" min="1" max="99"
+             style="width:52px;font-size:.8rem;padding:3px 5px;text-align:center" oninput="updateEditTotal()">
+      <span style="color:var(--text-muted)">分/題</span>
+    </div>`;
+  }).join('');
+  updateEditTotal();
+}
+
+function updateEditTotal() {
+  let total = 0;
+  editQOrder.forEach(id => {
+    const q = editQMap[id]; if (!q) return;
+    const el = document.getElementById('escore-'+q.type);
+    total += el ? parseInt(el.value)||0 : (TYPE_SCORES[q.type]||2);
+  });
+  document.getElementById('editQCount').textContent = `${editQOrder.length} 題 / 共 ${total} 分`;
+}
+
+function renderEditQList() {
+  const container = document.getElementById('editQList');
+  if (!editQOrder.length) {
+    container.innerHTML = '<div style="padding:32px;text-align:center;color:var(--text-muted)">尚無題目</div>';
+    return;
+  }
+  container.innerHTML = editQOrder.map((id, idx) => {
+    const q = editQMap[id];
+    return `<div class="edit-q-item eq-item" draggable="true" data-id="${id}"
+      ondragstart="eqDragStart(event,'${id}')" ondragover="eqDragOver(event,'${id}')"
+      ondrop="eqDrop(event,'${id}')" ondragend="eqDragEnd()">
+      <span class="drag-handle">⠿</span>
+      <span class="eq-num">${idx+1}.</span>
+      ${q.qnum?`<span class="eq-qnum">${q.qnum}</span>`:''}
+      <span style="flex-shrink:0">${UI.typeBadge(q.type)}</span>
+      <span class="eq-text" title="${(q.text||'').replace(/"/g,'&quot;')}">${q.text||'—'}</span>
+      <button class="eq-remove" onclick="removeEditQ('${id}')" title="從試卷移除">✕</button>
+    </div>`;
+  }).join('');
+  updateEditTotal();
+}
+
+window.removeEditQ = (id) => {
+  editQOrder = editQOrder.filter(x => x!==id);
+  renderEditQList();
+  renderEditScoreRows(getCurrentEditScores());
+};
+
+function getCurrentEditScores() {
+  const scores = {};
+  const types = [...new Set(editQOrder.map(id => editQMap[id]?.type).filter(Boolean))];
+  types.forEach(t => {
+    const el = document.getElementById('escore-'+t);
+    scores[t] = el ? parseInt(el.value)||TYPE_SCORES[t]||2 : TYPE_SCORES[t]||2;
+  });
+  return scores;
+}
+
+// Drag-to-reorder
+let _eDragId = null;
+window.eqDragStart = (e,id) => { _eDragId=id; e.currentTarget.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; };
+window.eqDragEnd   = ()     => { _eDragId=null; document.querySelectorAll('.eq-item').forEach(el=>el.classList.remove('dragging','drag-over')); };
+window.eqDragOver  = (e,id) => { e.preventDefault(); if(id!==_eDragId) document.querySelector(`.eq-item[data-id="${id}"]`)?.classList.add('drag-over'); };
+window.eqDrop      = (e,targetId) => {
+  e.preventDefault();
+  if (!_eDragId || _eDragId===targetId) return;
+  const from=editQOrder.indexOf(_eDragId), to=editQOrder.indexOf(targetId);
+  if (from<0||to<0) return;
+  editQOrder.splice(from,1); editQOrder.splice(to,0,_eDragId);
+  renderEditQList();
+};
+
+// Shuffle
+window.shuffleEditQs = () => {
+  const byType = {};
+  editQOrder.forEach(id => {
+    const q = editQMap[id]; if (!q) return;
+    if (!byType[q.type]) byType[q.type] = [];
+    byType[q.type].push(id);
+  });
+  Object.values(byType).forEach(arr => arr.sort(() => Math.random()-.5));
+  const TYPE_ORDER = ['T1','T2','T3','T4','T5','T6'];
+  editQOrder = TYPE_ORDER.flatMap(t => byType[t]||[]);
+  renderEditQList();
+  UI.toast('已亂數排序', 'success');
+};
+
+// Preview
+window.previewEdit = () => {
+  const typeScores = getCurrentEditScores();
+  const qs = editQOrder.map(id => editQMap[id]).filter(Boolean);
+  const title = document.getElementById('editExamTitle').value.trim() || '試卷預覽';
+  showExamPreview({ title, typeScores }, qs);
+};
+
+// Save edit
+window.saveEdit = async () => {
+  const title = document.getElementById('editExamTitle').value.trim();
+  if (!title) { UI.toast('請填寫試卷名稱', 'warning'); return; }
+  const typeScores  = getCurrentEditScores();
+  let totalScore = 0;
+  editQOrder.forEach(id => {
+    const q = editQMap[id]; if (!q) return;
+    totalScore += typeScores[q.type] || 2;
+  });
+  try {
+    await DataService.saveExam({
+      id:            editExamId,
+      title,
+      description:   document.getElementById('editExamDesc').value.trim(),
+      duration:      parseInt(document.getElementById('editDuration').value)||50,
+      passScore:     parseInt(document.getElementById('editPassScore').value)||60,
+      typeScores,
+      totalScore,
+      questionIds:   [...editQOrder],
+      questionCount: editQOrder.length,
+    });
+    UI.toast('試卷已儲存', 'success');
+    closeEdit();
+    await init();
+  } catch(e) { UI.toast('儲存失敗：'+e.message, 'danger'); }
+};
+
+window.closeEdit = () => document.getElementById('editModal').classList.add('hidden');
+
+// ── 指定班級 ─────────────────────────────────────
+let assigningExamId = null;
+
+window.openAssign = async (examId) => {
+  assigningExamId = examId;
+  const e = allExams.find(x => x.id===examId); if (!e) return;
+  const container = document.getElementById('assignClassList');
+  container.innerHTML = '<span style="color:var(--text-muted);font-size:.82rem">載入中…</span>';
+  document.getElementById('assignNote').textContent = '';
+  document.getElementById('assignModal').classList.remove('hidden');
+
+  try {
+    const classes = await DataService.getClasses({ teacherUid: user.uid });
+    if (!classes.length) {
+      container.innerHTML = '<span style="color:var(--text-muted);font-size:.82rem">尚無班級，請先至「班級管理」建立班級</span>';
+      return;
+    }
+    const currentIds = e.classIds || [];
+    container.innerHTML = classes.map(c => `
+      <label style="display:flex;align-items:center;gap:8px;padding:7px 6px;cursor:pointer;font-size:.84rem;border-radius:4px;margin-bottom:2px;border-bottom:1px solid var(--border-light)" onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background=''">
+        <input type="checkbox" class="assign-cb" value="${c.id}" data-name="${(c.name||'').replace(/"/g,'&quot;')}" ${currentIds.includes(c.id)?'checked':''}>
+        <div>
+          <div style="font-weight:600">${c.name}</div>
+          <div style="font-size:.74rem;color:var(--text-muted)">${c.school||''} ｜ ${SUBJECT_CODES[c.subjectCode]||''}</div>
+        </div>
+      </label>`).join('');
+    document.getElementById('assignNote').textContent =
+      currentIds.length ? `目前已指定 ${currentIds.length} 個班級` : '目前未指定任何班級（所有學生均可參加）';
+  } catch(err) {
+    container.innerHTML = `<span style="color:var(--danger);font-size:.82rem">載入失敗：${err.message}</span>`;
+  }
+};
+
+window.saveAssign = async () => {
+  const checked = [...document.querySelectorAll('.assign-cb:checked')];
+  const classIds   = checked.map(cb => cb.value);
+  const classNames = checked.map(cb => cb.dataset.name);
+  const btn = document.getElementById('assignSaveBtn');
+  btn.disabled=true; btn.textContent='儲存中…';
+  try {
+    await DataService.saveExam({ id: assigningExamId, classIds, classNames });
+    UI.toast('班級設定已儲存', 'success');
+    document.getElementById('assignModal').classList.add('hidden');
+    await init();
+  } catch(e) {
+    UI.toast('儲存失敗：'+e.message,'danger');
+  } finally {
+    btn.disabled=false; btn.textContent='儲存班級設定';
+  }
+};
+
+init();
+</script>
+</body>
+</html>

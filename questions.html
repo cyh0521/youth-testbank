@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>題目維護 — 幼獅題庫系統</title>
+<link rel="stylesheet" href="css/theme.css">
+<script>if(localStorage.getItem("sidebarCollapsed")==="1")document.documentElement.classList.add("sidebar-collapsed");</script>
+<style>
+/* 頁面特有：題目文字截斷 */
+.q-text{max-width:360px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.84rem}
+.q-text.expanded{white-space:normal;overflow:visible}
+
+/* ── 檢視模式切換（表格 ↔ 卡片） ── */
+.view-toggle{display:inline-flex;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;background:white}
+.view-toggle button{
+  background:none;border:none;padding:5px 10px;cursor:pointer;
+  font-size:.78rem;color:var(--text-secondary);
+  display:inline-flex;align-items:center;gap:5px;
+  transition:background .12s,color .12s;
+}
+.view-toggle button:hover{background:var(--bg-base)}
+.view-toggle button.active{background:var(--primary);color:white}
+.view-toggle button svg{width:14px;height:14px}
+.view-toggle button + button{border-left:1px solid var(--border)}
+
+/* ── 卡片檢視 ── */
+.q-card-grid{padding:10px;display:grid;gap:10px}
+.q-card-item{
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  gap:12px;
+  padding:14px 16px;
+  border:1px solid var(--border-light);
+  border-radius:var(--radius);
+  background:white;
+  transition:border-color .12s,box-shadow .12s;
+}
+.q-card-item:hover{border-color:var(--primary-light);box-shadow:0 2px 8px rgba(26,58,92,.06)}
+.q-card-item.selected{background:#f5f9ff;border-color:var(--primary-light)}
+.q-card-check{display:flex;align-items:flex-start;padding-top:2px}
+.q-card-check input{width:16px;height:16px;cursor:pointer;accent-color:var(--primary-light)}
+.q-card-body{min-width:0}
+.q-card-meta{
+  display:flex;gap:6px;align-items:center;flex-wrap:wrap;
+  margin-bottom:8px;font-size:.76rem;
+}
+.q-card-meta .qnum{
+  font-family:var(--font-mono);letter-spacing:.04em;
+  color:var(--text-secondary);margin-left:auto;
+}
+.q-card-meta .subject{color:var(--text-muted)}
+.q-card-meta .chapter{color:var(--text-muted)}
+.q-card-text{
+  font-size:.9rem;line-height:1.7;color:var(--text-primary);
+  margin-bottom:8px;word-break:break-word;
+}
+.q-card-opts{
+  display:grid;grid-template-columns:1fr 1fr;gap:2px 14px;
+  font-size:.82rem;color:var(--text-secondary);
+  margin-bottom:8px;line-height:1.6;
+}
+.q-card-opts .opt.correct{color:var(--success);font-weight:600}
+.q-card-answer{
+  font-size:.8rem;padding-top:8px;border-top:1px dashed var(--border-light);
+  display:flex;align-items:center;gap:8px;
+}
+.q-card-answer .ans-label{color:var(--text-muted)}
+.q-card-answer .ans-val{color:var(--success);font-weight:600;font-family:var(--font-mono)}
+.q-card-actions{display:flex;flex-direction:column;gap:4px;flex-shrink:0;min-width:86px}
+.q-card-actions .btn{justify-content:center}
+@media(max-width:700px){
+  .q-card-item{grid-template-columns:auto 1fr;grid-template-rows:auto auto}
+  .q-card-actions{grid-column:1/-1;flex-direction:row;justify-content:flex-end;padding-top:4px;border-top:1px dashed var(--border-light);min-width:0}
+  .q-card-opts{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<script src="js/icons.js"></script>
+<script src="js/core.js"></script>
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="main">
+    <div class="topbar">
+      <span class="topbar-title">題目維護</span>
+      <div class="topbar-actions">
+        <button class="btn btn-outline btn-sm" onclick="nav('import')"><span data-icon="upload20"></span> 匯入題目</button>
+      </div>
+    </div>
+    <div class="page-content">
+
+      <!-- 篩選列 -->
+      <div class="filter-bar">
+        <div class="filter-group">
+          <span class="filter-label">科目</span>
+          <select class="form-control" id="fSubject" onchange="onSubjectFilter()">
+            <option value="">全部科目</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">冊次</span>
+          <select class="form-control" id="fBook" onchange="onBookFilter()">
+            <option value="">全部冊次</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <span class="filter-label" id="fChapterLabel">章</span>
+          <select class="form-control" id="fChapter" style="min-width:130px" onchange="onChapterFilter()">
+            <option value="">全部</option>
+          </select>
+        </div>
+        <div class="filter-group" id="fSectionGroup" style="display:none">
+          <span class="filter-label" id="fSectionLabel">節</span>
+          <select class="form-control" id="fSection" style="min-width:130px">
+            <option value="">全部</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">題型</span>
+          <select class="form-control" id="fType">
+            <option value="">全部題型</option>
+          </select>
+        </div>
+
+        <div class="filter-group" style="flex:1;min-width:150px">
+          <span class="filter-label">關鍵字</span>
+          <input class="form-control" id="fKeyword" placeholder="搜尋題目或編號…" onkeydown="if(event.key==='Enter')doSearch()">
+        </div>
+        <div class="filter-actions">
+          <button class="btn btn-primary btn-sm" onclick="doSearch()"><span data-icon="search20"></span> 搜尋</button>
+          <button class="btn btn-ghost btn-sm" onclick="clearFilters()"><span data-icon="refresh20"></span> 重置</button>
+        </div>
+      </div>
+
+      <!-- 結果列 -->
+      <div class="result-bar">
+        <span class="result-count" id="resultCount"></span>
+        <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+          <div class="view-toggle" role="tablist" aria-label="檢視模式">
+            <button id="viewTableBtn" class="active" onclick="setView('table')" title="表格檢視">
+              <span data-icon="list16"></span>表格
+            </button>
+            <button id="viewCardBtn" onclick="setView('card')" title="卡片檢視">
+              <span data-icon="layers16"></span>卡片
+            </button>
+          </div>
+          <button class="btn btn-sm btn-danger" id="batchDelBtn" onclick="batchDelete()" style="display:none"><span data-icon="trash20"></span> 批次刪除</button>
+          <button class="btn btn-sm btn-outline" id="selectAllBtn" onclick="toggleSelectAll()" style="display:none">全選本頁</button>
+        </div>
+      </div>
+
+      <!-- 批次提示 -->
+      <div class="batch-bar hidden" id="batchBar">
+        <span>已選 <strong id="selCount">0</strong> 題</span>
+        <button class="btn btn-sm" style="background:rgba(255,255,255,.2);color:white;border:none" onclick="clearSelection()">取消選取</button>
+      </div>
+
+      <!-- 表格檢視 -->
+      <div class="card" id="tableView">
+        <div class="table-wrapper">
+          <table class="data-table" id="qTable">
+            <thead>
+              <tr>
+                <th style="width:36px"><input type="checkbox" id="selectAllCb" onchange="onSelectAll()" title="全選"></th>
+                <th>編號</th><th>題型</th><th>科目</th><th>章節</th><th>難易</th>
+                <th>題目</th><th>答案</th>
+                <th style="width:90px"></th>
+              </tr>
+            </thead>
+            <tbody id="qTbody">
+              <tr><td colspan="9" style="text-align:center;padding:40px;color:var(--text-muted)">載入中…</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="padding:12px 16px;border-top:1px solid var(--border-light);display:flex;align-items:center;flex-wrap:wrap;gap:8px">
+          <div class="pagination" id="pagination"></div>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+            <span style="font-size:.8rem;color:var(--text-muted)">每頁</span>
+            <select class="form-control" id="pageSizeSel" style="width:70px;font-size:.8rem;padding:4px 6px" onchange="onPageSizeChange()">
+              <option value="20">20</option>
+              <option value="50" selected>50</option>
+              <option value="100">100</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- 卡片檢視 -->
+      <div class="card" id="cardView" style="display:none">
+        <div class="q-card-grid" id="qCardGrid">
+          <div style="text-align:center;padding:40px;color:var(--text-muted)">載入中…</div>
+        </div>
+        <div style="padding:12px 16px;border-top:1px solid var(--border-light);display:flex;align-items:center;flex-wrap:wrap;gap:8px">
+          <div class="pagination" id="paginationCard"></div>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+            <span style="font-size:.8rem;color:var(--text-muted)">每頁</span>
+            <select class="form-control" id="pageSizeSelCard" style="width:70px;font-size:.8rem;padding:4px 6px" onchange="onPageSizeChange(true)">
+              <option value="10">10</option>
+              <option value="20" selected>20</option>
+              <option value="50">50</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- 題目詳情/編輯 Modal -->
+<div class="modal-overlay hidden" id="qModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h3 id="qModalTitle">題目詳情</h3>
+      <button class="modal-close" onclick="closeQModal()">✕</button>
+    </div>
+    <div class="modal-body" id="qModalBody"></div>
+    <div class="modal-footer" id="qModalFooter">
+      <button class="btn btn-ghost" onclick="closeQModal()">關閉</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { guardPage } from './js/auth-guard.js';
+window._activeNav = 'questions';
+const user = await guardPage(['admin','teacher']);
+if (!user) throw new Error('not auth');
+const canEdit = DataService.isAdmin();
+
+// 還原使用者上次的檢視模式
+if ((localStorage.getItem('qViewMode') || 'table') === 'card') {
+  document.getElementById('viewTableBtn').classList.remove('active');
+  document.getElementById('viewCardBtn').classList.add('active');
+  document.getElementById('tableView').style.display = 'none';
+  document.getElementById('cardView').style.display  = '';
+}
+
+// ── 初始化下拉選單（從課本管理系統讀取）──────────
+await initTextbookCache();
+const fSubject = document.getElementById('fSubject');
+fSubject.innerHTML = '<option value="">全部科目</option>' + tbSubjectOptions().replace('<option value="">請選擇科目</option>','');
+const fType = document.getElementById('fType');
+Object.entries(QUESTION_TYPES).forEach(([v,l]) => fType.innerHTML += `<option value="${v}">${l}</option>`);
+
+window.onSubjectFilter = () => {
+  const sc = fSubject.value;
+  const fb = document.getElementById('fBook');
+  fb.innerHTML = '<option value="">全部冊次</option>';
+  if (sc) {
+    const subj = _tbCache?.subjectByCode?.[sc];
+    const books = subj ? (_tbCache?.booksBySubject?.[subj.id] || []) : [];
+    books.forEach(b => fb.innerHTML += `<option value="${b.code}">${b.name}</option>`);
+  }
+  document.getElementById('fChapter').innerHTML = '<option value="">全部</option>';
+  document.getElementById('fSection').innerHTML = '<option value="">全部</option>';
+  document.getElementById('fSectionGroup').style.display = 'none';
+};
+
+window.onBookFilter = async () => {
+  const sc = fSubject.value, bc = document.getElementById('fBook').value;
+  const fc = document.getElementById('fChapter');
+  fc.innerHTML = '<option value="">全部</option>';
+  document.getElementById('fSection').innerHTML = '<option value="">全部</option>';
+  document.getElementById('fSectionGroup').style.display = 'none';
+  if (!sc || !bc) return;
+  const subj = _tbCache?.subjectByCode?.[sc];
+  const bookObj = subj ? (_tbCache?.booksBySubject?.[subj.id]||[]).find(b=>b.code===bc) : null;
+  if (subj && bookObj) {
+    const chapters = await DataService.getChapterDefs(subj.id, bookObj.id);
+    const l1 = bookObj.l1 || '章';
+    chapters.forEach(c => fc.innerHTML += `<option value="${c.chapterNum}">${c.title||l1+c.chapterNum}</option>`);
+    document.getElementById('fChapterLabel').textContent = l1;
+    window._currentBookObj = bookObj;
+    window._currentChapters = chapters;
+  } else {
+    const chaps = {};
+    allQuestions.filter(q => q.subjectCode===sc && q.bookCode===bc).forEach(q => { if (q.chapterNum) chaps[q.chapterNum] = true; });
+    Object.keys(chaps).sort((a,b)=>parseInt(a)-parseInt(b)).forEach(ch => fc.innerHTML += `<option value="${ch}">第 ${parseInt(ch)} 章</option>`);
+  }
+};
+
+window.onChapterFilter = () => {
+  const ch = document.getElementById('fChapter').value;
+  const sg = document.getElementById('fSectionGroup');
+  const sl = document.getElementById('fSectionLabel');
+  const sf = document.getElementById('fSection');
+  sf.innerHTML = '<option value="">全部</option>';
+  if (!ch || !window._currentChapters) { sg.style.display = 'none'; return; }
+  const chapterObj = window._currentChapters.find(c => String(c.chapterNum) === String(ch));
+  const l2 = window._currentBookObj?.l2 || '';
+  if (!l2 || !chapterObj || !(chapterObj.sections||[]).length) { sg.style.display = 'none'; return; }
+  sl.textContent = l2;
+  chapterObj.sections.forEach(s => sf.innerHTML += `<option value="${s.sectionNum}">${s.title||l2+s.sectionNum}</option>`);
+  sg.style.display = '';
+};
+
+// ── 資料與狀態 ────────────────────────────────────
+let allQuestions = [];
+let filtered     = [];
+let currentPage  = 1;
+let pageSize     = 50;
+let pageSizeCard = 20;
+let viewMode     = localStorage.getItem('qViewMode') || 'table';  // 'table' | 'card'
+let selected     = new Set();
+
+async function loadAll() {
+  // 不預先載入全部題目，等使用者選擇科目+冊次後再查詢
+  document.getElementById('resultCount').textContent = '請先選擇科目與冊次，再按「搜尋」';
+  document.getElementById('qTbody').innerHTML =
+    `<tr><td colspan="9" style="text-align:center;padding:48px 24px;color:var(--text-muted)">
+      <div style="font-size:2rem;margin-bottom:10px;opacity:.3">🔍</div>
+      <div style="font-size:.9rem">請先選擇科目與冊次後按「搜尋」</div>
+      <div style="font-size:.78rem;margin-top:6px">可依科目、冊次、章節、題型或關鍵字篩選</div>
+    </td></tr>`;
+}
+
+window.doSearch = async () => {
+  const sc  = document.getElementById('fSubject').value;
+  const bc  = document.getElementById('fBook').value;
+  if (!sc || !bc) { UI.toast('請先選擇科目與冊次', 'warning'); return; }
+  try {
+    document.getElementById('resultCount').textContent = '搜尋中…';
+    allQuestions = await DataService.getQuestions({ subjectCode: sc, bookCode: bc });
+  } catch(e) {
+    document.getElementById('qTbody').innerHTML =
+      `<tr><td colspan="9" style="text-align:center;padding:32px;color:var(--danger)">載入失敗：${e.message}</td></tr>`;
+    return;
+  }
+  const ch  = document.getElementById('fChapter').value;
+  const sec = document.getElementById('fSection').value;
+  const tp  = document.getElementById('fType').value;
+  const kw  = document.getElementById('fKeyword').value.trim().toLowerCase();
+  filtered = allQuestions.filter(q => {
+    // qnum keyword: match padded or raw number
+    const qnumOk = !kw || (q.qnum||'').includes(kw) ||
+      (/^\d+$/.test(kw) && (q.qnum||'') === kw.padStart(5,'0'));
+    return (
+      (!sc || q.subjectCode===sc) &&
+      (!bc || q.bookCode===bc) &&
+      (!ch || Number(q.chapterNum)===Number(ch)) &&
+      (!sec || Number(q.sectionNum)===Number(sec)) &&
+      (!tp || q.type===tp) &&
+           (!kw || (q.text||'').toLowerCase().includes(kw) ||
+               (q.answer||'').toLowerCase().includes(kw) ||
+               qnumOk)
+    );
+  });
+  // Sort by qnum ascending; no-qnum entries go last
+  filtered.sort((a,b) => {
+    const an = a.qnum ? parseInt(a.qnum) : 999999;
+    const bn = b.qnum ? parseInt(b.qnum) : 999999;
+    return an - bn;
+  });
+  currentPage = 1;
+  selected.clear();
+  renderTable();
+};
+
+window.clearFilters = () => {
+  document.getElementById('fSection').innerHTML='<option value="">全部</option>'; document.getElementById('fSectionGroup').style.display='none';
+  ['fSubject','fBook','fChapter','fType','fKeyword'].forEach(id => document.getElementById(id).value='');
+  document.getElementById('fBook').innerHTML = '<option value="">全部冊次</option>';
+  document.getElementById('fChapter').innerHTML = '<option value="">全部章節</option>';
+  doSearch();
+};
+
+window.onPageSizeChange = (isCard) => {
+  if (isCard) {
+    pageSizeCard = +document.getElementById('pageSizeSelCard').value;
+  } else {
+    pageSize = +document.getElementById('pageSizeSel').value;
+  }
+  currentPage = 1; renderTable();
+};
+
+// ── 切換檢視模式 ────────────────────────────────
+window.setView = (mode) => {
+  if (mode === viewMode) return;
+  viewMode = mode;
+  localStorage.setItem('qViewMode', mode);
+  document.getElementById('viewTableBtn').classList.toggle('active', mode === 'table');
+  document.getElementById('viewCardBtn').classList.toggle('active', mode === 'card');
+  document.getElementById('tableView').style.display = mode === 'table' ? '' : 'none';
+  document.getElementById('cardView').style.display  = mode === 'card'  ? '' : 'none';
+  currentPage = 1;
+  renderTable();
+};
+
+// ── 渲染 ─────────────────────────────────────────
+function renderTable() {
+  const total      = filtered.length;
+  const curSize    = viewMode === 'card' ? pageSizeCard : pageSize;
+  const totalPages = Math.max(1, Math.ceil(total/curSize));
+  currentPage      = Math.min(currentPage, totalPages);
+  const start      = (currentPage-1)*curSize;
+  const pageItems  = filtered.slice(start, start+curSize);
+
+  document.getElementById('resultCount').textContent = `共找到 ${total} 題`;
+  document.getElementById('selectAllBtn').style.display = canEdit&&total?'':'none';
+  document.getElementById('batchDelBtn').style.display = canEdit&&selected.size?'':'none';
+  document.getElementById('batchBar').classList.toggle('hidden', selected.size===0);
+  document.getElementById('selCount').textContent = selected.size;
+
+  if (viewMode === 'table') renderTableMode(pageItems);
+  else                       renderCardMode(pageItems);
+
+  // 分頁渲染（兩個檢視各有自己的 pagination 容器）
+  renderPagination(totalPages);
+}
+
+function renderTableMode(pageItems) {
+  const tbody = document.getElementById('qTbody');
+  if (!pageItems.length) {
+    tbody.innerHTML=`<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--text-muted)">無符合條件的題目</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = pageItems.map(q => {
+    const chap = [q.chapterNum,q.sectionNum,q.subsectionNum].filter(Boolean).join('-');
+    const ans = (q.answer||'').length>16 ? q.answer.slice(0,16)+'…' : q.answer;
+    return `<tr>
+      <td><input type="checkbox" class="q-cb" data-id="${q.id}" ${selected.has(q.id)?'checked':''} onchange="onCbChange('${q.id}')"></td>
+      <td><span style="font-family:var(--font-mono);font-size:.78rem;color:var(--text-secondary);letter-spacing:.04em">${q.qnum||'—'}</span></td>
+      <td>${UI.typeBadge(q.type)}</td>
+      <td style="font-size:.78rem;white-space:nowrap">${tbSubjectName(q.subjectCode)}</td>
+      <td style="font-size:.78rem;white-space:nowrap;color:var(--text-muted)">${chap||'—'}</td>
+      <td>${UI.diffBadge(q.difficulty)}</td>
+      <td><div class="q-text" title="${(q.text||'').replace(/"/g,'&quot;')}">${q.text||'—'}</div></td>
+      <td style="font-size:.8rem;color:var(--primary);max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${ans||'—'}</td>
+      <td>
+        <div style="display:flex;gap:4px">
+          <button class="btn btn-sm btn-outline" onclick="openEdit('${q.id}')"><span data-icon="edit20"></span> 編輯</button>
+          ${canEdit?`<button class="btn btn-sm btn-danger" onclick="deleteOne('${q.id}')" title="刪除"><span data-icon="trash20"></span></button>`:''}
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+  UI.renderIcons(tbody);
+}
+
+function renderCardMode(pageItems) {
+  const grid = document.getElementById('qCardGrid');
+  if (!pageItems.length) {
+    grid.innerHTML=`<div style="text-align:center;padding:40px;color:var(--text-muted)">無符合條件的題目</div>`;
+    return;
+  }
+  // 解析正解（單選/複選 → 對應選項用粗體、綠色標示）
+  const isCorrectOpt = (q, idx) => {
+    if (!q.answer) return false;
+    const letter = String.fromCharCode(65 + idx); // A B C D
+    // 全形字母也要對應
+    const fullLetter = String.fromCharCode(0xFF21 + idx); // Ａ Ｂ Ｃ Ｄ
+    return q.answer.includes(letter) || q.answer.includes(fullLetter);
+  };
+  grid.innerHTML = pageItems.map(q => {
+    const chap = [q.chapterNum,q.sectionNum,q.subsectionNum].filter(Boolean).join('-');
+    const subjectLabel = tbSubjectName(q.subjectCode);
+
+    // 選項區塊（僅單選/複選有）
+    let optsHtml = '';
+    if ((q.type==='T2' || q.type==='T3') && q.options?.length) {
+      optsHtml = `<div class="q-card-opts">${q.options.map((o,i) => {
+        const correct = isCorrectOpt(q, i);
+        const letter = String.fromCharCode(65+i);
+        return `<div class="opt${correct?' correct':''}">(${letter}) ${escapeHtml(o)}</div>`;
+      }).join('')}</div>`;
+    }
+
+    return `<div class="q-card-item${selected.has(q.id)?' selected':''}" data-qid="${q.id}">
+      <div class="q-card-check">
+        <input type="checkbox" class="q-cb" data-id="${q.id}" ${selected.has(q.id)?'checked':''} onchange="onCbChange('${q.id}')">
+      </div>
+      <div class="q-card-body">
+        <div class="q-card-meta">
+          ${UI.typeBadge(q.type)}
+          ${UI.diffBadge(q.difficulty)}
+          <span class="subject">${subjectLabel}</span>
+          ${chap?`<span class="chapter">章節 ${chap}</span>`:''}
+          <span class="qnum">#${q.qnum||'—'}</span>
+        </div>
+        <div class="q-card-text">${escapeHtml(q.text||'—')}</div>
+        ${optsHtml}
+        ${q.tail?`<div style="font-size:.84rem;color:var(--text-secondary);margin-bottom:8px">${escapeHtml(q.tail)}</div>`:''}
+        <div class="q-card-answer">
+          <span class="ans-label">答案</span>
+          <span class="ans-val">${escapeHtml(q.answer||'—')}</span>
+          ${q.source?`<span style="margin-left:auto;font-size:.74rem;color:var(--text-muted)">出處：${escapeHtml(q.source)}</span>`:''}
+        </div>
+      </div>
+      <div class="q-card-actions">
+        <button class="btn btn-sm btn-outline" onclick="openEdit('${q.id}')"><span data-icon="edit16"></span> 編輯</button>
+        ${canEdit?`<button class="btn btn-sm btn-danger" onclick="deleteOne('${q.id}')"><span data-icon="trash16"></span> 刪除</button>`:''}
+      </div>
+    </div>`;
+  }).join('');
+  UI.renderIcons(grid);
+}
+
+function escapeHtml(s) {
+  return String(s ?? '')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function renderPagination(totalPages) {
+  const pagId = viewMode === 'card' ? 'paginationCard' : 'pagination';
+  const pag = document.getElementById(pagId);
+  if (!pag) return;
+  if (totalPages <= 1) { pag.innerHTML=''; return; }
+  let pages='';
+  pages += `<button class="page-btn" onclick="gotoPage(${currentPage-1})" ${currentPage===1?'disabled':''}>‹</button>`;
+  const range = buildPageRange(currentPage, totalPages);
+  range.forEach(p => {
+    if (p==='…') pages += `<span class="page-info">…</span>`;
+    else pages += `<button class="page-btn ${p===currentPage?'active':''}" onclick="gotoPage(${p})">${p}</button>`;
+  });
+  pages += `<button class="page-btn" onclick="gotoPage(${currentPage+1})" ${currentPage===totalPages?'disabled':''}>›</button>`;
+  pages += `<span class="page-info">${currentPage}/${totalPages}</span>`;
+  pag.innerHTML = pages;
+}
+
+function buildPageRange(cur, total) {
+  if (total<=7) return Array.from({length:total},(_,i)=>i+1);
+  const r=[1];
+  if(cur>3) r.push('…');
+  for(let i=Math.max(2,cur-1);i<=Math.min(total-1,cur+1);i++) r.push(i);
+  if(cur<total-2) r.push('…');
+  r.push(total);
+  return r;
+}
+
+window.gotoPage = p => { currentPage=p; renderTable(); window.scrollTo(0,0); };
+
+// ── 選取 ─────────────────────────────────────────
+window.onCbChange = id => {
+  const cb = document.querySelector(`.q-cb[data-id="${id}"]`);
+  if (cb?.checked) selected.add(id); else selected.delete(id);
+  document.getElementById('selectAllCb').indeterminate = selected.size>0 && selected.size<filtered.slice((currentPage-1)*pageSize,(currentPage)*pageSize).length;
+  renderTable();
+};
+window.onSelectAll = () => {
+  const checked = document.getElementById('selectAllCb').checked;
+  const pageItems = filtered.slice((currentPage-1)*pageSize,currentPage*pageSize);
+  pageItems.forEach(q => checked ? selected.add(q.id) : selected.delete(q.id));
+  renderTable();
+};
+window.toggleSelectAll = () => {
+  const pageItems = filtered.slice((currentPage-1)*pageSize,currentPage*pageSize);
+  const allSel = pageItems.every(q=>selected.has(q.id));
+  pageItems.forEach(q => allSel ? selected.delete(q.id) : selected.add(q.id));
+  document.getElementById('selectAllBtn').textContent = allSel ? '全選本頁' : '取消全選';
+  renderTable();
+};
+window.clearSelection = () => { selected.clear(); renderTable(); };
+
+// ── 刪除 ─────────────────────────────────────────
+window.deleteOne = async id => {
+  if (!confirm('確定要刪除這道題目？')) return;
+  await DataService.deleteQuestion(id);
+  allQuestions = allQuestions.filter(q=>q.id!==id);
+  filtered     = filtered.filter(q=>q.id!==id);
+  selected.delete(id);
+  UI.toast('已刪除','success');
+  renderTable();
+};
+
+window.batchDelete = async () => {
+  if (!selected.size) return;
+  if (!confirm(`確定要刪除選取的 ${selected.size} 道題目？此操作無法復原。`)) return;
+  const ids = [...selected];
+  for (const id of ids) await DataService.deleteQuestion(id);
+  allQuestions = allQuestions.filter(q=>!ids.includes(q.id));
+  filtered     = filtered.filter(q=>!ids.includes(q.id));
+  selected.clear();
+  UI.toast(`已刪除 ${ids.length} 題`,'success');
+  renderTable();
+};
+
+// ── 詳情 Modal ────────────────────────────────────
+// ── 工具：選項欄位 HTML ──────────────────────────────
+function optionFields(q) {
+  if (q.type !== 'T2') return '';
+  const opts = (q.options||[]).concat(['','','','','']);
+  return ['Ａ','Ｂ','Ｃ','Ｄ','Ｅ'].slice(0,5).map((lbl,i) => `
+    <div class="form-group" style="margin-bottom:8px">
+      <label class="form-label">選項 ${lbl}</label>
+      <input class="form-control eq-opt" id="eq-opt-${i}" value="${(opts[i]||'').replace(/"/g,'&quot;')}">
+    </div>`).join('');
+}
+
+window.openEdit = id => {
+  const q = allQuestions.find(x=>x.id===id); if(!q) return;
+  document.getElementById('qModalTitle').textContent = `✏️ 編輯題目 — ${q.qnum||''}`;
+  document.getElementById('qModal').dataset.editId = id;
+
+  document.getElementById('qModalBody').innerHTML = `
+    <div class="edit-grid">
+      <div class="form-group"><label class="form-label">題型</label>
+        <select class="form-control" id="eq-type">
+          ${Object.entries(QUESTION_TYPES).map(([v,l])=>`<option value="${v}" ${q.type===v?'selected':''}>${l}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">難易</label>
+        <select class="form-control" id="eq-diff">
+          <option value="" ${!q.difficulty?'selected':''}>一般</option>
+          <option value="◎" ${q.difficulty==='◎'?'selected':''}>較難 ◎</option>
+          <option value="△" ${q.difficulty==='△'?'selected':''}>簡易 △</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">來源/頁數</label>
+        <input class="form-control" id="eq-source" value="${(q.source||'').replace(/"/g,'&quot;')}">
+      </div>
+      <div class="form-group"><label class="form-label">答案數</label>
+        <input class="form-control" id="eq-anscount" type="number" min="1" value="${q.answerCount||1}">
+      </div>
+      <div class="edit-full form-group"><label class="form-label">題目 <span class="required">*</span></label>
+        <textarea class="form-control" id="eq-text" rows="4">${q.text||''}</textarea>
+      </div>
+      ${optionFields(q)}
+      <div class="form-group"><label class="form-label">題尾（單選題用）</label>
+        <input class="form-control" id="eq-tail" value="${(q.tail||'').replace(/"/g,'&quot;')}">
+      </div>
+      <div class="form-group"><label class="form-label">答案 <span class="required">*</span></label>
+        <input class="form-control" id="eq-answer" value="${(q.answer||'').replace(/"/g,'&quot;')}">
+      </div>
+      <div class="edit-full form-group"><label class="form-label">解析</label>
+        <textarea class="form-control" id="eq-analysis" rows="3">${q.analysis||''}</textarea>
+      </div>
+    </div>`;
+
+  document.getElementById('qModalFooter').innerHTML = `
+    <button class="btn btn-ghost" onclick="closeQModal()">取消</button>
+    ${canEdit?`<button class="btn btn-danger btn-sm" onclick="closeQModal();deleteOne('${q.id}')">刪除</button>`:''}
+    <button class="btn btn-primary" onclick="saveEdit()">儲存</button>`;
+  document.getElementById('qModal').classList.remove('hidden');
+};
+
+window.saveEdit = async () => {
+  const id = document.getElementById('qModal').dataset.editId;
+  const q  = allQuestions.find(x=>x.id===id); if(!q) return;
+  const text = document.getElementById('eq-text').value.trim();
+  const answer = document.getElementById('eq-answer').value.trim();
+  if (!text || !answer) { UI.toast('題目與答案為必填','warning'); return; }
+
+  const updates = {
+    type:        document.getElementById('eq-type').value,
+    difficulty:  document.getElementById('eq-diff').value,
+    source:      document.getElementById('eq-source').value.trim(),
+    answerCount: parseInt(document.getElementById('eq-anscount').value)||1,
+    text, answer,
+    tail:        document.getElementById('eq-tail')?.value.trim()||'',
+    analysis:    document.getElementById('eq-analysis').value.trim(),
+  };
+  if (updates.type === 'T2') {
+    updates.options = [0,1,2,3,4]
+      .map(i => (document.getElementById('eq-opt-'+i)?.value||'').trim())
+      .filter(Boolean);
+  }
+  try {
+    await DataService.updateQuestion(id, updates);
+    // 同步 allQuestions
+    const idx = allQuestions.findIndex(x=>x.id===id);
+    if (idx>=0) allQuestions[idx] = {...allQuestions[idx], ...updates};
+    closeQModal();
+    doSearch();
+    UI.toast('題目已更新','success');
+  } catch(e) { UI.toast('儲存失敗：'+e.message,'danger'); }
+};
+
+window.closeQModal = () => document.getElementById('qModal').classList.add('hidden');
+
+loadAll();
+</script>
+</body>
+</html>
