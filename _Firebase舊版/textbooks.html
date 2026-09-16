@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>課本管理 — 幼獅題庫系統</title>
+<link rel="stylesheet" href="css/theme.css">
+<style>
+.tb-columns{display:grid;grid-template-columns:220px 220px 1fr;gap:16px;align-items:start}
+.tb-item{display:flex;align-items:center;justify-content:space-between;padding:9px 14px;border-bottom:1px solid var(--border-light);cursor:pointer;transition:background .12s;user-select:none}
+.tb-item:hover{background:#f5f3ee}
+.tb-item-active{background:#eef2f8 !important;border-left:3px solid var(--primary)}
+.tb-item-main{display:flex;flex-direction:column;gap:2px;overflow:hidden;flex:1}
+.tb-item-name{font-size:.875rem;font-weight:500;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tb-item-code{font-size:.72rem;color:var(--text-muted);font-family:var(--font-mono)}
+.tb-item-actions{display:flex;gap:2px;flex-shrink:0;opacity:0;transition:opacity .12s}
+.tb-item:hover .tb-item-actions,.tb-item-active .tb-item-actions{opacity:1}
+.chapter-row{border-bottom:1px solid var(--border-light);padding:10px 14px}
+.chapter-head{display:flex;align-items:center;justify-content:space-between}
+.chapter-title{font-weight:600;font-size:.875rem;color:var(--primary)}
+.section-line{margin-top:4px;padding-left:14px;font-size:.8rem;color:var(--text-secondary);line-height:1.8}
+.subsec-tag{margin-left:8px;color:var(--text-muted)}
+.section-row{background:var(--bg-base);border-radius:var(--radius);padding:10px 12px;margin-bottom:8px}
+.level-names-box{background:var(--bg-base);border:1px solid var(--border-light);border-radius:var(--radius);padding:10px 12px;margin-bottom:0}
+.level-names-box .lbl{font-size:.75rem;font-weight:600;color:var(--text-secondary);margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em}
+.level-names-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+#sidebar{background:var(--bg-sidebar,#1a3a5c);min-height:100vh;width:var(--sidebar-width,240px)}
+.main{opacity:0;transition:opacity .15s ease}.main.ready{opacity:1}
+</style>
+<script>document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){var m=document.querySelector('.main');if(m)m.classList.add('ready');},50);});</script>
+</head>
+<body>
+<script src="js/core.js"></script>
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="main">
+    <div class="topbar">
+      <span class="topbar-title">課本管理</span>
+      <div class="topbar-actions"><span class="text-sm text-muted">設定科目、冊別與章節，供題目匯入時對應使用</span></div>
+    </div>
+    <div class="page-content">
+      <div class="tb-columns">
+
+        <!-- 科目欄 -->
+        <div class="card">
+          <div class="card-header" style="padding:12px 14px">
+            <h2 style="font-size:.88rem">科目</h2>
+            <button class="btn btn-primary btn-sm" onclick="openSubjectModal()">＋ 新增</button>
+          </div>
+          <div id="subjectList" style="max-height:560px;overflow-y:auto">
+            <div class="empty-state" style="padding:24px 12px"><p>載入中...</p></div>
+          </div>
+        </div>
+
+        <!-- 冊別欄 -->
+        <div class="card">
+          <div class="card-header" style="padding:12px 14px">
+            <h2 style="font-size:.88rem">冊別</h2>
+            <button class="btn btn-primary btn-sm" id="addBookBtn" onclick="openBookModal()" disabled>＋ 新增</button>
+          </div>
+          <div id="bookList" style="max-height:560px;overflow-y:auto">
+            <div class="empty-state" style="padding:24px 12px"><div class="empty-icon" style="font-size:1.5rem">←</div><p>請先選擇科目</p></div>
+          </div>
+        </div>
+
+        <!-- 章節欄 -->
+        <div class="card">
+          <div class="card-header" style="padding:12px 14px">
+            <h2 style="font-size:.88rem">章節</h2>
+            <button class="btn btn-primary btn-sm" id="addChapterBtn" onclick="openChapterModal()" disabled>＋ 新增</button>
+          </div>
+          <div id="chapterList" style="max-height:560px;overflow-y:auto">
+            <div class="empty-state" style="padding:24px 12px"><div class="empty-icon" style="font-size:1.5rem">←</div><p>請先選擇冊別</p></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 科目 Modal -->
+<div class="modal-overlay hidden" id="subjectModal">
+  <div class="modal">
+    <div class="modal-header"><h3 id="smTitle">新增科目</h3><button class="modal-close" onclick="closeModal('subjectModal')">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="smId">
+      <div class="form-group"><label class="form-label">科目名稱 <span class="required">*</span></label><input class="form-control" id="smName" placeholder="例：公民與社會"></div>
+      <div class="form-group"><label class="form-label">代碼 <span class="required">*</span></label><input class="form-control" id="smCode" placeholder="例：CIVICS（對應匯入時的 subjectCode）"></div>
+      <div class="form-group"><label class="form-label">排序</label><input class="form-control" id="smOrder" type="number" value="0"></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('subjectModal')">取消</button><button class="btn btn-primary" onclick="saveSubject()">儲存</button></div>
+  </div>
+</div>
+
+<!-- 冊別 Modal -->
+<div class="modal-overlay hidden" id="bookModal">
+  <div class="modal">
+    <div class="modal-header"><h3 id="bmTitle">新增冊別</h3><button class="modal-close" onclick="closeModal('bookModal')">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="bmId">
+      <div class="form-group"><label class="form-label">冊別名稱 <span class="required">*</span></label><input class="form-control" id="bmName" placeholder="例：第一冊、上冊"></div>
+      <div class="form-group"><label class="form-label">代碼 <span class="required">*</span></label><input class="form-control" id="bmCode" placeholder="例：B1（對應匯入時的 bookCode）"></div>
+      <div class="form-group"><label class="form-label">排序</label><input class="form-control" id="bmOrder" type="number" value="0"></div>
+      <div class="divider"></div>
+      <div class="level-names-box">
+        <div class="lbl">章節層級名稱（空白表示不使用該層）</div>
+        <div class="level-names-row">
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label">第一層</label>
+            <input class="form-control" id="bmL1" placeholder="例：章、單元">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label">第二層</label>
+            <input class="form-control" id="bmL2" placeholder="例：節、章">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label">第三層</label>
+            <input class="form-control" id="bmL3" placeholder="例：小節（可空白）">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('bookModal')">取消</button><button class="btn btn-primary" onclick="saveBook()">儲存</button></div>
+  </div>
+</div>
+
+<!-- 章節 Modal -->
+<div class="modal-overlay hidden" id="chapterModal">
+  <div class="modal modal-lg">
+    <div class="modal-header"><h3 id="cmTitle">新增章</h3><button class="modal-close" onclick="closeModal('chapterModal')">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="cmId">
+      <div class="grid-2" style="margin-bottom:12px">
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label" id="cmNumLabel">序號 <span class="required">*</span></label>
+          <input class="form-control" id="cmNum" type="number" min="1" placeholder="例：1">
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label" id="cmTitleLabel">標題 <span class="required">*</span></label>
+          <input class="form-control" id="cmTitleInput" placeholder="例：認識國家">
+        </div>
+      </div>
+      <div id="cmSecBlock">
+        <div class="divider"></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <span id="cmSecLabel" style="font-size:.85rem;font-weight:600;color:var(--primary)">節</span>
+          <button class="btn btn-ghost btn-sm" id="cmAddSecBtn" onclick="addSectionRow()">＋ 新增節</button>
+        </div>
+        <div id="sectionRows"></div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('chapterModal')">取消</button><button class="btn btn-primary" onclick="saveChapter()">儲存</button></div>
+  </div>
+</div>
+
+<script type="module">
+import { guardPage } from './js/auth-guard.js';
+window._activeNav = 'textbooks';
+const user = await guardPage(['admin']);
+if (!user) throw new Error('not auth');
+
+let _subjects = [], _selSubject = null;
+let _books = [], _selBook = null, _selBookObj = null;
+let _chapters = [], _editingSections = [];
+
+// 取得目前冊別的層級名稱
+function lvl() {
+  return {
+    l1: (_selBookObj?.l1 || '章').trim() || '章',
+    l2: (_selBookObj?.l2 ?? '').trim(),
+    l3: (_selBookObj?.l3 ?? '').trim(),
+  };
+}
+
+// ── 科目 ───────────────────────────────────────────
+async function loadSubjects() {
+  _subjects = await DataService.getSubjects();
+  const el = document.getElementById('subjectList');
+  if (!_subjects.length) { el.innerHTML = '<div class="empty-state" style="padding:24px 12px"><p>尚無科目</p></div>'; return; }
+  el.innerHTML = _subjects.map(s => `
+    <div class="tb-item ${_selSubject===s.id?'tb-item-active':''}" onclick="selectSubject('${s.id}')">
+      <div class="tb-item-main"><span class="tb-item-name">${s.name}</span><span class="tb-item-code">${s.code||''}</span></div>
+      <div class="tb-item-actions">
+        <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openSubjectModal('${s.id}')">✏️</button>
+        <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();deleteSubject('${s.id}','${s.name.replace(/'/g,'')}')">🗑</button>
+      </div>
+    </div>`).join('');
+}
+
+window.selectSubject = async (id) => {
+  _selSubject = id; _selBook = null; _selBookObj = null; _chapters = [];
+  document.getElementById('addBookBtn').disabled = false;
+  document.getElementById('addChapterBtn').disabled = true;
+  document.getElementById('addChapterBtn').textContent = '＋ 新增';
+  loadSubjects();
+  document.getElementById('bookList').innerHTML = '<div class="empty-state" style="padding:24px 12px"><p>載入中...</p></div>';
+  document.getElementById('chapterList').innerHTML = '<div class="empty-state" style="padding:24px 12px"><div class="empty-icon" style="font-size:1.5rem">←</div><p>請先選擇冊別</p></div>';
+  _books = await DataService.getBooks(id);
+  renderBookList();
+};
+
+window.openSubjectModal = (id) => {
+  const s = id ? _subjects.find(x=>x.id===id) : null;
+  document.getElementById('smTitle').textContent = s ? '編輯科目' : '新增科目';
+  document.getElementById('smId').value = s?.id||''; document.getElementById('smName').value = s?.name||'';
+  document.getElementById('smCode').value = s?.code||''; document.getElementById('smOrder').value = s?.order??0;
+  document.getElementById('subjectModal').classList.remove('hidden');
+};
+window.saveSubject = async () => {
+  const name = document.getElementById('smName').value.trim(), code = document.getElementById('smCode').value.trim();
+  if (!name||!code) { UI.toast('科目名稱和代碼為必填','warning'); return; }
+  const id = document.getElementById('smId').value, order = parseInt(document.getElementById('smOrder').value)||0;
+  try { await DataService.saveSubject({id:id||undefined,name,code,order}); closeModal('subjectModal'); await loadSubjects(); UI.toast('科目已儲存','success'); }
+  catch(e) { UI.toast('儲存失敗：'+e.message,'danger'); }
+};
+window.deleteSubject = async (id, name) => {
+  if (!confirm(`確定要刪除科目「${name}」？\n此操作將同時刪除所有冊別與章節設定。`)) return;
+  try {
+    await DataService.deleteSubject(id);
+    if (_selSubject===id) { _selSubject=null; _selBook=null; _selBookObj=null; document.getElementById('bookList').innerHTML='<div class="empty-state" style="padding:24px 12px"><div class="empty-icon" style="font-size:1.5rem">←</div><p>請先選擇科目</p></div>'; document.getElementById('chapterList').innerHTML='<div class="empty-state" style="padding:24px 12px"><div class="empty-icon" style="font-size:1.5rem">←</div><p>請先選擇冊別</p></div>'; }
+    await loadSubjects(); UI.toast('已刪除','success');
+  } catch(e) { UI.toast('刪除失敗：'+e.message,'danger'); }
+};
+
+// ── 冊別 ───────────────────────────────────────────
+function renderBookList() {
+  const el = document.getElementById('bookList');
+  if (!_books.length) { el.innerHTML = '<div class="empty-state" style="padding:24px 12px"><p>尚無冊別</p></div>'; return; }
+  el.innerHTML = _books.map(b => {
+    const tags = [b.l1||'章', b.l2, b.l3].filter(Boolean).join('／');
+    return `<div class="tb-item ${_selBook===b.id?'tb-item-active':''}" onclick="selectBook('${b.id}')">
+      <div class="tb-item-main"><span class="tb-item-name">${b.name}</span><span class="tb-item-code">${b.code||''} <span style="color:var(--text-light)">${tags}</span></span></div>
+      <div class="tb-item-actions">
+        <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openBookModal('${b.id}')">✏️</button>
+        <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();deleteBook('${b.id}','${b.name.replace(/'/g,'')}')">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.selectBook = async (id) => {
+  _selBook = id; _selBookObj = _books.find(b=>b.id===id)||null;
+  const l = lvl();
+  document.getElementById('addChapterBtn').disabled = false;
+  document.getElementById('addChapterBtn').textContent = `＋ 新增${l.l1}`;
+  renderBookList();
+  document.getElementById('chapterList').innerHTML = '<div class="empty-state" style="padding:24px 12px"><p>載入中...</p></div>';
+  _chapters = await DataService.getChapterDefs(_selSubject, id);
+  renderChapterList();
+};
+
+window.openBookModal = (id) => {
+  if (!_selSubject) { UI.toast('請先選擇科目','warning'); return; }
+  const b = id ? _books.find(x=>x.id===id) : null;
+  document.getElementById('bmTitle').textContent = b ? '編輯冊別' : '新增冊別';
+  document.getElementById('bmId').value = b?.id||''; document.getElementById('bmName').value = b?.name||'';
+  document.getElementById('bmCode').value = b?.code||''; document.getElementById('bmOrder').value = b?.order??0;
+  document.getElementById('bmL1').value = b?.l1 ?? '章';
+  document.getElementById('bmL2').value = b?.l2 ?? '';
+  document.getElementById('bmL3').value = b?.l3 ?? '';
+  document.getElementById('bookModal').classList.remove('hidden');
+};
+window.saveBook = async () => {
+  const name = document.getElementById('bmName').value.trim(), code = document.getElementById('bmCode').value.trim();
+  if (!name||!code) { UI.toast('冊別名稱和代碼為必填','warning'); return; }
+  const id = document.getElementById('bmId').value, order = parseInt(document.getElementById('bmOrder').value)||0;
+  const l1 = document.getElementById('bmL1').value.trim()||'章';
+  const l2 = document.getElementById('bmL2').value.trim();
+  const l3 = document.getElementById('bmL3').value.trim();
+  try {
+    const savedId = await DataService.saveBook(_selSubject, {id:id||undefined,name,code,order,l1,l2,l3});
+    closeModal('bookModal');
+    _books = await DataService.getBooks(_selSubject);
+    const targetId = id || savedId;
+    if (_selBook === targetId) _selBookObj = _books.find(b=>b.id===targetId)||null;
+    renderBookList();
+    UI.toast('冊別已儲存','success');
+  } catch(e) { UI.toast('儲存失敗：'+e.message,'danger'); }
+};
+window.deleteBook = async (id, name) => {
+  if (!confirm(`確定要刪除冊別「${name}」及其所有章節設定？`)) return;
+  try {
+    await DataService.deleteBook(_selSubject, id);
+    if (_selBook===id) { _selBook=null; _selBookObj=null; _chapters=[]; document.getElementById('addChapterBtn').textContent='＋ 新增'; document.getElementById('chapterList').innerHTML='<div class="empty-state" style="padding:24px 12px"><div class="empty-icon" style="font-size:1.5rem">←</div><p>請先選擇冊別</p></div>'; }
+    _books = await DataService.getBooks(_selSubject); renderBookList(); UI.toast('已刪除','success');
+  } catch(e) { UI.toast('刪除失敗：'+e.message,'danger'); }
+};
+
+// ── 章節列表 ────────────────────────────────────────
+function renderChapterList() {
+  const el = document.getElementById('chapterList');
+  const l  = lvl();
+  if (!_chapters.length) { el.innerHTML = `<div class="empty-state" style="padding:24px 12px"><p>尚無資料，請點「＋ 新增${l.l1}」</p></div>`; return; }
+  el.innerHTML = _chapters.map(c => `
+    <div class="chapter-row">
+      <div class="chapter-head">
+        <span class="chapter-title">${c.title}</span>
+        <div style="display:flex;gap:4px">
+          <button class="btn btn-ghost btn-sm" onclick="openChapterModal('${c.id}')">✏️</button>
+          <button class="btn btn-ghost btn-sm" onclick="deleteChapter('${c.id}','${c.title.replace(/'/g,'')}')">🗑</button>
+        </div>
+      </div>
+      ${l.l2 ? (c.sections||[]).map(s => `
+        <div class="section-line">
+          ${s.title}
+          ${l.l3 ? (s.subsections||[]).map(ss=>`<span class="subsec-tag">▸ ${ss.title}</span>`).join('') : ''}
+        </div>`).join('') : ''}
+    </div>`).join('');
+}
+
+// ── 章節 Modal ──────────────────────────────────────
+window.openChapterModal = (id) => {
+  if (!_selBook) { UI.toast('請先選擇冊別','warning'); return; }
+  const l = lvl();
+  const c = id ? _chapters.find(x=>x.id===id) : null;
+  document.getElementById('cmTitle').textContent     = c ? `編輯${l.l1}` : `新增${l.l1}`;
+  document.getElementById('cmNumLabel').innerHTML    = `${l.l1}序號 <span class="required">*</span>`;
+  document.getElementById('cmTitleLabel').innerHTML  = `${l.l1}標題 <span class="required">*</span>`;
+  document.getElementById('cmSecBlock').style.display = l.l2 ? '' : 'none';
+  if (l.l2) {
+    document.getElementById('cmSecLabel').textContent  = l.l2;
+    document.getElementById('cmAddSecBtn').textContent = `＋ 新增${l.l2}`;
+  }
+  document.getElementById('cmId').value         = c?.id    || '';
+  document.getElementById('cmNum').value        = c?.chapterNum ?? '';
+  document.getElementById('cmTitleInput').value = c?.title || '';
+  _editingSections = JSON.parse(JSON.stringify(c?.sections || []));
+  renderSectionRows();
+  document.getElementById('chapterModal').classList.remove('hidden');
+};
+
+// ── 從 DOM 同步回 _editingSections（儲存前必須呼叫）──
+function syncSectionsFromDOM() {
+  _editingSections = _editingSections.map((s, si) => {
+    const numEl   = document.getElementById('sec-num-'+si);
+    const titleEl = document.getElementById('sec-title-'+si);
+    const parsedNum  = numEl ? parseInt(numEl.value) : NaN;
+    const sectionNum = (!isNaN(parsedNum) && parsedNum > 0) ? parsedNum : (s.sectionNum || si + 1);
+    const title      = titleEl ? titleEl.value.trim() : (s.title || '');
+    const subsections = (s.subsections||[]).map((ss, ssi) => {
+      const snEl = document.getElementById('subsec-num-'+si+'-'+ssi);
+      const stEl = document.getElementById('subsec-title-'+si+'-'+ssi);
+      return {
+        num:   snEl ? (parseInt(snEl.value)||ss.num||0) : (ss.num||0),
+        title: stEl ? (stEl.value.trim() || '') : (ss.title || ''),
+      };
+    });
+    return { sectionNum: sectionNum, title: title, subsections: subsections };
+  });
+}
+
+function renderSectionRows() {
+  const l = lvl();
+  document.getElementById('sectionRows').innerHTML = _editingSections.length
+    ? _editingSections.map((s, si) => `
+      <div class="section-row">
+        <div style="display:flex;gap:8px;align-items:center">
+          <input class="form-control" id="sec-num-${si}" style="width:70px" type="number" min="1" placeholder="${l.l2}號"
+            value="${s.sectionNum||''}">
+          <input class="form-control" id="sec-title-${si}" style="flex:1" placeholder="${l.l2}標題"
+            value="${escHtml(s.title||'')}">
+          ${l.l3?`<button class="btn btn-ghost btn-sm" onclick="addSubsectionRow(${si})">＋${l.l3}</button>`:''}
+          <button class="btn btn-ghost btn-sm text-danger" onclick="removeSection(${si})">✕</button>
+        </div>
+        ${l.l3?(s.subsections||[]).map((ss,ssi)=>`
+          <div style="display:flex;gap:8px;align-items:center;padding-left:20px;margin-top:6px">
+            <input class="form-control" id="subsec-num-${si}-${ssi}" style="width:70px" placeholder="${l.l3}號"
+              value="${escHtml(ss.num||'')}">
+            <input class="form-control" id="subsec-title-${si}-${ssi}" style="flex:1" placeholder="${l.l3}標題"
+              value="${escHtml(ss.title||'')}">
+            <button class="btn btn-ghost btn-sm text-danger" onclick="removeSubsection(${si},${ssi})">✕</button>
+          </div>`).join(''):''}
+      </div>`).join('')
+    : l.l2 ? `<div class="text-sm text-muted" style="padding:8px 0">尚無${l.l2}，可直接儲存（純${l.l1}標題），或點上方「＋ 新增${l.l2}」</div>` : '';
+}
+
+function escHtml(s) { return String(s==null?'':s).replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+window.addSectionRow = () => {
+  syncSectionsFromDOM();
+  _editingSections.push({sectionNum: _editingSections.length+1, title:'', subsections:[]});
+  renderSectionRows();
+};
+window.removeSection = (i) => {
+  syncSectionsFromDOM();
+  _editingSections.splice(i,1);
+  renderSectionRows();
+};
+window.addSubsectionRow = (si) => {
+  syncSectionsFromDOM();
+  if(!_editingSections[si].subsections) _editingSections[si].subsections=[];
+  _editingSections[si].subsections.push({num:'',title:''});
+  renderSectionRows();
+};
+window.removeSubsection = (si,ssi) => {
+  syncSectionsFromDOM();
+  _editingSections[si].subsections.splice(ssi,1);
+  renderSectionRows();
+};
+
+window.saveChapter = async () => {
+  syncSectionsFromDOM();  // 儲存前先同步 DOM → _editingSections
+  const chapterNum = parseInt(document.getElementById('cmNum').value);
+  const title      = document.getElementById('cmTitleInput').value.trim();
+  const l          = lvl();
+  if (!chapterNum||!title) { UI.toast(`${l.l1}序號與標題為必填`,'warning'); return; }
+  const id       = document.getElementById('cmId').value || undefined;
+  // 清理 sections：移除空白節，確保所有欄位無 undefined
+  const sections = _editingSections
+    .filter(s => s.title || s.sectionNum)
+    .map(s => ({
+      sectionNum: Number(s.sectionNum) || 0,
+      title: String(s.title || ''),
+      subsections: (s.subsections||[])
+        .filter(ss => ss.title || ss.num)
+        .map(ss => ({ num: String(ss.num||''), title: String(ss.title||'') }))
+    }));
+  const payload = {id:id, chapterNum, title, sections};
+  try {
+    await DataService.saveChapter(_selSubject, _selBook, {id:id, chapterNum, title, sections});
+    closeModal('chapterModal');
+    _chapters = await DataService.getChapterDefs(_selSubject, _selBook);
+    renderChapterList();
+    UI.toast('已儲存','success');
+  } catch(e) { UI.toast('儲存失敗：'+e.message,'danger'); }
+};
+
+
+window.closeModal = (id) => document.getElementById(id).classList.add('hidden');
+loadSubjects();
+</script>
+</body>
+</html>

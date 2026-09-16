@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>手動選題 — 幼獅題庫系統</title>
+<link rel="stylesheet" href="css/theme.css">
+<style>
+.manual-layout{display:grid;grid-template-columns:300px 1fr 1fr;gap:14px;align-items:start}
+@media(max-width:1100px){.manual-layout{grid-template-columns:260px 1fr 1fr}}
+@media(max-width:860px){.manual-layout{grid-template-columns:1fr}}
+
+/* 左側設定面板 */
+.config-card .card-body{padding:14px}
+.section-title{font-size:.78rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 8px;display:flex;align-items:center;gap:6px}
+.section-title:first-child{margin-top:0}
+.chapter-tree{max-height:260px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius);background:white}
+.chapter-item{display:flex;align-items:center;gap:6px;padding:5px 10px;font-size:.82rem;border-bottom:1px solid var(--border-light);cursor:pointer}
+.chapter-item:last-child{border-bottom:none}
+.chapter-item:hover{background:#f5f8fc}
+.chapter-item input[type=checkbox]{cursor:pointer;width:14px;height:14px}
+.chapter-item.section{padding-left:24px;color:var(--text-secondary);font-size:.78rem}
+.chapter-item.subsection{padding-left:40px;color:var(--text-secondary);font-size:.76rem}
+.chapter-item .ch-count{margin-left:auto;font-size:.72rem;color:var(--text-muted);white-space:nowrap}
+.chapter-item .expand-btn{background:none;border:none;cursor:pointer;padding:0 4px;color:var(--text-muted);font-size:.72rem;flex-shrink:0;line-height:1}
+.chapter-children{display:none}
+.chapter-children.open{display:block}
+
+/* 中間題目庫 */
+.q-card{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-bottom:1px solid var(--border-light);cursor:pointer;transition:background .1s;user-select:none}
+.q-card:last-child{border-bottom:none}
+.q-card:hover{background:#f0f4f8}
+.q-card.selected{background:#e8f4fd}
+.q-card .q-check{width:16px;height:16px;flex-shrink:0;margin-top:2px;cursor:pointer;accent-color:var(--primary-light)}
+.q-card .q-info{flex:1;min-width:0}
+.q-card .q-title{font-size:.84rem;line-height:1.5;margin-bottom:3px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.q-card .q-meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.q-card .q-act{flex-shrink:0}
+.bank-list{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;max-height:600px;overflow-y:auto;background:white}
+.bank-header{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--bg-base);border-bottom:1px solid var(--border);font-size:.82rem;color:var(--text-secondary)}
+
+/* 右側已選 */
+
+.selected-list{max-height:520px;overflow-y:auto;padding:12px}
+.sel-item{display:flex;align-items:flex-start;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border-light);font-size:.82rem}
+.sel-item:last-child{border-bottom:none}
+.sel-item .si-num{color:var(--text-muted);font-size:.74rem;width:22px;flex-shrink:0;text-align:right;padding-top:2px}
+.sel-item .si-text{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.5}
+.sel-item{position:relative}
+.sel-tooltip{display:none;position:absolute;left:30px;top:100%;z-index:200;background:white;border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-md);padding:10px 12px;font-size:.82rem;line-height:1.6;width:320px;max-width:90vw;color:var(--text-primary)}
+.sel-item:hover .sel-tooltip{display:block}
+.sel-tooltip .tt-text{margin-bottom:4px}
+.sel-tooltip .tt-opts{color:var(--text-secondary);font-size:.78rem;margin-bottom:4px}
+.sel-tooltip .tt-ans{color:var(--success);font-weight:600;font-size:.78rem}
+.sel-item .si-remove{flex-shrink:0;background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:.9rem;padding:0 3px;line-height:1}
+.sel-item .si-remove:hover{color:var(--danger)}
+.drag-handle{cursor:grab;color:var(--text-muted);font-size:.8rem;flex-shrink:0;padding-top:2px}
+.drag-handle:active{cursor:grabbing}
+.sel-item.dragging{opacity:.4;background:#f0f4ff}
+.sel-item.drag-over{border-top:2px solid var(--primary-light)}
+.score-cfg{display:flex;align-items:center;gap:6px;padding:10px 12px;background:var(--bg-base);border-top:1px solid var(--border-light);font-size:.82rem;flex-wrap:wrap}
+.score-cfg .sc-row{display:flex;align-items:center;gap:4px;white-space:nowrap}
+.sc-inp{width:48px;font-size:.8rem;padding:3px 5px;text-align:center}
+.total-score-bar{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;font-size:.86rem;font-weight:600;color:var(--primary);border-top:1px solid var(--border-light)}
+
+/* 分頁 */
+.pag-wrap{display:flex;align-items:center;gap:4px;padding:10px 12px;flex-wrap:wrap}
+.pag-btn{border:1px solid var(--border);background:white;padding:3px 9px;border-radius:var(--radius);font-size:.78rem;cursor:pointer;font-family:var(--font-sans)}
+.pag-btn:hover:not(:disabled){background:var(--bg-base)}
+.pag-btn.active{background:var(--primary);color:white;border-color:var(--primary)}
+.pag-btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* 題目庫結果樣式（同電腦選題） */
+.result-section{margin-bottom:12px}.result-section:last-child{margin-bottom:0}
+.result-section-title{display:flex;align-items:center;justify-content:space-between;padding:7px 12px;background:var(--bg-header);color:white;border-radius:var(--radius) var(--radius) 0 0;font-size:.82rem;font-weight:600}
+.result-list{border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius) var(--radius);overflow:hidden}
+.result-q{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-bottom:1px solid var(--border-light);font-size:.84rem;background:white;cursor:pointer;transition:background .1s}
+.result-q:last-child{border-bottom:none}
+.result-q:hover{background:#f0f8ff}
+.result-q.selected{background:#e8f4fd}
+.result-q .q-num{color:var(--text-muted);font-size:.76rem;width:26px;flex-shrink:0;padding-top:2px;text-align:right}
+.result-q .q-body{flex:1;min-width:0}
+.result-q .q-text{line-height:1.6;margin-bottom:3px}
+.result-q .q-ans{font-size:.76rem;color:var(--success);font-weight:600}
+.result-q .q-check-col{flex-shrink:0;display:flex;align-items:flex-start;padding-top:2px}
+.result-q .q-check-col input{width:16px;height:16px;cursor:pointer;accent-color:var(--primary-light)}
+
+/* 搜尋列（兩列） */
+.filter-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;padding:10px 12px;background:white;border:1px solid var(--border);border-radius:var(--radius-lg) var(--radius-lg) 0 0;border-bottom:none}
+.filter-group{display:flex;flex-direction:column;gap:3px;min-width:0}
+.filter-label{font-size:.72rem;color:var(--text-muted);font-weight:500}
+.filter-bar .form-control{font-size:.82rem;padding:5px 8px;min-width:90px}
+</style>
+<style>
+#sidebar{background:var(--bg-sidebar,#1a3a5c);min-height:100vh;width:var(--sidebar-width,240px)}
+.main{opacity:0;transition:opacity .15s ease}.main.ready{opacity:1}
+</style>
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+  setTimeout(function(){var m=document.querySelector('.main');if(m)m.classList.add('ready');},50);
+});
+</script>
+</head>
+<body>
+<script src="js/core.js"></script>
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="main">
+    <div class="topbar">
+      <span class="topbar-title">手動選題</span>
+      <div class="topbar-breadcrumb"><span>首頁</span> › 手動選題</div>
+      <div class="topbar-actions">
+        <button class="btn btn-ghost btn-sm" onclick="nav('compose')">⊕ 切換電腦選題</button>
+      </div>
+    </div>
+    <div class="page-content">
+      <div class="manual-layout">
+
+        <!-- 左：出題設定 -->
+        <div>
+          <div class="card config-card">
+            <div class="card-header"><h2>⚙️ 出題設定</h2></div>
+            <div class="card-body">
+
+              <div class="section-title">📚 科目與範圍</div>
+              <div class="form-group" style="margin-bottom:8px">
+                <select class="form-control" id="cSubject" onchange="onSubjectChange()">
+                  <option value="">請選擇科目</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <select class="form-control" id="cBook" disabled onchange="loadChapters()">
+                  <option value="">請先選科目</option>
+                </select>
+              </div>
+
+              <div class="section-title">📖 章節範圍<button class="btn btn-ghost btn-sm" onclick="clearAllChapters()" style="font-size:.72rem;padding:1px 6px;margin-left:auto;font-weight:400;text-transform:none;letter-spacing:0">全部清除</button></div>
+              <div class="chapter-tree" id="chapterTree">
+                <div style="padding:20px;text-align:center;color:var(--text-muted);font-size:.8rem">請先選擇科目與冊次</div>
+              </div>
+
+              <div class="section-title">🔍 題型與難易度</div>
+              <div class="form-group" style="margin-bottom:8px">
+                <select class="form-control" id="fType" onchange="applyFilters()">
+                  <option value="">全部題型</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin-bottom:8px">
+                <select class="form-control" id="fDiff" onchange="applyFilters()">
+                  <option value="">不限難易度</option>
+                  <option value="◎">較難 ◎</option>
+                  <option value="△">簡易 △</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <input class="form-control" id="fKeyword" placeholder="搜尋題目…" oninput="applyFilters()">
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- 中：題目庫 -->
+        <div class="card">
+          <div class="card-header">
+            <h2>📚 題目庫<strong style="font-size:.82rem;font-weight:400;color:var(--text-secondary);margin-left:6px" id="bankCount"></strong></h2>
+            <div style="display:flex;align-items:center;gap:8px">
+              <label style="font-size:.82rem;display:flex;align-items:center;gap:4px;font-weight:400;color:var(--text-secondary)">
+                <input type="checkbox" id="selectPageAll" onchange="selectPage(this.checked)"> 全選
+              </label>
+            </div>
+          </div>
+          <div class="bank-list" style="max-height:600px;overflow-y:auto;border:none;padding:12px" id="bankList">
+            <div style="text-align:center;padding:48px 24px;color:var(--text-muted)">
+              <div style="font-size:2rem;margin-bottom:10px;opacity:.3">📚</div>
+              <p style="font-size:.88rem">請在左側選擇科目與冊次</p>
+            </div>
+          </div>
+          <div class="pag-wrap" id="bankPag"></div>
+        </div>
+
+        <!-- 右：已選題目 -->
+        <div style="position:sticky;top:76px">
+          <div class="card">
+            <div class="card-header">
+              <h2>📋 已選題目</h2>
+              <span style="font-size:.82rem;color:var(--text-secondary)" id="selCountLabel">0 題</span>
+            </div>
+            <div id="selList" class="selected-list">
+              <div style="text-align:center;padding:32px;color:var(--text-muted);font-size:.84rem">點擊題目「＋」加入</div>
+            </div>
+            <div class="score-cfg" id="scoreCfg" style="display:none"></div>
+            <div class="total-score-bar" id="totalScoreBar" style="display:none">
+              <span>預估總分</span>
+              <span id="totalScoreVal">0 分</span>
+            </div>
+            <div style="padding:10px 12px;border-top:1px solid var(--border-light);display:flex;gap:6px;flex-wrap:wrap">
+              <button class="btn btn-outline btn-sm" onclick="shuffleSelected()" id="shuffleBtn" disabled>↕ 亂數排序</button>
+              <button class="btn btn-outline btn-sm" onclick="previewSelected()" id="previewBtn" disabled>◉ 預覽試卷</button>
+              <button class="btn btn-accent" onclick="openSaveModal()" id="saveBtn" disabled style="flex:1">💾 儲存試卷</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 儲存 Modal -->
+<div class="modal-overlay hidden" id="saveModal">
+  <div class="modal">
+    <div class="modal-header"><h3>💾 儲存試卷</h3><button class="modal-close" onclick="document.getElementById('saveModal').classList.add('hidden')">✕</button></div>
+    <div class="modal-body">
+      <div class="alert alert-danger hidden" id="saveErr"></div>
+      <div class="form-group">
+        <label class="form-label">試卷名稱 <span class="required">*</span></label>
+        <input class="form-control" id="examTitle" placeholder="例：113學年度第一次月考">
+      </div>
+      <div class="form-group">
+        <label class="form-label">說明（選填）</label>
+        <textarea class="form-control" id="examDesc" rows="2" placeholder="考試說明、範圍…"></textarea>
+      </div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">考試時間（分鐘）</label>
+          <input class="form-control" type="number" id="examDuration" value="50" min="10" max="240">
+        </div>
+        <div class="form-group">
+          <label class="form-label">及格分數</label>
+          <input class="form-control" type="number" id="examPassScore" value="60" min="0" max="100">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">開放班級（<strong style="color:var(--danger)">必須指定班級，留空則不開放</strong>）</label>
+        <div id="examClassList" style="max-height:160px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius);padding:8px;background:white;min-height:44px">
+          <span style="color:var(--text-muted);font-size:.82rem">載入班級中…</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="document.getElementById('saveModal').classList.add('hidden')">取消</button>
+      <button class="btn btn-primary" onclick="doSaveExam()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { guardPage } from './js/auth-guard.js';
+import { showExamPreview } from './js/exam-preview.js';
+window._activeNav = 'manual';
+const user = await guardPage(['admin','teacher']);
+if (!user) throw new Error('not auth');
+
+// ── 初始化 ────────────────────────────────────────
+await initTextbookCache();
+const cSubject = document.getElementById('cSubject');
+cSubject.innerHTML = tbSubjectOptions();
+Object.entries(QUESTION_TYPES).forEach(([v,l]) => {
+  document.getElementById('fType').innerHTML += `<option value="${v}">${l}</option>`;
+});
+
+// ── 狀態 ─────────────────────────────────────────
+let allQs = [], filtered = [], pageSize = 30, curPage = 1;
+let selectedIds = new Set();
+let selectedOrder = [];
+let selQuestions = {};
+let _bookObj = null, _chapters = [];
+
+// ── 科目/冊次 ─────────────────────────────────────
+window.onSubjectChange = () => {
+  const sc = cSubject.value;
+  const bk = document.getElementById('cBook');
+  if (sc) {
+    const subj = _tbCache?.subjectByCode?.[sc];
+    const books = subj ? (_tbCache?.booksBySubject?.[subj.id]||[]) : [];
+    bk.innerHTML = '<option value="">請選擇冊次</option>';
+    books.forEach(b => bk.innerHTML += `<option value="${b.code}">${b.name}</option>`);
+    bk.disabled = false;
+  } else {
+    bk.innerHTML = '<option value="">請先選科目</option>';
+    bk.disabled = true;
+  }
+  document.getElementById('chapterTree').innerHTML =
+    '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:.8rem">請先選擇冊次</div>';
+  filtered = []; renderBank();
+};
+
+window.loadChapters = async () => {
+  const sc = cSubject.value, bc = document.getElementById('cBook').value;
+  if (!sc || !bc) return;
+  const tree = document.getElementById('chapterTree');
+  tree.innerHTML = '<div style="padding:12px;text-align:center;color:var(--text-muted);font-size:.8rem">載入中…</div>';
+
+  // 載入題目
+  try {
+    allQs = await DataService.getQuestions({ subjectCode: sc, bookCode: bc });
+  } catch(e) { allQs = []; }
+
+  const subj = _tbCache?.subjectByCode?.[sc];
+  const bookObj = subj ? (_tbCache?.booksBySubject?.[subj.id]||[]).find(b=>b.code===bc) : null;
+  _bookObj = bookObj || null;
+
+  let tbChapters = [];
+  if (subj && bookObj) {
+    tbChapters = await DataService.getChapterDefs(subj.id, bookObj.id);
+    _chapters = tbChapters;
+  }
+  const l1 = bookObj?.l1 || '章';
+  const l2 = bookObj?.l2 || '';
+  const l3 = bookObj?.l3 || '';
+
+  // 統計題數
+  const countMap = {};
+  allQs.forEach(q => {
+    const ch = q.chapterNum; if (!ch) return;
+    if (!countMap[ch]) countMap[ch] = { count:0, sections:{} };
+    countMap[ch].count++;
+    if (q.sectionNum) countMap[ch].sections[q.sectionNum] = (countMap[ch].sections[q.sectionNum]||0)+1;
+  });
+
+  // 章節名稱對照
+  const chTitles = {}, secTitles = {}, subsecTitles = {};
+  tbChapters.forEach(c => {
+    chTitles[String(c.chapterNum)] = c.title || '';
+    (c.sections||[]).forEach(s => {
+      if (!secTitles[String(c.chapterNum)]) secTitles[String(c.chapterNum)] = {};
+      secTitles[String(c.chapterNum)][String(s.sectionNum)] = s.title || '';
+      if (l3 && (s.subsections||[]).length) {
+        if (!subsecTitles[String(c.chapterNum)]) subsecTitles[String(c.chapterNum)] = {};
+        subsecTitles[String(c.chapterNum)][String(s.sectionNum)] = s.subsections;
+      }
+    });
+  });
+
+  const allChNums = new Set([
+    ...tbChapters.map(c => String(c.chapterNum)),
+    ...Object.keys(countMap)
+  ]);
+
+  if (!allChNums.size) {
+    tree.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:.8rem">此科目/冊次無章節資料</div>';
+    filtered = []; renderBank(); return;
+  }
+
+  tree.innerHTML = [...allChNums].sort((a,b)=>parseInt(a)-parseInt(b)).map(ch => {
+    const info = countMap[ch] || { count:0, sections:{} };
+    const allSecs = new Set([...Object.keys(secTitles[ch]||{}), ...Object.keys(info.sections)]);
+    const hasChildren = l2 && allSecs.size > 0;
+    const secHTML = l2 ? [...allSecs].sort((a,b)=>parseInt(a)-parseInt(b)).map(sec => {
+      const subs = subsecTitles[ch]?.[sec] || [];
+      const hasSubChildren = l3 && subs.length > 0;
+      const subsHTML = hasSubChildren ? subs.map(ss => `
+        <div class="chapter-item subsection">
+          <span style="width:16px;flex-shrink:0;display:inline-block"></span>
+          <input type="checkbox" class="chap-cb" data-ch="${ch}" data-sec="${sec}" data-sub="${ss.num}">
+          <span>${ss.title || (l3+ss.num)}</span>
+        </div>`).join('') : '';
+      return `<div class="chapter-item section">
+        ${hasSubChildren ? `<button class="expand-btn" onclick="toggleChildren(this)">▶</button>` : '<span style="width:16px;flex-shrink:0"></span>'}
+        <input type="checkbox" class="chap-cb sec-cb" data-ch="${ch}" data-sec="${sec}" onchange="onSecCbChange(this)">
+        <span>${secTitles[ch]?.[sec] || (l2+parseInt(sec))}</span>
+        <span class="ch-count">${info.sections[sec]||0} 題</span>
+      </div>${hasSubChildren ? `<div class="chapter-children">${subsHTML}</div>` : ''}`;
+    }).join('') : '';
+    return `<div class="chapter-item">
+      ${hasChildren ? `<button class="expand-btn" onclick="toggleChildren(this)">▶</button>` : '<span style="width:16px;flex-shrink:0"></span>'}
+      <input type="checkbox" class="chap-cb chapter-cb" data-ch="${ch}" onchange="onChapterCbChange(this)">
+      <span>${chTitles[ch] || (l1+parseInt(ch))}</span>
+      <span class="ch-count">${info.count} 題</span>
+    </div>${hasChildren ? `<div class="chapter-children">${secHTML}</div>` : secHTML}`;
+  }).join('');
+
+  filtered = [];
+  curPage = 1;
+  renderBank();  // 載入後先不顯示，等勾選章節
+};
+
+window.toggleChildren = (btn) => {
+  const parent = btn.closest('.chapter-item');
+  const children = parent.nextElementSibling;
+  if (!children?.classList.contains('chapter-children')) return;
+  const open = children.classList.toggle('open');
+  btn.textContent = open ? '▼' : '▶';
+};
+window.clearAllChapters = () => {
+  document.querySelectorAll('.chap-cb').forEach(c => c.checked = false);
+  applyFilters();
+};
+
+function syncParentCb(ch, sec) {
+  // 第三層→第二層
+  if (sec !== undefined) {
+    const subs = [...document.querySelectorAll(`.chap-cb[data-ch="${ch}"][data-sec="${sec}"][data-sub]`)];
+    if (subs.length) {
+      const secCb = document.querySelector(`.chap-cb.sec-cb[data-ch="${ch}"][data-sec="${sec}"]`);
+      if (secCb) secCb.checked = subs.every(s => s.checked);
+    }
+  }
+  // 第二層→第一層
+  const allChildren = [...document.querySelectorAll(`.chap-cb[data-ch="${ch}"]:not(.chapter-cb)`)];
+  if (allChildren.length) {
+    const chapCb = document.querySelector(`.chap-cb.chapter-cb[data-ch="${ch}"]`);
+    if (chapCb) chapCb.checked = allChildren.every(s => s.checked);
+  }
+}
+
+window.onChapterCbChange = (cb) => {
+  const ch = cb.dataset.ch, checked = cb.checked;
+  document.querySelectorAll(`.chap-cb[data-ch="${ch}"]:not(.chapter-cb)`).forEach(s => s.checked = checked);
+  applyFilters();
+};
+window.onSecCbChange = (cb) => {
+  const ch = cb.dataset.ch, sec = cb.dataset.sec, checked = cb.checked;
+  document.querySelectorAll(`.chap-cb[data-ch="${ch}"][data-sec="${sec}"][data-sub]`).forEach(s => s.checked = checked);
+  syncParentCb(ch, undefined);
+  applyFilters();
+};
+// 第三層直接點選 → 向上同步
+document.addEventListener('change', e => {
+  const t = e.target;
+  if (!t.classList.contains('chap-cb')) return;
+  if (t.classList.contains('chapter-cb') || t.classList.contains('sec-cb')) return;
+  syncParentCb(t.dataset.ch, t.dataset.sec);
+  applyFilters();
+});
+
+// ── 篩選 ─────────────────────────────────────────
+window.applyFilters = () => {
+  const tp  = document.getElementById('fType').value;
+  const df  = document.getElementById('fDiff').value;
+  const kw  = document.getElementById('fKeyword').value.toLowerCase();
+  const checkedCbs = [...document.querySelectorAll('.chap-cb:checked')];
+  const chapters = checkedCbs.map(c =>
+    c.dataset.sub  ? `${c.dataset.ch}-${c.dataset.sec}-${c.dataset.sub}` :
+    c.dataset.sec  ? `${c.dataset.ch}-${c.dataset.sec}` :
+    c.dataset.ch
+  );
+  filtered = allQs.filter(q => {
+    const qDiff = q.difficulty || '';
+    const diffOk = !df || (df === '__normal__' ? qDiff === '' : qDiff === df);
+    const chOk = !chapters.length || chapters.some(c => {
+      const p = c.split('-').map(Number);
+      const eq = (a,b) => Number(a)===Number(b);
+      if (p.length===1) return eq(q.chapterNum, p[0]);
+      if (p.length===2) return eq(q.chapterNum, p[0]) && eq(q.sectionNum, p[1]);
+      return eq(q.chapterNum, p[0]) && eq(q.sectionNum, p[1]) && eq(q.subsectionNum, p[2]);
+    });
+    return chOk && (!tp||q.type===tp) && diffOk && (!kw||(q.text||'').toLowerCase().includes(kw));
+  });
+  curPage = 1;
+  renderBank();
+};
+
+// ── 題目庫渲染 ────────────────────────────────────
+const TYPE_ORDER_BANK = ['T1','T2','T3','T4','T5','T6'];
+
+function renderBank() {
+  const total = filtered.length;
+  document.getElementById('bankCount').textContent = total ? `（${total} 題）` : '';
+  document.getElementById('bankPag').innerHTML = '';
+
+  const bankList = document.getElementById('bankList');
+  if (!allQs.length) {
+    bankList.innerHTML = '<div style="text-align:center;padding:48px 24px;color:var(--text-muted)"><div style="font-size:2rem;margin-bottom:10px;opacity:.3">📚</div><p style="font-size:.88rem">請在左側選擇科目與冊次</p></div>';
+    return;
+  }
+  if (!total) {
+    bankList.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);font-size:.85rem">無符合條件的題目</div>';
+    return;
+  }
+
+  // 依題型分組
+  const groups = {};
+  TYPE_ORDER_BANK.forEach(t => { groups[t] = []; });
+  filtered.forEach(q => { if (groups[q.type]) groups[q.type].push(q); else groups[q.type] = [q]; });
+
+  let qNum = 1;
+  let html = '';
+  for (const tCode of TYPE_ORDER_BANK) {
+    const qs = groups[tCode];
+    if (!qs || !qs.length) continue;
+    const tLabel = QUESTION_TYPES[tCode] || tCode;
+    html += `<div class="result-section">
+      <div class="result-section-title">
+        ${tLabel}（${qs.length} 題）
+        <label style="font-size:.76rem;font-weight:400;display:flex;align-items:center;gap:4px;cursor:pointer">
+          <input type="checkbox" onchange="selectGroup('${tCode}',this.checked)"
+            ${qs.every(q=>selectedIds.has(q.id))?'checked':''} style="cursor:pointer"> 全選本組
+        </label>
+      </div>
+      <div class="result-list">
+        ${qs.map(q => {
+          const inSel = selectedIds.has(q.id);
+          const optHTML = q.type==='T2'&&q.options?.length
+            ? `<div style="font-size:.78rem;color:var(--text-secondary);margin-top:3px">${q.options.map((o,i)=>`（${'ＡＢＣＤＥ'[i]}）${o}`).join('　')}</div>` : '';
+          return `<div class="result-q ${inSel?'selected':''}" id="qcard-${q.id}" onclick="toggleQ('${q.id}',${!inSel})">
+            <div class="q-check-col"><input type="checkbox" ${inSel?'checked':''} onclick="event.stopPropagation()" onchange="toggleQ('${q.id}',this.checked)"></div>
+            <span class="q-num">${qNum++}.</span>
+            <div class="q-body">
+              <div class="q-text">${q.text||'—'}</div>
+              ${optHTML}
+              <div class="q-ans">答：${q.answer||'—'}</div>
+            </div>
+            <div>${UI.diffBadge(q.difficulty)}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }
+  bankList.innerHTML = html;
+}
+
+window.selectGroup = (tCode, checked) => {
+  const qs = filtered.filter(q => q.type === tCode);
+  qs.forEach(q => toggleQ(q.id, checked, true));
+  renderBank();
+  renderSelected();
+};
+
+function buildRange(cur, total) {
+  if (total<=7) return Array.from({length:total},(_,i)=>i+1);
+  const r=[1];
+  if(cur>3) r.push('…');
+  for(let i=Math.max(2,cur-1);i<=Math.min(total-1,cur+1);i++) r.push(i);
+  if(cur<total-2) r.push('…');
+  r.push(total);
+  return r;
+}
+window.goPage = p => { curPage=p; renderBank(); };
+window.selectPage = (checked) => {
+  filtered.forEach(q => toggleQ(q.id, checked, true));
+  renderBank(); renderSelected();
+};
+window.toggleQ = (id, add, silent=false) => {
+  const q = allQs.find(x=>x.id===id); if (!q) return;
+  if (add) { selectedIds.add(id); if (!selectedOrder.includes(id)) selectedOrder.push(id); selQuestions[id]=q; }
+  else { selectedIds.delete(id); selectedOrder=selectedOrder.filter(x=>x!==id); delete selQuestions[id]; }
+  if (!silent) {
+    const card = document.getElementById('qcard-'+id);
+    if (card) {
+      card.classList.toggle('selected', add);
+      // 更新 checkbox（result-q 樣式）
+      const cbs = card.querySelectorAll('input[type=checkbox]');
+      cbs.forEach(cb => cb.checked = add);
+      // 更新 onclick
+      card.setAttribute('onclick', `toggleQ('${id}',${!add})`);
+    }
+    renderSelected();
+  }
+};
+
+// ── 已選面板 ─────────────────────────────────────
+const TYPE_SCORES = {T1:2,T2:2,T3:4,T4:2,T5:2,T6:10};
+function renderSelected() {
+  const count = selectedOrder.length;
+  document.getElementById('selCountLabel').textContent = count + ' 題';
+  ['saveBtn','shuffleBtn','previewBtn'].forEach(id => document.getElementById(id).disabled = count===0);
+  const list = document.getElementById('selList');
+  if (!count) {
+    list.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-muted);font-size:.84rem">點擊題目「＋」加入</div>';
+    document.getElementById('scoreCfg').style.display = 'none';
+    document.getElementById('totalScoreBar').style.display = 'none';
+    return;
+  }
+  // 依題型分組顯示（同題目庫樣式）
+  const selGroups = {};
+  const TYPE_ORDER_SEL = ['T1','T2','T3','T4','T5','T6'];
+  TYPE_ORDER_SEL.forEach(t => { selGroups[t] = []; });
+  selectedOrder.forEach((id,idx) => {
+    const q = selQuestions[id];
+    if (q) selGroups[q.type].push({q, id, idx});
+  });
+  let selHTML = '';
+  for (const tCode of TYPE_ORDER_SEL) {
+    const items = selGroups[tCode];
+    if (!items.length) continue;
+    const tLabel = QUESTION_TYPES[tCode] || tCode;
+    selHTML += `<div class="result-section">
+      <div class="result-section-title">${tLabel}（${items.length} 題）</div>
+      <div class="result-list">
+        ${items.map(({q, id, idx}) => {
+          const optHTML = q.type==='T2'&&q.options?.length
+            ? `<div style="font-size:.78rem;color:var(--text-secondary);margin-top:3px">${q.options.map((o,i)=>`（${'ＡＢＣＤＥ'[i]}）${o}`).join('　')}</div>` : '';
+          const tailHTML = q.tail ? `${q.tail}` : '';
+          return `<div class="result-q" data-id="${id}"
+            ondragover="dragOver(event,'${id}')" ondrop="dropOn(event,'${id}')" ondragend="dragEnd()">
+            <span class="drag-handle" style="padding-top:3px;cursor:grab" draggable="true" ondragstart="dragStart(event,'${id}')" title="拖曳排序">⠿</span>
+            <span class="q-num">${idx+1}.</span>
+            <div class="q-body">
+              <div class="q-text">${q.text||'—'}${tailHTML}</div>
+              ${optHTML}
+              <div class="q-ans">答：${q.answer||'—'}</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
+              ${UI.diffBadge(q.difficulty)}
+              <button class="si-remove" onclick="toggleQ('${id}',false)" style="font-size:.75rem;padding:2px 6px;border:1px solid var(--border);border-radius:3px;background:white;cursor:pointer;color:var(--text-muted)">移除</button>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }
+  list.innerHTML = selHTML;
+  const typeGroups = {};
+  selectedOrder.forEach(id => { const q=selQuestions[id]; if(q){ typeGroups[q.type]=(typeGroups[q.type]||0)+1; } });
+  document.getElementById('scoreCfg').style.display = 'flex';
+  document.getElementById('scoreCfg').innerHTML = Object.entries(typeGroups).map(([t,c]) =>
+    `<div class="sc-row">${QUESTION_TYPES[t]||t} ×${c}:
+      <input class="form-control sc-inp" type="number" id="sc-${t}" value="${TYPE_SCORES[t]||2}" min="1" max="99" oninput="calcTotal()">分
+    </div>`).join('');
+  calcTotal();
+  document.getElementById('totalScoreBar').style.display = 'flex';
+}
+function calcTotal() {
+  let total=0;
+  selectedOrder.forEach(id => { const q=selQuestions[id]; if(!q) return; const inp=document.getElementById('sc-'+q.type); total += inp?parseInt(inp.value)||0:(TYPE_SCORES[q.type]||2); });
+  document.getElementById('totalScoreVal').textContent = total + ' 分';
+}
+window.calcTotal = calcTotal;
+
+// ── 拖曳 ─────────────────────────────────────────
+let dragId=null;
+window.dragStart=(e,id)=>{dragId=id;e.currentTarget.classList.add('dragging');e.dataTransfer.effectAllowed='move';};
+window.dragEnd=()=>{dragId=null;document.querySelectorAll('.sel-item').forEach(el=>el.classList.remove('dragging','drag-over'));};
+window.dragOver=(e,id)=>{e.preventDefault();if(id!==dragId)document.querySelector(`.sel-item[data-id="${id}"]`)?.classList.add('drag-over');};
+window.dropOn=(e,targetId)=>{e.preventDefault();if(!dragId||dragId===targetId)return;const from=selectedOrder.indexOf(dragId),to=selectedOrder.indexOf(targetId);if(from<0||to<0)return;selectedOrder.splice(from,1);selectedOrder.splice(to,0,dragId);renderSelected();};
+
+// ── 排序/預覽/儲存 ───────────────────────────────
+window.shuffleSelected = () => {
+  if (!selectedOrder.length) return;
+  const byType={};
+  selectedOrder.forEach(id=>{const q=selQuestions[id];if(!q)return;if(!byType[q.type])byType[q.type]=[];byType[q.type].push(id);});
+  Object.values(byType).forEach(arr=>arr.sort(()=>Math.random()-.5));
+  selectedOrder = ['T1','T2','T3','T4','T5','T6'].flatMap(t=>byType[t]||[]);
+  renderSelected(); UI.toast('已在各題型內重新亂數排序','success');
+};
+window.previewSelected = () => {
+  if (!selectedOrder.length) { UI.toast('請先選題','warning'); return; }
+  const typeScores={};
+  Object.keys(TYPE_SCORES).forEach(t=>{const el=document.getElementById('sc-'+t);typeScores[t]=el?parseInt(el.value)||TYPE_SCORES[t]:TYPE_SCORES[t];});
+  const qs = selectedOrder.map(id=>selQuestions[id]).filter(Boolean);
+  const firstQ = qs[0];
+  showExamPreview({ title:'（預覽）', typeScores, subjectCode:firstQ?.subjectCode||'', bookCode:firstQ?.bookCode||'' }, qs);
+};
+window.openSaveModal = () => {
+  if (!selectedOrder.length) { UI.toast('請先選題','warning'); return; }
+  document.getElementById('saveErr').classList.add('hidden');
+  loadClassCheckboxes('examClassList');
+  document.getElementById('saveModal').classList.remove('hidden');
+};
+async function loadClassCheckboxes(containerId) {
+  const el = document.getElementById(containerId); if (!el) return;
+  try {
+    const classes = await DataService.getClasses({ teacherUid: DataService.getCurrentUser()?.uid });
+    if (!classes.length) { el.innerHTML='<span style="color:var(--text-muted);font-size:.82rem">尚無班級，請先建立班級</span>'; return; }
+    el.innerHTML = classes.map(c=>`<label style="display:flex;align-items:center;gap:8px;padding:5px 4px;cursor:pointer;font-size:.84rem;border-radius:4px;margin-bottom:2px" onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background=''"><input type="checkbox" class="exam-class-cb" value="${c.id}" data-name="${(c.name||'').replace(/"/g,'&quot;')}"><span><strong>${c.name}</strong> <span style="color:var(--text-muted);font-size:.76rem">— ${c.school||''} ${tbSubjectName(c.subjectCode)}</span></span></label>`).join('');
+  } catch(e) { el.innerHTML=`<span style="color:var(--text-muted);font-size:.82rem">無法載入：${e.message}</span>`; }
+}
+window.doSaveExam = async () => {
+  const title = document.getElementById('examTitle').value.trim();
+  if (!title) { document.getElementById('saveErr').textContent='請填寫試卷名稱'; document.getElementById('saveErr').classList.remove('hidden'); return; }
+  let totalScore=0; const typeScores={};
+  selectedOrder.forEach(id=>{const q=selQuestions[id];if(!q)return;const inp=document.getElementById('sc-'+q.type);const score=inp?parseInt(inp.value)||2:2;typeScores[q.type]=score;totalScore+=score;});
+  const firstQ = selQuestions[selectedOrder[0]];
+  const selectedClasses = [...document.querySelectorAll('.exam-class-cb:checked')].map(cb=>({id:cb.value,name:cb.dataset.name}));
+  const exam = {
+    title, description: document.getElementById('examDesc').value.trim(),
+    subjectCode: firstQ?.subjectCode||'', bookCode: firstQ?.bookCode||'',
+    duration: parseInt(document.getElementById('examDuration').value)||50,
+    passScore: parseInt(document.getElementById('examPassScore').value)||60,
+    totalScore, typeScores, questionIds:[...selectedOrder],
+    questionCount: selectedOrder.length, composeMode:'manual', status:'draft',
+    classIds: selectedClasses.map(c=>c.id), classNames: selectedClasses.map(c=>c.name),
+  };
+  try {
+    await DataService.saveExam(exam);
+    UI.toast('試卷已儲存！','success');
+    document.getElementById('saveModal').classList.add('hidden');
+    setTimeout(()=>nav('exams'),1200);
+  } catch(e) { document.getElementById('saveErr').textContent='儲存失敗：'+e.message; document.getElementById('saveErr').classList.remove('hidden'); }
+};
+</script>
+</body>
+</html>

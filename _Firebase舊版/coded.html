@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>編碼選題 — 幼獅題庫系統</title>
+<link rel="stylesheet" href="css/theme.css">
+<style>
+.coded-layout{display:grid;grid-template-columns:380px 1fr;gap:16px;align-items:start}
+@media(max-width:960px){.coded-layout{grid-template-columns:1fr}}
+
+/* 左側輸入區 */
+.input-panel .card-body{padding:16px}
+.section-title{font-size:.78rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 8px;display:flex;align-items:center;gap:6px}
+.section-title:first-child{margin-top:0}
+
+/* 題號輸入框 */
+.qnum-input-wrap{display:flex;gap:8px;align-items:stretch}
+.qnum-input{
+  flex:1;font-family:var(--font-mono);font-size:1.1rem;font-weight:700;
+  letter-spacing:.12em;text-align:center;padding:10px 12px;
+  border:2px solid var(--border);border-radius:var(--radius);
+  background:white;color:var(--primary);transition:border-color .15s;
+}
+.qnum-input:focus{outline:none;border-color:var(--primary-light);box-shadow:0 0 0 3px rgba(44,95,138,.12)}
+.qnum-input::placeholder{color:var(--text-muted);letter-spacing:normal;font-size:.88rem;font-weight:400}
+.add-btn{padding:10px 16px;background:var(--primary);color:white;border:none;border-radius:var(--radius);font-size:.9rem;cursor:pointer;font-family:var(--font-sans);font-weight:600;transition:background .15s;flex-shrink:0}
+.add-btn:hover{background:var(--primary-light)}
+.add-btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* 批次輸入 */
+.batch-textarea{
+  width:100%;min-height:100px;font-family:var(--font-mono);font-size:.88rem;
+  letter-spacing:.06em;border:1px solid var(--border);border-radius:var(--radius);
+  padding:8px 12px;resize:vertical;line-height:1.8;color:var(--primary);
+}
+.batch-textarea:focus{outline:none;border-color:var(--primary-light);box-shadow:0 0 0 3px rgba(44,95,138,.12)}
+
+/* 題號提示 */
+.qnum-hint{
+  font-size:.78rem;color:var(--text-muted);margin-top:6px;
+  display:flex;align-items:center;gap:4px;
+}
+.hint-ok{color:var(--success);font-weight:600}
+.hint-err{color:var(--danger);font-weight:600}
+.hint-warn{color:var(--warning);font-weight:600}
+
+/* 最近使用 */
+.recent-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.chip{
+  font-family:var(--font-mono);font-size:.76rem;font-weight:700;
+  background:#e8eef6;color:var(--primary);border:1px solid var(--border);
+  border-radius:4px;padding:2px 7px;cursor:pointer;transition:all .12s;
+  letter-spacing:.06em;
+}
+.chip:hover{background:var(--primary);color:white}
+
+/* 已選清單 */
+.sel-panel{position:sticky;top:76px}
+.sel-list{max-height:520px;overflow-y:auto}
+.sel-item{
+  display:flex;align-items:flex-start;gap:8px;
+  padding:9px 12px;border-bottom:1px solid var(--border-light);
+  font-size:.83rem;transition:background .1s;
+}
+.sel-item:last-child{border-bottom:none}
+.sel-item:hover{background:#faf8f5}
+.sel-num-badge{
+  font-family:var(--font-mono);font-size:.72rem;font-weight:700;
+  background:#e8eef6;color:var(--primary);border-radius:3px;
+  padding:1px 5px;flex-shrink:0;margin-top:2px;letter-spacing:.04em;
+}
+.sel-order{color:var(--text-muted);font-size:.72rem;width:22px;flex-shrink:0;text-align:right;padding-top:3px}
+.sel-body{flex:1;min-width:0}
+.sel-text{line-height:1.5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:2px}
+.sel-meta{display:flex;gap:6px;align-items:center}
+.sel-remove{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:.9rem;padding:0 3px;flex-shrink:0;line-height:1}
+.sel-remove:hover{color:var(--danger)}
+.drag-handle{cursor:grab;color:var(--text-muted);font-size:.8rem;flex-shrink:0;padding-top:3px}
+.drag-handle:active{cursor:grabbing}
+.sel-item.dragging{opacity:.4}
+.sel-item.drag-over{border-top:2px solid var(--primary-light)}
+
+/* 空狀態 */
+.empty-sel{text-align:center;padding:40px 16px;color:var(--text-muted)}
+.empty-sel .ei{font-size:2.5rem;opacity:.25;margin-bottom:10px}
+
+/* 分數設定 */
+.score-cfg{display:flex;flex-wrap:wrap;gap:8px;padding:10px 12px;background:var(--bg-base);border-top:1px solid var(--border-light);font-size:.82rem}
+.sc-row{display:flex;align-items:center;gap:4px;white-space:nowrap}
+.sc-inp{width:48px;font-size:.8rem;padding:3px 5px;text-align:center;border:1px solid var(--border);border-radius:var(--radius)}
+
+.total-bar{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;font-size:.86rem;font-weight:600;color:var(--primary);border-top:1px solid var(--border-light)}
+
+/* 快速查詢結果 */
+.lookup-result{
+  background:white;border:1px solid var(--border);border-radius:var(--radius);
+  padding:10px 13px;margin-top:8px;font-size:.83rem;line-height:1.6;
+  display:none;
+}
+.lookup-result.show{display:block}
+.lookup-result.found{border-color:var(--success);background:#f0fff4}
+.lookup-result.notfound{border-color:var(--danger);background:#fff5f5}
+</style>
+<style>
+/* 側邊欄預載入樣式，防止 JS 初始化前的空白閃爍 */
+#sidebar{background:var(--bg-sidebar,#1a3a5c);min-height:100vh;width:var(--sidebar-width,240px)}
+.main{opacity:0;transition:opacity .15s ease}
+.main.ready{opacity:1}
+</style>
+<script>
+// 頁面載入完成後立即顯示內容，避免等待 JS module 初始化
+document.addEventListener('DOMContentLoaded',function(){
+  setTimeout(function(){
+    var m=document.querySelector('.main');
+    if(m)m.classList.add('ready');
+  },50);
+});
+</script>
+</head>
+<body>
+<script src="js/core.js"></script>
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="main">
+    <div class="topbar">
+      <span class="topbar-title">編碼選題</span>
+      <div class="topbar-breadcrumb"><span>首頁</span> › 編碼選題</div>
+      <div class="topbar-actions">
+        <button class="btn btn-ghost btn-sm" onclick="nav('compose')">🎲 電腦選題</button>
+        <button class="btn btn-ghost btn-sm" onclick="nav('manual')">🖊️ 人工選題</button>
+      </div>
+    </div>
+    <div class="page-content">
+      <div class="coded-layout">
+
+        <!-- 左側：輸入 -->
+        <div>
+          <div class="card input-panel">
+            <div class="card-header"><h2>🔢 輸入題目編號</h2></div>
+            <div class="card-body">
+
+              <!-- 單題輸入 -->
+              <div class="section-title">單題加入</div>
+              <div class="qnum-input-wrap">
+                <input class="qnum-input" type="text" id="qnumInput"
+                       maxlength="5" placeholder="輸入 5 位數題號"
+                       oninput="onQnumInput()"
+                       onkeydown="if(event.key==='Enter')addByCode()">
+                <button class="add-btn" id="addBtn" onclick="addByCode()" disabled>加入</button>
+              </div>
+              <div class="qnum-hint" id="qnumHint">輸入 1～5 位數字，如「42」或「00042」</div>
+              <div class="lookup-result" id="lookupResult"></div>
+
+              <!-- 最近使用 -->
+              <div id="recentWrap" style="display:none">
+                <div class="section-title" style="margin-top:10px">最近加入</div>
+                <div class="recent-chips" id="recentChips"></div>
+              </div>
+
+              <!-- 批次輸入 -->
+              <div class="section-title" style="margin-top:16px">批次輸入</div>
+              <p style="font-size:.78rem;color:var(--text-muted);margin-bottom:8px">
+                每行一個題號，或以逗號/空白分隔。例：<br>
+                <span style="font-family:var(--font-mono);color:var(--primary)">00001, 00042, 00156</span>
+              </p>
+              <textarea class="batch-textarea" id="batchInput"
+                placeholder="00001&#10;00042&#10;00156&#10;..."></textarea>
+              <div style="display:flex;gap:8px;margin-top:8px">
+                <button class="btn btn-outline btn-sm" onclick="addBatch()">批次加入</button>
+                <button class="btn btn-ghost btn-sm" onclick="document.getElementById('batchInput').value=''">清除</button>
+              </div>
+              <div style="font-size:.78rem;color:var(--text-muted);margin-top:6px" id="batchHint"></div>
+
+              <!-- 清除全部 -->
+              <div style="margin-top:16px;border-top:1px solid var(--border-light);padding-top:14px">
+                <button class="btn btn-ghost btn-sm w-full" onclick="clearAll()" id="clearAllBtn" disabled>🗑 清除全部已選題目</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 右側：已選 -->
+        <div class="sel-panel">
+          <div class="card">
+            <div class="card-header">
+              <h2>📋 已選題目</h2>
+              <span style="font-size:.82rem;color:var(--text-secondary)" id="selCountLabel">0 題</span>
+            </div>
+            <div class="sel-list" id="selList">
+              <div class="empty-sel">
+                <div class="ei">🔢</div>
+                <p style="font-size:.85rem">輸入題目編號後加入</p>
+                <p style="font-size:.76rem;margin-top:4px">編號可從「題目維護」頁面查詢</p>
+              </div>
+            </div>
+            <div class="score-cfg" id="scoreCfg" style="display:none"></div>
+            <div class="total-bar" id="totalBar" style="display:none">
+              <span>預估總分</span>
+              <span id="totalScoreVal">0 分</span>
+            </div>
+            <div style="padding:10px 12px;border-top:1px solid var(--border-light);display:flex;gap:8px">
+              <button class="btn btn-accent w-full" onclick="openSaveModal()" id="saveBtn" disabled>💾 儲存為試卷</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 儲存 Modal -->
+<div class="modal-overlay hidden" id="saveModal">
+  <div class="modal">
+    <div class="modal-header"><h3>💾 儲存試卷</h3><button class="modal-close" onclick="document.getElementById('saveModal').classList.add('hidden')">✕</button></div>
+    <div class="modal-body">
+      <div class="alert alert-danger hidden" id="saveErr"></div>
+      <div class="form-group">
+        <label class="form-label">試卷名稱 <span class="required">*</span></label>
+        <input class="form-control" id="examTitle" placeholder="例：113學年度第一次月考">
+      </div>
+      <div class="form-group">
+        <label class="form-label">說明（選填）</label>
+        <textarea class="form-control" id="examDesc" rows="2" placeholder="考試說明、範圍…"></textarea>
+      </div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">考試時間（分鐘）</label>
+          <input class="form-control" type="number" id="examDuration" value="50" min="10" max="240">
+        </div>
+        <div class="form-group">
+          <label class="form-label">及格分數</label>
+          <input class="form-control" type="number" id="examPassScore" value="60" min="0" max="100">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="document.getElementById('saveModal').classList.add('hidden')">取消</button>
+      <button class="btn btn-primary" onclick="doSaveExam()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { guardPage } from './js/auth-guard.js';
+window._activeNav = 'coded';
+const user = await guardPage(['admin','teacher']);
+if (!user) throw new Error('not auth');
+
+// ── 資料 ─────────────────────────────────────────
+let allQs = {};        // qnum -> question object（建立查詢索引）
+let selectedOrder = []; // 依序的 qnum 陣列
+let selQuestions = {};  // qnum -> question
+let recentNums = [];    // 最近輸入的題號
+
+const TYPE_SCORES = { T1:2, T2:2, T3:4, T4:2, T5:2, T6:10 };
+
+async function init() {
+  // 不預先載入全部題目，輸入題號時才查詢
+  document.getElementById('qnumHint').textContent =
+    '輸入 1～5 位數字（如「42」或「00042」）';
+}
+
+// ── 題號輸入處理 ──────────────────────────────────
+window.onQnumInput = async () => {
+  const raw = document.getElementById('qnumInput').value.trim();
+  const btn = document.getElementById('addBtn');
+  const hint = document.getElementById('qnumHint');
+  const result = document.getElementById('lookupResult');
+
+  if (!raw) {
+    btn.disabled = true;
+    hint.innerHTML = '輸入 1～5 位數字（如「42」或「00042」）';
+    result.className = 'lookup-result';
+    return;
+  }
+
+  // 只允許數字
+  if (!/^\d+$/.test(raw)) {
+    btn.disabled = true;
+    hint.innerHTML = '<span class="hint-err">✕ 請輸入純數字</span>';
+    result.className = 'lookup-result';
+    return;
+  }
+
+  const padded = raw.padStart(5, '0');
+  // 先查快取，沒有才向 Firestore 查
+  let q = allQs[padded];
+  if (!q) {
+    hint.innerHTML = '<span style="color:var(--text-muted)">查詢中…</span>';
+    btn.disabled = true;
+    try {
+      const qs = await DataService.getQuestions({ qnum: padded });
+      q = qs[0] || null;
+      if (q) allQs[padded] = q;  // 快取起來
+    } catch(e) {
+      hint.innerHTML = `<span class="hint-err">✕ 查詢失敗：${e.message}</span>`;
+      return;
+    }
+  }
+
+  if (!q) {
+    btn.disabled = true;
+    hint.innerHTML = `<span class="hint-err">✕ 找不到編號 ${padded}</span>`;
+    result.className = 'lookup-result notfound show';
+    result.innerHTML = `❌ 題號 <strong style="font-family:var(--font-mono)">${padded}</strong> 不存在，請確認編號是否正確`;
+    return;
+  }
+
+  if (selectedOrder.includes(padded)) {
+    btn.disabled = true;
+    hint.innerHTML = `<span class="hint-warn">⚠ 題號 ${padded} 已在清單中</span>`;
+    result.className = 'lookup-result show';
+    result.innerHTML = `⚠ 題號 <strong style="font-family:var(--font-mono)">${padded}</strong> 已加入`;
+    return;
+  }
+
+  btn.disabled = false;
+  hint.innerHTML = `<span class="hint-ok">✓ 找到題目</span>`;
+  result.className = 'lookup-result found show';
+  result.innerHTML = `
+    <div style="display:flex;align-items:flex-start;gap:8px">
+      <span style="font-family:var(--font-mono);font-weight:700;color:var(--primary);flex-shrink:0">${padded}</span>
+      <div>
+        <div style="line-height:1.5;margin-bottom:4px">${q.text||'—'}</div>
+        <div style="display:flex;gap:6px">${UI.typeBadge(q.type)}${UI.diffBadge(q.difficulty)}<span style="font-size:.74rem;color:var(--text-muted)">第${parseInt(q.chapterNum)||'?'}章</span></div>
+      </div>
+    </div>`;
+};
+
+window.addByCode = () => {
+  const raw = document.getElementById('qnumInput').value.trim();
+  if (!raw || !/^\d+$/.test(raw)) return;
+  const padded = raw.padStart(5, '0');
+  const q = allQs[padded];
+  if (!q || selectedOrder.includes(padded)) return;
+
+  selectedOrder.push(padded);
+  selQuestions[padded] = q;
+
+  // 加入最近使用
+  recentNums = [padded, ...recentNums.filter(n => n !== padded)].slice(0, 10);
+  renderRecent();
+
+  // 清空輸入
+  document.getElementById('qnumInput').value = '';
+  document.getElementById('addBtn').disabled = true;
+  document.getElementById('lookupResult').className = 'lookup-result';
+  document.getElementById('qnumHint').innerHTML = `<span class="hint-ok">✓ 已加入 ${padded}</span>`;
+
+  renderSelected();
+  document.getElementById('qnumInput').focus();
+};
+
+// ── 批次輸入 ──────────────────────────────────────
+window.addBatch = () => {
+  const text = document.getElementById('batchInput').value;
+  // 分割：換行、逗號、空白、頓號
+  const tokens = text.split(/[\n,\s、，]+/).map(t => t.trim()).filter(Boolean);
+  let added = 0, notFound = 0, duplicate = 0, invalid = 0;
+
+  tokens.forEach(t => {
+    if (!/^\d+$/.test(t)) { invalid++; return; }
+    const padded = t.padStart(5, '0');
+    const q = allQs[padded];
+    if (!q) { notFound++; return; }
+    if (selectedOrder.includes(padded)) { duplicate++; return; }
+    selectedOrder.push(padded);
+    selQuestions[padded] = q;
+    recentNums = [padded, ...recentNums.filter(n => n !== padded)].slice(0, 10);
+    added++;
+  });
+
+  const parts = [];
+  if (added)     parts.push(`✓ 新增 ${added} 題`);
+  if (duplicate) parts.push(`⚠ ${duplicate} 題已在清單`);
+  if (notFound)  parts.push(`✕ ${notFound} 題號不存在`);
+  if (invalid)   parts.push(`✕ ${invalid} 個無效格式`);
+
+  document.getElementById('batchHint').innerHTML = parts.map((p,i) =>
+    `<span style="color:${i===0?'var(--success)':'var(--warning)'}">${p}</span>`
+  ).join('　');
+
+  if (added) {
+    renderRecent();
+    renderSelected();
+    document.getElementById('batchInput').value = '';
+  }
+};
+
+// ── 最近使用 ──────────────────────────────────────
+function renderRecent() {
+  const wrap = document.getElementById('recentWrap');
+  if (!recentNums.length) { wrap.style.display = 'none'; return; }
+  wrap.style.display = '';
+  document.getElementById('recentChips').innerHTML = recentNums.map(n => {
+    const already = selectedOrder.includes(n);
+    return `<span class="chip ${already?'':''}\"
+      style="${already?'opacity:.45;cursor:default':''}"
+      onclick="${already?'':` addFromChip('${n}')`}"
+      title="${already?'已在清單':'點擊重新加入'}">${n}</span>`;
+  }).join('');
+}
+
+window.addFromChip = (padded) => {
+  if (selectedOrder.includes(padded)) return;
+  const q = allQs[padded]; if (!q) return;
+  selectedOrder.push(padded);
+  selQuestions[padded] = q;
+  recentNums = [padded, ...recentNums.filter(n => n !== padded)].slice(0, 10);
+  renderRecent();
+  renderSelected();
+};
+
+// ── 已選清單渲染 ─────────────────────────────────
+function renderSelected() {
+  const count = selectedOrder.length;
+  document.getElementById('selCountLabel').textContent = count + ' 題';
+  document.getElementById('saveBtn').disabled = count === 0;
+  document.getElementById('clearAllBtn').disabled = count === 0;
+
+  const list = document.getElementById('selList');
+  if (!count) {
+    list.innerHTML = `<div class="empty-sel"><div class="ei">🔢</div><p style="font-size:.85rem">輸入題目編號後加入</p><p style="font-size:.76rem;margin-top:4px">編號可從「題目維護」頁面查詢</p></div>`;
+    document.getElementById('scoreCfg').style.display = 'none';
+    document.getElementById('totalBar').style.display = 'none';
+    return;
+  }
+
+  list.innerHTML = selectedOrder.map((qnum, idx) => {
+    const q = selQuestions[qnum];
+    return `<div class="sel-item" draggable="true" data-qnum="${qnum}"
+      ondragstart="dragStart(event,'${qnum}')" ondragover="dragOver(event,'${qnum}')"
+      ondrop="dropOn(event,'${qnum}')" ondragend="dragEnd()">
+      <span class="drag-handle" title="拖曳排序">⠿</span>
+      <span class="sel-order">${idx+1}.</span>
+      <span class="sel-num-badge">${qnum}</span>
+      <div class="sel-body">
+        <div class="sel-text" title="${(q?.text||'').replace(/"/g,'&quot;')}">${q?.text||'—'}</div>
+        <div class="sel-meta">${UI.typeBadge(q?.type||'')}${UI.diffBadge(q?.difficulty)}</div>
+      </div>
+      <button class="sel-remove" onclick="removeQ('${qnum}')" title="移除">✕</button>
+    </div>`;
+  }).join('');
+
+  // 計分設定
+  const typeGroups = {};
+  selectedOrder.forEach(qnum => {
+    const q = selQuestions[qnum]; if (!q) return;
+    typeGroups[q.type] = (typeGroups[q.type]||0) + 1;
+  });
+  document.getElementById('scoreCfg').style.display = 'flex';
+  document.getElementById('scoreCfg').innerHTML =
+    Object.entries(typeGroups).map(([t,c]) =>
+      `<div class="sc-row">${QUESTION_TYPES[t]||t} ×${c}：
+        <input class="sc-inp" type="number" id="sc-${t}" value="${TYPE_SCORES[t]||2}" min="1" max="99" oninput="calcTotal()">分
+      </div>`
+    ).join('');
+
+  calcTotal();
+  document.getElementById('totalBar').style.display = 'flex';
+}
+
+window.removeQ = (qnum) => {
+  selectedOrder = selectedOrder.filter(n => n !== qnum);
+  delete selQuestions[qnum];
+  renderRecent();
+  renderSelected();
+};
+
+window.clearAll = () => {
+  if (!confirm(`確定要清除全部 ${selectedOrder.length} 題嗎？`)) return;
+  selectedOrder = [];
+  selQuestions = {};
+  renderRecent();
+  renderSelected();
+};
+
+function calcTotal() {
+  let total = 0;
+  selectedOrder.forEach(qnum => {
+    const q = selQuestions[qnum]; if (!q) return;
+    const inp = document.getElementById('sc-'+q.type);
+    total += inp ? parseInt(inp.value)||0 : (TYPE_SCORES[q.type]||2);
+  });
+  document.getElementById('totalScoreVal').textContent = total + ' 分';
+}
+window.calcTotal = calcTotal;
+
+// ── 拖曳排序 ─────────────────────────────────────
+let dragQnum = null;
+window.dragStart = (e, qnum) => {
+  dragQnum = qnum;
+  e.currentTarget.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+};
+window.dragEnd   = () => {
+  dragQnum = null;
+  document.querySelectorAll('.sel-item').forEach(el => el.classList.remove('dragging','drag-over'));
+};
+window.dragOver  = (e, qnum) => {
+  e.preventDefault();
+  if (qnum !== dragQnum) document.querySelector(`.sel-item[data-qnum="${qnum}"]`)?.classList.add('drag-over');
+};
+window.dropOn = (e, targetQnum) => {
+  e.preventDefault();
+  if (!dragQnum || dragQnum === targetQnum) return;
+  const from = selectedOrder.indexOf(dragQnum);
+  const to   = selectedOrder.indexOf(targetQnum);
+  if (from < 0 || to < 0) return;
+  selectedOrder.splice(from, 1);
+  selectedOrder.splice(to, 0, dragQnum);
+  renderSelected();
+};
+
+// ── 儲存試卷 ──────────────────────────────────────
+window.openSaveModal = () => {
+  if (!selectedOrder.length) { UI.toast('請先加入題目', 'warning'); return; }
+  document.getElementById('saveErr').classList.add('hidden');
+  document.getElementById('saveModal').classList.remove('hidden');
+};
+
+window.doSaveExam = async () => {
+  const title = document.getElementById('examTitle').value.trim();
+  if (!title) {
+    document.getElementById('saveErr').textContent = '請填寫試卷名稱';
+    document.getElementById('saveErr').classList.remove('hidden');
+    return;
+  }
+  document.getElementById('saveErr').classList.add('hidden');
+
+  const typeScores = {};
+  let totalScore = 0;
+  selectedOrder.forEach(qnum => {
+    const q = selQuestions[qnum]; if (!q) return;
+    const inp = document.getElementById('sc-'+q.type);
+    const score = inp ? parseInt(inp.value)||2 : 2;
+    typeScores[q.type] = score;
+    totalScore += score;
+  });
+
+  const firstQ = selQuestions[selectedOrder[0]];
+  const exam = {
+    title,
+    description: document.getElementById('examDesc').value.trim(),
+    subjectCode: firstQ?.subjectCode || '',
+    bookCode:    firstQ?.bookCode    || '',
+    duration:    parseInt(document.getElementById('examDuration').value) || 50,
+    passScore:   parseInt(document.getElementById('examPassScore').value) || 60,
+    totalScore,
+    typeScores,
+    questionIds:   [...selectedOrder.map(qnum => selQuestions[qnum]?.id).filter(Boolean)],
+    questionCount: selectedOrder.length,
+    composeMode:   'coded',
+    status:        'draft',
+  };
+
+  try {
+    await DataService.saveExam(exam);
+    UI.toast('試卷已儲存！', 'success');
+    document.getElementById('saveModal').classList.add('hidden');
+    setTimeout(() => nav('exams'), 1200);
+  } catch(e) {
+    document.getElementById('saveErr').textContent = '儲存失敗：' + e.message;
+    document.getElementById('saveErr').classList.remove('hidden');
+  }
+};
+
+init();
+</script>
+</body>
+</html>

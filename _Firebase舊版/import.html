@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>題目匯入 — 幼獅題庫系統</title>
+<link rel="stylesheet" href="css/theme.css">
+<style>
+/* ── 步驟 ── */
+.steps{display:flex;border-radius:var(--radius-lg);overflow:hidden;border:1px solid var(--border);margin-bottom:20px}
+.step{flex:1;padding:11px 14px;text-align:center;font-size:.78rem;background:var(--bg-base);color:var(--text-muted);border-right:1px solid var(--border);position:relative}
+.step:last-child{border-right:none}
+.step.active{background:var(--primary);color:white;font-weight:600}
+.step.done{background:#eafaf1;color:#1e8449}
+.step-num{display:block;font-size:1rem;font-weight:700;margin-bottom:1px}
+
+/* ── 上傳區 ── */
+.upload-zone{
+  border:2px dashed var(--border);border-radius:var(--radius-lg);
+  padding:36px 24px;text-align:center;cursor:pointer;
+  transition:all .2s;background:var(--bg-base);
+}
+.upload-zone:hover,.upload-zone.drag-over{border-color:var(--primary-light);background:#e8eef6}
+.upload-zone.has-files{border-color:var(--success);border-style:solid;background:#f0fff4}
+.upload-icon{font-size:2.6rem;margin-bottom:10px}
+.upload-title{font-size:1rem;font-weight:600;color:var(--primary);margin-bottom:3px}
+.upload-sub{font-size:.82rem;color:var(--text-muted)}
+
+/* ── 檔案列表 ── */
+.file-list{margin-top:12px;display:flex;flex-direction:column;gap:6px}
+.file-row{
+  display:flex;align-items:center;gap:10px;
+  background:white;border:1px solid var(--border);
+  border-radius:var(--radius);padding:10px 14px;
+}
+.file-row.parsing{border-color:var(--primary-light);background:#f0f4ff}
+.file-row.done{border-color:var(--success);background:#f0fff4}
+.file-row.error{border-color:var(--danger);background:#fff5f5}
+.file-row .fr-icon{font-size:1.4rem;flex-shrink:0}
+.file-row .fr-info{flex:1;min-width:0}
+.file-row .fr-name{font-weight:600;font-size:.88rem;color:var(--primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.file-row .fr-meta{font-size:.74rem;color:var(--text-muted);margin-top:1px}
+.file-row .fr-status{font-size:.78rem;font-weight:600;flex-shrink:0;white-space:nowrap}
+.file-row .fr-remove{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:.9rem;padding:2px 4px;flex-shrink:0}
+.file-row .fr-remove:hover{color:var(--danger)}
+
+/* ── 解析統計 ── */
+.parse-summary{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.parse-stat{display:flex;flex-direction:column;align-items:center;padding:10px 18px;background:white;border:1px solid var(--border);border-radius:var(--radius-lg);min-width:80px}
+.parse-stat-num{font-size:1.5rem;font-weight:700;color:var(--primary);font-family:var(--font-mono)}
+.parse-stat-label{font-size:.72rem;color:var(--text-muted);margin-top:2px}
+
+/* ── 預覽表格 ── */
+.preview-wrap{max-height:400px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius);margin-bottom:14px}
+.preview-table{width:100%;border-collapse:collapse;font-size:.8rem}
+.preview-table th{position:sticky;top:0;background:var(--bg-base);padding:7px 10px;border-bottom:2px solid var(--border);text-align:left;font-weight:600;font-size:.75rem;color:var(--text-secondary);white-space:nowrap;z-index:1}
+.preview-table td{padding:7px 10px;border-bottom:1px solid var(--border-light);vertical-align:top;max-width:280px}
+.preview-table tr:hover td{background:#faf8f5}
+.q-text-cell{max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.src-tag{display:inline-block;background:#e8eef6;color:var(--primary);font-size:.68rem;padding:1px 5px;border-radius:3px;font-weight:600}
+
+/* ── 進度 ── */
+.import-log{background:#1a2a3a;color:#a8c7e8;font-family:var(--font-mono);font-size:.76rem;padding:12px 14px;border-radius:var(--radius);max-height:150px;overflow-y:auto;margin-top:10px}
+.import-log .log-ok{color:#5dade2}
+.import-log .log-err{color:#ec7063}
+.import-log .log-info{color:#a8c7e8}
+.import-log .log-warn{color:#f0ad4e}
+</style>
+<style>
+/* 側邊欄預載入樣式，防止 JS 初始化前的空白閃爍 */
+#sidebar{background:var(--bg-sidebar,#1a3a5c);min-height:100vh;width:var(--sidebar-width,240px)}
+.main{opacity:0;transition:opacity .15s ease}
+.main.ready{opacity:1}
+</style>
+<script>
+// 頁面載入完成後立即顯示內容，避免等待 JS module 初始化
+document.addEventListener('DOMContentLoaded',function(){
+  setTimeout(function(){
+    var m=document.querySelector('.main');
+    if(m)m.classList.add('ready');
+  },50);
+});
+</script>
+</head>
+<body>
+<script src="js/core.js"></script>
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="main">
+    <div class="topbar">
+      <span class="topbar-title">題目匯入</span>
+    </div>
+    <div class="page-content">
+
+      <!-- 步驟 -->
+      <div class="steps" id="stepsBar">
+        <div class="step active" id="step1"><span class="step-num">①</span>選擇科目</div>
+        <div class="step" id="step2"><span class="step-num">②</span>上傳檔案</div>
+        <div class="step" id="step3"><span class="step-num">③</span>預覽確認</div>
+        <div class="step" id="step4"><span class="step-num">④</span>匯入完成</div>
+      </div>
+
+      <!-- Step 1：科目 -->
+      <div id="panelStep1">
+        <div class="card mb-4">
+          <div class="card-header"><h2>① 選擇科目與冊次</h2></div>
+          <div class="card-body">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:520px">
+              <div class="form-group">
+                <label class="form-label">科目 <span style="color:var(--danger)">*</span></label>
+                <select class="form-control" id="subjectSel" onchange="onSubjectChange()">
+                  <option value="">請選擇科目</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">冊次 <span style="color:var(--danger)">*</span></label>
+                <select class="form-control" id="bookSel" disabled>
+                  <option value="">請先選科目</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn btn-primary" onclick="goStep2()">下一步 →</button>
+          </div>
+        </div>
+
+        <!-- 格式說明 -->
+        <div class="card">
+          <div class="card-header"><h2>📄 入題檔格式說明</h2></div>
+          <div class="card-body">
+            <p style="font-size:.84rem;color:var(--text-secondary);margin-bottom:12px">
+              支援直接上傳 <strong>.docx</strong>（Word 文件），可<strong>一次選取多個檔案</strong>同時匯入。<br>
+              匯入後每題自動分配 <strong>5 位數題目編號</strong>（00001 起）。
+            </p>
+            <div class="table-wrapper">
+              <table class="data-table" style="font-size:.8rem">
+                <thead><tr><th>欄位</th><th>說明</th><th>範例</th><th>必填</th></tr></thead>
+                <tbody>
+                  <tr><td><code>難易</code></td><td>◎較難 / 空白普通 / △簡易</td><td>◎</td><td>否</td></tr>
+                  <tr><td><code>章數</code></td><td>第一層序號</td><td>1</td><td>是</td></tr>
+                  <tr><td><code>節數</code></td><td>第二層序號</td><td>2</td><td>否</td></tr>
+                  <tr><td><code>小節</code></td><td>第三層序號</td><td>1</td><td>否</td></tr>
+                  <tr><td><code>題型</code></td><td>T1是非 T2單選 T3複選 T4填空 T5配合 T6問答</td><td>T2</td><td>是</td></tr>
+                  <tr><td><code>頁數/出處</code></td><td>來源頁碼</td><td>P.12</td><td>否</td></tr>
+                  <tr><td><code>來源</code></td><td>A1課本 A2考題</td><td>A1</td><td>否</td></tr>
+                  <tr><td><code>答數</code></td><td>答案格數</td><td>1</td><td>否</td></tr>
+                  <tr><td><code>簡答/答案</code></td><td>答案（全形字母）</td><td>Ａ</td><td>是</td></tr>
+                  <tr><td><code>題目</code></td><td>題目主文</td><td>下列何者…</td><td>是</td></tr>
+                  <tr><td><code>選項1~5</code></td><td>單選題選項（T2）</td><td>臺灣</td><td>T2必填</td></tr>
+                  <tr><td><code>結尾</code></td><td>題幹尾句</td><td>所抱持的喜好。</td><td>否</td></tr>
+                  <tr><td><code>詳答/解析</code></td><td>解題說明</td><td>依題意…</td><td>否</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2：上傳 -->
+      <div id="panelStep2" style="display:none">
+        <div class="card mb-4">
+          <div class="card-header">
+            <h2>② 上傳入題檔</h2>
+            <button class="btn btn-ghost btn-sm" onclick="backStep1()">← 重選科目</button>
+          </div>
+          <div class="card-body">
+            <div id="selectedSubjectInfo" style="background:#e8eef6;border-radius:var(--radius);padding:10px 14px;font-size:.84rem;margin-bottom:16px;color:var(--primary)"></div>
+
+            <!-- 上傳區 -->
+            <div class="upload-zone" id="uploadZone"
+                 onclick="document.getElementById('fileInput').click()"
+                 ondrop="onDrop(event)" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)">
+              <div class="upload-icon">📂</div>
+              <div class="upload-title">點擊或拖放 Word 檔案到這裡</div>
+              <div class="upload-sub">支援 .docx 格式，可一次選取多個檔案，每檔上限 20MB</div>
+              <input type="file" id="fileInput" accept=".docx" multiple style="display:none" onchange="onFileSelect(event)">
+            </div>
+
+            <!-- 已選檔案列表 -->
+            <div class="file-list" id="fileList"></div>
+
+            <div style="margin-top:14px;display:flex;gap:10px;align-items:center">
+              <button class="btn btn-primary" id="parseBtn" onclick="parseAllFiles()" disabled>解析所有檔案 →</button>
+              <span style="font-size:.8rem;color:var(--text-muted)" id="fileCountLabel"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3：預覽 -->
+      <div id="panelStep3" style="display:none">
+        <div class="card mb-4">
+          <div class="card-header">
+            <h2>③ 預覽解析結果</h2>
+            <button class="btn btn-ghost btn-sm" onclick="backStep2()">← 重新上傳</button>
+          </div>
+          <div class="card-body">
+            <div class="parse-summary" id="parseSummary"></div>
+            <div id="parseWarnings" style="margin-bottom:10px"></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px">
+              <div id="previewPagInfo" style="font-size:.82rem;color:var(--text-secondary)"></div>
+              <div style="display:flex;gap:4px" id="previewPagBtns"></div>
+            </div>
+            <div class="preview-wrap">
+              <table class="preview-table">
+                <thead>
+                  <tr><th>#</th><th>來源檔案</th><th>題型</th><th>章</th><th>節</th><th>難易</th><th>題目</th><th>答案</th></tr>
+                </thead>
+                <tbody id="previewTbody"></tbody>
+              </table>
+            </div>
+            <div style="display:flex;gap:4px;margin-bottom:14px" id="previewPagBtns2"></div>
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+              <button class="btn btn-primary" id="importBtn" onclick="doImport()">✅ 確認匯入</button>
+              <span style="font-size:.8rem;color:var(--text-muted)" id="importNote2"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4：完成 -->
+      <div id="panelStep4" style="display:none">
+        <div class="card">
+          <div class="card-body" style="text-align:center;padding:48px 24px">
+            <div style="font-size:3rem;margin-bottom:14px">✅</div>
+            <h2 style="margin-bottom:8px;color:var(--success)">匯入完成！</h2>
+            <div id="importResult" style="font-size:.9rem;color:var(--text-secondary);margin-bottom:20px"></div>
+            <div class="import-log" id="importLog"></div>
+            <div style="margin-top:20px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+              <button class="btn btn-outline" onclick="resetImport()">繼續匯入</button>
+              <button class="btn btn-primary" onclick="nav('questions')">前往題目維護 →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+
+<script type="module">
+import { guardPage } from './js/auth-guard.js';
+window._activeNav = 'import';
+const user = await guardPage(['admin']);
+if (!user) throw new Error('not auth');
+
+// ── 初始化科目下拉（從課本管理系統讀取）─────────
+const subjectSel = document.getElementById('subjectSel');
+await initTextbookCache();
+subjectSel.innerHTML = tbSubjectOptions();
+
+window.onSubjectChange = () => {
+  const sc = subjectSel.value;
+  const bookSel = document.getElementById('bookSel');
+  if (sc) {
+    bookSel.innerHTML = tbBookOptions(sc);
+    bookSel.disabled = false;
+  } else {
+    bookSel.disabled = true;
+    bookSel.innerHTML = '<option value="">請先選科目</option>';
+  }
+};
+
+// ── Step 導航 ─────────────────────────────────────
+function setStep(n) {
+  [1,2,3,4].forEach(i => {
+    const s = document.getElementById('step'+i);
+    s.classList.remove('active','done');
+    if (i < n) s.classList.add('done');
+    else if (i === n) s.classList.add('active');
+    document.getElementById('panelStep'+i).style.display = i === n ? '' : 'none';
+  });
+}
+
+window.goStep2 = () => {
+  const sc = subjectSel.value, bc = document.getElementById('bookSel').value;
+  if (!sc) { UI.toast('請選擇科目','warning'); return; }
+  if (!bc) { UI.toast('請選擇冊次','warning'); return; }
+  document.getElementById('selectedSubjectInfo').textContent =
+    `科目：${tbSubjectName(sc)}　冊次：${tbBookName(bc)||bc}　（代碼：${sc}-${bc}）`;
+  setStep(2);
+};
+window.backStep1 = () => setStep(1);
+window.backStep2 = () => { setStep(2); };
+
+// ── 檔案管理 ──────────────────────────────────────
+let selectedFiles = [];  // { file, name, size, status:'pending'|'parsing'|'done'|'error', questions:[], errorMsg }
+let parsedAll = [];      // 所有檔案合併後的題目
+
+window.onDrop = e => {
+  e.preventDefault();
+  document.getElementById('uploadZone').classList.remove('drag-over');
+  addFiles([...e.dataTransfer.files]);
+};
+window.onDragOver  = e => { e.preventDefault(); document.getElementById('uploadZone').classList.add('drag-over'); };
+window.onDragLeave = () => document.getElementById('uploadZone').classList.remove('drag-over');
+window.onFileSelect = e => { addFiles([...e.target.files]); e.target.value = ''; };
+
+function addFiles(files) {
+  const valid = files.filter(f => {
+    if (!f.name.toLowerCase().endsWith('.docx')) { UI.toast(`${f.name} 不是 .docx 格式，已略過`, 'warning'); return false; }
+    if (f.size > 20*1024*1024) { UI.toast(`${f.name} 超過 20MB，已略過`, 'warning'); return false; }
+    if (selectedFiles.find(x => x.name === f.name)) { UI.toast(`${f.name} 已在清單中`, 'warning'); return false; }
+    return true;
+  });
+  valid.forEach(f => selectedFiles.push({ file: f, name: f.name, size: f.size, status: 'pending', questions: [] }));
+  renderFileList();
+}
+
+function renderFileList() {
+  const el = document.getElementById('fileList');
+  const count = selectedFiles.length;
+  document.getElementById('fileCountLabel').textContent = count ? `已選 ${count} 個檔案` : '';
+  document.getElementById('parseBtn').disabled = count === 0;
+  document.getElementById('uploadZone').classList.toggle('has-files', count > 0);
+
+  if (!count) { el.innerHTML = ''; return; }
+  el.innerHTML = selectedFiles.map((f, idx) => {
+    const icons = { pending:'📄', parsing:'⏳', done:'✅', error:'❌' };
+    const statusText = { pending:'待解析', parsing:'解析中…', done:`解析完成（${f.questions.length} 題）`, error: f.errorMsg||'解析失敗' };
+    const statusColor = { pending:'color:var(--text-muted)', parsing:'color:var(--primary-light)', done:'color:var(--success)', error:'color:var(--danger)' };
+    return `<div class="file-row ${f.status}" id="frow-${idx}">
+      <span class="fr-icon">${icons[f.status]}</span>
+      <div class="fr-info">
+        <div class="fr-name" title="${f.name}">${f.name}</div>
+        <div class="fr-meta">${(f.size/1024).toFixed(1)} KB</div>
+      </div>
+      <span class="fr-status" style="${statusColor[f.status]}">${statusText[f.status]}</span>
+      ${f.status==='pending'||f.status==='error'
+        ? `<button class="fr-remove" onclick="removeFile(${idx})" title="移除">✕</button>`
+        : ''}
+    </div>`;
+  }).join('');
+}
+
+window.removeFile = (idx) => {
+  selectedFiles.splice(idx, 1);
+  renderFileList();
+};
+
+// ── 解析所有檔案 ──────────────────────────────────
+window.parseAllFiles = async () => {
+  if (!selectedFiles.length) return;
+  const sc = subjectSel.value, bc = document.getElementById('bookSel').value;
+  const btn = document.getElementById('parseBtn');
+  btn.disabled = true; btn.textContent = '解析中…';
+
+  // 逐一解析
+  for (let i = 0; i < selectedFiles.length; i++) {
+    const f = selectedFiles[i];
+    if (f.status === 'done') continue;
+    f.status = 'parsing';
+    renderFileList();
+    try {
+      const arrayBuffer = await f.file.arrayBuffer();
+      const result = await mammoth.convertToHtml({ arrayBuffer });
+      const tables = parseTablesFromHtml(result.value);
+      const qs = [];
+      tables.forEach(rows => {
+        if (rows.length < 2) return;
+        const headers = rows[0].map(h => h.trim());
+        for (let r = 1; r < rows.length; r++) {
+          const row = {};
+          headers.forEach((h, ci) => { row[h] = rows[r][ci] || ''; });
+          if (!row['題型']) continue;
+          const q = DocImporter.rowToQuestion(row, sc, bc);
+          if (q.text) { q._srcFile = f.name; qs.push(q); }
+        }
+      });
+      f.questions = qs;
+      f.status = qs.length ? 'done' : 'error';
+      f.errorMsg = qs.length ? '' : '未解析到有效題目（請確認欄位名稱）';
+    } catch(e) {
+      f.status = 'error';
+      f.errorMsg = e.message;
+    }
+    renderFileList();
+  }
+
+  btn.disabled = false; btn.textContent = '解析所有檔案 →';
+
+  // 合併所有成功解析的題目
+  parsedAll = selectedFiles.flatMap(f => f.status === 'done' ? f.questions : []);
+
+  if (!parsedAll.length) {
+    UI.toast('所有檔案解析失敗，請確認格式', 'danger'); return;
+  }
+  buildPreview(parsedAll, sc, bc);
+  setStep(3);
+};
+
+function parseTablesFromHtml(html) {
+  const div = document.createElement('div');
+  div.innerHTML = html;
+  const tables = [];
+  div.querySelectorAll('table').forEach(tbl => {
+    const rows = [];
+    tbl.querySelectorAll('tr').forEach(tr => {
+      const cells = [];
+      tr.querySelectorAll('th,td').forEach(td => cells.push(td.innerText.trim()));
+      if (cells.some(c => c)) rows.push(cells);
+    });
+    if (rows.length) tables.push(rows);
+  });
+  return tables;
+}
+
+// ── 預覽（含分頁）────────────────────────────────
+const PREVIEW_PAGE_SIZE = 100;
+let previewPage = 1;
+let previewQs = [];
+let previewSc = '', previewBc = '';
+
+function buildPreview(qs, sc, bc) {
+  previewQs = qs;
+  previewSc = sc;
+  previewBc = bc;
+  previewPage = 1;
+
+  const totalByType = {};
+  qs.forEach(q => { totalByType[q.type] = (totalByType[q.type]||0)+1; });
+
+  // 統計卡
+  let sumHTML = `<div class="parse-stat"><div class="parse-stat-num">${qs.length}</div><div class="parse-stat-label">總題數</div></div>`;
+  const doneFiles = selectedFiles.filter(f => f.status === 'done');
+  sumHTML += `<div class="parse-stat"><div class="parse-stat-num">${doneFiles.length}</div><div class="parse-stat-label">檔案數</div></div>`;
+  Object.entries(totalByType).forEach(([t,c]) =>
+    sumHTML += `<div class="parse-stat"><div class="parse-stat-num">${c}</div><div class="parse-stat-label">${QUESTION_TYPES[t]||t}</div></div>`
+  );
+  document.getElementById('parseSummary').innerHTML = sumHTML;
+  document.getElementById('importNote2').textContent =
+    `即將匯入全部 ${qs.length} 題至「${tbSubjectName(sc)}」，系統將自動分配題目編號`;
+
+  // 警告
+  const errorFiles = selectedFiles.filter(f => f.status === 'error');
+  const warnings = [];
+  if (errorFiles.length) warnings.push(`${errorFiles.length} 個檔案解析失敗：${errorFiles.map(f=>f.name).join('、')}`);
+  const noAnswer = qs.filter(q => !q.answer).length;
+  if (noAnswer) warnings.push(`${noAnswer} 題缺少答案`);
+  document.getElementById('parseWarnings').innerHTML = warnings.map(w =>
+    `<div style="background:#fff8e1;border:1px solid #ffe082;border-radius:var(--radius);padding:7px 12px;font-size:.8rem;color:#7c5000;margin-bottom:6px">⚠ ${w}</div>`
+  ).join('');
+
+  renderPreviewPage();
+}
+
+function renderPreviewPage() {
+  const total = previewQs.length;
+  const totalPages = Math.max(1, Math.ceil(total / PREVIEW_PAGE_SIZE));
+  previewPage = Math.max(1, Math.min(previewPage, totalPages));
+  const start = (previewPage - 1) * PREVIEW_PAGE_SIZE;
+  const pageQs = previewQs.slice(start, start + PREVIEW_PAGE_SIZE);
+
+  // 資訊列
+  document.getElementById('previewPagInfo').textContent =
+    `顯示第 ${start+1}～${Math.min(start+PREVIEW_PAGE_SIZE, total)} 題，共 ${total} 題（每頁 ${PREVIEW_PAGE_SIZE} 題）`;
+
+  // 分頁按鈕（上下各一組）
+  const pagHTML = buildPagHTML(previewPage, totalPages);
+  document.getElementById('previewPagBtns').innerHTML = pagHTML;
+  document.getElementById('previewPagBtns2').innerHTML = totalPages > 1 ? pagHTML.replace(/goPreviewPage/g,'goPreviewPage') : '';
+
+  // 表格
+  document.getElementById('previewTbody').innerHTML = pageQs.map((q, i) => {
+    const globalIdx = start + i + 1;
+    const short = q._srcFile ? q._srcFile.replace(/\.docx$/i,'').slice(0,18) : '—';
+    return `<tr>
+      <td style="color:var(--text-muted);font-size:.72rem">${globalIdx}</td>
+      <td><span class="src-tag" title="${q._srcFile||''}">${short}</span></td>
+      <td>${UI.typeBadge(q.type)}</td>
+      <td>${q.chapterNum||'—'}</td>
+      <td>${q.sectionNum||'—'}</td>
+      <td>${UI.diffBadge(q.difficulty)}</td>
+      <td class="q-text-cell" title="${(q.text||'').replace(/"/g,'&quot;')}">${q.text||'<span style="color:var(--danger)">缺少題目</span>'}</td>
+      <td style="font-size:.76rem;color:var(--primary);max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${q.answer||'—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function buildPagHTML(cur, total) {
+  if (total <= 1) return '';
+  let h = `<button class="btn btn-ghost btn-sm" onclick="goPreviewPage(${cur-1})" ${cur===1?'disabled':''}
+    style="padding:3px 8px;font-size:.78rem">‹ 上頁</button>`;
+  // 顯示最多 7 個頁碼
+  const range = [];
+  if (total <= 7) {
+    for (let i=1;i<=total;i++) range.push(i);
+  } else {
+    range.push(1);
+    if (cur > 3) range.push('…');
+    for (let i=Math.max(2,cur-1); i<=Math.min(total-1,cur+1); i++) range.push(i);
+    if (cur < total-2) range.push('…');
+    range.push(total);
+  }
+  range.forEach(p => {
+    if (p==='…') h += `<span style="padding:0 4px;color:var(--text-muted);font-size:.8rem">…</span>`;
+    else h += `<button class="btn btn-sm" onclick="goPreviewPage(${p})"
+      style="padding:3px 8px;font-size:.78rem;${p===cur?'background:var(--primary);color:white;border-color:var(--primary)':''}">${p}</button>`;
+  });
+  h += `<button class="btn btn-ghost btn-sm" onclick="goPreviewPage(${cur+1})" ${cur===total?'disabled':''}
+    style="padding:3px 8px;font-size:.78rem">下頁 ›</button>`;
+  h += `<span style="font-size:.76rem;color:var(--text-muted);margin-left:6px;align-self:center">${cur}/${total} 頁</span>`;
+  return h;
+}
+
+window.goPreviewPage = (p) => {
+  previewPage = p;
+  renderPreviewPage();
+  document.querySelector('.preview-wrap')?.scrollIntoView({ behavior:'smooth', block:'start' });
+};
+
+// ── 匯入 ──────────────────────────────────────────
+window.doImport = async () => {
+  if (!parsedAll.length) return;
+  const btn = document.getElementById('importBtn');
+  btn.disabled = true; btn.textContent = '匯入中…';
+
+  const validQs = parsedAll.filter(q => q.text);
+  const log = [];
+  let ok = 0, fail = 0;
+
+  try {
+    log.push(`<span class="log-info">[開始] 準備匯入 ${validQs.length} 題（${selectedFiles.filter(f=>f.status==='done').length} 個檔案）…</span>`);
+    document.getElementById('importLog').innerHTML = log.join('<br>');
+
+    // 按檔案來源分組顯示
+    const bySrc = {};
+    validQs.forEach(q => { bySrc[q._srcFile||'unknown'] = (bySrc[q._srcFile||'unknown']||0)+1; });
+    Object.entries(bySrc).forEach(([src, cnt]) =>
+      log.push(`<span class="log-info">  ↳ ${src}：${cnt} 題</span>`)
+    );
+    document.getElementById('importLog').innerHTML = log.join('<br>');
+
+    const count = await DataService.addQuestions(validQs);
+    ok = count;
+    log.push(`<span class="log-ok">[完成] 成功寫入 ${count} 題，已分配題目編號</span>`);
+
+    const skipped = parsedAll.length - validQs.length;
+    if (skipped > 0) {
+      fail = skipped;
+      log.push(`<span class="log-warn">[略過] ${skipped} 題因缺少題目文字被跳過</span>`);
+    }
+    const errorFiles = selectedFiles.filter(f => f.status === 'error');
+    if (errorFiles.length) {
+      log.push(`<span class="log-err">[失敗] ${errorFiles.length} 個檔案解析失敗未匯入：${errorFiles.map(f=>f.name).join('、')}</span>`);
+    }
+  } catch(e) {
+    fail = validQs.length;
+    log.push(`<span class="log-err">[錯誤] ${e.message}</span>`);
+  }
+
+  document.getElementById('importResult').textContent =
+    `成功匯入 ${ok} 題${fail ? `，略過 ${fail} 題` : ''}`;
+  document.getElementById('importLog').innerHTML = log.join('<br>');
+  setStep(4);
+};
+
+window.resetImport = () => {
+  selectedFiles = [];
+  parsedAll = [];
+  renderFileList();
+  document.getElementById('subjectSel').value = '';
+  document.getElementById('bookSel').disabled = true;
+  document.getElementById('bookSel').innerHTML = '<option value="">請先選科目</option>';
+  setStep(1);
+};
+
+setStep(1);
+</script>
+</body>
+</html>

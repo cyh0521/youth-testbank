@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>班級管理 — 幼獅題庫系統</title>
+<link rel="stylesheet" href="css/theme.css">
+<style>
+.class-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-top:4px}
+.class-card{background:white;border:1px solid var(--border-light);border-radius:var(--radius-lg);padding:18px;display:flex;flex-direction:column;gap:10px;transition:box-shadow .15s}
+.class-card:hover{box-shadow:var(--shadow-md)}
+.class-card-header{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.class-name{font-weight:700;font-size:1rem;color:var(--primary);line-height:1.4}
+.class-school{font-size:.8rem;color:var(--text-secondary);margin-top:2px}
+.class-subject{font-size:.78rem}
+.room-code-box{background:var(--primary-dark);color:white;border-radius:var(--radius);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.room-code{font-family:var(--font-mono);font-size:1.3rem;font-weight:800;letter-spacing:.14em;color:var(--accent-light)}
+.room-code-label{font-size:.7rem;color:rgba(255,255,255,.5);margin-top:2px}
+.class-stats{display:flex;gap:12px;font-size:.78rem;color:var(--text-secondary)}
+.class-actions{display:flex;gap:6px;justify-content:flex-end}
+.member-item{display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid var(--border-light);font-size:.84rem}
+.member-item:last-child{border-bottom:none}
+.member-avatar{width:28px;height:28px;border-radius:50%;background:var(--primary-light);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:white;flex-shrink:0}
+.empty-classes{text-align:center;padding:64px 24px;color:var(--text-muted)}
+/* student join panel */
+.join-card{max-width:440px}
+.code-input{font-family:var(--font-mono);font-size:1.2rem;font-weight:700;letter-spacing:.14em;text-align:center;text-transform:uppercase;padding:12px;border:2px solid var(--border);border-radius:var(--radius);width:100%;transition:border-color .15s}
+.code-input:focus{outline:none;border-color:var(--primary-light);box-shadow:0 0 0 3px rgba(44,95,138,.12)}
+.my-class-card{background:white;border:1px solid var(--border-light);border-radius:var(--radius-lg);padding:16px;margin-bottom:10px}
+.my-class-title{font-weight:700;font-size:.95rem;color:var(--primary)}
+.my-class-meta{font-size:.8rem;color:var(--text-secondary);margin-top:4px}
+.my-class-code{font-family:var(--font-mono);font-size:.88rem;background:#e8eef6;color:var(--primary);padding:2px 8px;border-radius:4px;font-weight:700;margin-top:6px;display:inline-block}
+</style>
+<style>
+#sidebar{background:var(--bg-sidebar,#1a3a5c);min-height:100vh;width:var(--sidebar-width,240px)}
+.main{opacity:0;transition:opacity .15s ease}.main.ready{opacity:1}
+</style>
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+  setTimeout(function(){var m=document.querySelector('.main');if(m)m.classList.add('ready');},50);
+});
+</script>
+</head>
+<body>
+<script src="js/core.js"></script>
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="main">
+    <div class="topbar">
+      <span class="topbar-title">班級管理</span>
+      <div class="topbar-actions" id="topActions"></div>
+    </div>
+    <div class="page-content" id="pageContent">
+      <div style="text-align:center;padding:60px;color:var(--text-muted)">載入中…</div>
+    </div>
+  </div>
+</div>
+
+<!-- 新增/編輯班級 Modal -->
+<div class="modal-overlay hidden" id="classModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="cmTitle">新增班級</h3>
+      <button class="modal-close" onclick="closeClassModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="background:#fef0ef;color:var(--danger);border:1px solid #f5c6c2;border-radius:var(--radius);padding:8px 12px;font-size:.82rem;margin-bottom:12px;display:none" id="cmErr"></div>
+      <input type="hidden" id="cmId">
+      <div class="form-group">
+        <label class="form-label">學校 <span style="color:var(--danger)">*</span></label>
+        <input class="form-control" id="cmSchool" placeholder="例：台北市立建國高中">
+      </div>
+      <div class="form-group">
+        <label class="form-label">班級名稱 <span style="color:var(--danger)">*</span></label>
+        <input class="form-control" id="cmName" placeholder="例：3年2班、113-2甲班">
+      </div>
+      <div class="form-group">
+        <label class="form-label">科目 <span style="color:var(--danger)">*</span></label>
+        <select class="form-control" id="cmSubject">
+          <option value="">請選擇科目</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">說明（選填）</label>
+        <input class="form-control" id="cmDesc" placeholder="班級說明或備注">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeClassModal()">取消</button>
+      <button class="btn btn-primary" id="cmSave" onclick="saveClass()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 班級成員 Modal -->
+<div class="modal-overlay hidden" id="memberModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="mmTitle">班級成員</h3>
+      <button class="modal-close" onclick="document.getElementById('memberModal').classList.add('hidden')">✕</button>
+    </div>
+    <div class="modal-body" style="padding:0">
+      <div id="memberList" style="max-height:400px;overflow-y:auto">
+        <div style="padding:32px;text-align:center;color:var(--text-muted)">載入中…</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="document.getElementById('memberModal').classList.add('hidden')">關閉</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { guardPage } from './js/auth-guard.js';
+window._activeNav = 'classes';
+const user = await guardPage();
+if (!user) throw new Error('not auth');
+
+const isTeacher = DataService.isTeacher() || DataService.isAdmin();
+const isStudent = DataService.isStudent();
+
+// 初始化科目下拉
+const cmSubject = document.getElementById('cmSubject');
+Object.entries(SUBJECT_CODES).forEach(([v,l]) =>
+  cmSubject.innerHTML += `<option value="${v}">${l}</option>`
+);
+
+// ── 教師：班級管理 ────────────────────────────────
+if (isTeacher) {
+  document.getElementById('topActions').innerHTML =
+    `<button class="btn btn-primary btn-sm" id="addClassBtn">＋ 新增班級</button>`;
+  document.getElementById('addClassBtn').addEventListener('click', () => openClassModal(null));
+  loadTeacherClasses();
+}
+
+// ── 學生：加入班級 ────────────────────────────────
+if (isStudent) {
+  loadStudentView();
+}
+
+// ════════════════════════════════════════════════
+//  教師功能
+// ════════════════════════════════════════════════
+let allClasses = [];
+
+async function loadTeacherClasses() {
+  try {
+    allClasses = await DataService.getClasses({ teacherUid: user.uid });
+    if (allClasses.length === 0) {
+      // Could be empty OR permissions issue - show helpful message
+    }
+    renderTeacherClasses();
+  } catch(e) {
+    const isPermission = e.code === 'permission-denied' || e.message?.includes('permissions');
+    document.getElementById('pageContent').innerHTML = isPermission
+      ? `<div class="alert alert-warning" style="max-width:600px">
+          <strong>⚠ Firestore 安全規則尚未設定 classes 集合</strong><br>
+          請至 Firebase Console → Firestore → 規則，將以下規則加入：<br>
+          <pre style="background:#1a2a3a;color:#a8c7e8;padding:10px;border-radius:4px;margin-top:8px;font-size:.78rem;overflow-x:auto">match /classes/{classId} {
+  allow read, write: if request.auth != null;
+  match /members/{memberId} {
+    allow read, write: if request.auth != null;
+  }
+}</pre>
+          加入後儲存並重新整理頁面即可。
+        </div>`
+      : `<div class="alert alert-danger">載入失敗：${e.message}</div>`;
+  }
+}
+
+function renderTeacherClasses() {
+  const el = document.getElementById('pageContent');
+  if (!allClasses.length) {
+    el.innerHTML = `<div class="empty-classes">
+      <div style="font-size:3rem;opacity:.3;margin-bottom:14px">🏫</div>
+      <p style="font-size:.95rem;margin-bottom:6px">尚未建立任何班級</p>
+      <p style="font-size:.84rem">點擊右上角「＋ 新增班級」開始</p>
+    </div>`;
+    return;
+  }
+  el.innerHTML = `<div class="class-grid">${allClasses.map(c => `
+    <div class="class-card">
+      <div class="class-card-header">
+        <div>
+          <div class="class-name">${c.name||'（未命名）'}</div>
+          <div class="class-school">🏫 ${c.school||'—'}</div>
+        </div>
+        <span class="badge badge-primary" style="flex-shrink:0">${SUBJECT_CODES[c.subjectCode]||c.subjectCode||'—'}</span>
+      </div>
+      <div class="room-code-box">
+        <div>
+          <div class="room-code">${c.roomCode||'——'}</div>
+          <div class="room-code-label">教室代碼（學生輸入此碼加入）</div>
+        </div>
+        <button class="btn btn-sm" style="background:rgba(255,255,255,.15);color:white;border:1px solid rgba(255,255,255,.3)"
+          onclick="copyCode('${c.roomCode}')">複製</button>
+      </div>
+      <div class="class-stats">
+        <span>📅 ${UI.formatDate(c.createdAt)}</span>
+        ${c.desc ? `<span>📝 ${c.desc}</span>` : ''}
+      </div>
+      <div class="class-actions">
+        <button class="btn btn-sm btn-outline" onclick="viewMembers('${c.id}','${(c.name||'').replace(/'/g,'&apos;')}')">👥 成員</button>
+        <button class="btn btn-sm btn-ghost"   onclick="openClassModal('${c.id}')">✏️ 編輯</button>
+        <button class="btn btn-sm btn-danger"  onclick="deleteClass('${c.id}','${(c.name||'').replace(/'/g,'&apos;')}')">🗑</button>
+      </div>
+    </div>`).join('')}</div>`;
+}
+
+// ── 新增/編輯 Modal ───────────────────────────────
+window.openClassModal = (id) => {
+  document.getElementById('cmErr').style.display = 'none';
+  if (id) {
+    const c = allClasses.find(x => x.id===id); if (!c) return;
+    document.getElementById('cmTitle').textContent = '編輯班級';
+    document.getElementById('cmId').value      = id;
+    document.getElementById('cmSchool').value  = c.school||'';
+    document.getElementById('cmName').value    = c.name||'';
+    document.getElementById('cmSubject').value = c.subjectCode||'';
+    document.getElementById('cmDesc').value    = c.desc||'';
+  } else {
+    document.getElementById('cmTitle').textContent = '新增班級';
+    ['cmId','cmSchool','cmName','cmDesc'].forEach(i => document.getElementById(i).value='');
+    document.getElementById('cmSubject').value = '';
+    // 預填老師的服務學校
+    if (user.school) document.getElementById('cmSchool').value = user.school;
+  }
+  document.getElementById('classModal').classList.remove('hidden');
+};
+
+window.closeClassModal = () => document.getElementById('classModal').classList.add('hidden');
+
+window.saveClass = async () => {
+  const errEl = document.getElementById('cmErr');
+  errEl.style.display = 'none';
+  const id      = document.getElementById('cmId').value;
+  const school  = document.getElementById('cmSchool').value.trim();
+  const name    = document.getElementById('cmName').value.trim();
+  const subject = document.getElementById('cmSubject').value;
+  const desc    = document.getElementById('cmDesc').value.trim();
+  const showErr = m => { errEl.textContent=m; errEl.style.display='block'; };
+
+  if (!school)  return showErr('請填寫學校名稱');
+  if (!name)    return showErr('請填寫班級名稱');
+  if (!subject) return showErr('請選擇科目');
+
+  const btn = document.getElementById('cmSave');
+  btn.disabled=true; btn.textContent='儲存中…';
+  try {
+    await DataService.saveClass({
+      ...(id ? { id } : {}),
+      school, name, subjectCode: subject, desc: desc||null
+    });
+    UI.toast(id ? '班級已更新' : '班級已建立，教室代碼已產生', 'success');
+    closeClassModal();
+    allClasses = await DataService.getClasses({ teacherUid: user.uid });
+    renderTeacherClasses();
+  } catch(e) {
+    showErr('儲存失敗：'+e.message);
+  } finally {
+    btn.disabled=false; btn.textContent='儲存';
+  }
+};
+
+window.deleteClass = async (id, name) => {
+  if (!confirm(`確定要刪除班級「${name}」？學生的加入記錄也將一併移除。`)) return;
+  try {
+    await DataService.deleteClass(id);
+    UI.toast('班級已刪除','success');
+    allClasses = allClasses.filter(c => c.id!==id);
+    renderTeacherClasses();
+  } catch(e) { UI.toast('刪除失敗：'+e.message,'danger'); }
+};
+
+window.copyCode = (code) => {
+  navigator.clipboard.writeText(code).then(() => UI.toast(`教室代碼 ${code} 已複製`,'success'));
+};
+
+// ── 班級成員 ─────────────────────────────────────
+window.viewMembers = async (classId, name) => {
+  document.getElementById('mmTitle').textContent = `${name} — 成員列表`;
+  document.getElementById('memberList').innerHTML =
+    '<div style="padding:24px;text-align:center;color:var(--text-muted)">載入中…</div>';
+  document.getElementById('memberModal').classList.remove('hidden');
+  try {
+    const members = await DataService.getClassMembers(classId);
+    if (!members.length) {
+      document.getElementById('memberList').innerHTML =
+        '<div style="padding:32px;text-align:center;color:var(--text-muted)">尚無學生加入此班級</div>';
+      return;
+    }
+    document.getElementById('memberList').innerHTML = members.map(m =>
+      `<div class="member-item">
+        <div class="member-avatar">${(m.displayName||'?')[0].toUpperCase()}</div>
+        <div style="flex:1">
+          <div style="font-weight:500">${m.displayName||'—'}</div>
+          <div style="font-size:.74rem;color:var(--text-muted)">${UI.formatDate(m.joinedAt)}</div>
+        </div>
+      </div>`
+    ).join('');
+  } catch(e) {
+    document.getElementById('memberList').innerHTML =
+      `<div style="padding:24px;color:var(--danger)">載入失敗：${e.message}</div>`;
+  }
+};
+
+// ════════════════════════════════════════════════
+//  學生功能
+// ════════════════════════════════════════════════
+async function loadStudentView() {
+  const el = document.getElementById('pageContent');
+  let myClasses = [];
+  try { myClasses = await DataService.getMyClasses(); } catch(e) {}
+
+  el.innerHTML = `
+    <div style="display:grid;grid-template-columns:400px 1fr;gap:20px;align-items:start">
+      <!-- 加入班級 -->
+      <div class="card join-card">
+        <div class="card-header"><h2>🔑 加入班級</h2></div>
+        <div class="card-body">
+          <p style="font-size:.84rem;color:var(--text-secondary);margin-bottom:14px">
+            請向老師索取 6 碼<strong>教室代碼</strong>，輸入後即可加入班級。
+          </p>
+          <div style="background:#fef0ef;color:var(--danger);border:1px solid #f5c6c2;border-radius:var(--radius);padding:8px 12px;font-size:.82rem;margin-bottom:12px;display:none" id="joinErr"></div>
+          <div class="form-group">
+            <label class="form-label">教室代碼</label>
+            <input class="code-input form-control" id="joinCode" maxlength="6" placeholder="XXXXXX"
+                   oninput="this.value=this.value.toUpperCase()"
+                   onkeydown="if(event.key==='Enter')doJoin()">
+          </div>
+          <button class="btn btn-primary w-full" id="joinBtn" onclick="doJoin()">加入班級</button>
+        </div>
+      </div>
+
+      <!-- 已加入的班級 -->
+      <div>
+        <div style="font-size:.88rem;font-weight:700;color:var(--primary);margin-bottom:10px">
+          我的班級（${myClasses.length} 個）
+        </div>
+        <div id="myClassList">
+          ${myClasses.length ? myClasses.map(c => `
+            <div class="my-class-card">
+              <div class="my-class-title">${c.name||'—'}</div>
+              <div class="my-class-meta">
+                🏫 ${c.school||'—'}　📚 ${SUBJECT_CODES[c.subjectCode]||c.subjectCode||'—'}
+                ${c.teacherName ? `　👤 ${c.teacherName}老師` : ''}
+              </div>
+              <div class="my-class-code">${c.roomCode}</div>
+            </div>`).join('') :
+            `<div style="text-align:center;padding:40px;color:var(--text-muted)">
+              <div style="font-size:2rem;opacity:.3;margin-bottom:10px">🏫</div>
+              <p>尚未加入任何班級</p>
+            </div>`}
+        </div>
+      </div>
+    </div>`;
+}
+
+window.doJoin = async () => {
+  const code = document.getElementById('joinCode').value.trim().toUpperCase();
+  const errEl = document.getElementById('joinErr');
+  errEl.style.display='none';
+  if (code.length !== 6) {
+    errEl.textContent='請輸入完整的 6 碼教室代碼';
+    errEl.style.display='block'; return;
+  }
+  const btn = document.getElementById('joinBtn');
+  btn.disabled=true; btn.textContent='加入中…';
+  try {
+    const res = await DataService.joinClassByCode(code);
+    if (!res.ok) {
+      errEl.textContent=res.msg; errEl.style.display='block';
+      btn.disabled=false; btn.textContent='加入班級'; return;
+    }
+    UI.toast(`已成功加入「${res.cls.name}」！`, 'success');
+    btn.disabled=false; btn.textContent='加入班級';
+    document.getElementById('joinCode').value='';
+    loadStudentView(); // 重新整理
+  } catch(e) {
+    errEl.textContent='加入失敗：'+e.message; errEl.style.display='block';
+    btn.disabled=false; btn.textContent='加入班級';
+  }
+};
+</script>
+</body>
+</html>

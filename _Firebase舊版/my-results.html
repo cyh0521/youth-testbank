@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>我的成績 — 幼獅題庫系統</title>
+<link rel="stylesheet" href="css/theme.css">
+<style>
+/* ── 成就 / 統計卡 ── */
+.hero-card{background:linear-gradient(135deg,var(--primary-dark) 0%,var(--primary) 60%,var(--primary-light) 100%);border-radius:var(--radius-lg);padding:24px 28px;color:white;margin-bottom:20px;display:flex;align-items:center;gap:24px;position:relative;overflow:hidden}
+.hero-card::before{content:'';position:absolute;right:-20px;top:-20px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.06)}
+.hero-card::after{content:'';position:absolute;right:40px;bottom:-30px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.04)}
+.hero-avatar{width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:1.8rem;font-weight:700;flex-shrink:0;border:2px solid rgba(255,255,255,.3)}
+.hero-info h2{font-family:var(--font-serif);font-size:1.15rem;font-weight:700;margin-bottom:4px}
+.hero-info p{font-size:.84rem;opacity:.75}
+.hero-stats{display:flex;gap:20px;margin-left:auto;flex-shrink:0}
+.hs-item{text-align:center}
+.hs-num{font-size:1.6rem;font-weight:800;font-family:var(--font-serif);line-height:1}
+.hs-label{font-size:.7rem;opacity:.65;margin-top:3px}
+
+/* ── 成績卡片 ── */
+.result-card{background:white;border:1px solid var(--border-light);border-radius:var(--radius-lg);padding:16px 18px;margin-bottom:10px;display:flex;align-items:center;gap:14px;transition:box-shadow .15s;cursor:pointer}
+.result-card:hover{box-shadow:var(--shadow-md)}
+.score-ring{width:56px;height:56px;flex-shrink:0;position:relative;display:flex;align-items:center;justify-content:center}
+.score-ring svg{position:absolute;top:0;left:0;transform:rotate(-90deg)}
+.score-ring .ring-bg{fill:none;stroke:var(--bg-base);stroke-width:5}
+.score-ring .ring-fill{fill:none;stroke-width:5;stroke-linecap:round;transition:stroke-dashoffset .6s}
+.score-ring .ring-text{font-size:.72rem;font-weight:800;font-family:var(--font-serif);text-anchor:middle;dominant-baseline:central}
+.rc-info{flex:1;min-width:0}
+.rc-title{font-weight:700;font-size:.92rem;color:var(--primary);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rc-meta{font-size:.76rem;color:var(--text-muted);display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.rc-badge{flex-shrink:0}
+
+/* ── 空狀態 ── */
+.empty-hero{text-align:center;padding:72px 24px}
+.empty-hero .eh-icon{font-size:4rem;margin-bottom:14px;opacity:.25}
+.empty-hero h3{font-size:1rem;color:var(--text-secondary);margin-bottom:6px}
+.empty-hero p{font-size:.84rem;color:var(--text-muted)}
+
+/* ── 詳情 Modal ── */
+.ans-row{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border-light);font-size:.84rem}
+.ans-row:last-child{border-bottom:none}
+.ans-num{color:var(--text-muted);font-size:.74rem;width:24px;flex-shrink:0;padding-top:2px;text-align:right}
+.ans-q{flex:1;min-width:0}
+.ans-q-txt{line-height:1.5;margin-bottom:3px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.ans-compare{display:flex;gap:12px;font-size:.76rem;margin-top:2px;flex-wrap:wrap}
+.ans-icon{flex-shrink:0;width:22px;text-align:center;font-size:.9rem}
+
+/* ── 篩選 ── */
+.filter-strip{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.filter-strip .form-control{font-size:.82rem;padding:5px 9px}
+</style>
+<style>
+/* 側邊欄預載入樣式，防止 JS 初始化前的空白閃爍 */
+#sidebar{background:var(--bg-sidebar,#1a3a5c);min-height:100vh;width:var(--sidebar-width,240px)}
+.main{opacity:0;transition:opacity .15s ease}
+.main.ready{opacity:1}
+</style>
+<script>
+// 頁面載入完成後立即顯示內容，避免等待 JS module 初始化
+document.addEventListener('DOMContentLoaded',function(){
+  setTimeout(function(){
+    var m=document.querySelector('.main');
+    if(m)m.classList.add('ready');
+  },50);
+});
+</script>
+</head>
+<body>
+<script src="js/core.js"></script>
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="main">
+    <div class="topbar">
+      <span class="topbar-title">我的成績</span>
+      <div class="topbar-actions">
+        <button class="btn btn-primary btn-sm" onclick="nav('take')">📝 前往考試</button>
+      </div>
+    </div>
+    <div class="page-content">
+
+      <!-- Hero 統計 -->
+      <div class="hero-card" id="heroCard">
+        <div class="hero-avatar" id="heroAvatar">?</div>
+        <div class="hero-info">
+          <h2 id="heroName">載入中…</h2>
+          <p id="heroSub">—</p>
+        </div>
+        <div class="hero-stats" id="heroStats"></div>
+      </div>
+
+      <!-- 篩選 -->
+      <div class="filter-strip">
+        <select class="form-control" id="fExam" onchange="applyFilter()" style="min-width:160px">
+          <option value="">全部試卷</option>
+        </select>
+        <select class="form-control" id="fPass" onchange="applyFilter()" style="min-width:100px">
+          <option value="">全部結果</option>
+          <option value="pass">通過</option>
+          <option value="fail">未通過</option>
+        </select>
+        <span style="font-size:.8rem;color:var(--text-muted);margin-left:auto" id="filterCount"></span>
+      </div>
+
+      <!-- 成績列表 -->
+      <div id="resultList">
+        <div style="text-align:center;padding:60px;color:var(--text-muted)">載入中…</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 詳情 Modal -->
+<div class="modal-overlay hidden" id="detailModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h3 id="detailTitle">成績詳情</h3>
+      <button class="modal-close" onclick="document.getElementById('detailModal').classList.add('hidden')">✕</button>
+    </div>
+    <div class="modal-body" id="detailBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="document.getElementById('detailModal').classList.add('hidden')">關閉</button>
+      <button class="btn btn-primary" onclick="nav('take')">再次考試</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { guardPage } from './js/auth-guard.js';
+window._activeNav = 'my-results';
+const user = await guardPage(['student','teacher','admin']);
+if (!user) throw new Error('not auth');
+
+let allResults = [];
+let allQuestions = {};
+async function loadQuestionsForResult(qids) {
+  const missing = (qids||[]).filter(id => id && !allQuestions[id]);
+  if (!missing.length) return;
+  const qs = await DataService.getQuestionsByIds(missing);
+  qs.forEach(q => { allQuestions[q.id] = q; });
+}
+let examsMap = {};
+let filtered = [];
+
+async function init() {
+  // 初始化 hero
+  const ini = (user.displayName||user.email||'?')[0].toUpperCase();
+  document.getElementById('heroAvatar').textContent = ini;
+  document.getElementById('heroName').textContent = user.displayName || user.email || '學生';
+  document.getElementById('heroSub').textContent = user.school ? `🏫 ${user.school}` : (user.email||'');
+
+  try {
+    const [results, exams, qs] = await Promise.all([
+      DataService.getResults({ studentUid: user.uid }),
+      DataService.getExams(),
+      Promise.resolve([]),  // 題目改為按需載入
+    ]);
+
+    allResults = results;
+    // 題目改為按需載入，不預先全量讀取
+    exams.forEach(e => { examsMap[e.id] = e; });
+
+    // 填試卷篩選
+    const fExam = document.getElementById('fExam');
+    const seen = new Set();
+    results.forEach(r => {
+      if (r.examId && !seen.has(r.examId)) {
+        seen.add(r.examId);
+        const title = examsMap[r.examId]?.title || r.examTitle || r.examId;
+        fExam.innerHTML += `<option value="${r.examId}">${title}</option>`;
+      }
+    });
+
+    updateHeroStats(results);
+    applyFilter();
+  } catch(e) {
+    document.getElementById('resultList').innerHTML = `<div style="text-align:center;padding:40px;color:var(--danger)">載入失敗：${e.message}</div>`;
+  }
+}
+
+function updateHeroStats(results) {
+  const total = results.length;
+  if (!total) {
+    document.getElementById('heroStats').innerHTML = '';
+    document.getElementById('heroSub').textContent += '　尚未參加任何考試';
+    return;
+  }
+  const passed = results.filter(r => r.score >= (r.passScore || examsMap[r.examId]?.passScore || 60)).length;
+  const pcts = results.map(r => r.totalScore ? Math.round(r.score/r.totalScore*100) : 0);
+  const avg = Math.round(pcts.reduce((a,b)=>a+b,0)/pcts.length);
+  const best = Math.max(...pcts);
+
+  document.getElementById('heroStats').innerHTML = [
+    ['考試次數', total],
+    ['通過次數', passed],
+    ['平均分', avg+'%'],
+    ['最高分', best+'%'],
+  ].map(([l,v]) => `<div class="hs-item"><div class="hs-num">${v}</div><div class="hs-label">${l}</div></div>`).join('');
+}
+
+window.applyFilter = () => {
+  const examF = document.getElementById('fExam').value;
+  const passF = document.getElementById('fPass').value;
+  filtered = allResults.filter(r => {
+    const passScore = r.passScore || examsMap[r.examId]?.passScore || 60;
+    const pass = r.score >= passScore;
+    return (!examF || r.examId===examF) && (!passF || (passF==='pass'?pass:!pass));
+  });
+  document.getElementById('filterCount').textContent = `共 ${filtered.length} 筆記錄`;
+  renderList(filtered);
+};
+
+function renderList(data) {
+  const el = document.getElementById('resultList');
+  if (!data.length) {
+    el.innerHTML = `<div class="empty-hero">
+      <div class="eh-icon">📊</div>
+      <h3>尚無成績記錄</h3>
+      <p>參加考試後，成績將顯示在這裡</p>
+      <div style="margin-top:16px"><button class="btn btn-primary" onclick="nav('take')">📝 前往參加考試</button></div>
+    </div>`;
+    return;
+  }
+
+  el.innerHTML = data.map(r => {
+    const total = r.totalScore || 100;
+    const pct = Math.round(r.score / total * 100);
+    const passScore = r.passScore || examsMap[r.examId]?.passScore || 60;
+    const passed = r.score >= passScore;
+    const color = pct >= 80 ? '#1e8449' : pct >= 60 ? '#2c5f8a' : '#c0392b';
+    const circumference = 2 * Math.PI * 22;
+    const offset = circumference * (1 - pct/100);
+    const timeUsed = r.timeUsed ? `${Math.floor(r.timeUsed/60)}分${r.timeUsed%60}秒` : '';
+
+    return `<div class="result-card" onclick="viewDetail('${r.id}')">
+      <div class="score-ring">
+        <svg width="56" height="56" viewBox="0 0 56 56">
+          <circle class="ring-bg" cx="28" cy="28" r="22"/>
+          <circle class="ring-fill" cx="28" cy="28" r="22"
+            stroke="${color}"
+            stroke-dasharray="${circumference}"
+            stroke-dashoffset="${offset}"/>
+          <text class="ring-text" x="28" y="28" fill="${color}">${pct}%</text>
+        </svg>
+      </div>
+      <div class="rc-info">
+        <div class="rc-title">${r.examTitle||examsMap[r.examId]?.title||'考試'}</div>
+        <div class="rc-meta">
+          <span style="font-weight:600;color:${passed?'var(--success)':'var(--danger)'}">${r.score}/${total}分</span>
+          ${timeUsed ? `<span>⏱ ${timeUsed}</span>` : ''}
+          <span>${UI.formatDate(r.submittedAt)}</span>
+          ${r.detail?.some(d=>d.isCorrect===null)?'<span style="color:var(--warning)">⚠ 含待批改題目</span>':''}
+        </div>
+      </div>
+      <div class="rc-badge">
+        ${passed
+          ? '<span class="badge badge-easy">✓ 通過</span>'
+          : '<span class="badge" style="background:#fdecea;color:#c0392b">✗ 未通過</span>'
+        }
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.viewDetail = async (id) => {
+  const r = allResults.find(x => x.id===id); if (!r) return;
+  // 按需載入此成績用到的題目
+  await loadQuestionsForResult((r.detail||[]).map(d => d.qid));
+  const total = r.totalScore || 100;
+  const pct = Math.round(r.score/total*100);
+  const passScore = r.passScore || examsMap[r.examId]?.passScore || 60;
+  const passed = r.score >= passScore;
+  const timeUsed = r.timeUsed ? `${Math.floor(r.timeUsed/60)}分${r.timeUsed%60}秒` : '—';
+
+  const detail = r.detail || [];
+  const correctCount = detail.filter(d => d.isCorrect===true).length;
+  const wrongCount = detail.filter(d => d.isCorrect===false).length;
+  const pendingCount = detail.filter(d => d.isCorrect===null).length;
+
+  const ansHTML = detail.map((d, i) => {
+    const q = allQuestions[d.qid];
+    let icon, iconStyle;
+    if (d.isCorrect===true)  { icon='✓'; iconStyle='color:var(--success)'; }
+    else if (d.isCorrect===false) { icon='✗'; iconStyle='color:var(--danger)'; }
+    else { icon='?'; iconStyle='color:var(--warning)'; }
+    return `<div class="ans-row">
+      <span class="ans-num">${i+1}.</span>
+      <div class="ans-q">
+        <div class="ans-q-txt">${q?.text||d.qid}</div>
+        <div class="ans-compare">
+          <span>你的答案：<strong style="${d.isCorrect===false?'color:var(--danger)':''}${d.userAns?'':'color:var(--text-muted)'}">${d.userAns||'（未作答）'}</strong></span>
+          ${d.isCorrect!==null
+            ? `<span>正確答案：<strong style="color:var(--success)">${d.correct||'—'}</strong></span>`
+            : '<span style="color:var(--warning)">主觀題 — 待老師批改</span>'
+          }
+        </div>
+      </div>
+      <span class="ans-icon" style="${iconStyle};font-size:1rem">${icon}</span>
+    </div>`;
+  }).join('') || '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:.84rem">無詳細作答記錄</div>';
+
+  document.getElementById('detailTitle').textContent = r.examTitle || examsMap[r.examId]?.title || '考試詳情';
+  document.getElementById('detailBody').innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px">
+      ${[
+        ['得分', `<span style="font-size:1.4rem;font-weight:900;font-family:var(--font-serif);color:${passed?'var(--success)':'var(--danger)'}">${r.score}</span><span style="color:var(--text-muted);font-size:.85rem">/${total}</span>`],
+        ['得分率', `<strong style="font-size:1.1rem;color:${passed?'var(--success)':'var(--danger)'}">${pct}%</strong>`],
+        ['結果', passed?'<span class="badge badge-easy" style="font-size:.85rem">✓ 通過</span>':'<span class="badge" style="background:#fdecea;color:#c0392b;font-size:.85rem">✗ 未通過</span>'],
+        ['答對', `<span style="color:var(--success);font-weight:700">${correctCount} 題</span>`],
+        ['答錯', `<span style="color:var(--danger);font-weight:700">${wrongCount} 題</span>`],
+        ['待批改', `<span style="color:var(--warning);font-weight:700">${pendingCount} 題</span>`],
+        ['作答時間', timeUsed],
+        ['及格分', passScore+'分'],
+        ['提交時間', UI.formatDateTime(r.submittedAt)],
+      ].map(([k,v])=>`<div style="background:var(--bg-base);padding:8px 12px;border-radius:var(--radius)">
+        <div style="font-size:.68rem;color:var(--text-muted);margin-bottom:2px;text-transform:uppercase;letter-spacing:.04em">${k}</div>
+        <div>${v}</div>
+      </div>`).join('')}
+    </div>
+    ${pendingCount>0?`<div class="alert alert-warning" style="font-size:.8rem;margin-bottom:12px">📌 含 ${pendingCount} 題主觀題尚待老師批改，最終分數可能調整。</div>`:''}
+    <div style="font-size:.82rem;font-weight:700;color:var(--primary);margin-bottom:8px">各題作答回顧</div>
+    <div style="max-height:360px;overflow-y:auto;border:1px solid var(--border-light);border-radius:var(--radius);padding:0 12px">
+      ${ansHTML}
+    </div>
+  `;
+  document.getElementById('detailModal').classList.remove('hidden');
+};
+
+init();
+</script>
+</body>
+</html>

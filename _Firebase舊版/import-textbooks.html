@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>課本資料匯入 — 幼獅題庫系統</title>
+<link rel="stylesheet" href="css/theme.css">
+<style>
+#sidebar{background:var(--bg-sidebar,#1a3a5c);min-height:100vh;width:var(--sidebar-width,240px)}
+.main{opacity:0;transition:opacity .15s ease}.main.ready{opacity:1}
+.log-box{background:#1a1a2e;color:#a8d8a8;font-family:var(--font-mono);font-size:.78rem;padding:16px;border-radius:var(--radius);height:400px;overflow-y:auto;white-space:pre-wrap;}
+.log-err{color:#ff8080}
+.log-ok{color:#64d88e}
+.log-info{color:#8ab4d4}
+</style>
+<script>document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){var m=document.querySelector('.main');if(m)m.classList.add('ready');},50);});</script>
+</head>
+<body>
+<script src="js/core.js"></script>
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="main">
+    <div class="topbar"><span class="topbar-title">課本資料一次性匯入</span></div>
+    <div class="page-content">
+      <div class="card" style="max-width:760px">
+        <div class="card-header">
+          <h2>匯入課本結構至 Firestore</h2>
+        </div>
+        <div class="card-body">
+          <div class="alert alert-warning" style="margin-bottom:16px">
+            ⚠️ 此工具只需執行一次。匯入完成後請刪除此頁面（import-textbooks.html）。
+          </div>
+          <p style="font-size:.875rem;margin-bottom:16px;color:var(--text-secondary)">
+            將從幼獅現有的規格檔匯入以下資料：<br>
+            <strong>9 個科目、21 個冊別（含完整單元／章／節三層結構）</strong>，涵蓋全民國防、健康與護理、生涯規劃、家政、生命教育、美術、生活科技等科目。
+          </p>
+          <div style="display:flex;gap:10px;margin-bottom:16px">
+            <button class="btn btn-primary" id="startBtn" onclick="startImport()">▶ 開始匯入</button>
+            <button class="btn btn-ghost" id="clearBtn" onclick="clearAll()" style="color:var(--danger);border-color:var(--danger)">🗑 清除現有課本資料</button>
+            <button class="btn btn-ghost" id="resetCounterBtn" onclick="resetCounter()" style="color:var(--warning);border-color:var(--warning)">🔢 重置題目流水號</button>
+            <button class="btn btn-ghost" id="clearQBtn" onclick="clearQuestions()" style="color:var(--danger);border-color:var(--danger)">🗑 清除所有題目</button>
+          </div>
+          <div class="log-box" id="logBox">等待開始...\n</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="module">
+import { guardPage } from './js/auth-guard.js';
+window._activeNav = '';
+const user = await guardPage(['admin']);
+if (!user) throw new Error('not auth');
+
+const DATA = {"A1": {"name": "大學全民國防教育", "code": "A1", "order": 0, "books": {"A1-01": {"name": "國際情勢", "code": "A1-01", "order": 1, "l1": "章", "l2": "", "l3": "", "chapters": [{"chapterNum": 1, "title": "第一章　區域安全", "sections": []}, {"chapterNum": 2, "title": "第二章　亞太重要安全議題", "sections": []}, {"chapterNum": 3, "title": "第三章　國際重要安全議題", "sections": []}, {"chapterNum": 4, "title": "第四章　敵情教育及兩岸情勢", "sections": []}, {"chapterNum": 5, "title": "第五章　機艦與人員識別", "sections": []}, {"chapterNum": 6, "title": "第六章　保防教育", "sections": []}, {"chapterNum": 7, "title": "第七章　武裝衝突法及日內瓦公約", "sections": []}]}, "A1-02": {"name": "國防政策", "code": "A1-02", "order": 2, "l1": "章", "l2": "", "l3": "", "chapters": [{"chapterNum": 1, "title": "第一章　國防與政治", "sections": []}, {"chapterNum": 2, "title": "第二章　我國國家安全政策與法制", "sections": []}, {"chapterNum": 3, "title": "第三章　我國大陸政策與國防", "sections": []}, {"chapterNum": 4, "title": "第四章　我國國防政策", "sections": []}, {"chapterNum": 5, "title": "第五章　我國國防轉型與變革", "sections": []}, {"chapterNum": 6, "title": "第六章　兵役實務及募兵制生涯規畫", "sections": []}, {"chapterNum": 7, "title": "第七章　愛國教育", "sections": []}]}, "A1-03": {"name": "全民國防", "code": "A1-03", "order": 3, "l1": "章", "l2": "", "l3": "", "chapters": [{"chapterNum": 1, "title": "第一章　國家意識", "sections": []}, {"chapterNum": 2, "title": "第二章　全民防衛", "sections": []}, {"chapterNum": 3, "title": "第三章　經濟與國防", "sections": []}, {"chapterNum": 4, "title": "第四章　文化與心理", "sections": []}, {"chapterNum": 5, "title": "第五章　我國安全情勢與全民國防", "sections": []}, {"chapterNum": 6, "title": "第六章　全民國防與教育", "sections": []}, {"chapterNum": 7, "title": "第七章　軍人禮節與警衛勤務", "sections": []}, {"chapterNum": 8, "title": "第八章　軍紀教育（含申訴制度）", "sections": []}, {"chapterNum": 9, "title": "第九章　軍法教育", "sections": []}, {"chapterNum": 10, "title": "第十章　愛國教育", "sections": []}]}, "A1-04": {"name": "防衛動員", "code": "A1-04", "order": 4, "l1": "章", "l2": "", "l3": "", "chapters": [{"chapterNum": 1, "title": "第一章　防衛動員基本概念", "sections": []}, {"chapterNum": 2, "title": "第二章　防衛動員與全民國防", "sections": []}, {"chapterNum": 3, "title": "第三章　我國防衛動員簡介", "sections": []}, {"chapterNum": 4, "title": "第四章　我國防衛動員組織與災害防救", "sections": []}, {"chapterNum": 5, "title": "第五章　防衛動員與緊急應變", "sections": []}, {"chapterNum": 6, "title": "第六章　災防整備及防衛動員模擬演練", "sections": []}, {"chapterNum": 7, "title": "第七章　戰場急救與自救", "sections": []}, {"chapterNum": 8, "title": "第八章　熱中暑、熱衰竭及休克", "sections": []}, {"chapterNum": 9, "title": "第九章　心肺復甦術", "sections": []}]}, "A1-05": {"name": "國防科技", "code": "A1-05", "order": 5, "l1": "章", "l2": "", "l3": "", "chapters": [{"chapterNum": 1, "title": "第一章　緒論", "sections": []}, {"chapterNum": 2, "title": "第二章　武器系統介紹", "sections": []}, {"chapterNum": 3, "title": "第三章　我國國防產業", "sections": []}, {"chapterNum": 4, "title": "第四章　軍兵種介紹", "sections": []}, {"chapterNum": 5, "title": "第五章　資訊作戰", "sections": []}, {"chapterNum": 6, "title": "第六章　化生放核作戰與化生放核訓練簡介", "sections": []}, {"chapterNum": 7, "title": "第七章　愛國教育", "sections": []}]}}}, "B1": {"name": "高中全民國防教育", "code": "B1", "order": 1, "books": {"B1-01": {"name": "高中全民國防教育（甲版）", "code": "B1-01", "order": 1, "l1": "單元", "l2": "章", "l3": "節", "chapters": [{"chapterNum": 1, "title": "單元1　全民國防概論", "sections": [{"sectionNum": 1, "title": "第1章　穩固國家的基石——國家安全的重要性", "subsections": [{"num": 1, "title": "第1節　國家安全的定義"}, {"num": 2, "title": "第2節　國家安全的基石"}]}, {"sectionNum": 2, "title": "第2章　全方位的全民國防——全民國防的意涵", "subsections": [{"num": 1, "title": "第1節　全民國防的定義"}, {"num": 2, "title": "第2節　全民國防與全民國防教育"}, {"num": 3, "title": "第3節　全民國防教育推行與效益"}]}, {"sectionNum": 3, "title": "第3章　全民國防的體現——全民國防理念的實踐經驗", "subsections": [{"num": 1, "title": "第1節　以色列"}, {"num": 2, "title": "第2節　瑞士"}, {"num": 3, "title": "第3節　中國大陸"}, {"num": 4, "title": "第4節　美國"}, {"num": 5, "title": "第5節　新加坡"}]}]}, {"chapterNum": 2, "title": "單元2　國際情勢與國家安全", "sections": [{"sectionNum": 1, "title": "第4章　瞭望全球——全球與印太區域安全情勢", "subsections": [{"num": 1, "title": "第1節　國際環境的影響因素"}, {"num": 2, "title": "第2節　全球與印太區域安全情勢與發展"}, {"num": 3, "title": "第3節　兩岸關係安全情勢與發展"}]}, {"sectionNum": 2, "title": "第5章　國安挑戰——我國國家安全情勢與機會", "subsections": [{"num": 1, "title": "第1節　臺灣海洋利益與軍事地緣價值"}, {"num": 2, "title": "第2節　我國國家安全的策略"}]}]}, {"chapterNum": 3, "title": "單元3　我國國防現況與發展", "sections": [{"sectionNum": 1, "title": "第6章　前瞻國防政策——國防政策與國軍", "subsections": [{"num": 1, "title": "第1節　我國國防政策的理念"}, {"num": 2, "title": "第2節　國軍使命、任務、現況及兵役制度"}]}, {"sectionNum": 2, "title": "第7章　軍武大觀園——軍備與國防科技", "subsections": [{"num": 1, "title": "第1節　我國主要武器裝備現況與發展"}, {"num": 2, "title": "第2節　軍民通用科技發展與趨勢"}]}]}, {"chapterNum": 4, "title": "單元4　防衛動員與災害防救", "sections": [{"sectionNum": 1, "title": "第8章　全民動員令——全民防衛動員的意義", "subsections": [{"num": 1, "title": "第1節　全民防衛動員的意義、準備與實施"}, {"num": 2, "title": "第2節　青年服勤動員的意義與作為"}]}, {"sectionNum": 2, "title": "第9章　災防動起來——災害防救與應變", "subsections": [{"num": 1, "title": "第1節　我國災害防救簡介"}, {"num": 2, "title": "第2節　校園災害防救簡介"}, {"num": 3, "title": "第3節　災害應變的知識與技能"}]}, {"sectionNum": 3, "title": "第10章　實彈射擊GＯ——射擊預習與習作", "subsections": [{"num": 1, "title": "第1節　步槍簡介與安全規定"}, {"num": 2, "title": "第2節　射擊要領與姿勢"}, {"num": 3, "title": "第3節　瞄準練習"}]}]}, {"chapterNum": 5, "title": "單元5　戰爭啟示與全民國防", "sections": [{"sectionNum": 1, "title": "第11章　安平追想——鄭成功復臺戰役", "subsections": [{"num": 1, "title": "第1節　戰爭起因"}, {"num": 2, "title": "第2節　戰爭經過"}, {"num": 3, "title": "第3節　分析與啟示"}]}, {"sectionNum": 2, "title": "第12章　保鄉衛土——日軍乙未攻臺", "subsections": [{"num": 1, "title": "第1節　戰爭起因"}, {"num": 2, "title": "第2節　戰爭經過"}, {"num": 3, "title": "第3節　分析與啟示"}]}, {"sectionNum": 3, "title": "第13章　扭轉乾坤——古寧頭戰役", "subsections": [{"num": 1, "title": "第1節　戰爭起因"}, {"num": 2, "title": "第2節　戰爭經過"}, {"num": 3, "title": "第3節　分析與啟示"}]}, {"sectionNum": 4, "title": "第14章　確保繁榮安定——八二三砲戰", "subsections": [{"num": 1, "title": "第1節　戰爭起因"}, {"num": 2, "title": "第2節　戰爭經過"}, {"num": 3, "title": "第3節　分析與啟示"}]}]}]}, "B1-02": {"name": "高中全民國防教育（乙版）", "code": "B1-02", "order": 2, "l1": "單元", "l2": "章", "l3": "節", "chapters": [{"chapterNum": 1, "title": "單元1　全民國防概論", "sections": [{"sectionNum": 1, "title": "第1章　我的國家安全嗎──國家安全的重要性", "subsections": [{"num": 1, "title": "第1節　國家的概念"}, {"num": 2, "title": "第2節　安全的意涵"}, {"num": 3, "title": "第3節　國家安全的重要"}]}, {"sectionNum": 2, "title": "第2章　全民國防你我他──全民國防的意涵", "subsections": [{"num": 1, "title": "第1節　全民參與的國防"}, {"num": 2, "title": "第2節　全民國防教育的發展途徑"}, {"num": 3, "title": "第3節　全民心防的建立"}]}, {"sectionNum": 3, "title": "第3章　不同文化下的全民國防──全民國防理念的實踐經驗", "subsections": [{"num": 1, "title": "第1節　各國全民國防的推動現況"}, {"num": 2, "title": "第2節　各國實踐全民國防的異同"}]}]}, {"chapterNum": 2, "title": "單元2　國際情勢與國家安全", "sections": [{"sectionNum": 1, "title": "第4章　戰略競逐的新紀元──全球與印太區域安全情勢", "subsections": [{"num": 1, "title": "第1節　傳統與非傳統安全威脅"}, {"num": 2, "title": "第2節　全球與印太區域安全情勢與發展"}, {"num": 3, "title": "第3節　兩岸關係安全情勢與發展"}]}, {"sectionNum": 2, "title": "第5章　掌控危機逆轉勝──我國國家安全情勢與機會", "subsections": [{"num": 1, "title": "第1節　臺灣的海洋利益"}, {"num": 2, "title": "第2節　我國的軍事地緣價值"}, {"num": 3, "title": "第3節　我國國家安全的策略"}]}]}, {"chapterNum": 3, "title": "單元3　我國國防現況與發展", "sections": [{"sectionNum": 1, "title": "第6章　國家安全的堅定力量──國防政策與國軍", "subsections": [{"num": 1, "title": "第1節　我國國防政策與理念"}, {"num": 2, "title": "第2節　國軍使命、任務、現況及兵役制度"}]}, {"sectionNum": 2, "title": "第7章　金戈鐵馬──軍備與國防科技", "subsections": [{"num": 1, "title": "第1節　我國主要武器裝備現況與發展"}, {"num": 2, "title": "第2節　軍民通用科技發展與趨勢"}]}]}, {"chapterNum": 4, "title": "單元4　防衛動員與災害防救", "sections": [{"sectionNum": 1, "title": "第8章　全民動起來──全民防衛動員的意義", "subsections": [{"num": 1, "title": "第1節　全民防衛動員的意義、準備及實施"}, {"num": 2, "title": "第2節　青年服勤動員的意義與作為"}]}, {"sectionNum": 2, "title": "第9章　防災總動員──災害防救與應變", "subsections": [{"num": 1, "title": "第1節　我國災害防救簡介"}, {"num": 2, "title": "第2節　校園災害防救簡介"}, {"num": 3, "title": "第3節　災害應變的知識與技能"}]}, {"sectionNum": 3, "title": "第10章　未來神射手──射擊預習與實作", "subsections": [{"num": 1, "title": "第1節　步槍簡介與安全規定"}, {"num": 2, "title": "第2節　射擊要領與姿勢"}, {"num": 3, "title": "第3節　實彈射擊體驗"}]}]}, {"chapterNum": 5, "title": "單元5　戰爭啟示與全民國防", "sections": [{"sectionNum": 1, "title": "第11章　國共內戰餘波──古寧頭戰役", "subsections": [{"num": 1, "title": "第1節　戰前情勢"}, {"num": 2, "title": "第2節　戰爭經過"}, {"num": 3, "title": "第3節　分析與啟示"}]}, {"sectionNum": 2, "title": "第12章　沿海島嶼爭奪戰──第一次臺海危機", "subsections": [{"num": 1, "title": "第1節　戰前情勢"}, {"num": 2, "title": "第2節　戰爭經過"}, {"num": 3, "title": "第3節　分析與啟示"}]}, {"sectionNum": 3, "title": "第13章　奠定兩岸和平分治──八二三砲戰", "subsections": [{"num": 1, "title": "第1節　戰前情勢"}, {"num": 2, "title": "第2節　戰爭經過"}, {"num": 3, "title": "第3節　分析與啟示"}]}, {"sectionNum": 4, "title": "第14章　戰爭和平一線間──臺海飛彈危機", "subsections": [{"num": 1, "title": "第1節　危機前情勢"}, {"num": 2, "title": "第2節　危機經過"}, {"num": 3, "title": "第3節　分析與啟示"}]}]}]}}}, "C1": {"name": "健康與護理", "code": "C1", "order": 2, "books": {"C1-01": {"name": "健康與護理", "code": "C1-01", "order": 1, "l1": "單元", "l2": "章", "l3": "", "chapters": [{"chapterNum": 1, "title": "單元1　健康資本 活力到老", "sections": [{"sectionNum": 1, "title": "第1章　青春YOUNG不恙", "subsections": []}, {"sectionNum": 2, "title": "第2章　健康活力美", "subsections": []}, {"sectionNum": 3, "title": "第3章　戰勝急性病", "subsections": []}, {"sectionNum": 4, "title": "第4章　預防慢性病", "subsections": []}, {"sectionNum": 5, "title": "第5章　老化這件事", "subsections": []}]}, {"chapterNum": 2, "title": "單元2　幸福組曲", "sections": [{"sectionNum": 1, "title": "第6章　知「性」達人", "subsections": []}, {"sectionNum": 2, "title": "第7章　練「愛」停看聽", "subsections": []}, {"sectionNum": 3, "title": "第8章　為愛負責，呵護性健康", "subsections": []}, {"sectionNum": 4, "title": "第9章　生命的喜悅", "subsections": []}, {"sectionNum": 5, "title": "第10章　有愛無礙", "subsections": []}]}, {"chapterNum": 3, "title": "單元3　健康心生活", "sections": [{"sectionNum": 1, "title": "第11章　心理健康首部曲：從心開始", "subsections": []}, {"sectionNum": 2, "title": "第12章　心理健康二部曲：走出幽谷", "subsections": []}, {"sectionNum": 3, "title": "第13章　心理健康三部曲：身心練功坊", "subsections": []}]}, {"chapterNum": 4, "title": "單元4　非藥青春", "sections": [{"sectionNum": 1, "title": "第14章　成癮處方藥物真相", "subsections": []}, {"sectionNum": 2, "title": "第15章　物質濫用的異想世界", "subsections": []}, {"sectionNum": 3, "title": "第16章　拒毒你我他", "subsections": []}]}, {"chapterNum": 5, "title": "單元5　安全教育全方位", "sections": [{"sectionNum": 1, "title": "第17章　職安召集令", "subsections": []}, {"sectionNum": 2, "title": "第18章　急救最前線", "subsections": []}, {"sectionNum": 3, "title": "第19章　急症我處理", "subsections": []}]}, {"chapterNum": 6, "title": "單元6　健康生活行動家", "sections": [{"sectionNum": 1, "title": "第20章　消費vs.醫療行為", "subsections": []}, {"sectionNum": 2, "title": "第21章　食字路口停看聽", "subsections": []}, {"sectionNum": 3, "title": "第22章　當科技遇上健康", "subsections": []}, {"sectionNum": 4, "title": "第23章　綠色消費好樂活", "subsections": []}]}]}, "C1-02": {"name": "安全教育與傷害防護", "code": "C1-02", "order": 2, "l1": "章", "l2": "", "l3": "", "chapters": [{"chapterNum": 1, "title": "第1章　臨危不亂——交通事故與傷害處理", "sections": []}, {"chapterNum": 2, "title": "第2章　真相急先鋒——潛藏風險與健康危機", "sections": []}, {"chapterNum": 3, "title": "第3章　職場特攻隊——職場保護與職業病", "sections": []}, {"chapterNum": 4, "title": "第4章　同樂而不憂——其他事故傷害防護", "sections": []}, {"chapterNum": 5, "title": "第5章　重生計畫——運動傷害面面觀", "sections": []}, {"chapterNum": 6, "title": "第6章　跨領域創先機——運動科學風起雲湧", "sections": []}, {"chapterNum": 7, "title": "第7章　即刻救援——運動傷害防護", "sections": []}]}, "C1-03": {"name": "運動與健康", "code": "C1-03", "order": 3, "l1": "章", "l2": "", "l3": "", "chapters": [{"chapterNum": 1, "title": "第1章　健康體位大進擊", "sections": []}, {"chapterNum": 2, "title": "第2章　健康飲食新主張", "sections": []}, {"chapterNum": 3, "title": "第3章　運動計畫動動手", "sections": []}, {"chapterNum": 4, "title": "第4章　食安問題面面觀", "sections": []}, {"chapterNum": 5, "title": "第5章　食在好安心", "sections": []}, {"chapterNum": 6, "title": "第6章　認識情緒，點亮生命", "sections": []}, {"chapterNum": 7, "title": "第7章　有效的情緒與壓力管理", "sections": []}, {"chapterNum": 8, "title": "第8章　性別新「視」界", "sections": []}, {"chapterNum": 9, "title": "第9章　當「wo-man」動在一起", "sections": []}]}, "C1-04": {"name": "健康與休閒生活", "code": "C1-04", "order": 4, "l1": "單元", "l2": "章", "l3": "", "chapters": [{"chapterNum": 1, "title": "單元1　休閒紓壓，身心平衡", "sections": [{"sectionNum": 1, "title": "第一章　休閒與健康概論", "subsections": []}, {"sectionNum": 2, "title": "第二章　壓力與健康", "subsections": []}, {"sectionNum": 3, "title": "第三章　身心舒坦好療癒", "subsections": []}, {"sectionNum": 4, "title": "第四章　走入芳香植物的療癒世界", "subsections": []}]}, {"chapterNum": 2, "title": "單元2　健康體能，活力有方", "sections": [{"sectionNum": 1, "title": "第五章　健康體適能與運動處方", "subsections": []}, {"sectionNum": 2, "title": "第六章　新生活飲食", "subsections": []}]}, {"chapterNum": 3, "title": "單元3　傳醫養生，動靜皆宜", "sections": [{"sectionNum": 1, "title": "第七章　傳統醫學的養生智慧", "subsections": []}, {"sectionNum": 2, "title": "第八章　養氣健身", "subsections": []}]}, {"chapterNum": 4, "title": "單元4　親山樂水，休閒健身", "sections": [{"sectionNum": 1, "title": "第九章　旅遊與健康", "subsections": []}, {"sectionNum": 2, "title": "第十章　樂水休閒活動", "subsections": []}, {"sectionNum": 3, "title": "第十一章　親山休閒活動", "subsections": []}]}]}, "C1-06": {"name": "四技二專題庫", "code": "C1-06", "order": 5, "l1": "年度", "l2": "", "l3": "", "chapters": [{"chapterNum": 1, "title": "97學年度考題", "sections": []}, {"chapterNum": 2, "title": "98學年度考題", "sections": []}, {"chapterNum": 3, "title": "99學年度考題", "sections": []}, {"chapterNum": 4, "title": "100學年度考題", "sections": []}, {"chapterNum": 5, "title": "101學年度考題", "sections": []}, {"chapterNum": 6, "title": "102學年度考題", "sections": []}, {"chapterNum": 7, "title": "103學年度考題", "sections": []}, {"chapterNum": 8, "title": "104學年度考題", "sections": []}, {"chapterNum": 9, "title": "105學年度考題", "sections": []}, {"chapterNum": 10, "title": "106學年度考題", "sections": []}, {"chapterNum": 11, "title": "107學年度考題", "sections": []}, {"chapterNum": 12, "title": "108學年度考題", "sections": []}, {"chapterNum": 13, "title": "109學年度考題", "sections": []}, {"chapterNum": 14, "title": "110學年度考題", "sections": []}, {"chapterNum": 15, "title": "111學年度考題", "sections": []}, {"chapterNum": 16, "title": "112學年度考題", "sections": []}, {"chapterNum": 17, "title": "113學年度考題", "sections": []}]}}}, "D1": {"name": "生涯規劃", "code": "D1", "order": 3, "books": {"D1-01": {"name": "高中生涯規劃", "code": "D1-01", "order": 1, "l1": "章", "l2": "", "l3": "", "chapters": [{"chapterNum": 1, "title": "第一章　生涯啟程——你是自己生涯知識的寶藏", "sections": []}, {"chapterNum": 2, "title": "第二章　生涯發展——擁抱自己的彩色天空", "sections": []}, {"chapterNum": 3, "title": "第三章　探索自我——一場找自己的旅程", "sections": []}, {"chapterNum": 4, "title": "第四章　升學之路——掌握生涯進路資訊", "sections": []}, {"chapterNum": 5, "title": "第五章　前進職場——新時代的核心就業力", "sections": []}, {"chapterNum": 6, "title": "第六章　決策與行動——生涯評估與智慧抉擇", "sections": []}, {"chapterNum": 7, "title": "第七章　自主學習——設計自己的學習生活", "sections": []}, {"chapterNum": 8, "title": "第八章　實現願景——夢想無畏，燃燒吧青春！", "sections": []}]}, "D1-03": {"name": "技高生涯規劃", "code": "D1-03", "order": 2, "l1": "章", "l2": "", "l3": "", "chapters": [{"chapterNum": 1, "title": "第一章　生涯啟程——你是自己生涯知識的寶藏", "sections": []}, {"chapterNum": 2, "title": "第二章　探索自我——一場找自己的旅程", "sections": []}, {"chapterNum": 3, "title": "第三章　情緒管理——掌握情緒與溝通密碼", "sections": []}, {"chapterNum": 4, "title": "第四章　點亮生活——生活挑戰與調適", "sections": []}, {"chapterNum": 5, "title": "第五章　未來之路——教育發展與職業選擇", "sections": []}, {"chapterNum": 6, "title": "第六章　前進職場——新時代的核心就業力", "sections": []}, {"chapterNum": 7, "title": "第七章　決策與行動——生涯評估與智慧抉擇", "sections": []}, {"chapterNum": 8, "title": "第八章　築夢行動——夢想無畏，燃燒吧青春！", "sections": []}]}}}, "E1": {"name": "家政", "code": "E1", "order": 4, "books": {"E1-01": {"name": "家政", "code": "E1-01", "order": 1, "l1": "章", "l2": "", "l3": "", "chapters": [{"chapterNum": 1, "title": "第1章　妙用資源樂消費", "sections": []}, {"chapterNum": 2, "title": "第2章　建立形象好互動", "sections": []}, {"chapterNum": 3, "title": "第3章　居家空間綠美化", "sections": []}, {"chapterNum": 4, "title": "第4章　穿搭管理不求人", "sections": []}, {"chapterNum": 5, "title": "第5章　流行時尚細品味", "sections": []}, {"chapterNum": 6, "title": "第6章　認識性別與婚戀", "sections": []}, {"chapterNum": 7, "title": "第7章　打造家庭好韌性", "sections": []}, {"chapterNum": 8, "title": "第8章　家庭責任同愛家", "sections": []}, {"chapterNum": 9, "title": "第9章　健康飲食綠食育", "sections": []}, {"chapterNum": 10, "title": "第10章　玩轉食材真美學", "sections": []}]}}}, "F1": {"name": "生命教育", "code": "F1", "order": 5, "books": {"F1-01": {"name": "生命教育", "code": "F1-01", "order": 1, "l1": "章", "l2": "", "l3": "", "chapters": [{"chapterNum": 1, "title": "第一章　哲學思考", "sections": []}, {"chapterNum": 2, "title": "第二章　人學探索", "sections": []}, {"chapterNum": 3, "title": "第三章　終極關懷", "sections": []}, {"chapterNum": 4, "title": "第四章　價值思辨", "sections": []}, {"chapterNum": 5, "title": "第五章　靈性修養", "sections": []}]}}}, "G1": {"name": "高中美術", "code": "G1", "order": 6, "books": {"G1-01": {"name": "高中美術（上）", "code": "G1-01", "order": 1, "l1": "課", "l2": "", "l3": "", "chapters": [{"chapterNum": 1, "title": "第一課　發現美", "sections": []}, {"chapterNum": 2, "title": "第二課　認識藝術品", "sections": []}, {"chapterNum": 3, "title": "第三課　優遊藝術場域", "sections": []}, {"chapterNum": 4, "title": "第四課　構藝思", "sections": []}, {"chapterNum": 5, "title": "第五課　視覺影像會說話", "sections": []}, {"chapterNum": 6, "title": "第六課　視覺文化無所不在", "sections": []}, {"chapterNum": 7, "title": "第七課　質樸的盛會", "sections": []}, {"chapterNum": 8, "title": "第八課　穿越的日常", "sections": []}]}, "G1-02": {"name": "高中美術（下）", "code": "G1-02", "order": 2, "l1": "課", "l2": "", "l3": "", "chapters": [{"chapterNum": 1, "title": "第一課　華夏之光", "sections": []}, {"chapterNum": 2, "title": "第二課　書畫之美", "sections": []}, {"chapterNum": 3, "title": "第三課　藝術壯遊", "sections": []}, {"chapterNum": 4, "title": "第四課　藝術與現代生活", "sections": []}, {"chapterNum": 5, "title": "第五課　當代藝術這麼說", "sections": []}, {"chapterNum": 6, "title": "第六課　多元的藝術展演", "sections": []}, {"chapterNum": 7, "title": "第七課　藝術與社會", "sections": []}, {"chapterNum": 8, "title": "第八課　關注社會的藝術游擊", "sections": []}]}, "G1-03": {"name": "高中藝術生活 視覺應用", "code": "G1-03", "order": 3, "l1": "課", "l2": "", "l3": "", "chapters": [{"chapterNum": 0, "title": "導論　生活與美感", "sections": []}, {"chapterNum": 1, "title": "第一課　土地與工藝", "sections": []}, {"chapterNum": 2, "title": "第二課　從設計到社計", "sections": []}, {"chapterNum": 3, "title": "第三課　圖像語言", "sections": []}, {"chapterNum": 4, "title": "第四課　影像與敘事", "sections": []}, {"chapterNum": 5, "title": "第五課　材料與生活的空間形態", "sections": []}, {"chapterNum": 6, "title": "第六課　城市公共空間與場所", "sections": []}, {"chapterNum": 7, "title": "第七課　藝術與文化", "sections": []}, {"chapterNum": 8, "title": "第八課　藝術與產業", "sections": []}]}}}, "H1": {"name": "技高美術", "code": "H1", "order": 7, "books": {"H1-01": {"name": "技高美術", "code": "H1-01", "order": 1, "l1": "課", "l2": "", "l3": "", "chapters": [{"chapterNum": 1, "title": "第一課　打開美的視野", "sections": []}, {"chapterNum": 2, "title": "第二課　形式原理與藝術批評", "sections": []}, {"chapterNum": 3, "title": "第三課　美的外在表現", "sections": []}, {"chapterNum": 4, "title": "第四課　美的內在形式", "sections": []}, {"chapterNum": 5, "title": "第五課　設計的美", "sections": []}, {"chapterNum": 6, "title": "第六課　設計思考與表現", "sections": []}, {"chapterNum": 7, "title": "第七課　當藝術遇見科技媒材", "sections": []}, {"chapterNum": 8, "title": "第八課　藝術展演", "sections": []}]}}}, "I1": {"name": "生活科技", "code": "I1", "order": 8, "books": {"I1-01": {"name": "生活科技", "code": "I1-01", "order": 1, "l1": "章", "l2": "", "l3": "", "chapters": [{"chapterNum": 1, "title": "第1章　科技的本質——科技與工程", "sections": []}, {"chapterNum": 2, "title": "第2章　工程設計思考與專題製作", "sections": []}, {"chapterNum": 3, "title": "第3章　工程設計與實作——設計的表達方法", "sections": []}, {"chapterNum": 4, "title": "第4章　工程設計與實作——設計的執行方法", "sections": []}, {"chapterNum": 5, "title": "第5章　結構設計與製作", "sections": []}, {"chapterNum": 6, "title": "第6章　機構設計與製作", "sections": []}, {"chapterNum": 7, "title": "第7章　機電整合與控制方法", "sections": []}]}}}};
+
+function log(msg, type='') {
+  const box = document.getElementById('logBox');
+  const cls = type==='err'?'log-err':type==='ok'?'log-ok':type==='info'?'log-info':'';
+  box.innerHTML += `<span class="${cls}">${msg}</span>\n`;
+  box.scrollTop = box.scrollHeight;
+}
+
+window.startImport = async () => {
+  document.getElementById('startBtn').disabled = true;
+  document.getElementById('clearBtn').disabled = true;
+  log('開始匯入...', 'info');
+
+  const subjects = Object.values(DATA);
+  let totalBooks = 0, totalChapters = 0, errors = 0;
+
+  for (const subj of subjects) {
+    try {
+      log(`\n📚 科目：${subj.name} (${subj.code})`);
+      const subjId = await DataService.saveSubject({
+        name: subj.name, code: subj.code, order: subj.order
+      });
+      log(`  ✓ 科目已建立，ID: ${subjId}`, 'ok');
+
+      const books = Object.values(subj.books);
+      for (const book of books) {
+        try {
+          log(`  📖 冊別：${book.name} (${book.code})`);
+          const bookId = await DataService.saveBook(subjId, {
+            name: book.name, code: book.code, order: book.order,
+            l1: book.l1 || '', l2: book.l2 || '', l3: book.l3 || ''
+          });
+          totalBooks++;
+          log(`    ✓ 冊別已建立，ID: ${bookId}`, 'ok');
+
+          for (const ch of book.chapters) {
+            try {
+              await DataService.saveChapter(subjId, bookId, {
+                chapterNum: ch.chapterNum,
+                title: ch.title,
+                sections: ch.sections || []
+              });
+              totalChapters++;
+            } catch(e) {
+              log(`    ✗ 章節失敗：${ch.title} - ${e.message}`, 'err');
+              errors++;
+            }
+          }
+          log(`    ✓ ${book.chapters.length} 章節已建立`, 'ok');
+        } catch(e) {
+          log(`  ✗ 冊別失敗：${book.name} - ${e.message}`, 'err');
+          errors++;
+        }
+      }
+    } catch(e) {
+      log(`✗ 科目失敗：${subj.name} - ${e.message}`, 'err');
+      errors++;
+    }
+  }
+
+  log(`\n═══════════════════════════`, 'info');
+  if (errors === 0) {
+    log(`✅ 匯入完成！科目: ${subjects.length}，冊別: ${totalBooks}，章: ${totalChapters}`, 'ok');
+    log(`請前往「課本管理」確認，並刪除此頁面。`, 'info');
+  } else {
+    log(`⚠️ 完成但有 ${errors} 個錯誤，請查看上方記錄。`, 'err');
+  }
+  document.getElementById('startBtn').disabled = false;
+};
+
+window.clearAll = async () => {
+  if (!confirm('確定要清除 Firestore 中所有課本資料？此操作不可復原。')) return;
+  document.getElementById('startBtn').disabled = true;
+  document.getElementById('clearBtn').disabled = true;
+  log('清除現有資料...', 'info');
+  try {
+    const subjects = await DataService.getSubjects();
+    for (const s of subjects) {
+      await DataService.deleteSubject(s.id);
+      log(`  已刪除：${s.name}`, 'ok');
+    }
+    log('清除完成。', 'ok');
+  } catch(e) {
+    log('清除失敗：' + e.message, 'err');
+  }
+  document.getElementById('clearBtn').disabled = false;
+  document.getElementById('startBtn').disabled = false;
+};
+
+window.resetCounter = async () => {
+  if (!confirm('確定要重置題目流水號？\n\n下次匯入的第一題編號將從 00001 開始。\n（不會影響已存在的題目）')) return;
+  document.getElementById('resetCounterBtn').disabled = true;
+  try {
+    await DataService.resetQuestionCounter();
+    log('✅ 流水號已重置，下次匯入將從 00001 開始。', 'ok');
+  } catch(e) {
+    log('✗ 重置失敗：' + e.message, 'err');
+  }
+  document.getElementById('resetCounterBtn').disabled = false;
+};
+window.clearQuestions = async () => {
+  if (!confirm('確定要刪除 Firestore 中所有題目？\n\n此操作不可復原，請確認已備份。')) return;
+  document.getElementById('clearQBtn').disabled = true;
+  log('開始清除題目...', 'info');
+  try {
+    const total = await DataService.deleteAllQuestions((deleted, all) => {
+      log(`  已刪除 ${deleted} / ${all}`, 'ok');
+    });
+    await DataService.resetQuestionCounter();
+    log(`✅ 共刪除 ${total} 題，流水號已重置為 0。`, 'ok');
+    log('現在可以重新匯入題目。', 'info');
+  } catch(e) {
+    log('✗ 刪除失敗：' + e.message, 'err');
+  }
+  document.getElementById('clearQBtn').disabled = false;
+};
+</script>
+</body>
+</html>
