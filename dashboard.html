@@ -40,7 +40,7 @@
 /* 統計卡片 */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 14px;
   margin-bottom: 22px;
 }
@@ -209,17 +209,12 @@ if (!user) throw new Error('not auth');
 document.getElementById('dateStr').textContent =
   new Date().toLocaleDateString('zh-TW', {year:'numeric',month:'long',day:'numeric',weekday:'long'});
 
-const isStaff = DataService.isStaff();
 const isAdmin = DataService.isAdmin();
 const I = window.ICONS;
 
 async function render() {
   try {
-    if (isStaff) {
-      await renderStaff();
-    } else {
-      await renderStudent();
-    }
+    await renderStaff();
   } catch(e) {
     console.error('Dashboard render error:', e);
     document.getElementById('content').innerHTML = `
@@ -239,11 +234,9 @@ async function render() {
 async function renderStaff() {
   let stats   = { total: 0, byType: {}, bySubject: {}, byDifficulty: {} };
   let exams   = [];
-  let results = [];
 
   try { stats   = await DataService.getQuestionStats(); } catch(e) { console.warn('stats error', e.message); }
   try { exams   = await DataService.getExams(); }          catch(e) { console.warn('exams error', e.message); }
-  try { results = await DataService.getResults(); }        catch(e) { console.warn('results error', e.message); }
 
   // ── 題型分布長條圖 ──
   const tColors = {
@@ -303,7 +296,7 @@ async function renderStaff() {
     <div class="welcome-banner">
       <div>
         <h2>歡迎回來，${user.displayName||user.email} ${isAdmin?'管理員':'老師'}</h2>
-        <p>題庫共 <strong>${(stats.total||0).toLocaleString()}</strong> 題　|　試卷 <strong>${exams.length}</strong> 份　|　成績記錄 <strong>${results.length}</strong> 筆</p>
+        <p>題庫共 <strong>${(stats.total||0).toLocaleString()}</strong> 題　|　已儲存試卷 <strong>${exams.length}</strong> 份</p>
       </div>
       <div class="welcome-icon">${I.book}</div>
     </div>
@@ -316,10 +309,6 @@ async function renderStaff() {
       <div class="stat-card">
         <div class="stat-icon" style="background:#eafaf1;color:var(--success)">${I.folder}</div>
         <div><div class="stat-num">${exams.length}</div><div class="stat-label">已建立試卷</div></div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon" style="background:#fdf3e3;color:var(--warning)">${I.chart}</div>
-        <div><div class="stat-num">${results.length}</div><div class="stat-label">作答記錄</div></div>
       </div>
       <div class="stat-card">
         <div class="stat-icon" style="background:#fdecea;color:var(--danger)">${I.layers}</div>
@@ -345,8 +334,7 @@ async function renderStaff() {
           ${adminActions}
           ${action('compose', I.auto20,   '電腦選題', '自動亂數組卷', isAdmin ? '' : 'primary')}
           ${action('manual',  I.edit20,   '人工選題', '手動挑選題目')}
-          ${action('exams',   I.folder20, '試卷管理', '管理已建立試卷')}
-          ${action('results', I.chart20,  '成績查詢', '查看學生作答狀況')}
+          ${action('exams',   I.folder20, '試卷管理', '依班級、科目或全部管理試卷')}
           ${isAdmin ? action('settings', I.settings20, '帳號與設定', '使用者管理') : ''}
         </div>
       </div>
@@ -362,73 +350,6 @@ async function renderStaff() {
           <thead><tr><th>試卷名稱</th><th>科目</th><th>題數</th><th>建立日期</th><th></th></tr></thead>
           <tbody>${examRows}</tbody>
         </table>
-      </div>
-    </div>`;
-}
-
-// ── 學生 ──────────────────────────────────────
-async function renderStudent() {
-  let exams     = [];
-  let myResults = [];
-  let myClasses = [];
-
-  try { exams     = await DataService.getExams(); }                            catch(e) { console.warn(e.message); }
-  try { myResults = await DataService.getResults({ studentUid: user.uid }); } catch(e) { console.warn(e.message); }
-  try { myClasses = await DataService.getMyClasses(); }                        catch(e) { console.warn(e.message); }
-
-  const myClassIds = myClasses.map(c => c.id);
-  const activeExams = exams.filter(e => {
-    if ((e.status||'draft') !== 'active') return false;
-    const ids = e.classIds || [];
-    if (!ids.length) return false;
-    return ids.some(id => myClassIds.includes(id));
-  });
-
-  const avg = myResults.length
-    ? Math.round(myResults.reduce((s,r) => s + (r.totalScore ? r.score/r.totalScore*100 : 0), 0) / myResults.length)
-    : null;
-
-  const action = (page, icon, label, desc, cls='') => `
-    <a class="quick-action ${cls}" onclick="nav('${page}')">
-      <div class="qa-icon">${icon}</div>
-      <div><div class="qa-label">${label}</div><div class="qa-desc">${desc}</div></div>
-    </a>`;
-
-  document.getElementById('content').innerHTML = `
-    <div class="welcome-banner">
-      <div>
-        <h2>歡迎，${user.displayName||user.email} 同學</h2>
-        <p>${activeExams.length > 0
-          ? `目前有 <strong>${activeExams.length}</strong> 份考試開放中，繼續加油！`
-          : myClasses.length ? '目前沒有開放中的考試，請等待老師安排。' : '請先加入班級才能參加考試。'
-        }</p>
-      </div>
-      <div class="welcome-icon">${I.award}</div>
-    </div>
-
-    <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
-      <div class="stat-card">
-        <div class="stat-icon" style="background:#eafaf1;color:var(--success)">${I.check}</div>
-        <div><div class="stat-num">${myResults.length}</div><div class="stat-label">已完成考試</div></div>
-      </div>
-      <div class="stat-card accent">
-        <div class="stat-icon" style="background:#fdf3e3;color:var(--accent)">${I.sparkles}</div>
-        <div><div class="stat-num">${avg !== null ? avg+'%' : '—'}</div><div class="stat-label">平均得分率</div></div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon" style="background:#e8eef6;color:var(--primary)">${I.test}</div>
-        <div><div class="stat-num">${activeExams.length}</div><div class="stat-label">開放中考試</div></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-header"><h2>學習動作</h2></div>
-      <div class="card-body">
-        <div class="quick-actions" style="grid-template-columns:1fr 1fr;max-width:520px">
-          ${action('take',       I.test20,  '參加考試', '選擇試卷開始作答', 'primary')}
-          ${action('my-results', I.chart20, '我的成績', '查看歷次成績')}
-          ${action('classes',    I.school20,'我的班級', myClasses.length ? `已加入 ${myClasses.length} 個班級` : '加入班級')}
-        </div>
       </div>
     </div>`;
 }

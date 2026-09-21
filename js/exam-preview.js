@@ -222,6 +222,7 @@ function ensurePreviewModal() {
       <h3 id="epTitle" style="flex:1">試卷預覽</h3>
       <div style="display:flex;gap:6px;align-items:center">
         <button class="btn btn-ghost btn-sm" onclick="window._epOpenHeader()" title="編輯試卷表頭">✎ 表頭</button>
+        <button class="btn btn-outline btn-sm" onclick="window._epDoPrint()">🖨 列印</button>
         <button class="btn btn-primary btn-sm" onclick="window._epDoExport()">⬇ 輸出 Word</button>
         <button class="modal-close" onclick="document.getElementById('epModal').classList.add('hidden')">✕</button>
       </div>
@@ -349,12 +350,61 @@ export function showExamPreview(examData, questions) {
   window._epExamData   = examData;
   window._epQuestions  = questions;
   window._epRefresh    = () => { renderPaper(examData, questions); applyAppearance(); };
+  window._epDoPrint    = () => printExam(examData, questions);
   window._epDoExport   = () => exportToWord(examData, questions);
   window._epOpenHeader = () => showHeaderSettings();
 
   renderPaper(examData, questions);
   applyAppearance();
   document.getElementById('epModal').classList.remove('hidden');
+}
+
+// ══════════════════════════════════════════════════════════
+//  直接列印（使用與預覽相同的表頭、字型與版面）
+// ══════════════════════════════════════════════════════════
+export function printExam(examData, questions) {
+  ensurePreviewModal();
+  renderPaper(examData, questions);
+  applyAppearance();
+
+  const paper = document.getElementById('epPaper');
+  if (!paper) return;
+
+  const frame = document.createElement('iframe');
+  frame.setAttribute('title', '試卷列印');
+  frame.style.position = 'fixed';
+  frame.style.right = '0';
+  frame.style.bottom = '0';
+  frame.style.width = '0';
+  frame.style.height = '0';
+  frame.style.border = '0';
+  document.body.appendChild(frame);
+
+  const doc = frame.contentDocument;
+  doc.open();
+  doc.write(`<!DOCTYPE html><html lang="zh-TW"><head><meta charset="UTF-8"><title>${examData.title || '試卷'}</title>
+    <style>
+      @page { size: A4; margin: 18mm 20mm; }
+      * { box-sizing: border-box; }
+      body { margin: 0; color: #000; }
+      .ep-exam-header { border: 2px solid #333; padding: 10px 14px; margin-bottom: 14px; font-size: .94em; }
+      .ep-exam-header .title-row { font-size: 1.05em; font-weight: 700; margin-bottom: 6px; }
+      .ep-exam-header .info-row { display: flex; gap: 24px; }
+      .ep-section-head { font-weight: 700; margin: 14px 0 8px; }
+      .ep-q { margin-bottom: 8px; break-inside: avoid; }
+      .ep-opts { margin: 3px 0 3px 2em; }
+      .ep-tail { margin-left: 1em; }
+      .ep-answer-blank { color: #555; margin-top: 4px; }
+    </style></head><body>${paper.outerHTML}</body></html>`);
+  doc.close();
+
+  const cleanup = () => setTimeout(() => frame.remove(), 500);
+  frame.contentWindow.addEventListener('afterprint', cleanup, { once: true });
+  setTimeout(() => {
+    frame.contentWindow.focus();
+    frame.contentWindow.print();
+    setTimeout(cleanup, 30000);
+  }, 100);
 }
 
 

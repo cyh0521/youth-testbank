@@ -10,7 +10,7 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/fireba
 import {
   getFirestore, collection, doc, getDoc, getDocs, addDoc, setDoc,
   getDocsFromServer,
-  updateDoc, deleteDoc, query, where, orderBy, limit,
+  updateDoc, deleteDoc, query, where,
   serverTimestamp, writeBatch, Timestamp,
   runTransaction, increment
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
@@ -38,6 +38,8 @@ const app     = initializeApp(firebaseConfig);
 const db      = getFirestore(app);
 const auth    = getAuth(app);
 const storage = getStorage(app);
+const accountCreationApp  = initializeApp(firebaseConfig, 'accountCreation');
+const accountCreationAuth = getAuth(accountCreationApp);
 
 // 設定 Session 持久性：關閉瀏覽器分頁後登入狀態失效
 setPersistence(auth, browserSessionPersistence).catch(e => console.warn('Auth persistence error:', e));
@@ -76,11 +78,11 @@ window.DataService = {
             if (snap.exists()) {
               DataService._currentUser = { uid: firebaseUser.uid, ...snap.data() };
             } else {
-              DataService._currentUser = { uid: firebaseUser.uid, email: firebaseUser.email, role: 'student' };
+              DataService._currentUser = { uid: firebaseUser.uid, email: firebaseUser.email, role: 'teacher' };
             }
           } catch(e) {
             console.warn('讀取使用者資料失敗', e);
-            DataService._currentUser = { uid: firebaseUser.uid, email: firebaseUser.email, role: 'student' };
+            DataService._currentUser = { uid: firebaseUser.uid, email: firebaseUser.email, role: 'teacher' };
           }
         } else {
           DataService._currentUser = null;
@@ -96,8 +98,6 @@ window.DataService = {
   isLoggedIn()     { return !!DataService._currentUser; },
   isAdmin()        { return DataService._currentUser?.role === 'admin'; },
   isTeacher()      { return DataService._currentUser?.role === 'teacher'; },
-  isStudent()      { return DataService._currentUser?.role === 'student'; },
-  isStaff()        { const r = DataService._currentUser?.role; return r === 'admin' || r === 'teacher'; },
 
   // ── 帳號：登入 ────────────────────────────────
   async login(email, password) {
@@ -126,34 +126,20 @@ window.DataService = {
     window.location.href = 'index.html';
   },
 
-  // ── 帳號：註冊 ────────────────────────────────
-  // _adminCreate=true 時略過驗證碼，由管理員直接建立帳號
-  async register({ email, password, displayName, role, regCode, school, _adminCreate }) {
-    // 驗證身份驗證碼（管理員建立時略過）
-    if (!_adminCreate) {
-      const codeSnap = await getDoc(doc(db, 'settings', 'regCodes'));
-      const codes = codeSnap.exists() ? codeSnap.data() : { admin: 'admin2024', teacher: 'teacher2024' };
-      if (role !== 'student') {
-        if (!regCode || regCode !== codes[role]) return { ok: false, msg: '身份驗證碼錯誤' };
-      }
-    } else {
-      // 管理員建立：驗證碼必須是 admin2024（避免前端偽造）
-      if (regCode !== 'admin2024') {
-        if (!DataService.isAdmin()) return { ok: false, msg: '權限不足' };
-      }
-    }
+  // ── 帳號：由管理員建立工作人員 ────────────────
+  async register({ email, password, displayName, role, school, _adminCreate }) {
+    if (!_adminCreate || !DataService.isAdmin()) return { ok: false, msg: '權限不足' };
+    if (!['admin', 'teacher'].includes(role)) return { ok: false, msg: '不支援的帳號身份' };
     try {
-      const cred = await createUserWithEmailAndPassword(auth, email, password);
+      // 使用獨立 Auth instance 建立帳號，避免管理員目前的登入狀態被切換。
+      const cred = await createUserWithEmailAndPassword(accountCreationAuth, email, password);
       const userData = {
         email, displayName, role,
         school: school || null,
         createdAt: serverTimestamp()
       };
       await setDoc(doc(db, 'users', cred.user.uid), userData);
-      // 管理員建立時，不覆蓋目前登入狀態
-      if (!_adminCreate) {
-        DataService._currentUser = { uid: cred.user.uid, email, displayName, role, school: school||null };
-      }
+      await signOut(accountCreationAuth);
       return { ok: true, user: { uid: cred.user.uid, ...userData } };
     } catch(e) {
       const msg = {
@@ -188,17 +174,6 @@ window.DataService = {
     if (DataService._currentUser?.uid === uid) {
       Object.assign(DataService._currentUser, data);
     }
-  },
-
-  // ── 驗證碼管理 ────────────────────────────────
-  async getRegCodes() {
-    const snap = await getDoc(doc(db, 'settings', 'regCodes'));
-    return snap.exists() ? snap.data() : { admin: 'admin2024', teacher: 'teacher2024' };
-  },
-  async setRegCode(role, code) {
-    const codes = await DataService.getRegCodes();
-    codes[role] = code;
-    await setDoc(doc(db, 'settings', 'regCodes'), codes);
   },
 
   // ══════════════════════════════════════════════
@@ -471,7 +446,10 @@ window.DataService = {
   // ══════════════════════════════════════════════
 
   async getExams() {
-    const snap = await getDocs(collection(db, 'exams'));
+    const source = DataService.isAdmin()
+      ? collection(db, 'exams')
+      : query(collection(db, 'exams'), where('createdBy', '==', DataService._currentUser?.uid));
+    const snap = await getDocs(source);
     const arr = docsToArr(snap);
     arr.sort((a, b) => {
       const ta = a.createdAt ? new Date(a.createdAt).getTime() : 0;
@@ -500,156 +478,37 @@ window.DataService = {
   },
 
   // ══════════════════════════════════════════════
-  //  成績管理
+  //  班級分類（僅供教師整理試卷，不含學生名單或成績）
   // ══════════════════════════════════════════════
 
-  async getResults(opts = {}) {
-    // No orderBy with where to avoid composite index requirement — sort client-side
-    const constraints = [];
-    if (opts.studentUid) constraints.push(where('studentUid', '==', opts.studentUid));
-    if (opts.examId)     constraints.push(where('examId',     '==', opts.examId));
-    const snap = await getDocs(constraints.length
-      ? query(collection(db, 'results'), ...constraints)
-      : collection(db, 'results'));
-    const arr = docsToArr(snap);
-    // Sort by submittedAt descending (client-side)
-    arr.sort((a, b) => {
-      const ta = a.submittedAt ? new Date(a.submittedAt).getTime() : 0;
-      const tb = b.submittedAt ? new Date(b.submittedAt).getTime() : 0;
-      return tb - ta;
-    });
-    return arr;
+  async getClasses() {
+    const source = DataService.isAdmin()
+      ? collection(db, 'classes')
+      : query(collection(db, 'classes'), where('teacherUid', '==', DataService._currentUser?.uid));
+    const snap = await getDocs(source);
+    return docsToArr(snap).sort((a, b) =>
+      `${a.school || ''}\u0000${a.name || ''}`.localeCompare(`${b.school || ''}\u0000${b.name || ''}`, 'zh-Hant')
+    );
   },
 
-  async saveResult(result) {
-    // 取得試卷資訊，記錄所屬班級和出題教師
-    let examClassIds = [];
-    let examCreatedBy = null;
-    if (result.examId) {
-      try {
-        const examSnap = await getDoc(doc(db, 'exams', result.examId));
-        if (examSnap.exists()) {
-          const examData = examSnap.data();
-          examClassIds = examData.classIds || [];
-          examCreatedBy = examData.createdBy || null;
-        }
-      } catch(e) { /* ignore */ }
+  async saveClass(classData) {
+    if (classData.id) {
+      const { id, teacherUid: _teacherUid, createdAt: _createdAt, ...data } = classData;
+      await updateDoc(doc(db, 'classes', id), { ...data, updatedAt: serverTimestamp() });
+      return id;
     }
-    
-    const ref = await addDoc(collection(db, 'results'), {
-      ...result,
-      studentUid:  DataService._currentUser?.uid,
-      studentName: DataService._currentUser?.displayName,
-      classIds:    examClassIds,      // 記錄考試所屬班級
-      examCreatedBy: examCreatedBy,   // 記錄出題教師
-      submittedAt: serverTimestamp()
+    const { id: _id, ...data } = classData;
+    const ref = await addDoc(collection(db, 'classes'), {
+      ...data,
+      teacherUid: DataService._currentUser?.uid,
+      teacherName: DataService._currentUser?.displayName || DataService._currentUser?.email || '',
+      createdAt: serverTimestamp(),
     });
     return ref.id;
   },
 
-  // ══════════════════════════════════════════════
-  //  班級管理
-  // ══════════════════════════════════════════════
-
-  // 產生 6 碼教室代碼（大寫英數，排除易混淆字元）
-  _genRoomCode() {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    let code = '';
-    for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
-    return code;
-  },
-
-  async getClasses(opts = {}) {
-    try {
-      const constraints = [];
-      if (opts.teacherUid) constraints.push(where('teacherUid', '==', opts.teacherUid));
-      const snap = await getDocs(constraints.length
-        ? query(collection(db, 'classes'), ...constraints)
-        : collection(db, 'classes'));
-      return docsToArr(snap);
-    } catch(e) {
-      if (e.code === 'permission-denied') {
-        // Firestore rules may not include 'classes' yet — return empty and warn
-        console.warn('Classes permission denied. Please update Firestore rules.');
-        return [];
-      }
-      throw e;
-    }
-  },
-
-  async saveClass(cls) {
-    if (cls.id) {
-      const { id, ...data } = cls;
-      await updateDoc(doc(db, 'classes', id), { ...data, updatedAt: serverTimestamp() });
-      return id;
-    } else {
-      // 產生唯一教室代碼
-      let roomCode, tries = 0;
-      while (tries++ < 10) {
-        roomCode = DataService._genRoomCode();
-        const existing = await getDocs(query(collection(db, 'classes'), where('roomCode', '==', roomCode)));
-        if (existing.empty) break;
-      }
-      const ref = await addDoc(collection(db, 'classes'), {
-        ...cls,
-        roomCode,
-        teacherUid:  DataService._currentUser?.uid,
-        teacherName: DataService._currentUser?.displayName,
-        createdAt:   serverTimestamp()
-      });
-      return ref.id;
-    }
-  },
-
   async deleteClass(id) {
     await deleteDoc(doc(db, 'classes', id));
-  },
-
-  // 學生加入班級（用教室代碼）
-  async joinClassByCode(roomCode) {
-    const snap = await getDocs(query(collection(db, 'classes'), where('roomCode', '==', roomCode.toUpperCase())));
-    if (snap.empty) return { ok: false, msg: '找不到此教室代碼，請確認是否正確' };
-    const cls = { id: snap.docs[0].id, ...snap.docs[0].data() };
-    const uid = DataService._currentUser?.uid;
-    if (!uid) return { ok: false, msg: '請先登入' };
-    // 加入班級成員
-    const memberRef = doc(db, 'classes', cls.id, 'members', uid);
-    await setDoc(memberRef, {
-      uid,
-      displayName: DataService._currentUser?.displayName,
-      joinedAt:    serverTimestamp()
-    });
-    // 同時在 users 裡記錄 classIds
-    const userRef = doc(db, 'users', uid);
-    const userSnap = await getDoc(userRef);
-    const existing = userSnap.exists() ? (userSnap.data().classIds || []) : [];
-    if (!existing.includes(cls.id)) {
-      await updateDoc(userRef, { classIds: [...existing, cls.id] });
-    }
-    return { ok: true, cls };
-  },
-
-  // 取得班級成員
-  async getClassMembers(classId) {
-    const snap = await getDocs(collection(db, 'classes', classId, 'members'));
-    return snap.docs.map(d => ({ uid: d.id, ...d.data() }));
-  },
-
-  // 取得學生所屬班級
-  async getMyClasses() {
-    const uid = DataService._currentUser?.uid;
-    if (!uid) return [];
-    const snap = await getDocs(query(collection(db, 'classes'), where('memberUids', 'array-contains', uid)));
-    // Fallback: check user's classIds
-    const userSnap = await getDoc(doc(db, 'users', uid));
-    const classIds = userSnap.exists() ? (userSnap.data().classIds || []) : [];
-    if (!classIds.length) return [];
-    const results = [];
-    for (const cid of classIds) {
-      const csnap = await getDoc(doc(db, 'classes', cid));
-      if (csnap.exists()) results.push({ id: csnap.id, ...csnap.data() });
-    }
-    return results;
   },
 
   // ── 重置題目流水號計數器 ────────────────────────

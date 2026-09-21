@@ -82,6 +82,15 @@ const DocImporter = {
 
 // ── UI 工具 ───────────────────────────────────────────
 const UI = {
+  escapeHtml(value) {
+    return String(value ?? '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#39;');
+  },
+
   /** 通知 toast — 使用 css/theme.css 內定義的 .toast 樣式 */
   toast(msg, type = 'info', duration = 3000) {
     let container = document.getElementById('toast-container');
@@ -156,8 +165,7 @@ function nav(page) {
   const pages = {
     dashboard:'dashboard.html', import:'import.html', questions:'questions.html',
     compose:'compose.html', manual:'manual.html', coded:'coded.html',
-    exams:'exams.html', classes:'classes.html', results:'results.html',
-    settings:'settings.html', take:'take.html', 'my-results':'my-results.html',
+    exams:'exams.html', settings:'settings.html',
     textbooks:'textbooks.html'
   };
   if (pages[page]) window.location.href = pages[page];
@@ -180,6 +188,25 @@ window.tbSubjectOptions = function(selectedCode = '') {
     h += `<option value="${s.code}" ${selectedCode === s.code ? 'selected' : ''}>${s.name}</option>`;
   }
   return h;
+};
+
+// ── 班級分類下拉選單（各出題頁與試卷編輯共用）────────────
+window.loadClassOptions = async function(selectId, selectedId = '') {
+  const select = document.getElementById(selectId);
+  if (!select) return [];
+  try {
+    const classes = await DataService.getClasses();
+    select.innerHTML = '<option value="">未分類</option>' + classes.map(c => {
+      const label = [c.school, c.name].filter(Boolean).join('｜');
+      return `<option value="${UI.escapeHtml(c.id)}" data-name="${UI.escapeHtml(c.name || '')}" data-school="${UI.escapeHtml(c.school || '')}">${UI.escapeHtml(label || '未命名班級')}</option>`;
+    }).join('');
+    select.value = selectedId || '';
+    return classes;
+  } catch (e) {
+    console.warn('Class options error:', e);
+    select.innerHTML = '<option value="">未分類（班級載入失敗）</option>';
+    return [];
+  }
 };
 
 window.tbBookOptions = function(subjectCode, selectedCode = '') {

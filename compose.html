@@ -139,24 +139,12 @@
         <input class="form-control" id="examTitle" placeholder="例：113學年度第一次月考">
       </div>
       <div class="form-group">
-        <label class="form-label">說明（選填）</label>
-        <textarea class="form-control" id="examDesc" rows="2" placeholder="考試說明、範圍、注意事項…"></textarea>
-      </div>
-      <div class="grid-2">
-        <div class="form-group">
-          <label class="form-label">考試時間（分鐘）</label>
-          <input class="form-control" type="number" id="examDuration" value="50" min="10" max="240">
-        </div>
-        <div class="form-group">
-          <label class="form-label">及格分數</label>
-          <input class="form-control" type="number" id="examPassScore" value="60" min="0" max="100">
-        </div>
+        <label class="form-label">班級分類</label>
+        <select class="form-control" id="examClass"><option value="">未分類</option></select>
       </div>
       <div class="form-group">
-        <label class="form-label">開放班級（可複選，<strong style="color:var(--danger)">必須指定班級，留空則不開放</strong>）</label>
-        <div id="examClassList" style="max-height:160px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius);padding:8px;background:white;min-height:44px">
-          <span style="color:var(--text-muted);font-size:.82rem">載入班級中…</span>
-        </div>
+        <label class="form-label">說明（選填）</label>
+        <textarea class="form-control" id="examDesc" rows="2" placeholder="考試說明、範圍、注意事項…"></textarea>
       </div>
     </div>
     <div class="modal-footer">
@@ -640,32 +628,13 @@ async function regenerateType(typeCode) {
 }
 window.regenerateType = regenerateType;
 
-window.openSaveModal = () => {
+window.openSaveModal = async () => {
   if (!generatedQuestions.length) { UI.toast('請先選題', 'warning'); return; }
   const quickTitle = document.getElementById('quickExamTitle')?.value.trim();
   if (quickTitle) document.getElementById('examTitle').value = quickTitle;
-  loadClassCheckboxes('examClassList');
+  await loadClassOptions('examClass');
   document.getElementById('saveModal').classList.remove('hidden');
 };
-
-async function loadClassCheckboxes(containerId) {
-  const el = document.getElementById(containerId);
-  if (!el) return;
-  try {
-    const classes = await DataService.getClasses({ teacherUid: DataService.getCurrentUser()?.uid });
-    if (!classes.length) {
-      el.innerHTML = '<span style="color:var(--text-muted);font-size:.82rem">目前尚無班級，請先至「班級管理」建立班級</span>';
-      return;
-    }
-    el.innerHTML = classes.map(c => `
-      <label style="display:flex;align-items:center;gap:8px;padding:5px 4px;cursor:pointer;font-size:.84rem;border-radius:4px;margin-bottom:2px" onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background=''">
-        <input type="checkbox" class="exam-class-cb" value="${c.id}" data-name="${(c.name||'').replace(/"/g,'&quot;')}">
-        <span><strong>${c.name}</strong> <span style="color:var(--text-muted);font-size:.76rem">— ${c.school||''} ${tbSubjectName(c.subjectCode)}</span></span>
-      </label>`).join('');
-  } catch(e) {
-    el.innerHTML = `<span style="color:var(--text-muted);font-size:.82rem">無法載入班級：${e.message}</span>`;
-  }
-}
 
 window.doSaveExam = async () => {
   const title = document.getElementById('examTitle').value.trim();
@@ -678,6 +647,8 @@ window.doSaveExam = async () => {
 
   const sc = cSubject.value;
   const bc = document.getElementById('cBook').value;
+  const classSelect = document.getElementById('examClass');
+  const classOption = classSelect.selectedOptions[0];
 
   // 計算總分
   let totalScore = 0;
@@ -693,31 +664,25 @@ window.doSaveExam = async () => {
     totalScore += typeScores[q.type] || 2;
   });
 
-  const selectedClasses = [...document.querySelectorAll('.exam-class-cb:checked')].map(cb => ({
-    id: cb.value, name: cb.dataset.name
-  }));
   const exam = {
     title,
     description: document.getElementById('examDesc').value.trim(),
     subjectCode: sc,
     bookCode: bc,
-    duration: parseInt(document.getElementById('examDuration').value)||50,
-    passScore: parseInt(document.getElementById('examPassScore').value)||60,
     totalScore,
     typeScores,
     questionIds,
     questionCount: questionIds.length,
     composeMode: 'auto',
-    status: 'draft',
-    classIds:   selectedClasses.map(c => c.id),
-    classNames: selectedClasses.map(c => c.name),
+    classId: classSelect.value || null,
+    className: classSelect.value ? classOption.dataset.name : '',
+    classSchool: classSelect.value ? classOption.dataset.school : '',
   };
 
   try {
-    const examId = await DataService.saveExam(exam);
+    await DataService.saveExam(exam);
     UI.toast('試卷已儲存！', 'success');
     document.getElementById('saveModal').classList.add('hidden');
-    setTimeout(() => nav('exams'), 1200);
   } catch(e) {
     document.getElementById('saveErr').textContent = '儲存失敗：'+e.message;
     document.getElementById('saveErr').classList.remove('hidden');

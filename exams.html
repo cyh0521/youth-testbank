@@ -9,15 +9,35 @@
 .exam-card{border:1px solid var(--border-light);border-radius:var(--radius-lg);background:white;padding:14px 16px;display:flex;align-items:flex-start;gap:12px;transition:box-shadow .15s;margin-bottom:10px}
 .exam-card:hover{box-shadow:var(--shadow-md)}
 .exam-icon{width:44px;height:44px;border-radius:var(--radius-lg);display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0}
-.icon-draft{background:#f5f5f5}.icon-active{background:#e8f4fd}.icon-closed{background:#f0f0f0}
+.exam-icon{background:#e8eef6;color:var(--primary)}
 .exam-info{flex:1;min-width:0}
 .exam-title{font-weight:700;font-size:.95rem;color:var(--primary);margin-bottom:4px}
 .exam-meta{display:flex;gap:8px;flex-wrap:wrap;font-size:.78rem;color:var(--text-muted);align-items:center}
 .exam-actions{display:flex;gap:5px;flex-shrink:0;align-items:center;flex-wrap:wrap}
-.status-badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:.72rem;font-weight:600}
-.status-draft{background:#f5f5f5;color:#666}.status-active{background:#e8f4fd;color:#1a6fa8}.status-closed{background:#eafaf1;color:#1a7a4a}
 .filter-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
 .empty-exams{text-align:center;padding:60px 24px;color:var(--text-muted)}
+.view-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.view-tab{font-weight:600;box-shadow:var(--shadow-sm)}
+.view-tab.active{background:var(--primary);border-color:var(--primary);color:white;box-shadow:var(--shadow-md)}
+.group-toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.group-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px}
+.group-card{background:white;border:1px solid var(--border-light);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-sm);cursor:pointer;transition:box-shadow .15s,transform .15s}
+.group-card:hover{box-shadow:var(--shadow-md);transform:translateY(-1px)}
+.group-cover{min-height:132px;padding:18px;display:flex;flex-direction:column;justify-content:flex-end;position:relative;color:white;background:linear-gradient(135deg,var(--primary-dark),var(--primary))}
+.group-cover.subject-cover{background:linear-gradient(135deg,#35677f,#4f8da8)}
+.group-cover::after{content:'';position:absolute;right:-24px;top:-36px;width:112px;height:112px;border-radius:50%;background:rgba(255,255,255,.08)}
+.group-kicker{font-size:.75rem;opacity:.78;margin-bottom:6px;letter-spacing:.04em;position:relative;z-index:1}
+.group-title{font-size:1.2rem;font-weight:750;line-height:1.35;position:relative;z-index:1}
+.group-subject{display:inline-flex;align-self:flex-start;margin-top:9px;padding:3px 9px;border-radius:999px;background:rgba(255,255,255,.16);font-size:.76rem;font-weight:600;position:relative;z-index:1}
+.group-body{padding:14px 16px 16px}
+.group-meta{display:flex;gap:8px;flex-wrap:wrap;font-size:.8rem;color:var(--text-secondary);margin-bottom:8px}
+.group-desc{font-size:.82rem;color:var(--text-secondary);min-height:2.4em;margin-bottom:13px;white-space:pre-wrap}
+.group-actions{display:flex;gap:7px;flex-wrap:wrap}
+.list-heading{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.list-heading h2{font-size:1.05rem;color:var(--primary);margin:0}
+.empty-groups{text-align:center;padding:60px 24px;color:var(--text-muted);background:white;border:1px dashed var(--border);border-radius:var(--radius-lg);grid-column:1/-1}
+.sort-buttons{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.sort-option.active{background:var(--primary);border-color:var(--primary);color:white}
 
 /* 試卷編輯 Modal */
 .edit-q-item{display:flex;align-items:flex-start;gap:8px;padding:9px 12px;border-bottom:1px solid var(--border-light);font-size:.83rem}
@@ -46,22 +66,58 @@
       </div>
     </div>
     <div class="page-content">
-      <div class="filter-row">
-        <input class="form-control" id="searchInput" placeholder="🔍 搜尋試卷名稱…" oninput="filterExams()" style="max-width:200px">
-        <select class="form-control" id="classFilter" onchange="filterExams()" style="max-width:180px">
-          <option value="">全部班級</option>
-        </select>
-        <select class="form-control" id="statusFilter" onchange="filterExams()" style="max-width:120px">
-          <option value="">全部狀態</option>
-          <option value="draft">草稿</option>
-          <option value="active">開放中</option>
-          <option value="closed">已結束</option>
-        </select>
-        <span style="font-size:.82rem;color:var(--text-muted);margin-left:auto" id="examCount"></span>
+      <div class="view-tabs" aria-label="試卷分類方式">
+        <button class="btn btn-outline view-tab" id="mode-class" onclick="selectViewMode('class')">依班級分類</button>
+        <button class="btn btn-outline view-tab" id="mode-subject" onclick="selectViewMode('subject')">依科目分類</button>
+        <button class="btn btn-outline view-tab" id="mode-all" onclick="selectViewMode('all')">不分類</button>
       </div>
-      <div id="examList">
-        <div style="text-align:center;padding:60px;color:var(--text-muted)">載入中…</div>
-      </div>
+
+      <section id="groupView">
+        <div class="group-toolbar">
+          <input class="form-control" id="groupSearch" placeholder="搜尋分類…" oninput="renderGroupCards()" style="max-width:260px">
+          <button class="btn btn-primary btn-sm hidden" id="addClassBtn" onclick="openClassModal()">＋ 新增班級</button>
+          <span id="groupCount" style="font-size:.82rem;color:var(--text-muted);margin-left:auto"></span>
+        </div>
+        <div class="group-grid" id="groupGrid"><div style="color:var(--text-muted)">載入中…</div></div>
+      </section>
+
+      <section id="listView" class="hidden">
+        <div class="list-heading">
+          <button class="btn btn-ghost btn-sm" id="backToGroups" onclick="backToGroups()">← 返回分類</button>
+          <h2 id="listTitle">全部試卷</h2>
+        </div>
+        <div class="filter-row">
+          <input class="form-control" id="searchInput" placeholder="🔍 搜尋試卷名稱…" oninput="filterExams()" style="max-width:220px">
+          <div class="sort-buttons" aria-label="排序方式">
+            <button class="btn btn-sm btn-outline sort-option" id="sort-createdAt" onclick="setSortField('createdAt')">建立時間 ↓</button>
+            <button class="btn btn-sm btn-outline sort-option" id="sort-class" onclick="setSortField('class')">班級</button>
+            <button class="btn btn-sm btn-outline sort-option" id="sort-subject" onclick="setSortField('subject')">科目</button>
+          </div>
+          <span style="font-size:.82rem;color:var(--text-muted);margin-left:auto" id="examCount"></span>
+        </div>
+        <div id="examList"><div style="text-align:center;padding:60px;color:var(--text-muted)">載入中…</div></div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<!-- 班級新增／編輯 Modal -->
+<div class="modal-overlay hidden" id="classModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="classModalTitle">新增班級</h3>
+      <button class="modal-close" onclick="closeClassModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="alert alert-danger hidden" id="classErr"></div>
+      <div class="form-group"><label class="form-label">學校名稱 <span class="required">*</span></label><input class="form-control" id="classSchool" placeholder="例：幼獅高中"></div>
+      <div class="form-group"><label class="form-label">班級名稱 <span class="required">*</span></label><input class="form-control" id="className" placeholder="例：高一忠班"></div>
+      <div class="form-group"><label class="form-label">科目（選填）</label><input class="form-control" id="classSubject" placeholder="例：國文"></div>
+      <div class="form-group"><label class="form-label">備註（選填）</label><textarea class="form-control" id="classDesc" rows="3"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeClassModal()">取消</button>
+      <button class="btn btn-primary" id="saveClassBtn" onclick="saveClass()">儲存</button>
     </div>
   </div>
 </div>
@@ -91,12 +147,8 @@
           <input class="form-control" id="editExamDesc" placeholder="選填">
         </div>
         <div class="form-group">
-          <label class="form-label">考試時間（分鐘）</label>
-          <input class="form-control" type="number" id="editDuration" min="10" max="240">
-        </div>
-        <div class="form-group">
-          <label class="form-label">及格分數</label>
-          <input class="form-control" type="number" id="editPassScore" min="0" max="100">
+          <label class="form-label">班級分類</label>
+          <select class="form-control" id="editExamClass"><option value="">未分類</option></select>
         </div>
       </div>
       <!-- 各題型分數 -->
@@ -113,91 +165,253 @@
   </div>
 </div>
 
-<!-- 指定班級 Modal -->
-<div class="modal-overlay hidden" id="assignModal">
-  <div class="modal">
-    <div class="modal-header">
-      <h3>🏫 指定開放班級</h3>
-      <button class="modal-close" onclick="document.getElementById('assignModal').classList.add('hidden')">✕</button>
-    </div>
-    <div class="modal-body">
-      <p style="font-size:.84rem;color:var(--text-secondary);margin-bottom:12px">
-        勾選要開放此試卷的班級。學生在對應班級中才能看到此試卷。<br>
-        留空表示不開放給任何班級（學生無法參加）。
-      </p>
-      <div id="assignClassList" style="max-height:260px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius);padding:8px;background:white;min-height:60px">
-        <span style="color:var(--text-muted);font-size:.82rem">載入中…</span>
-      </div>
-      <div style="font-size:.78rem;color:var(--text-muted);margin-top:8px" id="assignNote"></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="document.getElementById('assignModal').classList.add('hidden')">取消</button>
-      <button class="btn btn-primary" id="assignSaveBtn" onclick="saveAssign()">儲存班級設定</button>
-    </div>
-  </div>
-</div>
-
 <script type="module">
 import { guardPage } from './js/auth-guard.js';
-import { showExamPreview, exportToWord, showHeaderSettings } from './js/exam-preview.js';
+import { showExamPreview, exportToWord, printExam, showHeaderSettings } from './js/exam-preview.js';
 window.openHeaderSettings = showHeaderSettings;
 window._activeNav = 'exams';
 const user = await guardPage(['admin','teacher']);
 if (!user) throw new Error('not auth');
 const canEdit = DataService.isAdmin() || DataService.isTeacher();
 
-const STATUS_LABELS = { draft:'草稿', active:'開放中', closed:'已結束' };
-const STATUS_CSS    = { draft:'status-draft', active:'status-active', closed:'status-closed' };
-const STATUS_ICONS  = { draft:'icon-draft', active:'icon-active', closed:'icon-closed' };
-const STATUS_EMOJI  = { draft:'📝', active:'✅', closed:'🔒' };
 const TYPE_SCORES   = { T1:2, T2:2, T3:4, T4:2, T5:2, T6:10 };
 
 let allExams     = [];
+let allClasses   = [];
 let allQuestions = {};  // id -> q
 let editExamId   = null;
 let editQOrder   = [];  // array of question ids
 let editQMap     = {};  // id -> q
+let viewMode     = 'class';
+let activeGroup  = null;
+let initialized  = false;
+let editingClassId = null;
+let selectedSortField = 'createdAt';
+let selectedSortDirection = 'desc';
+
+function examClassIds(exam) {
+  if (exam.classId) return [exam.classId];
+  return Array.isArray(exam.classIds) ? exam.classIds : [];
+}
+
+function examClassLabel(exam) {
+  if (exam.classId) {
+    const currentClass = allClasses.find(c => c.id === exam.classId);
+    if (currentClass) return [currentClass.school, currentClass.name].filter(Boolean).join('｜') || '班級';
+    return [exam.classSchool, exam.className].filter(Boolean).join('｜') || '班級';
+  }
+  if (Array.isArray(exam.classNames) && exam.classNames.length) return exam.classNames.join('、');
+  return '未分類';
+}
+
+function examSubjectLabel(exam) {
+  return SUBJECT_CODES[exam.subjectCode] || exam.subjectCode || '未指定科目';
+}
+
+function examBelongsToClass(exam, classId) {
+  return classId === '__none' ? !examClassIds(exam).length : examClassIds(exam).includes(classId);
+}
 
 // ── 載入 ─────────────────────────────────────────
-let allClasses = [];
-
 async function init() {
   try {
-    const [exams, qs, classes] = await Promise.all([
+    const [exams, classes] = await Promise.all([
       DataService.getExams(),
-      Promise.resolve([]),  // 題目改為按需載入，不預先全量讀取
-      DataService.getClasses({ teacherUid: user.uid }).catch(() => []),
+      DataService.getClasses(),
     ]);
-    
-    // 過濾試卷：管理員可看全部，教師只能看自己建立的
-    const isAdmin = DataService.isAdmin();
-    allExams = isAdmin ? exams : exams.filter(e => e.createdBy === user.uid);
-    
-    // allQuestions 改為按需載入
+    allExams = exams;
     allClasses = classes;
-
-    // Populate class filter
-    const cf = document.getElementById('classFilter');
-    classes.forEach(c => {
-      cf.innerHTML += `<option value="${c.id}">${c.name}（${c.school||''}）</option>`;
-    });
-
-    filterExams();
+    if (!initialized) {
+      const params = new URLSearchParams(location.search);
+      const requestedClass = params.get('class');
+      const requestedSubject = params.get('subject');
+      if (requestedClass) {
+        viewMode = 'class';
+        const c = classes.find(item => item.id === requestedClass);
+        if (requestedClass === '__none') activeGroup = { key:'__none', label:'未指定班級' };
+        else if (c) activeGroup = { key: c.id, label: [c.school, c.name].filter(Boolean).join('｜') };
+      } else if (requestedSubject) {
+        viewMode = 'subject';
+        activeGroup = { key: requestedSubject, label: requestedSubject === '__none' ? '未指定科目' : SUBJECT_CODES[requestedSubject] || requestedSubject };
+      } else {
+        const savedMode = localStorage.getItem('examViewMode');
+        if (['class','subject','all'].includes(savedMode)) viewMode = savedMode;
+      }
+      initialized = true;
+    }
+    renderCurrentView();
   } catch(e) {
-    document.getElementById('examList').innerHTML =
-      `<div style="text-align:center;padding:40px;color:var(--danger)">載入失敗：${e.message}</div>`;
+    document.getElementById('groupGrid').innerHTML =
+      `<div class="alert alert-danger">載入失敗：${UI.escapeHtml(e.message)}</div>`;
   }
 }
 
+window.selectViewMode = mode => {
+  viewMode = mode;
+  activeGroup = null;
+  document.getElementById('groupSearch').value = '';
+  document.getElementById('searchInput').value = '';
+  localStorage.setItem('examViewMode', mode);
+  history.replaceState(null, '', location.pathname);
+  renderCurrentView();
+};
+
+function renderCurrentView() {
+  document.querySelectorAll('.view-tab').forEach(tab => tab.classList.remove('active'));
+  document.getElementById('mode-' + viewMode)?.classList.add('active');
+  const showList = viewMode === 'all' || !!activeGroup;
+  document.getElementById('groupView').classList.toggle('hidden', showList);
+  document.getElementById('listView').classList.toggle('hidden', !showList);
+  if (showList) {
+    document.getElementById('backToGroups').classList.toggle('hidden', viewMode === 'all');
+    document.getElementById('listTitle').textContent = viewMode === 'all' ? '全部試卷' : activeGroup.label;
+    updateSortButtons();
+    filterExams();
+  } else {
+    renderGroupCards();
+  }
+}
+
+window.renderGroupCards = () => {
+  const keyword = document.getElementById('groupSearch').value.trim().toLowerCase();
+  const grid = document.getElementById('groupGrid');
+  const addButton = document.getElementById('addClassBtn');
+  addButton.classList.toggle('hidden', viewMode !== 'class');
+  let cards = [];
+
+  if (viewMode === 'class') {
+    cards = allClasses.map(c => {
+      const classExams = allExams.filter(e => examBelongsToClass(e, c.id));
+      const subjects = [...new Set(classExams.map(examSubjectLabel).filter(label => label !== '未指定科目'))];
+      return {
+        key: c.id,
+        label: [c.school, c.name].filter(Boolean).join('｜') || '未命名班級',
+        kicker: c.school || '未填學校',
+        title: c.name || '未命名班級',
+        detail: c.subject || subjects.join('、') || '未指定科目',
+        desc: c.desc || '班級試卷資料夾',
+        count: classExams.length,
+        data: c,
+      };
+    });
+    const unclassifiedCount = allExams.filter(e => examBelongsToClass(e, '__none')).length;
+    if (unclassifiedCount) cards.push({ key:'__none', label:'未指定班級', kicker:'尚未指定學校', title:'未指定班級', detail:'多科目', desc:'尚未歸入班級的試卷', count:unclassifiedCount });
+  } else {
+    const subjectMap = new Map();
+    allExams.forEach(e => {
+      const key = e.subjectCode || '__none';
+      const item = subjectMap.get(key) || { key, label:examSubjectLabel(e), count:0, exams:[] };
+      item.count++;
+      item.exams.push(e);
+      subjectMap.set(key, item);
+    });
+    cards = [...subjectMap.values()]
+      .sort((a,b) => a.label.localeCompare(b.label, 'zh-Hant'))
+      .map(item => {
+        const classIds = new Set(item.exams.flatMap(examClassIds));
+        const relatedClasses = allClasses.filter(c => classIds.has(c.id));
+        const schoolCount = new Set(relatedClasses.map(c => c.school).filter(Boolean)).size;
+        const classCount = relatedClasses.length;
+        const context = classCount ? `${schoolCount} 所學校・${classCount} 個班級` : '尚未指定班級';
+        return { ...item, kicker:'科目分類', title:item.label, detail:context, desc:'依試卷科目整理' };
+      });
+  }
+
+  const visible = cards.filter(card => !keyword || [card.kicker, card.title, card.detail, card.desc]
+    .some(value => (value || '').toLowerCase().includes(keyword)));
+  document.getElementById('groupCount').textContent = `共 ${visible.length} 個分類`;
+  if (!visible.length) {
+    grid.innerHTML = `<div class="empty-groups">
+      <div style="font-size:2.8rem;opacity:.35;margin-bottom:12px">${viewMode === 'class' ? '🏫' : '📚'}</div>
+      <p>${keyword ? '找不到符合條件的分類' : viewMode === 'class' ? '尚未建立班級分類' : '目前沒有可分類的試卷'}</p>
+      ${!keyword && viewMode === 'class' ? '<button class="btn btn-primary" style="margin-top:12px" onclick="openClassModal()">建立第一個班級</button>' : ''}
+    </div>`;
+    return;
+  }
+  grid.innerHTML = visible.map(card => `<article class="group-card" onclick="openGroup('${viewMode}','${card.key}')">
+    <div class="group-cover ${viewMode === 'subject' ? 'subject-cover' : ''}">
+      <div class="group-kicker">${UI.escapeHtml(card.kicker)}</div>
+      <div class="group-title">${UI.escapeHtml(card.title)}</div>
+      <div class="group-subject">${viewMode === 'class' ? '📘 ' : '🏫 '}${UI.escapeHtml(card.detail)}</div>
+    </div>
+    <div class="group-body">
+      <div class="group-meta">
+        <span>📄 ${card.count} 份試卷</span>
+        ${viewMode === 'class' && DataService.isAdmin() && card.data?.teacherName ? `<span>👤 ${UI.escapeHtml(card.data.teacherName)}</span>` : ''}
+      </div>
+      <div class="group-desc">${UI.escapeHtml(card.desc || ' ')}</div>
+      <div class="group-actions">
+        <button class="btn btn-sm btn-primary" onclick="event.stopPropagation();openGroup('${viewMode}','${card.key}')">查看試卷</button>
+        ${viewMode === 'class' && card.data ? `<button class="btn btn-sm btn-outline" onclick="event.stopPropagation();openClassModal('${card.key}')">編輯</button><button class="btn btn-sm btn-danger" onclick="event.stopPropagation();removeClass('${card.key}')">刪除</button>` : ''}
+      </div>
+    </div>
+  </article>`).join('');
+};
+
+window.openGroup = (mode, key) => {
+  viewMode = mode;
+  if (mode === 'class') {
+    const c = allClasses.find(item => item.id === key);
+    activeGroup = { key, label: key === '__none' ? '未指定班級' : [c?.school, c?.name].filter(Boolean).join('｜') || '班級試卷' };
+    history.replaceState(null, '', `${location.pathname}?class=${encodeURIComponent(key)}`);
+  } else {
+    const exam = allExams.find(e => (e.subjectCode || '__none') === key);
+    activeGroup = { key, label: exam ? examSubjectLabel(exam) : '未指定科目' };
+    history.replaceState(null, '', `${location.pathname}?subject=${encodeURIComponent(key)}`);
+  }
+  renderCurrentView();
+};
+
+window.backToGroups = () => {
+  activeGroup = null;
+  history.replaceState(null, '', location.pathname);
+  renderCurrentView();
+};
+
+function updateSortButtons() {
+  const labels = { createdAt:'建立時間', class:'班級', subject:'科目' };
+  Object.entries(labels).forEach(([field, label]) => {
+    const button = document.getElementById('sort-' + field);
+    const active = field === selectedSortField;
+    button.classList.toggle('active', active);
+    button.textContent = active ? `${label} ${selectedSortDirection === 'asc' ? '↑' : '↓'}` : label;
+    button.title = active ? '再次點擊可切換排序方向' : `改用${label}排序`;
+  });
+}
+
+window.setSortField = field => {
+  if (selectedSortField === field) {
+    selectedSortDirection = selectedSortDirection === 'asc' ? 'desc' : 'asc';
+  } else {
+    selectedSortField = field;
+    selectedSortDirection = 'desc';
+  }
+  updateSortButtons();
+  filterExams();
+};
+
 window.filterExams = () => {
-  const kw  = document.getElementById('searchInput').value.toLowerCase();
-  const st  = document.getElementById('statusFilter').value;
-  const cls = document.getElementById('classFilter').value;
-  const list = allExams.filter(e =>
-    (!st  || (e.status||'draft')===st) &&
-    (!kw  || (e.title||'').toLowerCase().includes(kw)) &&
-    (!cls || (e.classIds||[]).includes(cls))
-  );
+  const kw = document.getElementById('searchInput').value.trim().toLowerCase();
+  let list = allExams.filter(e => {
+    if (kw && !(e.title || '').toLowerCase().includes(kw)) return false;
+    if (!activeGroup) return true;
+    if (viewMode === 'class') return examBelongsToClass(e, activeGroup.key);
+    if (viewMode === 'subject') return (e.subjectCode || '__none') === activeGroup.key;
+    return true;
+  });
+  const field = selectedSortField;
+  const direction = selectedSortDirection === 'asc' ? 1 : -1;
+  list = [...list].sort((a,b) => {
+    let result;
+    if (field === 'createdAt') {
+      result = (new Date(a.createdAt || 0).getTime() || 0) - (new Date(b.createdAt || 0).getTime() || 0);
+    } else {
+      const av = field === 'class' ? examClassLabel(a) : examSubjectLabel(a);
+      const bv = field === 'class' ? examClassLabel(b) : examSubjectLabel(b);
+      result = av.localeCompare(bv, 'zh-Hant', { numeric:true });
+    }
+    return (result || (a.title || '').localeCompare(b.title || '', 'zh-Hant', { numeric:true })) * direction;
+  });
   document.getElementById('examCount').textContent = `共 ${list.length} 份試卷`;
   renderExams(list);
 };
@@ -216,37 +430,101 @@ function renderExams(list) {
     return;
   }
   el.innerHTML = list.map(e => {
-    const status = e.status || 'draft';
     return `<div class="exam-card">
-      <div class="exam-icon ${STATUS_ICONS[status]}">${STATUS_EMOJI[status]}</div>
+      <div class="exam-icon">📄</div>
       <div class="exam-info">
-        <div class="exam-title">${e.title||'（未命名）'}</div>
+        <div class="exam-title">${UI.escapeHtml(e.title||'（未命名）')}</div>
         <div class="exam-meta">
-          <span class="status-badge ${STATUS_CSS[status]}">${STATUS_LABELS[status]}</span>
           <span>📊 ${e.questionCount||0} 題</span>
           <span>💯 ${e.totalScore||0} 分</span>
-          <span>⏱ ${e.duration||50} 分鐘</span>
-          <span>${SUBJECT_CODES[e.subjectCode]||e.subjectCode||'—'}</span>
-          <span style="color:var(--text-muted)">${UI.formatDate(e.createdAt)}</span>
+          <span>${UI.escapeHtml(examSubjectLabel(e))}</span>
+          <span>🏫 ${UI.escapeHtml(examClassLabel(e))}</span>
+          <span style="color:var(--text-muted)">建立時間：${UI.formatDateTime(e.createdAt)}</span>
         </div>
-        ${(e.classNames||[]).length ? `<div style="margin-top:5px;display:flex;gap:4px;flex-wrap:wrap">${(e.classNames).map(n=>`<span style="background:#e8eef6;color:var(--primary);font-size:.72rem;padding:1px 7px;border-radius:10px;font-weight:600">🏫 ${n}</span>`).join('')}</div>` : ''}
-        ${e.description?`<div style="font-size:.8rem;color:var(--text-secondary);margin-top:3px">${e.description}</div>`:''}
+        ${e.description?`<div style="font-size:.8rem;color:var(--text-secondary);margin-top:3px">${UI.escapeHtml(e.description)}</div>`:''}
       </div>
       <div class="exam-actions">
         <button class="btn btn-sm btn-outline" onclick="previewExam('${e.id}')">👁 預覽</button>
+        <button class="btn btn-sm btn-primary" onclick="printSavedExam('${e.id}')">🖨 列印</button>
         <button class="btn btn-sm btn-ghost"   onclick="downloadWord('${e.id}')">⬇ Word</button>
         ${canEdit ? `<button class="btn btn-sm btn-outline" onclick="openEdit('${e.id}')">✏️ 編輯</button>` : ''}
-        ${canEdit ? `<button class="btn btn-sm btn-ghost" onclick="openAssign('${e.id}')" title="指定開放班級">🏫</button>` : ''}
-        ${canEdit ? `
-          ${status==='draft'?`<button class="btn btn-sm btn-success" onclick="setStatus('${e.id}','active')">開放</button>`:''}
-          ${status==='active'?`<button class="btn btn-sm btn-ghost" onclick="setStatus('${e.id}','closed')">關閉</button>`:''}
-          <button class="btn btn-sm btn-danger" onclick="deleteExam('${e.id}','${(e.title||'').replace(/'/g,'&apos;')}')">🗑</button>
-        `:'' }
+        ${canEdit ? `<button class="btn btn-sm btn-danger" onclick="deleteExam('${e.id}','${(e.title||'').replace(/'/g,'&apos;')}')">🗑</button>` : ''}
       </div>
     </div>`;
   }).join('');
   UI.renderIcons(el);
 }
+
+// ── 班級分類管理 ─────────────────────────────────
+window.openClassModal = id => {
+  editingClassId = id || null;
+  const data = allClasses.find(c => c.id === id) || {};
+  document.getElementById('classModalTitle').textContent = editingClassId ? '編輯班級' : '新增班級';
+  document.getElementById('classSchool').value = data.school || '';
+  document.getElementById('className').value = data.name || '';
+  document.getElementById('classSubject').value = data.subject || '';
+  document.getElementById('classDesc').value = data.desc || '';
+  document.getElementById('classErr').classList.add('hidden');
+  document.getElementById('classModal').classList.remove('hidden');
+};
+
+window.closeClassModal = () => document.getElementById('classModal').classList.add('hidden');
+
+window.saveClass = async () => {
+  const school = document.getElementById('classSchool').value.trim();
+  const name = document.getElementById('className').value.trim();
+  const err = document.getElementById('classErr');
+  if (!school || !name) {
+    err.textContent = '請填寫學校名稱與班級名稱';
+    err.classList.remove('hidden');
+    return;
+  }
+  const duplicate = allClasses.some(c => c.id !== editingClassId && (c.school || '').trim() === school && (c.name || '').trim() === name);
+  if (duplicate) {
+    err.textContent = '相同學校與班級名稱已存在';
+    err.classList.remove('hidden');
+    return;
+  }
+  const button = document.getElementById('saveClassBtn');
+  button.disabled = true;
+  try {
+    await DataService.saveClass({
+      id: editingClassId,
+      school,
+      name,
+      subject: document.getElementById('classSubject').value.trim(),
+      desc: document.getElementById('classDesc').value.trim(),
+    });
+    UI.toast(editingClassId ? '班級已更新' : '班級已建立', 'success');
+    closeClassModal();
+    allClasses = await DataService.getClasses();
+    renderCurrentView();
+  } catch (e) {
+    err.textContent = '儲存失敗：' + e.message;
+    err.classList.remove('hidden');
+  } finally {
+    button.disabled = false;
+  }
+};
+
+window.removeClass = async id => {
+  const data = allClasses.find(c => c.id === id);
+  if (!data) return;
+  const examCount = allExams.filter(e => examBelongsToClass(e, id)).length;
+  if (examCount) {
+    UI.toast(`此班級仍有 ${examCount} 份試卷，請先將試卷移至其他班級或未分類`, 'warning');
+    return;
+  }
+  if (!confirm(`確定刪除「${data.school}｜${data.name}」？`)) return;
+  try {
+    await DataService.deleteClass(id);
+    allClasses = allClasses.filter(c => c.id !== id);
+    renderCurrentView();
+    UI.toast('班級已刪除', 'success');
+  } catch (e) {
+    UI.toast('刪除失敗：' + e.message, 'danger');
+  }
+};
 
 // ── 取得試卷題目 ─────────────────────────────────
 async function loadExamQuestions(e) {
@@ -278,13 +556,12 @@ window.downloadWord = async (id) => {
   exportToWord(e, qs);
 };
 
-// ── 開放 / 關閉 ──────────────────────────────────
-window.setStatus = async (id, status) => {
-  try {
-    await DataService.saveExam({ id, status });
-    UI.toast(status==='active'?'試卷已開放':'試卷已關閉', 'success');
-    await init();
-  } catch(e) { UI.toast('操作失敗：'+e.message, 'danger'); }
+window.printSavedExam = async (id) => {
+  const e = allExams.find(x => x.id===id); if (!e) return;
+  await loadExamQuestions(e);
+  const qs = getExamQuestions(e);
+  if (!qs.length) { UI.toast('此試卷無法載入題目', 'warning'); return; }
+  printExam(e, qs);
 };
 
 // ── 刪除 ─────────────────────────────────────────
@@ -299,8 +576,9 @@ window.deleteExam = async (id, title) => {
 };
 
 // ── 編輯 Modal ───────────────────────────────────
-window.openEdit = (id) => {
+window.openEdit = async (id) => {
   const e = allExams.find(x => x.id===id); if (!e) return;
+  await loadExamQuestions(e);
   editExamId = id;
   editQOrder = [...(e.questionIds||[])];
   editQMap   = {};
@@ -311,9 +589,7 @@ window.openEdit = (id) => {
   document.getElementById('editTitle').textContent = `編輯試卷：${e.title||''}`;
   document.getElementById('editExamTitle').value  = e.title || '';
   document.getElementById('editExamDesc').value   = e.description || '';
-  document.getElementById('editDuration').value   = e.duration || 50;
-  document.getElementById('editPassScore').value  = e.passScore || 60;
-
+  await loadClassOptions('editExamClass', examClassIds(e)[0] || '');
   renderEditScoreRows(e.typeScores||{});
   renderEditQList();
   document.getElementById('editModal').classList.remove('hidden');
@@ -431,16 +707,21 @@ window.saveEdit = async () => {
     totalScore += typeScores[q.type] || 2;
   });
   try {
+    const classSelect = document.getElementById('editExamClass');
+    const classOption = classSelect.selectedOptions[0];
     await DataService.saveExam({
       id:            editExamId,
       title,
       description:   document.getElementById('editExamDesc').value.trim(),
-      duration:      parseInt(document.getElementById('editDuration').value)||50,
-      passScore:     parseInt(document.getElementById('editPassScore').value)||60,
       typeScores,
       totalScore,
       questionIds:   [...editQOrder],
       questionCount: editQOrder.length,
+      classId:        classSelect.value || null,
+      className:      classSelect.value ? classOption.dataset.name : '',
+      classSchool:    classSelect.value ? classOption.dataset.school : '',
+      classIds:       [],
+      classNames:     [],
     });
     UI.toast('試卷已儲存', 'success');
     closeEdit();
@@ -449,57 +730,6 @@ window.saveEdit = async () => {
 };
 
 window.closeEdit = () => document.getElementById('editModal').classList.add('hidden');
-
-// ── 指定班級 ─────────────────────────────────────
-let assigningExamId = null;
-
-window.openAssign = async (examId) => {
-  assigningExamId = examId;
-  const e = allExams.find(x => x.id===examId); if (!e) return;
-  const container = document.getElementById('assignClassList');
-  container.innerHTML = '<span style="color:var(--text-muted);font-size:.82rem">載入中…</span>';
-  document.getElementById('assignNote').textContent = '';
-  document.getElementById('assignModal').classList.remove('hidden');
-
-  try {
-    const classes = await DataService.getClasses({ teacherUid: user.uid });
-    if (!classes.length) {
-      container.innerHTML = '<span style="color:var(--text-muted);font-size:.82rem">尚無班級，請先至「班級管理」建立班級</span>';
-      return;
-    }
-    const currentIds = e.classIds || [];
-    container.innerHTML = classes.map(c => `
-      <label style="display:flex;align-items:center;gap:8px;padding:7px 6px;cursor:pointer;font-size:.84rem;border-radius:4px;margin-bottom:2px;border-bottom:1px solid var(--border-light)" onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background=''">
-        <input type="checkbox" class="assign-cb" value="${c.id}" data-name="${(c.name||'').replace(/"/g,'&quot;')}" ${currentIds.includes(c.id)?'checked':''}>
-        <div>
-          <div style="font-weight:600">${c.name}</div>
-          <div style="font-size:.74rem;color:var(--text-muted)">${c.school||''} ｜ ${SUBJECT_CODES[c.subjectCode]||''}</div>
-        </div>
-      </label>`).join('');
-    document.getElementById('assignNote').textContent =
-      currentIds.length ? `目前已指定 ${currentIds.length} 個班級` : '目前未指定任何班級（所有學生均可參加）';
-  } catch(err) {
-    container.innerHTML = `<span style="color:var(--danger);font-size:.82rem">載入失敗：${err.message}</span>`;
-  }
-};
-
-window.saveAssign = async () => {
-  const checked = [...document.querySelectorAll('.assign-cb:checked')];
-  const classIds   = checked.map(cb => cb.value);
-  const classNames = checked.map(cb => cb.dataset.name);
-  const btn = document.getElementById('assignSaveBtn');
-  btn.disabled=true; btn.textContent='儲存中…';
-  try {
-    await DataService.saveExam({ id: assigningExamId, classIds, classNames });
-    UI.toast('班級設定已儲存', 'success');
-    document.getElementById('assignModal').classList.add('hidden');
-    await init();
-  } catch(e) {
-    UI.toast('儲存失敗：'+e.message,'danger');
-  } finally {
-    btn.disabled=false; btn.textContent='儲存班級設定';
-  }
-};
 
 init();
 </script>

@@ -13,7 +13,6 @@ service cloud.firestore {
     }
     function isAdmin()   { return isSignedIn() && role() == 'admin'; }
     function isTeacher() { return isSignedIn() && (role() == 'teacher' || role() == 'admin'); }
-    function isStudent() { return isSignedIn() && role() == 'student'; }
 
     // ── users ─────────────────────────────────────────────────
     match /users/{uid} {
@@ -40,59 +39,24 @@ service cloud.firestore {
       allow read:  if isAdmin();
       // 教師只能讀取自己建立的試卷
       allow read:  if isTeacher() && resource.data.createdBy == request.auth.uid;
-      // 學生只能讀取已開放且在其班級的試卷（由前端控制，這裡允許讀取已開放試卷）
-      allow read:  if isStudent() && resource.data.status == 'active';
       // 只有管理員和教師可以建立試卷
       allow create: if isTeacher();
       // 只有建立者或管理員可以修改/刪除試卷
       allow update, delete: if isAdmin() || (isTeacher() && resource.data.createdBy == request.auth.uid);
     }
 
-    // ── results ───────────────────────────────────────────────
-    match /results/{rid} {
-      // 管理員可以讀取所有成績
-      allow read:   if isAdmin();
-      // 教師可以讀取自己班級學生的成績（前端控制）
-      allow read:   if isTeacher();
-      // 學生只能讀取自己的成績
-      allow read:   if isSignedIn() && resource.data.studentUid == request.auth.uid;
-      // 學生只能建立自己的成績
-      allow create: if isSignedIn() && request.resource.data.studentUid == request.auth.uid;
-      // 只有教師可以修改成績（批改主觀題）
-      allow update: if isTeacher();
-    }
-
-    // ── submissions ───────────────────────────────────────────
-    match /submissions/{sid} {
-      allow read:   if isTeacher();
-      allow read:   if isSignedIn() && resource.data.studentUid == request.auth.uid;
-      allow create: if isSignedIn() && request.resource.data.studentUid == request.auth.uid;
-      allow update: if isTeacher();
-    }
-
-    // ── classes ───────────────────────────────────────────────
+    // ── classes（教師的試卷分類）────────────────────────────
     match /classes/{classId} {
-      // 管理員可以讀取所有班級
-      allow read:  if isAdmin();
-      // 教師只能讀取自己建立的班級
-      allow read:  if isTeacher() && resource.data.teacherUid == request.auth.uid;
-      // 學生可以讀取班級資訊（加入班級時需要）
-      allow read:  if isStudent();
-      // 只有教師可以建立班級
-      allow create: if isTeacher();
-      // 只有建立者或管理員可以修改/刪除班級
-      allow update, delete: if isAdmin() || (isTeacher() && resource.data.teacherUid == request.auth.uid);
-      
-      match /members/{uid} {
-        // 教師可以讀取自己班級的成員
-        allow read:  if isTeacher();
-        // 學生可以讀取成員列表（查看同班同學）
-        allow read:  if isSignedIn();
-        // 只有教師可以管理成員
-        allow write: if isTeacher();
-        // 學生可以將自己加入班級
-        allow create: if isSignedIn() && request.auth.uid == uid;
-      }
+      allow read: if isAdmin()
+                  || (isTeacher() && resource.data.teacherUid == request.auth.uid);
+      allow create: if isTeacher()
+                    && request.resource.data.teacherUid == request.auth.uid;
+      allow update: if isAdmin()
+                    || (isTeacher()
+                        && resource.data.teacherUid == request.auth.uid
+                        && request.resource.data.teacherUid == resource.data.teacherUid);
+      allow delete: if isAdmin()
+                    || (isTeacher() && resource.data.teacherUid == request.auth.uid);
     }
 
     // ── settings（系統設定）────────────────────────────────

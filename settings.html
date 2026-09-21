@@ -14,7 +14,6 @@
 .role-badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:.75rem;font-weight:600}
 .role-admin{background:#fde8e8;color:#c0392b}
 .role-teacher{background:#e8eef6;color:var(--primary)}
-.role-student{background:#eafaf1;color:#1e8449}
 
 .search-bar{display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
 .user-count{font-size:.82rem;color:var(--text-muted);white-space:nowrap}
@@ -27,10 +26,6 @@
 .required{color:var(--danger)}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .modal .err-box{background:#fef0ef;color:var(--danger);border:1px solid #f5c6c2;border-radius:var(--radius);padding:8px 12px;font-size:.82rem;margin-bottom:12px;display:none}
-
-/* 學生自助註冊 */
-.register-card{max-width:480px;margin:0 auto}
-.register-info{background:#e8f4fd;border:1px solid #bee3f8;border-radius:var(--radius);padding:10px 14px;font-size:.82rem;color:#1a4a6a;margin-bottom:16px}
 
 </style>
 </head>
@@ -64,7 +59,6 @@
       <div class="form-group">
         <label class="form-label">身份 <span class="required">*</span></label>
         <select class="form-control" id="umRole" onchange="onUmRoleChange()">
-          <option value="student">🧑‍🎓 學生</option>
           <option value="teacher">🎓 教師</option>
           <option value="admin">🛡️ 管理員</option>
         </select>
@@ -82,7 +76,7 @@
       <div class="form-group" id="umSchoolGroup">
         <label class="form-label">服務學校 <span id="umSchoolReq" class="required"></span></label>
         <input class="form-control" id="umSchool" placeholder="請輸入服務學校全名">
-        <div class="field-hint" id="umSchoolHint">教師必填；學生選填</div>
+        <div class="field-hint" id="umSchoolHint">教師必填</div>
       </div>
       <div class="form-row">
         <div class="form-group">
@@ -172,7 +166,6 @@ function buildTabs() {
   const tabs = [];
   if (isAdmin) tabs.push({ id:'accounts', label:'👥 帳號管理' });
   tabs.push({ id:'profile', label:'👤 個人資料' });
-  if (!isAdmin) tabs.push({ id:'register', label:'📝 學生自助加入' });
 
   const tabsHTML = `<div class="settings-tabs">
     ${tabs.map((t,i)=>`<button class="settings-tab ${i===0?'active':''}" id="stab-${t.id}" onclick="switchTab('${t.id}')">${t.label}</button>`).join('')}
@@ -184,7 +177,6 @@ function buildTabs() {
   // 渲染每個 tab 的內容
   if (isAdmin) buildAccountsPanel();
   buildProfilePanel();
-  if (!isAdmin) buildRegisterPanel();
 }
 
 window.switchTab = id => {
@@ -213,7 +205,6 @@ function buildAccountsPanel() {
             <option value="">全部身份</option>
             <option value="admin">管理員</option>
             <option value="teacher">教師</option>
-            <option value="student">學生</option>
           </select>
           <span class="user-count" id="userCount"></span>
         </div>
@@ -234,7 +225,7 @@ function buildAccountsPanel() {
 
 async function loadUsers() {
   try {
-    allUsers = await DataService.getUsers();
+    allUsers = (await DataService.getUsers()).filter(u => ['admin','teacher'].includes(u.role));
     filterUsers();
   } catch(e) {
     const tb = document.getElementById('userTbody');
@@ -274,7 +265,7 @@ window.filterUsers = () => {
 };
 
 function roleTag(role) {
-  const m = { admin:['role-admin','🛡️ 管理員'], teacher:['role-teacher','🎓 教師'], student:['role-student','🧑‍🎓 學生'] };
+  const m = { admin:['role-admin','🛡️ 管理員'], teacher:['role-teacher','🎓 教師'] };
   const [cls, label] = m[role]||['',''];
   return `<span class="role-badge ${cls}">${label}</span>`;
 }
@@ -299,7 +290,7 @@ window.openUserModal = (uid) => {
     if (!u) { UI.toast('找不到帳號', 'danger'); return; }
     document.getElementById('umTitle').textContent    = '編輯帳號';
     document.getElementById('umUid').value            = uid;
-    document.getElementById('umRole').value           = u.role||'student';
+    document.getElementById('umRole').value           = u.role||'teacher';
     document.getElementById('umEmail').value          = u.email||'';
     document.getElementById('umEmail').disabled       = true;
     document.getElementById('umName').value           = u.displayName||'';
@@ -325,7 +316,7 @@ window.onUmRoleChange = () => {
   const req  = document.getElementById('umSchoolReq');
   const hint = document.getElementById('umSchoolHint');
   if (role==='teacher') { req.textContent='*'; hint.textContent='教師必填'; }
-  else { req.textContent=''; hint.textContent='學生選填'; }
+  else { req.textContent=''; hint.textContent='管理員選填'; }
 };
 
 window.saveUser = async () => {
@@ -358,13 +349,13 @@ window.saveUser = async () => {
     } else {
       const res = await DataService.register({
         email, password:pw, displayName:name, role,
-        school:school||null, regCode:'admin2024', _adminCreate:true
+        school:school||null, _adminCreate:true
       });
       if (!res.ok) return showErr(res.msg);
       UI.toast(`帳號「${name}」建立成功`,'success');
     }
     closeUserModal();
-    allUsers = await DataService.getUsers();
+    allUsers = (await DataService.getUsers()).filter(u => ['admin','teacher'].includes(u.role));
     filterUsers();
   } catch(e) {
     showErr(e.message||'發生未知錯誤');
@@ -378,7 +369,7 @@ window.doDelete = async (uid, name) => {
   try {
     await DataService.deleteUser(uid);
     UI.toast(`已刪除帳號「${name}」`,'success');
-    allUsers = await DataService.getUsers();
+    allUsers = (await DataService.getUsers()).filter(u => ['admin','teacher'].includes(u.role));
     filterUsers();
   } catch(e) { UI.toast('刪除失敗：'+e.message,'danger'); }
 };
@@ -389,8 +380,7 @@ window.doDelete = async (uid, name) => {
 function buildProfilePanel() {
   const u = DataService.getCurrentUser();
   const ini = (u.displayName||u.email||'?')[0].toUpperCase();
-  const ROLES = { admin:'🛡️ 管理員', teacher:'🎓 教師', student:'🧑‍🎓 學生' };
-  const showSchool = u.role==='teacher'||u.role==='student';
+  const showSchool = u.role==='teacher';
 
   document.getElementById('spanel-profile').innerHTML = `
     <div class="card" style="max-width:560px">
@@ -421,7 +411,7 @@ function openProfileModal() {
   document.getElementById('pmPw2').value    = '';
   document.getElementById('pmErr').style.display = 'none';
   const sg = document.getElementById('pmSchoolGroup');
-  sg.style.display = (u.role==='teacher'||u.role==='student') ? 'block':'none';
+  sg.style.display = u.role==='teacher' ? 'block':'none';
   document.getElementById('pmSchoolReq').textContent = u.role==='teacher'?'*':'';
   document.getElementById('profileModal').classList.remove('hidden');
 }
@@ -455,61 +445,6 @@ window.saveProfile = async () => {
     if (e.code==='auth/requires-recent-login') showErr('變更密碼需重新登入後再試');
     else showErr(e.message||'發生錯誤');
   } finally { btn.disabled=false; btn.textContent='儲存變更'; }
-};
-
-// ══════════════════════════════════════════════════
-//  學生自助加入 Panel（非管理員看）
-// ══════════════════════════════════════════════════
-function buildRegisterPanel() {
-  document.getElementById('spanel-register').innerHTML = `
-    <div class="register-card">
-      <div class="register-info">
-        ℹ 本功能讓您邀請學生自助建立帳號。學生需要您提供的<strong>邀請碼</strong>才能完成註冊。
-      </div>
-      <div class="card">
-        <div class="card-header"><h2>邀請碼管理</h2></div>
-        <div class="card-body">
-          <div class="form-group">
-            <label class="form-label">目前學生邀請碼</label>
-            <div style="display:flex;gap:8px;align-items:center">
-              <input class="form-control" id="inviteCodeDisplay" readonly style="max-width:200px;font-family:var(--font-mono);font-size:1rem;font-weight:700;letter-spacing:.06em">
-              <button class="btn btn-outline btn-sm" onclick="copyInviteCode()">複製</button>
-              <button class="btn btn-warning btn-sm" onclick="refreshInviteCode()" title="會讓現有邀請碼失效，學生需用新碼加入">🔄 重設</button>
-            </div>
-            <div class="field-hint">將此邀請碼提供給學生，學生至登入頁面以此碼自助加入。</div>
-          </div>
-          <div style="background:var(--bg-base);border:1px dashed var(--border);border-radius:var(--radius);padding:12px 14px;font-size:.82rem;color:var(--text-secondary)">
-            <strong>學生加入步驟：</strong><br>
-            1. 前往登入頁面<br>
-            2. 點選「學生自助加入」<br>
-            3. 輸入邀請碼、信箱、姓名與密碼完成註冊
-          </div>
-        </div>
-      </div>
-    </div>`;
-  loadInviteCode();
-}
-
-async function loadInviteCode() {
-  try {
-    const codes = await DataService.getRegCodes();
-    document.getElementById('inviteCodeDisplay').value = codes.student || 'student2024';
-  } catch(e) { /* ignore */ }
-}
-
-window.copyInviteCode = () => {
-  const v = document.getElementById('inviteCodeDisplay').value;
-  navigator.clipboard.writeText(v).then(() => UI.toast('邀請碼已複製','success'));
-};
-
-window.refreshInviteCode = async () => {
-  if (!confirm('確定要重設邀請碼？舊邀請碼將立即失效。')) return;
-  const newCode = Math.random().toString(36).slice(2,8).toUpperCase();
-  try {
-    await DataService.setRegCode('student', newCode);
-    document.getElementById('inviteCodeDisplay').value = newCode;
-    UI.toast('邀請碼已重設','success');
-  } catch(e) { UI.toast('重設失敗：'+e.message,'danger'); }
 };
 
 // ══════════════════════════════════════════════════

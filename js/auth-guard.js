@@ -21,6 +21,10 @@ export async function guardPage(allowedRoles) {
   await window._dsReady;
   const user = DataService.getCurrentUser();
   if (!user) { window.location.href = 'index.html'; return null; }
+  if (!['admin', 'teacher'].includes(user.role)) {
+    await DataService.logout();
+    return null;
+  }
   if (allowedRoles && !allowedRoles.includes(user.role)) {
     window.location.href = 'dashboard.html'; return null;
   }
@@ -52,10 +56,9 @@ export function renderSidebar(el, active) {
   const I = window.ICONS || {};
   const ROLES = {
     admin:   { label:'管理員', cls:'role-admin' },
-    teacher: { label:'教師',   cls:'role-teacher' },
-    student: { label:'學生',   cls:'role-student' }
+    teacher: { label:'教師',   cls:'role-teacher' }
   };
-  const ri  = ROLES[user.role] || ROLES.student;
+  const ri  = ROLES[user.role] || ROLES.teacher;
   const ini = (user.displayName || user.email || '?')[0].toUpperCase();
 
   // nav-item：label 包在 <span class="nav-label"> 方便收合時隱藏
@@ -65,7 +68,6 @@ export function renderSidebar(el, active) {
      </div>`;
 
   // ── 教師/管理員共用（staffNav）──────────────
-  //  「班級管理」+「成績管理」合併為「班級與成績」
   const adminNav = `
     <div class="nav-section-title"><span class="nav-label">題庫管理</span></div>
     ${item('textbooks', I.book20,   '課本管理')}
@@ -78,25 +80,12 @@ export function renderSidebar(el, active) {
     ${item('manual',  I.edit20,   '手動選題')}
     ${item('coded',   I.code20,   '編碼選題')}
     ${item('exams',   I.folder20, '試卷管理')}
-    <div class="nav-section-title"><span class="nav-label">班級與成績</span></div>
-    ${item('classes', I.school20, '班級管理')}
-    ${item('results', I.chart20,  '成績查詢')}
     <div class="nav-section-title"><span class="nav-label">系統設定</span></div>
     ${item('settings',I.settings20,'帳號與設定')}`;
 
-  const studentNav = `
-    <div class="nav-section-title"><span class="nav-label">線上考試</span></div>
-    ${item('take',       I.test20,  '參加考試')}
-    ${item('my-results', I.chart20, '我的成績')}
-    <div class="nav-section-title"><span class="nav-label">班級</span></div>
-    ${item('classes',    I.school20,'我的班級')}
-    <div class="nav-section-title"><span class="nav-label">設定</span></div>
-    ${item('settings',   I.settings20,'帳號設定')}`;
-
   const navMap = {
     admin:   adminNav + staffNav,
-    teacher: staffNav,
-    student: studentNav
+    teacher: staffNav
   };
 
   // 漢堡選單 icon
@@ -121,7 +110,7 @@ export function renderSidebar(el, active) {
     </div>
     <nav class="sidebar-nav">
       ${item('dashboard', I.home20, '首頁總覽')}
-      ${navMap[user.role] || studentNav}
+      ${navMap[user.role] || staffNav}
     </nav>
     <div class="sidebar-footer">
       <button class="logout-btn" id="logoutBtn">${I.logout18 || '⬅'}<span class="nav-label">登出</span></button>

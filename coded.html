@@ -206,18 +206,12 @@
         <input class="form-control" id="examTitle" placeholder="例：113學年度第一次月考">
       </div>
       <div class="form-group">
+        <label class="form-label">班級分類</label>
+        <select class="form-control" id="examClass"><option value="">未分類</option></select>
+      </div>
+      <div class="form-group">
         <label class="form-label">說明（選填）</label>
         <textarea class="form-control" id="examDesc" rows="2" placeholder="考試說明、範圍…"></textarea>
-      </div>
-      <div class="grid-2">
-        <div class="form-group">
-          <label class="form-label">考試時間（分鐘）</label>
-          <input class="form-control" type="number" id="examDuration" value="50" min="10" max="240">
-        </div>
-        <div class="form-group">
-          <label class="form-label">及格分數</label>
-          <input class="form-control" type="number" id="examPassScore" value="60" min="0" max="100">
-        </div>
       </div>
     </div>
     <div class="modal-footer">
@@ -500,9 +494,10 @@ window.dropOn = (e, targetQnum) => {
 };
 
 // ── 儲存試卷 ──────────────────────────────────────
-window.openSaveModal = () => {
+window.openSaveModal = async () => {
   if (!selectedOrder.length) { UI.toast('請先加入題目', 'warning'); return; }
   document.getElementById('saveErr').classList.add('hidden');
+  await loadClassOptions('examClass');
   document.getElementById('saveModal').classList.remove('hidden');
 };
 
@@ -526,26 +521,27 @@ window.doSaveExam = async () => {
   });
 
   const firstQ = selQuestions[selectedOrder[0]];
+  const classSelect = document.getElementById('examClass');
+  const classOption = classSelect.selectedOptions[0];
   const exam = {
     title,
     description: document.getElementById('examDesc').value.trim(),
     subjectCode: firstQ?.subjectCode || '',
     bookCode:    firstQ?.bookCode    || '',
-    duration:    parseInt(document.getElementById('examDuration').value) || 50,
-    passScore:   parseInt(document.getElementById('examPassScore').value) || 60,
     totalScore,
     typeScores,
     questionIds:   [...selectedOrder.map(qnum => selQuestions[qnum]?.id).filter(Boolean)],
     questionCount: selectedOrder.length,
     composeMode:   'coded',
-    status:        'draft',
+    classId: classSelect.value || null,
+    className: classSelect.value ? classOption.dataset.name : '',
+    classSchool: classSelect.value ? classOption.dataset.school : '',
   };
 
   try {
     await DataService.saveExam(exam);
     UI.toast('試卷已儲存！', 'success');
     document.getElementById('saveModal').classList.add('hidden');
-    setTimeout(() => nav('exams'), 1200);
   } catch(e) {
     document.getElementById('saveErr').textContent = '儲存失敗：' + e.message;
     document.getElementById('saveErr').classList.remove('hidden');
