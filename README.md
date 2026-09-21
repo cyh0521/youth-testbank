@@ -2,94 +2,193 @@
 
 ## 系統定位
 
-本系統提供管理員與教師使用的線上題庫、組卷、試卷存檔、預覽、列印及 Word 匯出功能。班級功能僅作為教師的試卷分類；學生帳號、線上作答與成績功能已移除。
+本系統是供管理員與教師使用的線上題庫與試卷製作工具，主要流程為題庫建置、選題組卷、試卷存檔、預覽、列印與 Word 匯出。
+
+班級功能目前只作為教師整理試卷的分類資料夾，不包含學生名單、班級加入代碼、線上試卷、線上作答或成績管理。
+
+## 2026-09-21 功能調整
+
+- 移除學生帳號、線上試卷、線上作答與班級成績功能。
+- 移除 `take.html`、`results.html`、`my-results.html` 與獨立的 `classes.html`。
+- 儲存試卷後留在原選題頁，只顯示儲存成功訊息，不再自動開啟預覽。
+- 恢復班級分類資料，教師可依任教學校與班級建立試卷資料夾。
+- 將班級新增、編輯、刪除及試卷分類整合至 `exams.html`。
+- 試卷管理提供三種瀏覽方式：
+  - **依班級分類**：先顯示班級圖卡，再進入該班試卷列表。
+  - **依科目分類**：先顯示科目圖卡，再進入該科試卷列表。
+  - **不分類**：直接顯示全部試卷。
+- 班級圖卡封面優先顯示學校、班級與科目；科目圖卡顯示涵蓋的學校與班級數。
+- 試卷列表可依建立時間、班級或科目排序。
+- 目前使用中的排序按鈕會顯示 `↑` 或 `↓`；重複點擊同一按鈕即可切換升冪與降冪。
+- 試卷建立時間以 24 小時制顯示，例如 `2026/09/21 14:35`。
+- 保留舊試卷 `classIds`、`classNames` 欄位的讀取相容性；重新編輯後會轉為目前的單一班級分類格式。
 
 ## 技術架構
 
-- 前端：純 HTML、CSS、JavaScript（ES Modules）
-- 後端：Firebase Authentication、Firestore、Storage
-- 題目匯入：Mammoth.js 解析 `.docx`
+- 前端：HTML、CSS、原生 JavaScript 與 ES Modules
+- 身分驗證：Firebase Authentication（Email/Password）
+- 資料庫：Cloud Firestore
+- 圖片儲存：Firebase Storage
+- Word 題目匯入：Mammoth.js
+- 試卷輸出：瀏覽器列印與 Word HTML 匯出
 
-因使用 ES Modules，必須透過 HTTP Server 開啟，不能直接雙擊 HTML。
+網站沒有建置步驟，但因為使用 ES Modules，必須透過 HTTP Server 開啟，不能直接雙擊 HTML 檔案。
 
 ```bash
 npx serve .
 ```
 
-或：
+也可使用 VS Code Live Server 或其他靜態網站伺服器。
 
-```bash
-python -m http.server 8080
+入口檔案為 `index.html`。
+
+## 目前目錄結構
+
+```text
+youth-testbank/
+├─ index.html                 登入與第一次初始化管理員
+├─ dashboard.html             題庫及試卷總覽
+├─ textbooks.html             科目、冊別、章節管理
+├─ import-textbooks.html      初次建立或重建課本結構工具
+├─ import.html                Word 題目匯入
+├─ questions.html             題目查詢與維護
+├─ compose.html               電腦自動選題
+├─ manual.html                人工選題
+├─ coded.html                 依題目編號選題
+├─ exams.html                 試卷、班級分類、預覽與輸出
+├─ settings.html              帳號與個人資料設定
+├─ firestore.rules            Firestore 安全規則
+├─ css/
+│  └─ theme.css               全站版面、元件與列印樣式
+├─ js/
+│  ├─ firebase.js             Firebase 初始化與 DataService
+│  ├─ auth-guard.js           登入守衛、角色檢查與側邊欄
+│  ├─ core.js                 共用常數、UI 工具與選單資料
+│  ├─ exam-preview.js         表頭、預覽、列印與 Word 匯出
+│  └─ icons.js                共用 SVG 圖示
+└─ _Firebase舊版/             舊功能備份，不屬於現行網站
 ```
 
-## 主要頁面
+`_Firebase舊版` 中仍保留學生、線上考試與成績功能的舊程式，只供歷史參考。修改或部署現行網站時，不應從該資料夾載入檔案。
 
-| 檔案 | 功能 | 角色 |
-|---|---|---|
-| `index.html` | 登入及首次初始化管理員 | 管理員／教師 |
-| `dashboard.html` | 題庫與試卷總覽 | 管理員／教師 |
-| `textbooks.html` | 科目、冊別與章節管理 | 管理員 |
-| `import.html` | 從 Word 匯入題目 | 管理員 |
-| `questions.html` | 題目查詢、編輯與刪除 | 管理員 |
-| `compose.html` | 電腦自動選題 | 管理員／教師 |
-| `manual.html` | 人工選題 | 管理員／教師 |
-| `coded.html` | 依題目編號選題 | 管理員／教師 |
-| `exams.html` | 試卷與班級管理，可依班級、科目或全部瀏覽、排序與輸出 | 管理員／教師 |
-| `settings.html` | 工作人員帳號與個人資料 | 管理員／教師 |
+## 主要頁面與權限
 
-`import-textbooks.html` 是首次建立或重建課本結構時使用的管理工具，不在主導覽中。
+| 頁面 | 功能 | 管理員 | 教師 |
+|---|---|:---:|:---:|
+| `index.html` | 管理員／教師登入；第一次初始化管理員 | ✓ | ✓ |
+| `dashboard.html` | 題庫統計、最近試卷與快速入口 | ✓ | ✓ |
+| `textbooks.html` | 科目、冊別與章節管理 | ✓ | |
+| `import-textbooks.html` | 建立或重建課本資料 | ✓ | |
+| `import.html` | 從 `.docx` 批次匯入題目 | ✓ | |
+| `questions.html` | 查詢題目 | ✓ | ✓ |
+| `questions.html` | 編輯、刪除題目 | ✓ | |
+| `compose.html` | 依條件自動選題 | ✓ | ✓ |
+| `manual.html` | 瀏覽題庫並人工選題 | ✓ | ✓ |
+| `coded.html` | 依題目編號加入試卷 | ✓ | ✓ |
+| `exams.html` | 試卷與班級分類管理、預覽、列印、Word 匯出 | ✓ | ✓ |
+| `settings.html` | 管理工作人員帳號 | ✓ | |
+| `settings.html` | 修改個人資料與自己的密碼 | ✓ | ✓ |
 
-## 共用程式
+管理員可讀取所有試卷與班級分類；教師只能讀取及修改自己建立的試卷與班級分類。
 
-| 檔案 | 用途 |
-|---|---|
-| `js/firebase.js` | Firebase 資料層與 `DataService` |
-| `js/auth-guard.js` | 登入／角色守衛及側邊欄 |
-| `js/core.js` | 題型常數、UI 工具與課本快取 |
-| `js/exam-preview.js` | 試卷表頭、預覽、列印與 Word 匯出 |
-| `js/icons.js` | 共用 SVG 圖示 |
-| `css/theme.css` | 全站共用樣式 |
+## HTML、CSS 與 JavaScript 載入關係
 
-## 權限
+一般登入後頁面的載入順序如下：
 
-| 功能 | 管理員 | 教師 |
-|---|:---:|:---:|
-| 工作人員帳號管理 | ✓ | |
-| 課本結構管理 | ✓ | |
-| 題目匯入 | ✓ | |
-| 題目查詢與選題 | ✓ | ✓ |
-| 電腦／人工／編碼選題 | ✓ | ✓ |
-| 試卷存檔、編輯與輸出 | ✓ | ✓ |
-| 班級分類管理 | ✓ | ✓ |
+1. HTML 載入 `css/theme.css`。
+2. `js/icons.js` 提供共用圖示。
+3. `js/core.js` 提供題型常數、UI 工具、導覽與共用下拉選單。
+4. 頁面內的 ES Module 匯入 `js/auth-guard.js`。
+5. `js/auth-guard.js` 載入 `js/firebase.js`、確認登入角色並產生側邊欄。
+6. 試卷相關頁面另外匯入 `js/exam-preview.js`。
 
-## Firebase 設定
+各頁面應透過全域 `DataService` 存取 Firebase，不直接重複實作 Firestore 查詢。
 
-1. 啟用 Authentication 的 Email/Password。
+## 使用流程
+
+### 第一次建立系統
+
+1. 在 Firebase Authentication 啟用 Email/Password。
 2. 建立 Firestore Database。
-3. 如需題目圖片，啟用 Storage。
-4. 將專案設定填入 `js/firebase.js` 與 `index.html`。
-5. 部署 `firestore.rules`。
+3. 如需題目圖片，啟用 Firebase Storage。
+4. 確認 `index.html` 與 `js/firebase.js` 的 `firebaseConfig` 指向正確專案。
+5. 發布 `firestore.rules`。
+6. 開啟 `index.html`，選擇「初始化管理員」。
+7. 輸入目前程式設定的管理員驗證碼 `admin2024`，建立第一個管理員帳號。
 
-第一次使用時，在登入頁點選「初始化管理員」，以管理員驗證碼建立第一個帳號。
+管理員可在「帳號與設定」中建立其他管理員或教師帳號。教師帳號必須填寫服務學校。
 
-## 題目與試卷資料
+### 建立題庫
 
-- 題目統計保存在 `settings/questionStats`。
-- 題目流水號保存在 `settings/questionCounter`，批次匯入使用 Firestore transaction。
-- 班級分類保存在 `classes` collection，並整合於試卷管理頁；每個教師只能管理自己的分類，管理員可管理全部分類。
-- 試卷保存題目 ID、題型配分、排序、基本資料及所屬班級分類。
-- 試卷管理可依班級或科目先顯示分類圖卡，也可不分類直接顯示全部試卷；列表支援依建立時間、班級或科目升冪／降冪排序。
-- 儲存試卷後留在原選題頁；需要預覽、列印或 Word 匯出時，可前往試卷管理頁操作。
+1. 在「課本管理」建立科目、冊別與章節。
+2. 在「題目匯入」選擇科目與冊別，上傳 Word 入題檔。
+3. 在「題目維護」查詢匯入結果；只有管理員可修改或刪除題目。
 
 Word 入題檔的表格欄位為：難易、章數、節數、小節、題型、頁數／出處、來源、答數、簡答／答案、題目、選項1～5、結尾、詳答／解析。
 
-## 建議索引
+### 建立與輸出試卷
+
+1. 使用電腦選題、人工選題或編碼選題建立試卷。
+2. 儲存時可選擇一個班級分類，也可保留為未分類。
+3. 儲存完成後仍停留在目前選題頁。
+4. 前往「試卷管理」，選擇依班級、依科目或不分類瀏覽。
+5. 在試卷列表中進行預覽、直接列印、Word 匯出、編輯或刪除。
+
+### 班級分類
+
+- 班級新增、編輯與刪除位於「試卷管理 → 依班級分類」。
+- 每個班級包含學校名稱、班級名稱、選填科目與備註。
+- 仍有試卷的班級不能直接刪除，必須先將試卷移至其他班級或改為未分類。
+- 班級只用於整理試卷，不會建立學生名單或成績資料。
+
+## 試卷管理介面
+
+### 分類圖卡
+
+- 班級圖卡顯示學校、班級、科目、試卷數及備註。
+- 科目圖卡顯示科目、試卷數，以及相關學校與班級數量。
+- 未指定班級或科目的試卷會顯示對應的未分類圖卡。
+
+### 列表排序
+
+- 可選擇「建立時間」、「班級」或「科目」。
+- 目前排序欄位的按鈕會顯示 `↑` 或 `↓`。
+- 重複點擊同一個按鈕會切換升冪與降冪。
+- 切換至其他排序欄位時，預設使用降冪。
+- 建立時間同時顯示日期及 24 小時制時間。
+
+## Firestore 資料
+
+| Collection／文件 | 主要用途 |
+|---|---|
+| `users/{uid}` | 管理員與教師資料、角色及服務學校 |
+| `questions/{questionId}` | 題目、答案、解析、題型與課本位置 |
+| `exams/{examId}` | 試卷名稱、題目順序、配分、科目及班級分類 |
+| `classes/{classId}` | 教師建立的學校與班級分類 |
+| `textbooks/{subjectId}` | 科目資料 |
+| `textbooks/{subjectId}/books/{bookId}` | 冊別資料 |
+| `textbooks/{subjectId}/books/{bookId}/chapters/{chapterId}` | 章節資料 |
+| `settings/questionStats` | 題庫統計快取 |
+| `settings/questionCounter` | 題目流水號計數器 |
+
+新試卷使用 `classId`、`className`、`classSchool` 記錄單一班級分類。舊資料中的 `classIds` 與 `classNames` 仍可顯示；試卷重新儲存後會改用新格式。
+
+## 建議 Firestore 索引
 
 | Collection | 欄位 | 用途 |
 |---|---|---|
-| questions | `subjectCode` ASC, `bookCode` ASC | 題目篩選 |
-| questions | `subjectCode` ASC, `type` ASC | 科目與題型篩選 |
-| exams | `createdBy` ASC, `createdAt` DESC | 教師讀取自己的試卷 |
-| classes | `teacherUid` ASC | 教師讀取自己的班級分類 |
+| `questions` | `subjectCode` ASC, `bookCode` ASC | 題目篩選 |
+| `questions` | `subjectCode` ASC, `type` ASC | 科目與題型篩選 |
+| `exams` | `createdBy` ASC, `createdAt` DESC | 教師讀取自己的試卷 |
+| `classes` | `teacherUid` ASC | 教師讀取自己的班級分類 |
 
-若 Firestore 回報查詢需要複合索引，可依錯誤訊息提供的連結建立。
+單欄位索引通常由 Firestore 自動建立。若查詢需要複合索引，Firebase 會在錯誤訊息中提供建立索引的連結。
+
+## 部署注意事項
+
+- 修改 `firestore.rules` 後必須重新發布，否則班級分類與教師試卷權限不會更新。
+- Firebase 設定同時存在於 `index.html` 與 `js/firebase.js`，更換 Firebase 專案時兩處都要同步。
+- 登入採用 `browserSessionPersistence`，關閉瀏覽器分頁後登入狀態會失效。
+- 現行網站只接受 `admin` 與 `teacher` 角色。
+- 管理員新增工作人員時使用獨立 Firebase Auth instance，不會切換目前管理員的登入帳號。
+- 前端只能讓使用者修改自己的 Firebase Authentication 密碼；若要由管理員重設或完整刪除其他人的 Auth 帳號，需要 Firebase Admin SDK 或 Cloud Functions。
