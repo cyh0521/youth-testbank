@@ -4,357 +4,150 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>首頁總覽 — 幼獅題庫系統</title>
 <link rel="stylesheet" href="css/theme.css">
+<link rel="stylesheet" href="css/dashboard.css">
 <script>if(localStorage.getItem("sidebarCollapsed")==="1")document.documentElement.classList.add("sidebar-collapsed");</script>
-<style>
-/* ── Dashboard 專屬樣式 ── */
-.welcome-banner {
-  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 60%, var(--primary-light) 120%);
-  border-radius: var(--radius-lg);
-  padding: 24px 28px;
-  color: white;
-  margin-bottom: 20px;
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 16px;
-  position: relative; overflow: hidden;
-}
-.welcome-banner::before {
-  content: ''; position: absolute; right: -40px; top: -40px;
-  width: 220px; height: 220px;
-  background: radial-gradient(circle, rgba(232,184,75,.18) 0%, transparent 70%);
-  pointer-events: none;
-}
-.welcome-banner h2 {
-  font-family: var(--font-serif);
-  font-size: 1.25rem; margin-bottom: 6px;
-  font-weight: 600;
-}
-.welcome-banner p { font-size: .85rem; opacity: .85; line-height: 1.6; }
-.welcome-banner p strong { color: var(--accent-light); font-weight: 700; }
-.welcome-icon {
-  flex-shrink: 0; opacity: .35;
-  display: flex; align-items: center; justify-content: center;
-  width: 70px; height: 70px;
-}
-.welcome-icon svg { width: 56px; height: 56px; color: white; }
-
-/* 統計卡片 */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
-  margin-bottom: 22px;
-}
-@media(max-width:900px){ .stats-grid{ grid-template-columns: 1fr 1fr; } }
-.stat-card {
-  background: white;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 18px 20px;
-  display: flex; align-items: center; gap: 14px;
-  transition: box-shadow .15s, transform .15s;
-}
-.stat-card:hover {
-  box-shadow: var(--shadow-md);
-  transform: translateY(-1px);
-}
-.stat-card .stat-icon {
-  width: 46px; height: 46px;
-  border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-}
-.stat-card .stat-icon svg { width: 22px; height: 22px; }
-.stat-card .stat-num {
-  font-family: var(--font-serif);
-  font-size: 1.7rem; font-weight: 700;
-  color: var(--primary); line-height: 1.1;
-}
-.stat-card .stat-label {
-  font-size: .76rem;
-  color: var(--text-light);
-  margin-top: 2px;
-}
-.stat-card.accent { background: linear-gradient(135deg, #fffaf0, #fff); }
-
-/* 圖表列 */
-.charts-row {
-  display: grid;
-  grid-template-columns: 1.1fr 1fr;
-  gap: 16px; margin-bottom: 20px;
-}
-@media(max-width:900px){ .charts-row{ grid-template-columns: 1fr; } }
-.bar-item {
-  display: flex; align-items: center; gap: 10px;
-  font-size: .82rem; margin-bottom: 9px;
-}
-.bar-item:last-child { margin-bottom: 0; }
-.bar-label {
-  width: 76px;
-  color: var(--text-secondary);
-  flex-shrink: 0; text-align: right;
-  font-size: .76rem; font-weight: 500;
-}
-.bar-track {
-  flex: 1;
-  background: #f0ece2;
-  border-radius: 6px;
-  height: 18px;
-  overflow: hidden;
-  position: relative;
-}
-.bar-fill {
-  height: 100%;
-  border-radius: 6px;
-  transition: width .8s cubic-bezier(.2,.7,.3,1);
-  min-width: 2px;
-}
-.bar-count {
-  width: 42px; text-align: right;
-  color: var(--text-primary);
-  font-weight: 600; flex-shrink: 0;
-  font-size: .8rem;
-  font-variant-numeric: tabular-nums;
-}
-
-/* 快速操作 */
-.quick-actions {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-}
-@media(max-width:700px){ .quick-actions{ grid-template-columns: 1fr 1fr; } }
-.quick-action {
-  display: flex; align-items: center; gap: 12px;
-  padding: 14px 16px;
-  background: white;
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-lg);
-  cursor: pointer;
-  transition: all .15s;
-  text-decoration: none;
-  color: inherit;
-}
-.quick-action:hover {
-  box-shadow: var(--shadow-md);
-  transform: translateY(-1px);
-  border-color: var(--primary-light);
-}
-.quick-action .qa-icon {
-  width: 38px; height: 38px;
-  border-radius: 8px;
-  background: var(--bg-base);
-  color: var(--primary);
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-}
-.quick-action .qa-icon svg { width: 20px; height: 20px; }
-.quick-action .qa-label {
-  font-size: .88rem; font-weight: 600;
-  color: var(--primary);
-  margin-bottom: 1px;
-}
-.quick-action .qa-desc {
-  font-size: .72rem; color: var(--text-light);
-}
-.quick-action.primary .qa-icon { background: var(--primary); color: white; }
-.quick-action.accent  .qa-icon { background: var(--accent);  color: white; }
-
-/* Empty state */
-.dash-empty {
-  color: var(--text-muted); font-size: .85rem;
-  padding: 12px 0; text-align: center;
-}
-
-/* Skeleton */
-.dash-skel-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 22px; }
-@media(max-width:900px){ .dash-skel-grid{ grid-template-columns: 1fr 1fr; } }
-.dash-skel-banner { height: 110px; border-radius: var(--radius-lg); margin-bottom: 22px; }
-.dash-skel-card   { height: 80px;  border-radius: var(--radius-lg); }
-.dash-skel-section{ height: 220px; border-radius: var(--radius-lg); margin-bottom: 16px; }
-</style>
 </head>
 <body>
 <script src="js/icons.js"></script>
 <script src="js/core.js"></script>
 <div class="layout">
   <aside class="sidebar" id="sidebar"></aside>
-  <div class="main">
+  <script src="js/shell.js"></script>
+  <main class="main" inert>
     <div class="topbar">
       <span class="topbar-title">首頁總覽</span>
-      <div class="topbar-actions"><span class="text-sm text-muted" id="dateStr"></span></div>
+      <div class="topbar-actions"><span class="text-sm text-muted" id="dateStr"></span><a class="toolbar-account" href="settings.html" aria-label="帳號與設定" id="toolbarAccount"></a></div>
     </div>
-    <div class="page-content" id="content">
-      <!-- 骨架屏載入畫面 -->
-      <div class="skeleton dash-skel-banner"></div>
-      <div class="dash-skel-grid">
-        <div class="skeleton dash-skel-card"></div>
-        <div class="skeleton dash-skel-card"></div>
-        <div class="skeleton dash-skel-card"></div>
-        <div class="skeleton dash-skel-card"></div>
-      </div>
-      <div class="charts-row">
-        <div class="skeleton dash-skel-section"></div>
-        <div class="skeleton dash-skel-section"></div>
-      </div>
+    <div class="page-content" id="content" aria-busy="true">
+      <div class="dashboard-overview"><div class="skeleton dash-skel-section"></div><div class="skeleton dash-skel-section"></div></div>
+      <div class="skeleton dash-skel-section"></div>
     </div>
-  </div>
+  </main>
 </div>
 <script type="module">
 import { guardPage } from './js/auth-guard.js';
 window._activeNav = 'dashboard';
-
 const user = await guardPage();
 if (!user) throw new Error('not auth');
-
-document.getElementById('dateStr').textContent =
-  new Date().toLocaleDateString('zh-TW', {year:'numeric',month:'long',day:'numeric',weekday:'long'});
-
-const isAdmin = DataService.isAdmin();
 const I = window.ICONS;
+const esc = UI.escapeHtml;
+const isAdmin = DataService.isAdmin();
+let dashboardExams = [];
+let examsLoaded = false;
+let dashboardSubjects = { ...SUBJECT_CODES };
 
-async function render() {
-  try {
-    await renderStaff();
-  } catch(e) {
-    console.error('Dashboard render error:', e);
-    document.getElementById('content').innerHTML = `
-      <div class="alert alert-danger">
-        <div><strong>載入失敗：</strong>${e.message}</div>
-        <div style="font-size:.8rem;margin-top:6px;opacity:.8">
-          請確認 Firestore 安全規則已部署，或重新整理頁面再試。
-        </div>
-      </div>
-      <div class="card"><div class="card-body">
-        <button class="btn btn-primary" onclick="location.reload()">${I.refresh} 重新載入</button>
-      </div></div>`;
+document.getElementById('dateStr').textContent = new Date().toLocaleDateString('zh-TW', {year:'numeric',month:'long',day:'numeric',weekday:'long'});
+document.getElementById('toolbarAccount').innerHTML = `${I.user20}<span>${esc(user.displayName || user.email)}</span>`;
+
+const subjectName = code => dashboardSubjects[code] || code || '未分類';
+const subjectTone = code => Math.max(0, Object.keys(SUBJECT_CODES).indexOf(code)) % 6;
+const examTime = value => {
+  if (!value) return 0;
+  const date = value.toDate ? value.toDate() : value.seconds != null ? new Date(value.seconds * 1000) : new Date(value);
+  return Number.isNaN(date.getTime()) ? 0 : date.getTime();
+};
+const dateLabel = value => {
+  const time = examTime(value);
+  return time ? new Date(time).toLocaleString('zh-TW', {year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}) : '—';
+};
+
+function renderExamRows() {
+  if (!examsLoaded) {
+    document.getElementById('recentExamRows').innerHTML = '<tr><td colspan="5" class="dash-empty">試卷清單暫時無法載入，請重新載入頁面。</td></tr>';
+    document.getElementById('examResultCount').textContent = '';
+    return;
   }
-}
-
-// ── 教師/管理員 ───────────────────────────────
-async function renderStaff() {
-  let stats   = { total: 0, byType: {}, bySubject: {}, byDifficulty: {} };
-  let exams   = [];
-
-  try { stats   = await DataService.getQuestionStats(); } catch(e) { console.warn('stats error', e.message); }
-  try { exams   = await DataService.getExams(); }          catch(e) { console.warn('exams error', e.message); }
-
-  // ── 題型分布長條圖 ──
-  const tColors = {
-    T1:'#3b82c4', T2:'#2ecc71', T3:'#f39c12',
-    T4:'#9b59b6', T5:'#e67e22', T6:'#5d6d7e'
-  };
-  const maxT = Math.max(...Object.values(stats.byType||{}), 1);
-  const typeBars = Object.entries(QUESTION_TYPES).map(([c,n]) => {
-    const cnt = stats.byType[c]||0;
-    const pct = Math.round(cnt/maxT*100);
-    return `<div class="bar-item">
-      <div class="bar-label">${n}</div>
-      <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${tColors[c]}"></div></div>
-      <div class="bar-count">${cnt}</div>
-    </div>`;
-  }).join('');
-
-  // ── 各科題數 ──
-  const maxS = Math.max(...Object.values(stats.bySubject||{}), 1);
-  const subjBars = Object.entries(SUBJECT_CODES)
-    .filter(([c]) => stats.bySubject[c])  // 只顯示有題目的科目
-    .map(([c,n]) => {
-      const cnt = stats.bySubject[c]||0;
-      const pct = Math.round(cnt/maxS*100);
-      return `<div class="bar-item">
-        <div class="bar-label" style="width:96px;font-size:.74rem">${n}</div>
-        <div class="bar-track"><div class="bar-fill" style="width:${Math.max(pct,2)}%;background:var(--primary)"></div></div>
-        <div class="bar-count">${cnt}</div>
-      </div>`;
-    }).join('');
-
-  // ── 最近試卷 ──
-  const examRows = exams.slice(0,5).map(e => `
+  const search = document.getElementById('examSearch').value.trim().toLocaleLowerCase();
+  const subject = document.getElementById('examSubject').value;
+  const direction = document.getElementById('examSort').value === 'oldest' ? 1 : -1;
+  const filtered = dashboardExams.filter(e => (!subject || e.subjectCode === subject) && (e.title || '').toLocaleLowerCase().includes(search))
+    .sort((a,b) => direction * (examTime(a.createdAt) - examTime(b.createdAt)));
+  document.getElementById('examResultCount').textContent = `共 ${filtered.length} 份${filtered.length > 6 ? '，顯示前 6 份' : ''}`;
+  document.getElementById('recentExamRows').innerHTML = filtered.slice(0,6).map(e => `
     <tr>
-      <td><strong>${e.title||'（未命名）'}</strong></td>
-      <td style="font-size:.8rem;color:var(--text-secondary)">${SUBJECT_CODES[e.subjectCode]||'—'}</td>
-      <td>${e.questionCount||0} 題</td>
-      <td style="font-size:.78rem;color:var(--text-muted)">${UI.formatDate(e.createdAt)}</td>
-      <td><button class="btn btn-sm btn-outline" onclick="nav('exams')">查看</button></td>
-    </tr>`).join('') ||
-    `<tr><td colspan="5" class="dash-empty">尚無試卷，請先選題組卷</td></tr>`;
-
-  // ── 快速操作（依角色給不同入口）──
-  const action = (page, icon, label, desc, cls = '') => `
-    <a class="quick-action ${cls}" onclick="nav('${page}')">
-      <div class="qa-icon">${icon}</div>
-      <div><div class="qa-label">${label}</div><div class="qa-desc">${desc}</div></div>
-    </a>`;
-
-  const adminActions = isAdmin ? `
-    ${action('import',    I.upload20, '匯入題目',   '上傳 Word 入題檔', 'primary')}
-    ${action('questions', I.list20,   '題目維護',   '檢視、編輯題庫')}
-    ${action('textbooks', I.book20,   '課本管理',   '管理科目與冊別')}
-  ` : '';
-
-  document.getElementById('content').innerHTML = `
-    <div class="welcome-banner">
-      <div>
-        <h2>歡迎回來，${user.displayName||user.email} ${isAdmin?'管理員':'老師'}</h2>
-        <p>題庫共 <strong>${(stats.total||0).toLocaleString()}</strong> 題　|　已儲存試卷 <strong>${exams.length}</strong> 份</p>
-      </div>
-      <div class="welcome-icon">${I.book}</div>
-    </div>
-
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-icon" style="background:#e8eef6;color:var(--primary)">${I.book}</div>
-        <div><div class="stat-num">${(stats.total||0).toLocaleString()}</div><div class="stat-label">題庫總題數</div></div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon" style="background:#eafaf1;color:var(--success)">${I.folder}</div>
-        <div><div class="stat-num">${exams.length}</div><div class="stat-label">已建立試卷</div></div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon" style="background:#fdecea;color:var(--danger)">${I.layers}</div>
-        <div><div class="stat-num">${Object.keys(stats.bySubject||{}).filter(k=>stats.bySubject[k]).length}</div><div class="stat-label">使用中的科目</div></div>
-      </div>
-    </div>
-
-    <div class="charts-row">
-      <div class="card">
-        <div class="card-header"><h2>題型分布</h2></div>
-        <div class="card-body">${stats.total ? typeBars : '<div class="dash-empty">尚無題目</div>'}</div>
-      </div>
-      <div class="card">
-        <div class="card-header"><h2>各科題數</h2></div>
-        <div class="card-body" style="max-height:240px;overflow-y:auto">${subjBars || '<div class="dash-empty">尚無題目</div>'}</div>
-      </div>
-    </div>
-
-    <div class="card" style="margin-bottom:18px">
-      <div class="card-header"><h2>快速操作</h2></div>
-      <div class="card-body">
-        <div class="quick-actions">
-          ${adminActions}
-          ${action('compose', I.auto20,   '電腦選題', '自動亂數組卷', isAdmin ? '' : 'primary')}
-          ${action('manual',  I.edit20,   '人工選題', '手動挑選題目')}
-          ${action('exams',   I.folder20, '試卷管理', '依班級、科目或全部管理試卷')}
-          ${isAdmin ? action('settings', I.settings20, '帳號與設定', '使用者管理') : ''}
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-header">
-        <h2>最近試卷</h2>
-        <button class="btn btn-sm btn-outline" onclick="nav('exams')">全部試卷 →</button>
-      </div>
-      <div class="table-wrapper">
-        <table class="data-table">
-          <thead><tr><th>試卷名稱</th><th>科目</th><th>題數</th><th>建立日期</th><th></th></tr></thead>
-          <tbody>${examRows}</tbody>
-        </table>
-      </div>
-    </div>`;
+      <td><span class="exam-name">${I.test20}<strong>${esc(e.title || '（未命名）')}</strong></span></td>
+      <td><span class="subject-tag tone-${subjectTone(e.subjectCode)}">${esc(subjectName(e.subjectCode))}</span></td>
+      <td class="nowrap">${Number(e.questionCount) || 0} 題</td>
+      <td class="exam-date">${esc(dateLabel(e.createdAt))}</td>
+      <td><a class="exam-manage" href="exams.html">${I.folder16} 管理試卷 <span aria-hidden="true">›</span></a></td>
+    </tr>`).join('') || `<tr><td colspan="5" class="dash-empty">${dashboardExams.length ? '找不到符合條件的試卷，請調整搜尋條件。' : '尚無試卷，從上方選題方式開始建立第一份試卷。'}</td></tr>`;
 }
 
-render();
+async function renderStaff() {
+  const [statsResult, examsResult, subjectsResult] = await Promise.allSettled([
+    DataService.getQuestionStats(), DataService.getExams(), DataService.getSubjects()
+  ]);
+  const stats = statsResult.status === 'fulfilled' ? statsResult.value : {total:0, byType:{}, bySubject:{}};
+  dashboardExams = examsResult.status === 'fulfilled' ? examsResult.value : [];
+  examsLoaded = examsResult.status === 'fulfilled';
+  // 保留預設科目，合併課本管理中的自訂名稱與科目；零題也要顯示。
+  if (subjectsResult.status === 'fulfilled') {
+    for (const subject of subjectsResult.value) {
+      if (subject.code) dashboardSubjects[subject.code] = subject.name || subject.code;
+    }
+  }
+  for (const code of Object.keys(stats.bySubject || {})) {
+    if (!dashboardSubjects[code]) dashboardSubjects[code] = code;
+  }
+  const subjects = Object.keys(dashboardSubjects).map(code => [code, stats.bySubject?.[code] || 0]);
+  const maxType = Math.max(...Object.values(stats.byType || {}), 1);
+  const maxSubject = Math.max(...subjects.map(([,count]) => count), 1);
+  const colors = ['#3478f6','#49b998','#a38ae5','#f3b94e','#ee8998','#75a7bb'];
+  const bar = (label, count, max, color) => `<div class="bar-item"><span class="bar-label">${esc(label)}</span><div class="bar-track"><div class="bar-fill" style="width:${Math.round(count/max*100)}%;background:${color}"></div></div><span class="bar-count">${count.toLocaleString()}</span></div>`;
+  const action = (page, icon, label, desc, cls='') => `<a class="create-action ${cls}" href="${page}.html"><span class="create-icon">${icon}</span><span><strong>${label}</strong><small>${desc}</small></span><span class="action-arrow" aria-hidden="true">›</span></a>`;
+  const warnings = [statsResult.status === 'rejected' ? '題庫統計暫時無法載入' : '', examsResult.status === 'rejected' ? '試卷清單暫時無法載入' : ''].filter(Boolean);
+  document.getElementById('content').innerHTML = `
+    ${warnings.length ? `<div class="alert alert-warning" role="status">${warnings.join('；')}。<button class="btn btn-sm btn-outline" onclick="location.reload()">重新載入</button></div>` : ''}
+    <div class="dashboard-overview">
+      <section class="card create-card">
+        <div class="overview-heading"><div><h2>建立新試卷</h2><p>選擇方式，快速開始出題或列印題本</p></div><span class="section-icon">${I.sparkles20}</span></div>
+        <div class="create-actions">
+          ${action('compose', '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="26" height="19" rx="3"/><path d="M12 23v5m8-5v5M9 28h14"/></svg>', '電腦選題','依範圍與條件，快速生成試卷','auto-action')}
+          ${action('manual', I.test, '手動選題','從題庫中挑選，彈性組卷','manual-action')}
+          ${action('coded', I.code, '編碼選題','輸入題目編號，精準加入試卷','coded-action')}
+          <button class="create-action print-action" type="button" disabled aria-label="題本列印，即將推出">
+            <span class="create-icon">${I.printer}</span>
+            <span><strong>題本列印 <span class="coming-soon">即將推出</span></strong><small>列印整冊題庫，方便教學使用</small></span>
+          </button>
+        </div>
+      </section>
+      <section class="card overview-card">
+        <div class="overview-heading"><h2>題庫概況</h2><a class="text-link" href="questions.html">進入題庫 <span aria-hidden="true">›</span></a></div>
+        <div class="question-total">${statsResult.status === 'fulfilled' ? (stats.total || 0).toLocaleString() : '—'} <span>題</span></div>
+        <p class="overview-description">${subjects.length} 個科目，陪伴每一次教學準備</p>
+        <ul class="subject-tags" aria-label="各科收錄題數">${subjects.map(([code,count]) => `<li class="subject-tag tone-${subjectTone(code)}"><span>${esc(subjectName(code))}</span><span class="subject-count">${statsResult.status === 'fulfilled' ? `${count.toLocaleString()} 題` : '未載入'}</span></li>`).join('')}</ul>
+      </section>
+    </div>
+    <section class="recent-section" aria-labelledby="recentHeading">
+      <div class="section-heading"><h2 id="recentHeading">最近試卷</h2><a class="text-link" href="exams.html">試卷管理 <span aria-hidden="true">›</span></a></div>
+      <div class="recent-toolbar">
+        <span class="collection-pill">全部試卷 <span>${examsResult.status === 'fulfilled' ? dashboardExams.length : '—'}</span></span>
+        <select class="form-control" id="examSubject" aria-label="篩選試卷科目"><option value="">所有科目</option>${[...new Set(dashboardExams.map(e => e.subjectCode).filter(Boolean))].map(code => `<option value="${esc(code)}">${esc(subjectName(code))}</option>`).join('')}</select>
+        <label class="exam-search">${I.search16}<input id="examSearch" type="search" placeholder="搜尋試卷名稱" aria-label="搜尋試卷名稱"></label>
+        <select class="form-control" id="examSort" aria-label="試卷排序"><option value="newest">建立時間（新 → 舊）</option><option value="oldest">建立時間（舊 → 新）</option></select>
+      </div>
+      <div class="card table-wrapper"><table class="data-table recent-table"><thead><tr><th>試卷名稱</th><th>科目</th><th>題數</th><th>建立時間</th><th>操作</th></tr></thead><tbody id="recentExamRows"></tbody></table></div>
+      <p class="exam-result-count" id="examResultCount" aria-live="polite"></p>
+    </section>
+    <div class="charts-row">
+      <section class="card"><div class="card-header"><h2>題型分布</h2><span class="text-sm text-muted">掌握題庫組成</span></div><div class="card-body">${stats.total ? Object.entries(QUESTION_TYPES).map(([code,name],index) => bar(name,stats.byType?.[code] || 0,maxType,colors[index])).join('') : '<p class="dash-empty">尚無題目資料</p>'}</div></section>
+      <section class="card"><div class="card-header"><h2>各科題數</h2><span class="text-sm text-muted">${subjects.length} 個科目</span></div><div class="card-body subject-chart">${subjects.map(([code,count]) => bar(subjectName(code),count,maxSubject,colors[subjectTone(code)])).join('') || '<p class="dash-empty">尚無題目資料</p>'}</div></section>
+    </div>
+    ${isAdmin ? `<nav class="admin-shortcuts" aria-label="管理員快速操作"><span>題庫管理</span><a href="import.html">${I.upload16} 匯入題目</a><a href="questions.html">${I.list16} 題目維護</a><a href="textbooks.html">${I.book16} 課本管理</a><a href="settings.html">${I.settings16} 帳號與設定</a></nav>` : ''}`;
+  document.getElementById('examSearch').addEventListener('input', renderExamRows);
+  document.getElementById('examSubject').addEventListener('change', renderExamRows);
+  document.getElementById('examSort').addEventListener('change', renderExamRows);
+  renderExamRows();
+}
+
+try {
+  await renderStaff();
+} catch (e) {
+  console.error('Dashboard render error:', e);
+  document.getElementById('content').innerHTML = `<div class="alert alert-danger">首頁載入失敗，請稍後重試。</div><button class="btn btn-primary" onclick="location.reload()">重新載入</button>`;
+} finally {
+  document.getElementById('content').setAttribute('aria-busy', 'false');
+}
 </script>
 </body>
 </html>

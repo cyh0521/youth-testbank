@@ -20,7 +20,7 @@
 .view-tab{font-weight:600;box-shadow:var(--shadow-sm)}
 .view-tab.active{background:var(--primary);border-color:var(--primary);color:white;box-shadow:var(--shadow-md)}
 .group-toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
-.group-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px}
+.group-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(270px,100%),1fr));gap:14px}
 .group-card{background:white;border:1px solid var(--border-light);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-sm);cursor:pointer;transition:box-shadow .15s,transform .15s}
 .group-card:hover{box-shadow:var(--shadow-md);transform:translateY(-1px)}
 .group-cover{min-height:132px;padding:18px;display:flex;flex-direction:column;justify-content:flex-end;position:relative;color:white;background:linear-gradient(135deg,var(--primary-dark),var(--primary))}
@@ -50,6 +50,11 @@
 .eq-remove:hover{color:var(--danger)}
 .drag-handle{cursor:grab;color:var(--text-muted);font-size:.8rem;flex-shrink:0;padding-top:2px}
 .eq-item.dragging{opacity:.4}.eq-item.drag-over{border-top:2px solid var(--primary-light)}
+@media(max-width:1000px){
+  .exam-card{display:grid;grid-template-columns:44px minmax(0,1fr)}
+  .exam-actions{grid-column:1/-1;justify-content:flex-end;border-top:1px solid var(--border-light);padding-top:10px}
+  .exam-title{overflow-wrap:anywhere}
+}
 </style>
 </head>
 <body>
@@ -57,7 +62,8 @@
 <script src="js/core.js"></script>
 <div class="layout">
   <aside class="sidebar" id="sidebar"></aside>
-  <div class="main">
+  <script src="js/shell.js"></script>
+  <div class="main" inert>
     <div class="topbar">
       <span class="topbar-title">試卷管理</span>
       <div class="topbar-actions">

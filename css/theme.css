@@ -6,42 +6,42 @@
 
 /* ── CSS 變數 ── */
 :root {
-  --primary:        #1a3a5c;
-  --primary-light:  #2c5f8a;
-  --primary-dark:   #0f2540;
+  --primary:        #253b58;
+  --primary-light:  #3478f6;
+  --primary-dark:   #17283f;
   --accent:         #c8922a;
   --accent-light:   #e8b84b;
   --danger:         #c0392b;
   --success:        #1e8449;
   --warning:        #d35400;
 
-  --bg-base:        #f5f3ee;
+  --bg-base:        #f5f6f8;
   --bg-card:        #ffffff;
-  --bg-sidebar:     #1a3a5c;
+  --bg-sidebar:     #344454;
   --bg-header:      #0f2540;
 
-  --text-primary:   #1a1a2e;
-  --text-secondary: #4a5568;
-  --text-light:     #718096;
+  --text-primary:   #18263b;
+  --text-secondary: #59667b;
+  --text-light:     #758198;
   --text-white:     #f8f6f2;
-  --text-muted:     #a0aec0;
+  --text-muted:     #78849a;
 
-  --border:         #ddd8d0;
-  --border-light:   #eee9e0;
-  --shadow-sm:      0 1px 4px rgba(0,0,0,.08);
-  --shadow-md:      0 4px 16px rgba(0,0,0,.12);
-  --shadow-lg:      0 8px 32px rgba(0,0,0,.16);
+  --border:         #dce0e7;
+  --border-light:   #ebedf2;
+  --shadow-sm:      0 2px 8px rgba(27,39,60,.035);
+  --shadow-md:      0 8px 24px rgba(27,39,60,.08);
+  --shadow-lg:      0 24px 70px rgba(27,39,60,.2);
 
   --sidebar-width:  240px;
-  --sidebar-collapsed-width: 60px;
+  --sidebar-collapsed-width: 72px;
   --header-height:  60px;
-  --radius:         6px;
-  --radius-lg:      12px;
+  --radius:         9px;
+  --radius-lg:      14px;
 
   /* 標題字型：原為明體（Noto Serif TC），改為黑體字（Noto Sans TC）
      為求視覺上仍有「標題感」，變數名保留 font-serif 以相容舊用法。 */
   --font-serif:     'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
-  --font-sans:      'Noto Sans TC', sans-serif;
+  --font-sans:      -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans TC', 'Microsoft JhengHei', sans-serif;
   --font-mono:      'JetBrains Mono', monospace;
 }
 
@@ -115,25 +115,26 @@ input, select, textarea { font-family: var(--font-sans); }
   margin-top: 2px;
   white-space: nowrap;
 }
-/* 漢堡切換按鈕 — 靠左固定位置 */
-.sidebar-toggle {
+/* 品牌書本圖示同時控制側欄開閉 */
+.sidebar-brand-toggle {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px; height: 36px;
+  width: 38px; height: 38px;
   flex-shrink: 0;
-  background: none;
-  border: 1px solid rgba(255,255,255,.15);
-  border-radius: 6px;
-  color: rgba(255,255,255,.6);
+  background: linear-gradient(145deg, #ffdd77, #ffc342);
+  border: 1px solid rgba(255,255,255,.5);
+  border-radius: 10px;
+  color: white;
+  box-shadow: 0 3px 9px rgba(0,0,0,.12), inset 0 1px 0 rgba(255,255,255,.4);
   cursor: pointer;
   transition: background .15s, color .15s;
 }
-.sidebar-toggle:hover {
-  background: rgba(255,255,255,.1);
-  color: white;
+.sidebar-brand-toggle:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
 }
-.sidebar-toggle svg { width: 18px; height: 18px; }
+.sidebar-brand-toggle svg { width: 26px; height: 26px; }
 
 .sidebar-user {
   padding: 14px 16px;
@@ -654,17 +655,27 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
 
 /* ============================================================
-   頁面載入：sidebar 預先佔位，主內容由 JS 加 .ready 後淡入
+   頁面載入：同步顯示外框，資料在原位載入，不隱藏整頁
    ============================================================ */
 #sidebar.sidebar:empty {
   background: var(--bg-sidebar);
 }
 .main {
-  opacity: 0;
-  transition: opacity .15s ease, margin-left .25s cubic-bezier(.4,0,.2,1);
+  transition: margin-left .25s cubic-bezier(.4,0,.2,1);
 }
-.main.ready {
-  opacity: 1;
+@view-transition { navigation: auto; }
+.sidebar { view-transition-name: app-sidebar; }
+.topbar { view-transition-name: app-toolbar; }
+.page-content { view-transition-name: page-content; }
+::view-transition-group(*) { animation-duration: .12s; }
+::view-transition-old(root),
+::view-transition-old(app-sidebar),
+::view-transition-old(app-toolbar) { display: none; }
+::view-transition-new(root),
+::view-transition-new(app-sidebar),
+::view-transition-new(app-toolbar) { animation: none; mix-blend-mode: normal; }
+@media (prefers-reduced-motion: reduce) {
+  @view-transition { navigation: none; }
 }
 
 /* ============================================================
@@ -890,5 +901,89 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
 @keyframes skeleton-shimmer {
   0%   { background-position: 200% 0; }
   100% { background-position: -200% 0; }
+}
+
+/* Mac 風格視窗與共用元件 */
+body:has(.layout) {
+  padding: 0;
+  background: var(--bg-base);
+}
+.layout {
+  min-height: 100vh;
+  border: 0;
+  border-radius: 0;
+  background: #f9fafc;
+  box-shadow: none;
+}
+.sidebar {
+  top: 0; left: 0;
+  height: 100vh;
+  border-radius: 0;
+  background: linear-gradient(155deg, rgba(74,91,107,.94), rgba(38,52,66,.97));
+  backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px);
+  border: 0;
+  box-shadow: inset -1px 0 rgba(255,255,255,.07);
+}
+.sidebar-top { flex-direction: row; align-items: center; padding: 20px 16px; gap: 12px; flex-shrink: 0; }
+.sidebar-logo { padding: 0; flex: 1; min-width: 0; }
+.sidebar-logo h1 { font-size: 1.3rem; font-weight: 650; letter-spacing: .04em; }
+.sidebar-logo span { color: #d0d9e3; font-size: .75rem; margin-top: 3px; }
+.sidebar-nav { padding: 0 10px 14px; flex: 1 0 auto; }
+.sidebar::-webkit-scrollbar-track { background: transparent; }
+.sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,.18); }
+.nav-section-title { color: #aebcca; padding: 14px 14px 7px; font-size: .68rem; }
+.nav-item { position: relative; border: 0; border-radius: 9px; gap: 14px; margin: 3px 0; padding: 11px 16px; color: #e7edf4; }
+.nav-item .icon, .nav-item .icon svg { width: 21px; height: 21px; }
+.nav-item:hover { color: white; background: rgba(255,255,255,.09); }
+.nav-item.active { background: linear-gradient(100deg, rgba(58,130,251,.4), rgba(58,130,251,.22)); color: white; box-shadow: inset 0 0 0 1px rgba(134,179,255,.12); }
+.nav-item.active::before { content: ''; position: absolute; left: 0; top: 9px; bottom: 9px; width: 3px; background: #71a8ff; border-radius: 3px; }
+.sidebar-footer { margin: auto 20px 0; padding: 17px 0; }
+.sidebar-note { color: #c2ccd8; font-size: .78rem; line-height: 1.9; margin-bottom: 10px; }
+.sidebar-footer .logout-btn { color: #c9d3df; }
+.sidebar-collapsed .sidebar-top { padding: 20px 17px; min-height: 86px; }
+.sidebar-collapsed .nav-item { padding: 11px 0; }
+.sidebar-collapsed .sidebar-footer { margin: auto 10px 0; }
+.main { min-width: 0; min-height: 100vh; }
+.topbar { min-height: 60px; height: auto; padding: 13px 28px; border-radius: 0; background: rgba(248,249,252,.88); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); box-shadow: none; }
+.topbar-title { font-size: .94rem; color: var(--text-secondary); white-space: nowrap; }
+.topbar-actions { flex-wrap: wrap; justify-content: flex-end; }
+.page-content { padding: 28px; min-width: 0; }
+.card { background: rgba(255,255,255,.94); }
+.card-header h2 { color: var(--text-primary); }
+.btn { justify-content: center; }
+.btn-primary, .page-btn.active { background: linear-gradient(#3984ff, #1765ed); border-color: #246cec; color: white; box-shadow: 0 2px 4px rgba(41,108,233,.18), inset 0 1px rgba(255,255,255,.18); }
+.btn-primary:hover { background: #155ee0; border-color: #155ee0; }
+.btn-outline { background: linear-gradient(white, #fafbfe); border-color: var(--border); color: var(--primary); box-shadow: 0 1px 2px rgba(27,39,60,.04); }
+.btn-outline:hover { background: #edf3ff; border-color: #b8cdee; color: #2168df; }
+.form-control { box-shadow: inset 0 1px 2px rgba(27,39,60,.025); }
+.form-control:focus { border-color: #82adfa; box-shadow: 0 0 0 3px rgba(52,120,246,.14); }
+.data-table th { background: #fafbfd; border-bottom: 1px solid var(--border-light); font-weight: 500; color: var(--text-light); }
+.data-table td { padding: 13px 16px; }
+.data-table tbody tr:hover { background: #f0f5ff; }
+.modal-overlay { background: rgba(26,37,54,.32); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); }
+.modal { border: 1px solid rgba(255,255,255,.7); }
+:where(button,a,input,select,textarea,[tabindex]):focus-visible { outline: 3px solid #77abff; outline-offset: 3px; }
+input[type=checkbox], input[type=radio] { accent-color: #3478f6; }
+.skeleton { background-image: linear-gradient(90deg, #e9edf3, #f7f9fc, #e9edf3); }
+
+@media (max-width: 1200px) {
+  :root { --sidebar-width: 215px; }
+  .page-content { padding: 22px; }
+}
+@media (max-width: 760px) {
+  .layout, .sidebar, .topbar { border-radius: 0; }
+  .layout { border: 0; }
+  .main { margin-left: var(--sidebar-collapsed-width); }
+  .sidebar { box-shadow: 6px 0 24px rgba(25,37,55,.18); }
+  .topbar { padding: 12px 16px; flex-wrap: wrap; gap: 8px; }
+  .topbar-actions { gap: 6px; }
+  .page-content { padding: 18px 14px; }
+  .grid-2, .grid-3, .grid-4, .edit-grid { grid-template-columns: 1fr; }
+  .filter-actions { margin-left: 0; flex-wrap: wrap; }
+  .card-header { gap: 10px; flex-wrap: wrap; }
+  .modal-overlay { padding: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }
 

@@ -6,6 +6,19 @@
 
 班級功能目前只作為教師整理試卷的分類資料夾，不包含學生名單、班級加入代碼、線上試卷、線上作答或成績管理。
 
+## 2026-09-23 介面調整
+
+- 全站採用 Mac 風格的半透明深色側欄、淺色圓角卡片與藍色主要按鈕，版面直接貼齊瀏覽器邊界。
+- 側欄以書本圖示搭配「幼獅文化／線上命題系統」，移除側欄使用者資訊；首頁移除問候區，選題入口統一稱為「手動選題」。
+- 左上角書本標誌可收合／展開側欄，支援鍵盤操作並記憶狀態；移除漢堡按鈕。
+- 首頁優先呈現建立試卷、題庫概況與最近試卷；保留題型分布、各科題數及管理入口。
+- 換頁時同步顯示側欄，移除整頁透明淡入；支援的瀏覽器使用原生跨頁過渡。側欄角色提示只用於顯示，每頁仍需完成 Firebase 驗證才可操作內容。
+- 題庫概況以科目標籤顯示名稱與題數，保留所有預設科目並合併課本管理中的自訂科目；沒有收錄題目的科目仍顯示 `0 題`。
+- 建立新試卷提供「電腦選題」、「手動選題」、「編碼選題」及「題本列印」四個入口；題本列印標示「即將推出」，目前不開放操作。
+- 最近試卷支援名稱搜尋、科目篩選與建立時間排序，最多顯示六份；完整操作仍位於試卷管理。
+- 首頁專屬樣式位於 `css/dashboard.css`，全站樣式位於 `css/theme.css`。
+- 登入頁同步更新視覺風格，試卷列表在窄螢幕上將操作按鈕另起一列。
+
 ## 2026-09-21 功能調整
 
 - 移除學生帳號、線上試卷、線上作答與班級成績功能。
@@ -59,10 +72,12 @@ youth-testbank/
 ├─ settings.html              帳號與個人資料設定
 ├─ firestore.rules            Firestore 安全規則
 ├─ css/
-│  └─ theme.css               全站版面、元件與列印樣式
+│  ├─ theme.css               全站版面、元件與列印樣式
+│  └─ dashboard.css           首頁專屬樣式
 ├─ js/
 │  ├─ firebase.js             Firebase 初始化與 DataService
-│  ├─ auth-guard.js           登入守衛、角色檢查與側邊欄
+│  ├─ auth-guard.js           登入守衛與角色檢查
+│  ├─ shell.js                同步繪製側邊欄與收合控制
 │  ├─ core.js                 共用常數、UI 工具與選單資料
 │  ├─ exam-preview.js         表頭、預覽、列印與 Word 匯出
 │  └─ icons.js                共用 SVG 圖示
@@ -98,9 +113,11 @@ youth-testbank/
 1. HTML 載入 `css/theme.css`。
 2. `js/icons.js` 提供共用圖示。
 3. `js/core.js` 提供題型常數、UI 工具、導覽與共用下拉選單。
-4. 頁面內的 ES Module 匯入 `js/auth-guard.js`。
-5. `js/auth-guard.js` 載入 `js/firebase.js`、確認登入角色並產生側邊欄。
+4. 側欄元素後立即載入 `js/shell.js`，同步繪製導覽，不等待 Firebase。主內容先顯示靜態版面，以 `inert` 暫停操作。
+5. 頁面內的 ES Module 匯入 `js/auth-guard.js`，載入 `js/firebase.js`、確認登入角色後啟用內容；角色相同時不重建側欄。
 6. 試卷相關頁面另外匯入 `js/exam-preview.js`。
+
+首頁科目題數沿用 `settings/questionStats` 的 `bySubject` 統計；科目名稱合併共用預設與課本管理資料，不再查詢各冊題數。跨頁過渡使用 [CSS View Transitions](https://developer.chrome.com/docs/web-platform/view-transitions/cross-document)，不支援時仍可正常換頁。
 
 各頁面應透過全域 `DataService` 存取 Firebase，不直接重複實作 Firestore 查詢。
 

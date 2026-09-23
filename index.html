@@ -6,16 +6,17 @@
 <title>幼獅題庫系統 — 登入</title>
 <link rel="stylesheet" href="css/theme.css">
 <script>if(localStorage.getItem("sidebarCollapsed")==="1")document.documentElement.classList.add("sidebar-collapsed");</script>
+<script>try{sessionStorage.removeItem('youth.shellRole');}catch{}</script>
 <style>
-body{background:var(--primary-dark);display:flex;align-items:center;justify-content:center;min-height:100vh;
-background-image:radial-gradient(ellipse at 20% 50%,rgba(44,95,138,.45) 0%,transparent 60%),
-radial-gradient(ellipse at 80% 20%,rgba(200,146,42,.25) 0%,transparent 50%)}
+body{background:#dce3ed;display:flex;align-items:center;justify-content:center;min-height:100vh;
+background-image:radial-gradient(ellipse at 20% 10%,rgba(255,255,255,.85) 0%,transparent 60%),
+radial-gradient(ellipse at 80% 90%,rgba(132,159,198,.32) 0%,transparent 60%)}
 .wrap{width:100%;max-width:460px;padding:20px}
 .logo-area{text-align:center;margin-bottom:22px}
 .logo-icon{display:inline-flex;align-items:center;justify-content:center;width:68px;height:68px;border-radius:18px;background:linear-gradient(135deg,var(--accent),var(--accent-light));font-size:2.2rem;margin-bottom:12px;box-shadow:0 8px 28px rgba(200,146,42,.45)}
-.logo-area h1{font-family:var(--font-serif);font-size:1.55rem;color:white;font-weight:700}
-.logo-area p{color:rgba(255,255,255,.45);font-size:.82rem;letter-spacing:.12em;margin-top:3px}
-.card{background:rgba(255,255,255,.97);border-radius:var(--radius-lg);box-shadow:0 20px 60px rgba(0,0,0,.45);overflow:hidden}
+.logo-area h1{font-family:var(--font-serif);font-size:1.55rem;color:var(--text-primary);font-weight:700}
+.logo-area p{color:var(--text-secondary);font-size:.82rem;letter-spacing:.12em;margin-top:3px}
+.card{background:rgba(255,255,255,.8);backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,.9);border-radius:18px;box-shadow:0 20px 60px rgba(38,57,88,.16);overflow:hidden}
 /* panels */
 .panel{display:none;padding:20px 24px 16px}.panel.active{display:block}
 /* msg */
@@ -31,7 +32,7 @@ radial-gradient(ellipse at 80% 20%,rgba(200,146,42,.25) 0%,transparent 50%)}
 .form-control{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius);font-size:.88rem;font-family:var(--font-sans);color:var(--text-primary);background:white;transition:border-color .15s,box-shadow .15s}
 .form-control:focus{outline:none;border-color:var(--primary-light);box-shadow:0 0 0 3px rgba(44,95,138,.12)}
 .big-btn{width:100%;padding:12px;border:none;border-radius:var(--radius);font-size:.95rem;font-weight:700;cursor:pointer;font-family:var(--font-sans);margin-top:2px;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s}
-.big-btn.primary{background:var(--primary);color:white}
+.big-btn.primary{background:linear-gradient(#3984ff,#1765ed);color:white;box-shadow:0 3px 8px rgba(52,120,246,.2)}
 .big-btn.primary:hover:not(:disabled){background:var(--primary-light);transform:translateY(-1px)}
 .big-btn.accent{background:var(--accent);color:white}
 .big-btn.accent:hover:not(:disabled){background:var(--accent-light);transform:translateY(-1px)}
@@ -42,7 +43,7 @@ radial-gradient(ellipse at 80% 20%,rgba(200,146,42,.25) 0%,transparent 50%)}
 .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
 @keyframes spin{to{transform:rotate(360deg)}}
 .spin{width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:white;border-radius:50%;animation:spin .6s linear infinite}
-#fbStatus{text-align:center;font-size:.75rem;margin-top:10px;color:rgba(255,255,255,.4)}
+#fbStatus{text-align:center;font-size:.75rem;margin-top:10px;color:var(--text-secondary)}
 #fbStatus.err{color:#ff8a80}
 </style>
 </head>

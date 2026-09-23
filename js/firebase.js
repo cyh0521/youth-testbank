@@ -123,6 +123,7 @@ window.DataService = {
   async logout() {
     await signOut(auth);
     DataService._currentUser = null;
+    window.AppShell?.clear();
     window.location.href = 'index.html';
   },
 
