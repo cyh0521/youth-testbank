@@ -18,7 +18,39 @@
 .search-bar{display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
 .user-count{font-size:.82rem;color:var(--text-muted);white-space:nowrap}
 
-.profile-avatar-lg{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--primary-light));display:flex;align-items:center;justify-content:center;font-size:1.9rem;color:white;font-weight:700;flex-shrink:0}
+.avatar-picker{border:0;min-width:0;margin:16px 0 20px}
+.avatar-picker legend{font-size:.83rem;font-weight:650;color:var(--text-secondary);margin-bottom:10px}
+.avatar-current{display:flex;align-items:center;gap:12px;margin-bottom:12px;color:var(--text-secondary);font-size:.79rem}
+.avatar-options{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.avatar-choice{display:flex;align-items:center;justify-content:center;min-width:0;padding:9px 3px;border:1px solid var(--border);border-radius:10px;background:white;color:var(--text-secondary)}
+.avatar-choice:hover{background:#f5f8ff;border-color:#b8cdee}
+.avatar-choice[aria-pressed="true"]{border-color:#3478f6;background:#edf4ff;box-shadow:0 0 0 2px rgba(52,120,246,.15)}
+.avatar-upload{display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap}
+.avatar-upload small{color:var(--text-muted);font-size:.72rem}
+.avatar-file-input{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden}
+.profile-avatar-group{display:flex;flex-direction:column;align-items:center;gap:8px;flex:none}
+.profile-avatar-group .btn{white-space:nowrap}
+.profile-name-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:3px}
+.profile-actions{display:flex;gap:10px;flex-wrap:wrap}
+.profile-actions .btn{width:148px;justify-content:center}
+.catalog-subject{border:1px solid var(--border);border-radius:10px;margin-bottom:12px;overflow:hidden}
+.catalog-subject-header{display:flex;align-items:center;gap:9px;padding:12px 14px;background:var(--bg-base);font-weight:700}
+.catalog-books{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:9px;padding:12px 14px}
+.catalog-books label{display:flex;align-items:center;gap:7px;font-size:.84rem}
+.catalog-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:14px 0}
+@media(max-width:440px){.avatar-options{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.password-card{max-width:560px}
+.password-card .card-body{display:grid;gap:16px}
+.password-hint{color:var(--text-muted);font-size:.82rem}
+.password-field{display:grid;gap:6px}
+.password-field label{color:var(--text-secondary);font-size:.82rem;font-weight:600}
+.password-input{position:relative}
+.password-input .form-control{width:100%;padding-right:58px}
+.password-toggle{position:absolute;right:9px;top:50%;transform:translateY(-50%);border:0;background:transparent;color:var(--primary-light);font-size:.75rem;padding:4px}
+.password-message{display:none;padding:10px 12px;border-radius:8px;font-size:.82rem}
+.password-message.is-error{display:block;background:#fef0ef;color:#9c3535}
+.password-message.is-success{display:block;background:#e7f7ed;color:#267656}
+.password-actions{display:flex;justify-content:flex-end}
 .pw-toggle{position:relative}
 .pw-toggle .form-control{padding-right:42px}
 .pw-eye{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:1rem;padding:2px 4px}
@@ -32,6 +64,7 @@
 <body>
 <script src="js/icons.js"></script>
 <script src="js/core.js"></script>
+<script src="js/avatar.js"></script>
 <div class="layout">
   <aside class="sidebar" id="sidebar"></aside>
   <script src="js/shell.js"></script>
@@ -108,7 +141,7 @@
 <div class="modal-overlay hidden" id="profileModal">
   <div class="modal">
     <div class="modal-header">
-      <h3>修改個人資料</h3>
+      <h3>編輯個人資料</h3>
       <button class="modal-close" onclick="document.getElementById('profileModal').classList.add('hidden')">✕</button>
     </div>
     <div class="modal-body">
@@ -125,24 +158,6 @@
         <label class="form-label">服務學校 <span id="pmSchoolReq" class="required"></span></label>
         <input class="form-control" id="pmSchool" placeholder="請輸入服務學校全名">
       </div>
-      <hr style="margin:16px 0;border:none;border-top:1px solid var(--border-light)">
-      <div style="font-size:.82rem;font-weight:600;color:var(--text-secondary);margin-bottom:12px">🔒 變更密碼（選填）</div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">新密碼</label>
-          <div class="pw-toggle">
-            <input class="form-control" type="password" id="pmPw" placeholder="留空表示不變更">
-            <button class="pw-eye" type="button" onclick="togglePw('pmPw',this)">👁</button>
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">確認新密碼</label>
-          <div class="pw-toggle">
-            <input class="form-control" type="password" id="pmPw2" placeholder="再次輸入">
-            <button class="pw-eye" type="button" onclick="togglePw('pmPw2',this)">👁</button>
-          </div>
-        </div>
-      </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="document.getElementById('profileModal').classList.add('hidden')">取消</button>
@@ -151,9 +166,35 @@
   </div>
 </div>
 
+<!-- 頭像 Modal -->
+<div class="modal-overlay hidden" id="avatarModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>編輯頭像</h3>
+      <button class="modal-close" type="button" onclick="document.getElementById('avatarModal').classList.add('hidden')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="err-box" id="amErr"></div>
+      <fieldset class="avatar-picker">
+        <legend>選擇頭像</legend>
+        <div class="avatar-current"><span id="amAvatarPreview"></span></div>
+        <div class="avatar-options" id="amAvatarOptions"></div>
+        <div class="avatar-upload">
+          <label class="btn btn-outline btn-sm" for="amAvatarFile">上傳圖片</label>
+          <input class="avatar-file-input" type="file" id="amAvatarFile" accept="image/jpeg,image/png,image/webp" aria-label="上傳自訂頭像">
+          <small id="amAvatarStatus" role="status" aria-live="polite"></small>
+        </div>
+      </fieldset>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" type="button" onclick="document.getElementById('avatarModal').classList.add('hidden')">取消</button>
+      <button class="btn btn-primary" type="button" id="amSaveBtn" onclick="saveAvatar()">儲存頭像</button>
+    </div>
+  </div>
+</div>
+
 <script type="module">
 import { guardPage } from './js/auth-guard.js';
-import { getAuth, updatePassword } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 
 window._activeNav = 'settings';
 const user = await guardPage();
@@ -167,6 +208,8 @@ function buildTabs() {
   const tabs = [];
   if (isAdmin) tabs.push({ id:'accounts', label:'👥 帳號管理' });
   tabs.push({ id:'profile', label:'👤 個人資料' });
+  tabs.push({ id:'password', label:'🔒 密碼設定' });
+  tabs.push({ id:'catalog', label:'📚 題庫環境設定' });
 
   const tabsHTML = `<div class="settings-tabs">
     ${tabs.map((t,i)=>`<button class="settings-tab ${i===0?'active':''}" id="stab-${t.id}" onclick="switchTab('${t.id}')">${t.label}</button>`).join('')}
@@ -178,6 +221,8 @@ function buildTabs() {
   // 渲染每個 tab 的內容
   if (isAdmin) buildAccountsPanel();
   buildProfilePanel();
+  buildPasswordPanel();
+  buildCatalogPanel();
 }
 
 window.switchTab = id => {
@@ -380,7 +425,6 @@ window.doDelete = async (uid, name) => {
 // ══════════════════════════════════════════════════
 function buildProfilePanel() {
   const u = DataService.getCurrentUser();
-  const ini = (u.displayName||u.email||'?')[0].toUpperCase();
   const showSchool = u.role==='teacher';
 
   document.getElementById('spanel-profile').innerHTML = `
@@ -388,19 +432,53 @@ function buildProfilePanel() {
       <div class="card-header"><h2>個人資料</h2></div>
       <div class="card-body">
         <div style="display:flex;align-items:center;gap:20px;padding-bottom:16px;border-bottom:1px solid var(--border-light);margin-bottom:20px">
-          <div class="profile-avatar-lg">${ini}</div>
+          <div class="profile-avatar-group">
+            ${Avatar.markup(u.avatar, u.displayName || u.email, 'user-avatar--large')}
+          </div>
           <div>
-            <div style="font-size:1.05rem;font-weight:700;margin-bottom:3px">${u.displayName||'（未設定）'}</div>
-            <div style="color:var(--text-muted);font-size:.84rem;margin-bottom:6px">${u.email||''}</div>
-            ${roleTag(u.role)}
-            ${showSchool&&u.school?`<div style="font-size:.82rem;margin-top:6px">🏫 ${u.school}</div>`:''}
+            <div class="profile-name-row"><span style="font-size:1.05rem;font-weight:700">${UI.escapeHtml(u.displayName||'（未設定）')}</span>${roleTag(u.role)}</div>
+            <div style="color:var(--text-muted);font-size:.84rem;margin-bottom:6px">${UI.escapeHtml(u.email||'')}</div>
+            ${showSchool&&u.school?`<div style="font-size:.82rem;margin-top:6px">🏫 ${UI.escapeHtml(u.school)}</div>`:''}
           </div>
         </div>
-        <button class="btn btn-outline" id="editProfileBtn">✏️ 修改個人資料與密碼</button>
+        <div class="profile-actions">
+          <button class="btn btn-outline" type="button" id="editProfileBtn">✏️ 編輯個人資料</button>
+          <button class="btn btn-outline" type="button" id="editAvatarBtn">🖼️ 編輯頭像</button>
+        </div>
       </div>
     </div>`;
 
   document.getElementById('editProfileBtn').addEventListener('click', openProfileModal);
+  document.getElementById('editAvatarBtn').addEventListener('click', openAvatarModal);
+}
+
+let selectedAvatar = '';
+let avatarUploadRequest = 0;
+function updateAvatarPreview() {
+  const u = DataService.getCurrentUser();
+  document.getElementById('amAvatarPreview').innerHTML = Avatar.markup(selectedAvatar, u.displayName || u.email, 'user-avatar--large');
+  document.querySelectorAll('#amAvatarOptions .avatar-choice').forEach(button => {
+    button.setAttribute('aria-pressed', String(button.dataset.avatar === selectedAvatar));
+  });
+}
+
+function buildAvatarChoices() {
+  const choices = [{ id: '', label: '原始線條頭像' }, ...Avatar.options];
+  document.getElementById('amAvatarOptions').innerHTML = choices.map(option => `
+    <button type="button" class="avatar-choice" data-avatar="${option.id}" aria-label="${option.label}" title="${option.label}" aria-pressed="false">
+      ${Avatar.markup(option.id, DataService.getCurrentUser().displayName, 'user-avatar--choice')}
+    </button>`).join('');
+  document.querySelectorAll('#amAvatarOptions .avatar-choice').forEach(button => {
+    button.addEventListener('click', () => {
+      avatarUploadRequest++;
+      selectedAvatar = button.dataset.avatar;
+      document.getElementById('amAvatarFile').value = '';
+      document.getElementById('amAvatarStatus').textContent = '';
+      document.getElementById('amSaveBtn').disabled = false;
+      updateAvatarPreview();
+    });
+  });
+  updateAvatarPreview();
 }
 
 function openProfileModal() {
@@ -408,8 +486,6 @@ function openProfileModal() {
   document.getElementById('pmEmail').value  = u.email||'';
   document.getElementById('pmName').value   = u.displayName||'';
   document.getElementById('pmSchool').value = u.school||'';
-  document.getElementById('pmPw').value     = '';
-  document.getElementById('pmPw2').value    = '';
   document.getElementById('pmErr').style.display = 'none';
   const sg = document.getElementById('pmSchoolGroup');
   sg.style.display = u.role==='teacher' ? 'block':'none';
@@ -417,36 +493,215 @@ function openProfileModal() {
   document.getElementById('profileModal').classList.remove('hidden');
 }
 
+function openAvatarModal() {
+  const u = DataService.getCurrentUser();
+  avatarUploadRequest++;
+  selectedAvatar = u.avatar || '';
+  document.getElementById('amErr').style.display = 'none';
+  document.getElementById('amAvatarFile').value = '';
+  document.getElementById('amAvatarStatus').textContent = '';
+  document.getElementById('amSaveBtn').disabled = false;
+  buildAvatarChoices();
+  document.getElementById('avatarModal').classList.remove('hidden');
+}
+
+document.getElementById('amAvatarFile').addEventListener('change', async event => {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  const status = document.getElementById('amAvatarStatus');
+  const saveButton = document.getElementById('amSaveBtn');
+  const request = ++avatarUploadRequest;
+  saveButton.disabled = true;
+  status.textContent = '圖片處理中…';
+  try {
+    const avatar = await Avatar.prepareUpload(file);
+    if (request !== avatarUploadRequest) return;
+    selectedAvatar = avatar;
+    status.textContent = '已選擇自訂頭像，儲存後生效';
+    updateAvatarPreview();
+  } catch (error) {
+    if (request !== avatarUploadRequest) return;
+    event.target.value = '';
+    status.textContent = error.message || '圖片無法載入';
+  } finally {
+    if (request === avatarUploadRequest) saveButton.disabled = false;
+  }
+});
+
 window.saveProfile = async () => {
   const errEl = document.getElementById('pmErr');
   errEl.style.display='none';
   const name   = document.getElementById('pmName').value.trim();
   const school = document.getElementById('pmSchool').value.trim();
-  const pw     = document.getElementById('pmPw').value;
-  const pw2    = document.getElementById('pmPw2').value;
   const u      = DataService.getCurrentUser();
   const showErr = m => { errEl.textContent=m; errEl.style.display='block'; };
   if (!name) return showErr('姓名不能為空');
   if (u.role==='teacher' && !school) return showErr('教師必須填寫服務學校');
-  if (pw && pw.length<6) return showErr('密碼至少 6 字元');
-  if (pw && pw!==pw2)   return showErr('兩次密碼不一致');
   const btn = document.getElementById('pmSaveBtn');
   btn.disabled=true; btn.textContent='儲存中…';
   try {
     await DataService.updateProfile(u.uid, { displayName:name, school:school||null });
-    if (pw) {
-      await updatePassword(getAuth().currentUser, pw);
-      UI.toast('個人資料與密碼已更新','success');
-    } else {
-      UI.toast('個人資料已更新','success');
-    }
+    UI.toast('個人資料已更新','success');
     document.getElementById('profileModal').classList.add('hidden');
     buildProfilePanel(); // 重新渲染顯示最新資料
   } catch(e) {
-    if (e.code==='auth/requires-recent-login') showErr('變更密碼需重新登入後再試');
-    else showErr(e.message||'發生錯誤');
+    showErr(e.message||'發生錯誤');
   } finally { btn.disabled=false; btn.textContent='儲存變更'; }
 };
+
+window.saveAvatar = async () => {
+  const errEl = document.getElementById('amErr');
+  errEl.style.display = 'none';
+  const btn = document.getElementById('amSaveBtn');
+  btn.disabled = true; btn.textContent = '儲存中…';
+  try {
+    await DataService.updateProfile(DataService.getCurrentUser().uid, { avatar:selectedAvatar });
+    UI.toast('頭像已更新', 'success');
+    document.getElementById('avatarModal').classList.add('hidden');
+    buildProfilePanel();
+  } catch (e) {
+    errEl.textContent = e.message || '儲存頭像失敗';
+    errEl.style.display = 'block';
+  } finally { btn.disabled = false; btn.textContent = '儲存頭像'; }
+};
+
+async function buildCatalogPanel() {
+  const panel = document.getElementById('spanel-catalog');
+  panel.innerHTML = `<section class="card" style="max-width:760px">
+    <div class="card-header"><h2>題庫環境設定</h2></div>
+    <div class="card-body">
+      <h3 style="font-size:1rem;margin:0 0 6px">選擇科目</h3>
+      <p style="font-size:.84rem;color:var(--text-secondary);margin:0 0 14px">勾選要在系統中顯示的科目與冊別。未勾選的內容將從選單、題目與試卷清單隱藏。</p>
+      <div id="catalogChoices" aria-busy="true">載入科目中…</div>
+      <div class="catalog-actions">
+        <button class="btn btn-outline btn-sm" type="button" id="catalogSelectAll">全選</button>
+        <button class="btn btn-outline btn-sm" type="button" id="catalogClearAll">全部取消</button>
+        <button class="btn btn-primary" type="button" id="catalogSave">儲存設定</button>
+        <span id="catalogStatus" role="status" aria-live="polite"></span>
+      </div>
+    </div>
+  </section>`;
+  const choices = document.getElementById('catalogChoices');
+  const save = document.getElementById('catalogSave');
+  save.disabled = true;
+  try {
+    const subjects = await DataService.getSubjects();
+    const bookResults = await Promise.all(subjects.map(s => DataService.getBooks(s.id)));
+    const visible = DataService.getVisibleCatalog();
+    choices.innerHTML = subjects.map((subject, index) => {
+      const books = [...new Map(bookResults[index].filter(b => b.code).map(b => [b.code, b])).values()];
+      const selected = visible === null || Object.prototype.hasOwnProperty.call(visible, subject.code);
+      return `<div class="catalog-subject" data-subject="${UI.escapeHtml(subject.code)}">
+        <label class="catalog-subject-header"><input type="checkbox" class="catalog-subject-check" ${selected ? 'checked' : ''}>${UI.escapeHtml(subject.name || subject.code)}</label>
+        <div class="catalog-books">${books.length ? books.map(book => `<label><input type="checkbox" class="catalog-book-check" value="${UI.escapeHtml(book.code)}" ${visible === null || (Array.isArray(visible[subject.code]) && visible[subject.code].includes(book.code)) ? 'checked' : ''}>${UI.escapeHtml(book.name || book.code)}</label>`).join('') : '<span style="color:var(--text-muted);font-size:.82rem">目前沒有冊別</span>'}</div>
+      </div>`;
+    }).join('') || '<p>目前沒有可選擇的科目。</p>';
+    choices.setAttribute('aria-busy', 'false');
+    choices.addEventListener('change', event => {
+      const group = event.target.closest('.catalog-subject');
+      if (!group) return;
+      const subjectCheck = group.querySelector('.catalog-subject-check');
+      const bookChecks = [...group.querySelectorAll('.catalog-book-check')];
+      if (event.target === subjectCheck) bookChecks.forEach(input => { input.checked = subjectCheck.checked; });
+      else subjectCheck.checked = bookChecks.some(input => input.checked);
+      document.getElementById('catalogStatus').textContent = '尚未儲存';
+    });
+    document.getElementById('catalogSelectAll').addEventListener('click', () => {
+      choices.querySelectorAll('input[type="checkbox"]').forEach(input => { input.checked = true; });
+      document.getElementById('catalogStatus').textContent = '尚未儲存';
+    });
+    document.getElementById('catalogClearAll').addEventListener('click', () => {
+      choices.querySelectorAll('input[type="checkbox"]').forEach(input => { input.checked = false; });
+      document.getElementById('catalogStatus').textContent = '尚未儲存';
+    });
+    save.disabled = false;
+    save.addEventListener('click', async () => {
+      const selected = {};
+      choices.querySelectorAll('.catalog-subject').forEach(group => {
+        if (group.querySelector('.catalog-subject-check').checked) {
+          selected[group.dataset.subject] = [...group.querySelectorAll('.catalog-book-check:checked')].map(input => input.value);
+        }
+      });
+      save.disabled = true;
+      const status = document.getElementById('catalogStatus');
+      status.textContent = '儲存中…';
+      try {
+        await DataService.updateProfile(DataService.getCurrentUser().uid, { visibleCatalog:selected });
+        window._tbCache = null;
+        status.textContent = '已儲存；切換頁面後依新設定顯示';
+        UI.toast('題庫環境設定已更新', 'success');
+      } catch (error) {
+        status.textContent = `儲存失敗：${error.message || '請稍後再試'}`;
+      } finally { save.disabled = false; }
+    });
+  } catch (error) {
+    choices.textContent = `科目載入失敗：${error.message || '請稍後再試'}`;
+    choices.setAttribute('aria-busy', 'false');
+  }
+}
+
+function buildPasswordPanel() {
+  document.getElementById('spanel-password').innerHTML = `
+    <section class="card password-card" aria-labelledby="passwordHeading">
+      <div class="card-header"><h2 id="passwordHeading">密碼設定</h2></div>
+      <form class="card-body" id="passwordForm">
+        <p class="password-hint">請先輸入目前密碼，再設定新密碼。</p>
+        <div class="password-field"><label for="currentPassword">目前密碼</label><div class="password-input"><input class="form-control" id="currentPassword" type="password" autocomplete="current-password" required><button class="password-toggle" type="button" data-toggle="currentPassword" aria-label="顯示目前密碼">顯示</button></div></div>
+        <div class="password-field"><label for="newPassword">新密碼</label><div class="password-input"><input class="form-control" id="newPassword" type="password" autocomplete="new-password" minlength="6" required><button class="password-toggle" type="button" data-toggle="newPassword" aria-label="顯示新密碼">顯示</button></div><small class="password-hint">至少 6 個字元</small></div>
+        <div class="password-field"><label for="confirmPassword">確認新密碼</label><div class="password-input"><input class="form-control" id="confirmPassword" type="password" autocomplete="new-password" minlength="6" required><button class="password-toggle" type="button" data-toggle="confirmPassword" aria-label="顯示確認新密碼">顯示</button></div></div>
+        <div class="password-message" id="passwordMessage" role="status" aria-live="polite"></div>
+        <div class="password-actions"><button class="btn btn-primary" id="passwordSave" type="submit">更新密碼</button></div>
+      </form>
+    </section>`;
+
+  const form = document.getElementById('passwordForm');
+  const message = document.getElementById('passwordMessage');
+  const saveButton = document.getElementById('passwordSave');
+  const showMessage = (text, success = false) => {
+    message.textContent = text;
+    message.className = `password-message ${success ? 'is-success' : 'is-error'}`;
+  };
+
+  form.querySelectorAll('[data-toggle]').forEach(button => {
+    button.addEventListener('click', () => {
+      const input = document.getElementById(button.dataset.toggle);
+      const visible = input.type === 'password';
+      input.type = visible ? 'text' : 'password';
+      button.textContent = visible ? '隱藏' : '顯示';
+      button.setAttribute('aria-label', `${visible ? '隱藏' : '顯示'}${input.labels[0].textContent}`);
+    });
+  });
+
+  form.addEventListener('submit', async event => {
+    event.preventDefault();
+    const current = document.getElementById('currentPassword').value;
+    const next = document.getElementById('newPassword').value;
+    const confirm = document.getElementById('confirmPassword').value;
+    if (next.length < 6) return showMessage('新密碼至少需要 6 個字元');
+    if (next !== confirm) return showMessage('兩次輸入的新密碼不一致');
+    if (current === next) return showMessage('新密碼請勿與目前密碼相同');
+    saveButton.disabled = true;
+    saveButton.textContent = '更新中…';
+    message.className = 'password-message';
+    try {
+      await DataService.changePassword(current, next);
+      form.reset();
+      showMessage('密碼已更新', true);
+    } catch (error) {
+      const descriptions = {
+        'auth/invalid-credential': '目前密碼不正確',
+        'auth/wrong-password': '目前密碼不正確',
+        'auth/weak-password': '新密碼強度不足，請使用更長的密碼',
+        'auth/too-many-requests': '嘗試次數過多，請稍後再試',
+        'auth/network-request-failed': '網路連線失敗，請稍後再試'
+      };
+      showMessage(descriptions[error.code] || error.message || '更新密碼失敗');
+    } finally {
+      saveButton.disabled = false;
+      saveButton.textContent = '更新密碼';
+    }
+  });
+}
 
 // ══════════════════════════════════════════════════
 //  共用工具

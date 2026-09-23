@@ -10,13 +10,14 @@
 <body>
 <script src="js/icons.js"></script>
 <script src="js/core.js"></script>
+<script src="js/avatar.js"></script>
 <div class="layout">
   <aside class="sidebar" id="sidebar"></aside>
   <script src="js/shell.js"></script>
   <main class="main" inert>
     <div class="topbar">
       <span class="topbar-title">首頁總覽</span>
-      <div class="topbar-actions"><span class="text-sm text-muted" id="dateStr"></span><a class="toolbar-account" href="settings.html" aria-label="帳號與設定" id="toolbarAccount"></a></div>
+      <div class="topbar-actions"><span class="text-sm text-muted" id="welcomeText"></span><a class="toolbar-account" href="settings.html" aria-label="帳號與設定" id="toolbarAccount"></a></div>
     </div>
     <div class="page-content" id="content" aria-busy="true">
       <div class="dashboard-overview"><div class="skeleton dash-skel-section"></div><div class="skeleton dash-skel-section"></div></div>
@@ -34,10 +35,17 @@ const esc = UI.escapeHtml;
 const isAdmin = DataService.isAdmin();
 let dashboardExams = [];
 let examsLoaded = false;
-let dashboardSubjects = { ...SUBJECT_CODES };
+let dashboardSubjects = Object.fromEntries(Object.entries(SUBJECT_CODES).filter(([code]) => DataService.isSubjectVisible(code)));
+let dashboardSubjectRecords = new Map();
+const questionCache = new Map();
+const bookCache = new Map();
+let overviewBookCodes = new Map();
+let overviewRequest = 0;
+let overviewStats = { total: 0, byType: {} };
 
-document.getElementById('dateStr').textContent = new Date().toLocaleDateString('zh-TW', {year:'numeric',month:'long',day:'numeric',weekday:'long'});
-document.getElementById('toolbarAccount').innerHTML = `${I.user20}<span>${esc(user.displayName || user.email)}</span>`;
+const greetingName = (user.displayName || user.email?.split('@')[0] || '').trim().replace(/\s*老師$/, '');
+document.getElementById('welcomeText').textContent = `歡迎回來，${greetingName ? `${greetingName} 老師` : '老師'}`;
+document.getElementById('toolbarAccount').innerHTML = Avatar.markup(user.avatar, user.displayName || user.email, 'user-avatar--toolbar');
 
 const subjectName = code => dashboardSubjects[code] || code || '未分類';
 const subjectTone = code => Math.max(0, Object.keys(SUBJECT_CODES).indexOf(code)) % 6;
@@ -73,27 +81,125 @@ function renderExamRows() {
     </tr>`).join('') || `<tr><td colspan="5" class="dash-empty">${dashboardExams.length ? '找不到符合條件的試卷，請調整搜尋條件。' : '尚無試卷，從上方選題方式開始建立第一份試卷。'}</td></tr>`;
 }
 
+const chartColors = ['#3478f6','#49b998','#a38ae5','#f3b94e','#ee8998','#75a7bb'];
+function renderOverviewChart(byType, total) {
+  const chart = document.getElementById('overviewChart');
+  document.getElementById('overviewTotal').innerHTML = `${Number(total).toLocaleString()} <span>題</span>`;
+  if (!total) {
+    chart.innerHTML = '<p class="dash-empty">此範圍尚無題目資料</p>';
+    return;
+  }
+  const max = Math.max(...Object.values(byType), 1);
+  chart.innerHTML = Object.entries(QUESTION_TYPES).map(([code, name], index) => {
+    const count = Number(byType[code]) || 0;
+    return `<div class="bar-item"><span class="bar-label">${esc(name)}</span><div class="bar-track"><div class="bar-fill" style="width:${Math.round(count/max*100)}%;background:${chartColors[index]}"></div></div><span class="bar-count">${count.toLocaleString()}</span></div>`;
+  }).join('');
+}
+
+async function updateOverview() {
+  const request = ++overviewRequest;
+  const subjectCode = document.getElementById('overviewSubject').value;
+  const bookSelect = document.getElementById('overviewBook');
+  const chart = document.getElementById('overviewChart');
+  overviewBookCodes = new Map();
+  if (!subjectCode) {
+    bookSelect.innerHTML = '<option value="">全部科目</option>';
+    bookSelect.disabled = true;
+    chart.setAttribute('aria-busy', 'false');
+    renderOverviewChart(overviewStats.byType || {}, overviewStats.total || 0);
+    return;
+  }
+
+  bookSelect.disabled = true;
+  bookSelect.innerHTML = '<option value="">載入冊別中…</option>';
+  chart.setAttribute('aria-busy', 'true');
+  chart.innerHTML = '<p class="dash-empty">正在載入題型分布…</p>';
+  const record = dashboardSubjectRecords.get(subjectCode);
+  const booksPromise = bookCache.get(subjectCode) || (record
+    ? DataService.getVisibleBooks(record.id, subjectCode)
+    : Promise.resolve([]));
+  bookCache.set(subjectCode, booksPromise);
+  const questionsPromise = questionCache.get(subjectCode) || DataService.getQuestions({ subjectCode });
+  questionCache.set(subjectCode, questionsPromise);
+  const [booksResult, questionsResult] = await Promise.allSettled([booksPromise, questionsPromise]);
+  if (request !== overviewRequest) return;
+
+  let books = [];
+  if (booksResult.status === 'fulfilled') {
+    bookCache.set(subjectCode, booksResult.value);
+    const uniqueCodes = new Map();
+    for (const book of booksResult.value) {
+      const code = String(book.code || '').trim();
+      if (code && !uniqueCodes.has(code)) uniqueCodes.set(code, String(book.name || code).trim());
+    }
+    const groups = new Map();
+    for (const [code, name] of uniqueCodes) {
+      if (!groups.has(name)) groups.set(name, new Set());
+      groups.get(name).add(code);
+    }
+    books = [...groups].map(([name, codes], index) => {
+      const key = String(index);
+      overviewBookCodes.set(key, codes);
+      return `<option value="${key}">${esc(name)}</option>`;
+    });
+  } else {
+    bookCache.delete(subjectCode);
+  }
+  bookSelect.innerHTML = '<option value="">全部科目</option>' + books.join('');
+  bookSelect.disabled = books.length === 0;
+  if (questionsResult.status === 'rejected') {
+    questionCache.delete(subjectCode);
+    chart.innerHTML = '<p class="dash-empty">題型分布暫時無法載入，請重新選擇科目。</p>';
+    document.getElementById('overviewTotal').innerHTML = '— <span>題</span>';
+    chart.setAttribute('aria-busy', 'false');
+    return;
+  }
+  questionCache.set(subjectCode, questionsResult.value);
+  chart.setAttribute('aria-busy', 'false');
+  renderSelectedBook();
+}
+
+function renderSelectedBook() {
+  const subjectCode = document.getElementById('overviewSubject').value;
+  const bookCodes = overviewBookCodes.get(document.getElementById('overviewBook').value);
+  const questions = questionCache.get(subjectCode);
+  if (!Array.isArray(questions)) return;
+  const selected = bookCodes ? questions.filter(q => bookCodes.has(String(q.bookCode))) : questions;
+  const byType = {};
+  for (const q of selected) byType[q.type] = (byType[q.type] || 0) + 1;
+  renderOverviewChart(byType, selected.length);
+}
+
 async function renderStaff() {
+  const statsPromise = DataService.getVisibleCatalog() === null
+    ? DataService.getQuestionStats()
+    : DataService.getQuestions().then(questions => {
+        const stats = { total:questions.length, byType:{}, bySubject:{} };
+        for (const q of questions) {
+          stats.byType[q.type] = (stats.byType[q.type] || 0) + 1;
+          stats.bySubject[q.subjectCode] = (stats.bySubject[q.subjectCode] || 0) + 1;
+        }
+        return stats;
+      });
   const [statsResult, examsResult, subjectsResult] = await Promise.allSettled([
-    DataService.getQuestionStats(), DataService.getExams(), DataService.getSubjects()
+    statsPromise, DataService.getExams(), DataService.getVisibleSubjects()
   ]);
   const stats = statsResult.status === 'fulfilled' ? statsResult.value : {total:0, byType:{}, bySubject:{}};
+  overviewStats = stats;
   dashboardExams = examsResult.status === 'fulfilled' ? examsResult.value : [];
   examsLoaded = examsResult.status === 'fulfilled';
   // 保留預設科目，合併課本管理中的自訂名稱與科目；零題也要顯示。
   if (subjectsResult.status === 'fulfilled') {
     for (const subject of subjectsResult.value) {
-      if (subject.code) dashboardSubjects[subject.code] = subject.name || subject.code;
+      if (subject.code) {
+        dashboardSubjects[subject.code] = subject.name || subject.code;
+        dashboardSubjectRecords.set(subject.code, subject);
+      }
     }
   }
   for (const code of Object.keys(stats.bySubject || {})) {
     if (!dashboardSubjects[code]) dashboardSubjects[code] = code;
   }
-  const subjects = Object.keys(dashboardSubjects).map(code => [code, stats.bySubject?.[code] || 0]);
-  const maxType = Math.max(...Object.values(stats.byType || {}), 1);
-  const maxSubject = Math.max(...subjects.map(([,count]) => count), 1);
-  const colors = ['#3478f6','#49b998','#a38ae5','#f3b94e','#ee8998','#75a7bb'];
-  const bar = (label, count, max, color) => `<div class="bar-item"><span class="bar-label">${esc(label)}</span><div class="bar-track"><div class="bar-fill" style="width:${Math.round(count/max*100)}%;background:${color}"></div></div><span class="bar-count">${count.toLocaleString()}</span></div>`;
   const action = (page, icon, label, desc, cls='') => `<a class="create-action ${cls}" href="${page}.html"><span class="create-icon">${icon}</span><span><strong>${label}</strong><small>${desc}</small></span><span class="action-arrow" aria-hidden="true">›</span></a>`;
   const warnings = [statsResult.status === 'rejected' ? '題庫統計暫時無法載入' : '', examsResult.status === 'rejected' ? '試卷清單暫時無法載入' : ''].filter(Boolean);
   document.getElementById('content').innerHTML = `
@@ -112,10 +218,13 @@ async function renderStaff() {
         </div>
       </section>
       <section class="card overview-card">
-        <div class="overview-heading"><h2>題庫概況</h2><a class="text-link" href="questions.html">進入題庫 <span aria-hidden="true">›</span></a></div>
-        <div class="question-total">${statsResult.status === 'fulfilled' ? (stats.total || 0).toLocaleString() : '—'} <span>題</span></div>
-        <p class="overview-description">${subjects.length} 個科目，陪伴每一次教學準備</p>
-        <ul class="subject-tags" aria-label="各科收錄題數">${subjects.map(([code,count]) => `<li class="subject-tag tone-${subjectTone(code)}"><span>${esc(subjectName(code))}</span><span class="subject-count">${statsResult.status === 'fulfilled' ? `${count.toLocaleString()} 題` : '未載入'}</span></li>`).join('')}</ul>
+        <div class="overview-heading"><div><h2>題庫概況</h2><p>專業命題，掌握題型配置</p></div></div>
+        <div class="overview-filters">
+          <label>科目<select class="form-control" id="overviewSubject"><option value="">全部科目</option>${Object.keys(dashboardSubjects).map(code => `<option value="${esc(code)}">${esc(subjectName(code))}</option>`).join('')}</select></label>
+          <label>冊別<select class="form-control" id="overviewBook" disabled><option value="">全部科目</option></select></label>
+        </div>
+        <div class="question-total" id="overviewTotal">${statsResult.status === 'fulfilled' ? (stats.total || 0).toLocaleString() : '—'} <span>題</span></div>
+        <div class="overview-chart" id="overviewChart" aria-label="題型分布" aria-live="polite">${statsResult.status === 'fulfilled' ? '' : '<p class="dash-empty">題型分布暫時無法載入</p>'}</div>
       </section>
     </div>
     <section class="recent-section" aria-labelledby="recentHeading">
@@ -129,11 +238,10 @@ async function renderStaff() {
       <div class="card table-wrapper"><table class="data-table recent-table"><thead><tr><th>試卷名稱</th><th>科目</th><th>題數</th><th>建立時間</th><th>操作</th></tr></thead><tbody id="recentExamRows"></tbody></table></div>
       <p class="exam-result-count" id="examResultCount" aria-live="polite"></p>
     </section>
-    <div class="charts-row">
-      <section class="card"><div class="card-header"><h2>題型分布</h2><span class="text-sm text-muted">掌握題庫組成</span></div><div class="card-body">${stats.total ? Object.entries(QUESTION_TYPES).map(([code,name],index) => bar(name,stats.byType?.[code] || 0,maxType,colors[index])).join('') : '<p class="dash-empty">尚無題目資料</p>'}</div></section>
-      <section class="card"><div class="card-header"><h2>各科題數</h2><span class="text-sm text-muted">${subjects.length} 個科目</span></div><div class="card-body subject-chart">${subjects.map(([code,count]) => bar(subjectName(code),count,maxSubject,colors[subjectTone(code)])).join('') || '<p class="dash-empty">尚無題目資料</p>'}</div></section>
-    </div>
     ${isAdmin ? `<nav class="admin-shortcuts" aria-label="管理員快速操作"><span>題庫管理</span><a href="import.html">${I.upload16} 匯入題目</a><a href="questions.html">${I.list16} 題目維護</a><a href="textbooks.html">${I.book16} 課本管理</a><a href="settings.html">${I.settings16} 帳號與設定</a></nav>` : ''}`;
+  if (statsResult.status === 'fulfilled') renderOverviewChart(stats.byType || {}, stats.total || 0);
+  document.getElementById('overviewSubject').addEventListener('change', updateOverview);
+  document.getElementById('overviewBook').addEventListener('change', renderSelectedBook);
   document.getElementById('examSearch').addEventListener('input', renderExamRows);
   document.getElementById('examSubject').addEventListener('change', renderExamRows);
   document.getElementById('examSort').addEventListener('change', renderExamRows);

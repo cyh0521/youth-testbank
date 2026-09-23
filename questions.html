@@ -225,7 +225,7 @@
 <script type="module">
 import { guardPage } from './js/auth-guard.js';
 window._activeNav = 'questions';
-const user = await guardPage(['admin','teacher']);
+const user = await guardPage(['admin']);
 if (!user) throw new Error('not auth');
 const canEdit = DataService.isAdmin();
 

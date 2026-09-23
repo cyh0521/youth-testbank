@@ -17,7 +17,8 @@ import {
 import {
   getAuth, signInWithEmailAndPassword, signOut,
   createUserWithEmailAndPassword, onAuthStateChanged,
-  setPersistence, browserSessionPersistence
+  setPersistence, browserSessionPersistence,
+  EmailAuthProvider, reauthenticateWithCredential, updatePassword
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 import {
   getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject
@@ -78,11 +79,11 @@ window.DataService = {
             if (snap.exists()) {
               DataService._currentUser = { uid: firebaseUser.uid, ...snap.data() };
             } else {
-              DataService._currentUser = { uid: firebaseUser.uid, email: firebaseUser.email, role: 'teacher' };
+              DataService._currentUser = null;
             }
           } catch(e) {
             console.warn('讀取使用者資料失敗', e);
-            DataService._currentUser = { uid: firebaseUser.uid, email: firebaseUser.email, role: 'teacher' };
+            DataService._currentUser = null;
           }
         } else {
           DataService._currentUser = null;
@@ -177,6 +178,31 @@ window.DataService = {
     }
   },
 
+  // 尚未設定時顯示完整題庫；設定後只顯示勾選的科目與冊別。
+  getVisibleCatalog() {
+    const value = DataService._currentUser?.visibleCatalog;
+    return value && typeof value === 'object' && !Array.isArray(value) ? value : null;
+  },
+  isSubjectVisible(subjectCode) {
+    const catalog = DataService.getVisibleCatalog();
+    return !catalog || Object.prototype.hasOwnProperty.call(catalog, subjectCode);
+  },
+  isBookVisible(subjectCode, bookCode) {
+    const catalog = DataService.getVisibleCatalog();
+    return !catalog || (Array.isArray(catalog[subjectCode]) && catalog[subjectCode].includes(bookCode));
+  },
+  isCatalogItemVisible(item) {
+    if (!DataService.isSubjectVisible(item.subjectCode)) return false;
+    return !item.bookCode || DataService.isBookVisible(item.subjectCode, item.bookCode);
+  },
+  async getVisibleSubjects() {
+    return (await DataService.getSubjects()).filter(s => DataService.isSubjectVisible(s.code));
+  },
+  async getVisibleBooks(subjectId, subjectCode) {
+    const books = await DataService.getBooks(subjectId);
+    return subjectCode ? books.filter(b => DataService.isBookVisible(subjectCode, b.code)) : books;
+  },
+
   // ══════════════════════════════════════════════
   //  題目管理
   // ══════════════════════════════════════════════
@@ -209,7 +235,7 @@ window.DataService = {
       const kw = opts.keyword.toLowerCase();
       qs = qs.filter(q => (q.text||'').includes(kw) || (q.answer||'').includes(kw));
     }
-    return qs;
+    return qs.filter(item => DataService.isCatalogItemVisible(item));
   },
 
   // ── 依 ID 陣列取得題目（並行讀取，節省 round-trip）──
@@ -220,7 +246,8 @@ window.DataService = {
     );
     return docs
       .filter(d => d.exists())
-      .map(d => ({ id: d.id, ...d.data() }));
+      .map(d => ({ id: d.id, ...d.data() }))
+      .filter(item => DataService.isCatalogItemVisible(item));
   },
 
   // ── 取得並遞增題目流水號（transaction 保證並發安全）──
@@ -457,7 +484,7 @@ window.DataService = {
       const tb = b.createdAt ? new Date(b.createdAt).getTime() : 0;
       return tb - ta;
     });
-    return arr;
+    return arr.filter(item => DataService.isCatalogItemVisible(item));
   },
 
   async saveExam(exam) {
@@ -476,6 +503,16 @@ window.DataService = {
 
   async deleteExam(id) {
     await deleteDoc(doc(db, 'exams', id));
+  },
+
+  async changePassword(currentPassword, newPassword) {
+    const firebaseUser = auth.currentUser;
+    if (!firebaseUser?.email || firebaseUser.uid !== DataService._currentUser?.uid) {
+      throw new Error('登入狀態已失效，請重新登入');
+    }
+    const credential = EmailAuthProvider.credential(firebaseUser.email, currentPassword);
+    await reauthenticateWithCredential(firebaseUser, credential);
+    await updatePassword(firebaseUser, newPassword);
   },
 
   // ══════════════════════════════════════════════
@@ -526,7 +563,7 @@ window.DataService = {
   // ── 科目 ──────────────────────────────────────────
   // ── 課本快取：一次讀取所有科目與冊別（供各頁面下拉選單使用）──
   async loadTextbookCache() {
-    const subjects = await DataService.getSubjects();
+    const subjects = await DataService.getVisibleSubjects();
     const cache = {
       subjects: [],          // [{id, code, name, order}]
       books: {},             // bookCode -> {id, subjectId, code, name, order, l1, l2, l3}
@@ -539,7 +576,7 @@ window.DataService = {
       cache.subjectByCode[s.code] = s;
       cache.subjectById[s.id]     = s;
       cache.booksBySubject[s.id]  = [];
-      const books = await DataService.getBooks(s.id);
+      const books = await DataService.getVisibleBooks(s.id, s.code);
       for (const b of books) {
         const entry = { ...b, subjectId: s.id };
         cache.books[b.code] = entry;

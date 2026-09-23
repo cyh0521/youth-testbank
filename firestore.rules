@@ -29,7 +29,7 @@ service cloud.firestore {
 
     // ── questions ─────────────────────────────────────────────
     match /questions/{qid} {
-      allow read:  if isSignedIn();
+      allow read:  if isTeacher();
       allow write: if isAdmin();  // 只有管理員可以管理題庫
     }
 
@@ -39,10 +39,13 @@ service cloud.firestore {
       allow read:  if isAdmin();
       // 教師只能讀取自己建立的試卷
       allow read:  if isTeacher() && resource.data.createdBy == request.auth.uid;
-      // 只有管理員和教師可以建立試卷
-      allow create: if isTeacher();
-      // 只有建立者或管理員可以修改/刪除試卷
-      allow update, delete: if isAdmin() || (isTeacher() && resource.data.createdBy == request.auth.uid);
+      // 試卷建立者必須是本人，避免教師替其他人建立試卷
+      allow create: if isAdmin() || (isTeacher() && request.resource.data.createdBy == request.auth.uid);
+      // 教師只能修改自己的試卷，且不得更改建立者
+      allow update: if isAdmin() || (isTeacher()
+                    && resource.data.createdBy == request.auth.uid
+                    && request.resource.data.createdBy == resource.data.createdBy);
+      allow delete: if isAdmin() || (isTeacher() && resource.data.createdBy == request.auth.uid);
     }
 
     // ── classes（教師的試卷分類）────────────────────────────
@@ -61,20 +64,20 @@ service cloud.firestore {
 
     // ── settings（系統設定）────────────────────────────────
     match /settings/{docId} {
-      allow read:  if isSignedIn();
+      allow read:  if isTeacher();
       allow write: if isAdmin();
     }
 
     // ── textbooks（課本結構）──────────────────────────────────
-    // 所有登入者可讀（出題頁面需要），只有管理員可寫
+    // 管理員與教師可讀（出題頁面需要），只有管理員可寫
     match /textbooks/{subjectId} {
-      allow read:  if isSignedIn();
+      allow read:  if isTeacher();
       allow write: if isAdmin();
       match /books/{bookId} {
-        allow read:  if isSignedIn();
+        allow read:  if isTeacher();
         allow write: if isAdmin();
         match /chapters/{chapterId} {
-          allow read:  if isSignedIn();
+          allow read:  if isTeacher();
           allow write: if isAdmin();
         }
       }

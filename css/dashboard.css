@@ -1,6 +1,6 @@
 /* 首頁工作台：以出題與最近試卷為主要入口。 */
 .toolbar-account { display: inline-flex; align-items: center; gap: 9px; padding-left: 18px; margin-left: 8px; border-left: 1px solid var(--border); color: var(--text-primary); font-size: .83rem; }
-.toolbar-account svg { padding: 5px; width: 30px; height: 30px; background: #e9ecf2; border-radius: 50%; color: #758197; }
+.toolbar-account .user-avatar { box-shadow: 0 0 0 1px #dce2eb; }
 .dashboard-overview { display: grid; grid-template-columns: minmax(0,1.5fr) minmax(0,1fr); gap: 18px; margin-bottom: 28px; }
 .create-card, .overview-card { padding: 22px; }
 .overview-heading, .section-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
@@ -29,10 +29,11 @@
 .text-link span { font-size: 1.3rem; }
 .question-total { font-size: 2.7rem; font-weight: 700; letter-spacing: -.025em; line-height: 1.25; margin: 13px 0 3px; color: #142238; font-variant-numeric: tabular-nums; }
 .question-total span { font-size: .95rem; font-weight: 500; margin-left: 5px; color: var(--text-secondary); }
-.overview-description { color: var(--text-light); font-size: .81rem; }
-.subject-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 17px; padding: 0; list-style: none; }
-.subject-tags .subject-tag { gap: 8px; padding: 6px 10px; max-width: 100%; white-space: normal; }
-.subject-count { font-size: .68rem; font-variant-numeric: tabular-nums; white-space: nowrap; opacity: .85; }
+.overview-filters { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 19px; }
+.overview-filters label { display: grid; gap: 6px; color: var(--text-secondary); font-size: .75rem; min-width: 0; }
+.overview-filters .form-control { width: 100%; min-width: 0; padding: 8px 10px; font-size: .8rem; }
+.overview-filters .form-control:disabled { cursor: not-allowed; color: var(--text-light); background: #f5f7fa; }
+.overview-chart { margin-top: 14px; min-height: 150px; }
 .subject-tag { display: inline-flex; align-items: center; border-radius: 9px; padding: 4px 10px; font-size: .75rem; font-weight: 500; white-space: nowrap; }
 .tone-0 { background: #e7efff; color: #2362d9; }
 .tone-1 { background: #ddf4e9; color: #267656; }
@@ -63,15 +64,12 @@
 .exam-manage:hover { color: #2570ec; }
 .nowrap { white-space: nowrap; }
 .exam-result-count { color: var(--text-light); font-size: .73rem; margin: 9px 4px 24px; }
-.charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
-.charts-row .card-header { background: #ffffff; }
 .bar-item { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: .77rem; }
 .bar-item:last-child { margin-bottom: 0; }
 .bar-label { width: 112px; flex-shrink: 0; color: var(--text-secondary); }
 .bar-track { flex: 1; background: #f0f3f8; border-radius: 4px; height: 9px; overflow: hidden; }
 .bar-fill { height: 100%; border-radius: 4px; }
 .bar-count { width: 45px; text-align: right; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
-.subject-chart { max-height: 245px; overflow-y: auto; }
 .admin-shortcuts { display: flex; gap: 18px; flex-wrap: wrap; align-items: center; margin-top: 22px; font-size: .77rem; color: var(--text-light); }
 .admin-shortcuts a { display: inline-flex; align-items: center; gap: 6px; color: var(--text-secondary); }
 .admin-shortcuts a:hover { color: var(--primary-light); }
@@ -80,21 +78,20 @@
 @media(max-width: 1180px) {
   .dashboard-overview { grid-template-columns: 1fr; }
   .create-action { padding: 20px; }
-  .overview-card { display: grid; grid-template-columns: 1fr auto; column-gap: 18px; }
-  .overview-card .overview-heading { grid-column: 1 / -1; }
-  .overview-description { align-self: center; }
-  .subject-tags { grid-column: 1 / -1; }
 }
 @media(max-width: 760px) {
-  #dateStr { display: none; }
   .toolbar-account { padding-left: 0; border: 0; }
   .create-card, .overview-card { padding: 18px; }
-  .create-actions, .charts-row { grid-template-columns: 1fr; }
-  .overview-card { display: block; }
+  .create-actions { grid-template-columns: 1fr; }
   .create-action { padding: 16px; }
   .recent-toolbar .form-control { max-width: 100%; }
   .exam-search { margin-left: 0; width: 100%; }
   .exam-search input { flex: 1; width: 100%; }
   .recent-toolbar { align-items: stretch; }
   .overview-heading h2, .section-heading h2 { font-size: 1.15rem; }
+}
+@media(max-width: 430px) {
+  .overview-filters { grid-template-columns: 1fr; }
+  .bar-label { width: 68px; }
+  .bar-count { width: 32px; }
 }

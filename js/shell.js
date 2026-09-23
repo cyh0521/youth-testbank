@@ -52,7 +52,6 @@
           ${item('settings', I.settings20, '帳號與設定')}
         </nav>
         <div class="sidebar-footer">
-          <p class="sidebar-note nav-label">陪伴老師<br>讓每一次出題更簡單</p>
           <button class="logout-btn" id="logoutBtn" aria-label="登出" title="登出" disabled>${I.logout18 || '⬅'}<span class="nav-label">登出</span></button>
         </div>`;
       el.dataset.navRole = navRole;
