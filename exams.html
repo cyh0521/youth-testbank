@@ -169,7 +169,7 @@
 
 <script type="module">
 import { guardPage } from './js/auth-guard.js';
-import { showExamPreview, exportToWord, printExam, showHeaderSettings } from './js/exam-preview.js';
+import { showExamPreview, downloadExam, printExam, showHeaderSettings } from './js/exam-preview.js';
 window.openHeaderSettings = showHeaderSettings;
 window._activeNav = 'exams';
 const user = await guardPage(['admin','teacher']);
@@ -449,6 +449,7 @@ function renderExams(list) {
         <button class="btn btn-sm btn-outline" onclick="previewExam('${e.id}')">👁 預覽</button>
         <button class="btn btn-sm btn-primary" onclick="printSavedExam('${e.id}')">🖨 列印</button>
         <button class="btn btn-sm btn-ghost"   onclick="downloadWord('${e.id}')">⬇ Word</button>
+        <button class="btn btn-sm btn-ghost"   onclick="downloadPdf('${e.id}')">⬇ PDF</button>
         ${canEdit ? `<button class="btn btn-sm btn-outline" onclick="openEdit('${e.id}')">✏️ 編輯</button>` : ''}
         ${canEdit ? `<button class="btn btn-sm btn-danger" onclick="deleteExam('${e.id}','${(e.title||'').replace(/'/g,'&apos;')}')">🗑</button>` : ''}
       </div>
@@ -555,7 +556,15 @@ window.downloadWord = async (id) => {
   await loadExamQuestions(e);
   const qs = getExamQuestions(e);
   if (!qs.length) { UI.toast('此試卷無法載入題目', 'warning'); return; }
-  exportToWord(e, qs);
+  await downloadExam(e, qs, 'Word');
+};
+
+window.downloadPdf = async (id) => {
+  const e = allExams.find(x => x.id===id); if (!e) return;
+  await loadExamQuestions(e);
+  const qs = getExamQuestions(e);
+  if (!qs.length) { UI.toast('此試卷無法載入題目', 'warning'); return; }
+  await downloadExam(e, qs, 'PDF');
 };
 
 window.printSavedExam = async (id) => {

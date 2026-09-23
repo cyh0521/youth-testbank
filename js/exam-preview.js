@@ -26,6 +26,125 @@ const LINE_HEIGHT_RANGE = { min: 1.4, max: 2.4, step: 0.05, default: 1.85 };
 // ── localStorage Keys ─────────────────────────────────
 const HEADER_KEY = 'examHeaderData';
 const APPEARANCE_KEY = 'examAppearance';
+const WORD_MARGIN_KEY = 'examWordMargins';
+const DEFAULT_WORD_MARGINS = { top:10, right:10, bottom:10, left:10 };
+const PAPER_SIZE_KEY = 'examPaperSize';
+const PAPER_SIZES = {
+  A4: { width:210, height:297 },
+  B3: { width:364, height:515 },
+  B4: { width:257, height:364 },
+};
+let pdfLibraryPromise;
+
+function choosePaperSize(format) {
+  let modal = document.getElementById('epPaperSizeModal');
+  if (!modal) {
+    document.body.insertAdjacentHTML('beforeend', `<div class="modal-overlay hidden" id="epPaperSizeModal" style="z-index:1300">
+      <div class="modal" style="max-width:420px;width:96%">
+        <div class="modal-header"><h3 id="epPaperSizeTitle">選擇紙張大小</h3><button class="modal-close" type="button" id="epPaperSizeClose">✕</button></div>
+        <div class="modal-body" style="padding:16px 20px">
+          ${Object.entries(PAPER_SIZES).map(([key, size]) => `<label style="display:flex;align-items:center;gap:10px;padding:10px 4px;cursor:pointer">
+            <input type="radio" name="epPaperSize" value="${key}"><span><strong>${key}${key.startsWith('B') ? '（JIS）' : ''}</strong>　${size.width} × ${size.height} mm</span>
+          </label>`).join('')}
+        </div>
+        <div class="modal-footer"><button class="btn btn-ghost" type="button" id="epPaperSizeCancel">取消</button><button class="btn btn-primary" type="button" id="epPaperSizeConfirm">下載</button></div>
+      </div></div>`);
+    modal = document.getElementById('epPaperSizeModal');
+  }
+  document.getElementById('epPaperSizeTitle').textContent = `下載 ${format}：選擇紙張大小`;
+  let saved = 'A4';
+  try { saved = localStorage.getItem(PAPER_SIZE_KEY) || 'A4'; } catch {}
+  modal.querySelector(`input[value="${PAPER_SIZES[saved] ? saved : 'A4'}"]`).checked = true;
+  modal.classList.remove('hidden');
+  return new Promise(resolve => {
+    const close = value => {
+      modal.classList.add('hidden');
+      document.getElementById('epPaperSizeClose').onclick = null;
+      document.getElementById('epPaperSizeCancel').onclick = null;
+      document.getElementById('epPaperSizeConfirm').onclick = null;
+      resolve(value);
+    };
+    document.getElementById('epPaperSizeClose').onclick = () => close(null);
+    document.getElementById('epPaperSizeCancel').onclick = () => close(null);
+    document.getElementById('epPaperSizeConfirm').onclick = () => {
+      const selected = modal.querySelector('input[name="epPaperSize"]:checked').value;
+      try { localStorage.setItem(PAPER_SIZE_KEY, selected); } catch {}
+      close(selected);
+    };
+  });
+}
+
+export async function downloadExam(examData, questions, format) {
+  if (format !== 'Word' && format !== 'PDF') throw new Error('不支援的下載格式');
+  const paperKey = await choosePaperSize(format);
+  if (!paperKey) return;
+  if (format === 'Word') exportToWord(examData, questions, paperKey);
+  else await exportToPdf(examData, questions, paperKey);
+}
+
+function loadPdfLibrary() {
+  if (window.html2pdf) return Promise.resolve(window.html2pdf);
+  if (!pdfLibraryPromise) {
+    pdfLibraryPromise = new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+      script.integrity = 'sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==';
+      script.crossOrigin = 'anonymous';
+      script.onload = () => window.html2pdf ? resolve(window.html2pdf) : reject(new Error('PDF 工具載入失敗'));
+      script.onerror = () => reject(new Error('PDF 工具載入失敗，請檢查網路連線'));
+      document.head.appendChild(script);
+    }).catch(error => { pdfLibraryPromise = null; throw error; });
+  }
+  return pdfLibraryPromise;
+}
+
+function loadWordMargins() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(WORD_MARGIN_KEY) || '{}');
+    return Object.fromEntries(Object.entries(DEFAULT_WORD_MARGINS).map(([side, fallback]) => {
+      const value = Number(saved[side]);
+      return [side, Number.isFinite(value) && value >= 5 && value <= 50 ? value : fallback];
+    }));
+  } catch { return { ...DEFAULT_WORD_MARGINS }; }
+}
+
+function showWordMargins() {
+  let modal = document.getElementById('epMarginModal');
+  if (!modal) {
+    document.body.insertAdjacentHTML('beforeend', `<div class="modal-overlay hidden" id="epMarginModal" style="z-index:1200">
+      <div class="modal" style="max-width:420px;width:96%">
+        <div class="modal-header"><h3>Word／PDF 頁邊距</h3><button class="modal-close" type="button" id="epMarginClose">✕</button></div>
+        <div class="modal-body" style="padding:16px 20px">
+          <p style="margin-bottom:12px;color:var(--text-muted)">單位：mm；可設定 5 至 50。</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            ${[['top','上'],['bottom','下'],['left','左'],['right','右']].map(([side,label]) =>
+              `<label class="form-group">${label}<input class="form-control" id="epMargin-${side}" type="number" min="5" max="50" step="1" required></label>`).join('')}
+          </div>
+        </div>
+        <div class="modal-footer"><button class="btn btn-ghost" type="button" id="epMarginReset">恢復預設</button><button class="btn btn-primary" type="button" id="epMarginSave">儲存</button></div>
+      </div></div>`);
+    modal = document.getElementById('epMarginModal');
+    document.getElementById('epMarginClose').onclick = () => modal.classList.add('hidden');
+    document.getElementById('epMarginReset').onclick = () => {
+      localStorage.removeItem(WORD_MARGIN_KEY);
+      for (const [side, value] of Object.entries(DEFAULT_WORD_MARGINS)) document.getElementById(`epMargin-${side}`).value = value;
+    };
+    document.getElementById('epMarginSave').onclick = () => {
+      const values = {};
+      for (const side of Object.keys(DEFAULT_WORD_MARGINS)) {
+        const input = document.getElementById(`epMargin-${side}`);
+        if (!input.reportValidity()) return;
+        values[side] = Number(input.value);
+      }
+      localStorage.setItem(WORD_MARGIN_KEY, JSON.stringify(values));
+      modal.classList.add('hidden');
+      UI.toast('Word／PDF 頁邊距已儲存', 'success');
+    };
+  }
+  const values = loadWordMargins();
+  for (const [side, value] of Object.entries(values)) document.getElementById(`epMargin-${side}`).value = value;
+  modal.classList.remove('hidden');
+}
 
 // ══════════════════════════════════════════════════════════
 //  讀寫表頭 / 外觀偏好
@@ -212,8 +331,9 @@ function ensurePreviewModal() {
 .ep-section-head{font-weight:700;margin:14px 0 8px}
 .ep-q{margin-bottom:8px}
 .ep-q .q-no{font-weight:700}
-.ep-opts{margin:3px 0 3px 2em}
-.ep-tail{margin-left:1em}
+.ep-answer-table{width:100%;border:0;border-collapse:collapse;table-layout:auto}
+.ep-answer-table td{border:0;padding:0;vertical-align:top}
+.ep-answer-table .ep-answer-prefix{width:1%;white-space:nowrap}
 .ep-answer-blank{color:#888;margin-top:4px}
 </style>
 <div class="modal-overlay hidden" id="epModal">
@@ -223,7 +343,9 @@ function ensurePreviewModal() {
       <div style="display:flex;gap:6px;align-items:center">
         <button class="btn btn-ghost btn-sm" onclick="window._epOpenHeader()" title="編輯試卷表頭">✎ 表頭</button>
         <button class="btn btn-outline btn-sm" onclick="window._epDoPrint()">🖨 列印</button>
+        <button class="btn btn-ghost btn-sm" onclick="window._epWordMargins()">頁邊距</button>
         <button class="btn btn-primary btn-sm" onclick="window._epDoExport()">⬇ 輸出 Word</button>
+        <button class="btn btn-outline btn-sm" onclick="window._epDoExportPdf()">⬇ 下載 PDF</button>
         <button class="modal-close" onclick="document.getElementById('epModal').classList.add('hidden')">✕</button>
       </div>
     </div>
@@ -351,7 +473,9 @@ export function showExamPreview(examData, questions) {
   window._epQuestions  = questions;
   window._epRefresh    = () => { renderPaper(examData, questions); applyAppearance(); };
   window._epDoPrint    = () => printExam(examData, questions);
-  window._epDoExport   = () => exportToWord(examData, questions);
+  window._epDoExport   = () => downloadExam(examData, questions, 'Word');
+  window._epDoExportPdf = () => downloadExam(examData, questions, 'PDF');
+  window._epWordMargins = showWordMargins;
   window._epOpenHeader = () => showHeaderSettings();
 
   renderPaper(examData, questions);
@@ -392,8 +516,9 @@ export function printExam(examData, questions) {
       .ep-exam-header .info-row { display: flex; gap: 24px; }
       .ep-section-head { font-weight: 700; margin: 14px 0 8px; }
       .ep-q { margin-bottom: 8px; break-inside: avoid; }
-      .ep-opts { margin: 3px 0 3px 2em; }
-      .ep-tail { margin-left: 1em; }
+      .ep-answer-table { width: 100%; border: 0; border-collapse: collapse; table-layout: auto; }
+      .ep-answer-table td { border: 0; padding: 0; vertical-align: top; }
+      .ep-answer-table .ep-answer-prefix { width: 1%; white-space: nowrap; }
       .ep-answer-blank { color: #555; margin-top: 4px; }
     </style></head><body>${paper.outerHTML}</body></html>`);
   doc.close();
@@ -418,6 +543,10 @@ function buildSubjectLabel(examData) {
 }
 
 function renderPaper(examData, questions) {
+  document.getElementById('epBody').innerHTML = buildPaperHtml(examData, questions);
+}
+
+function buildPaperHtml(examData, questions) {
   const h    = loadHeader();
   const subject = buildSubjectLabel(examData);
   const typeScores = examData.typeScores || {};
@@ -480,18 +609,18 @@ function renderPaper(examData, questions) {
   });
   html += `</div></div>`;
 
-  document.getElementById('epBody').innerHTML = html;
+  return html;
 }
 
 function renderQPreview(q, num, type) {
   let body = '';
   if (type === 'T1') {
-    body = `（　）${num}.${q.text||''}`;
+    body = `<table class="ep-answer-table" role="presentation"><tr><td class="ep-answer-prefix">（　）${num}.</td><td>${q.text||''}</td></tr></table>`;
   } else if (type === 'T2') {
     const opts = q.options?.length
-      ? `<div class="ep-opts">${q.options.map((o,i)=>`(${String.fromCharCode(65+i)})${o}`).join('　')}</div>` : '';
-    if (q.tail) body = `${num}.${q.text||''}${opts}<div class="ep-tail">${q.tail}</div>`;
-    else        body = `${num}.${q.text||''}${opts}`;
+      ? `　${q.options.map((o,i)=>`(${String.fromCharCode(65+i)})${o}`).join('　')}` : '';
+    const tail = q.tail?.trim() || '';
+    body = `<table class="ep-answer-table" role="presentation"><tr><td class="ep-answer-prefix">（　）${num}.</td><td>${q.text||''}${opts}${tail ? `${tail === '。' ? '' : '　'}${tail}` : ''}</td></tr></table>`;
   } else if (type === 'T6') {
     body = `${num}.${q.text||''}<div class="ep-answer-blank">答：</div>`;
   } else {
@@ -504,92 +633,23 @@ function renderQPreview(q, num, type) {
 // ══════════════════════════════════════════════════════════
 //  輸出 Word（讀取相同的表頭與外觀偏好）
 // ══════════════════════════════════════════════════════════
-export function exportToWord(examData, questions) {
-  const h          = loadHeader();
-  const a          = loadAppearance();
-  const subject    = buildSubjectLabel(examData);
-  const typeScores = examData.typeScores || {};
-  const grouped    = groupByType(questions);
-  const types      = orderedTypes(grouped);
-
-  const title       = examData.title || '試卷';
-  const yearText    = h.year || '○○○';
-  const semText     = h.semester || '○';
-  const headerLine1 = [
-    `${yearText}學年度第${semText}學期`,
-    subject,
-    h.grade,
-    h.examType,
-  ].filter(Boolean).join('　');
-
-  let body = '';
-
-  body += `<table border="1" cellspacing="0" cellpadding="6"
-    style="width:100%;border-collapse:collapse;margin-bottom:10pt">
-    <tr>
-      <td colspan="4" style="font-weight:bold;text-align:left">
-        ${headerLine1}
-      </td>
-    </tr>
-    <tr>
-      <td style="width:15%;font-weight:bold">班級</td>
-      <td style="width:35%">　　　　　　</td>
-      <td style="width:15%;font-weight:bold">姓名</td>
-      <td style="width:35%">　　　　　　　</td>
-    </tr>
-    <tr>
-      <td style="font-weight:bold">座號</td>
-      <td>　　　　　　</td>
-      ${h.school ? `<td style="font-weight:bold">學校</td><td>${h.school}</td>` : `<td colspan="2"></td>`}
-    </tr>
-    ${h.range ? `<tr><td style="font-weight:bold">範圍</td><td colspan="3">${h.range}</td></tr>` : ''}
-  </table>`;
-
-  types.forEach((type, secIdx) => {
-    const qs    = grouped[type];
-    const score = typeScores[type] || 2;
-    const total = qs.length * score;
-    body += `<p style="font-weight:bold;margin-top:10pt">${ROMANS[secIdx]}、${TYPE_LABELS[type]}（每題 ${score} 分，共 ${total} 分）</p>`;
-    qs.forEach((q, i) => {
-      const num = i + 1;
-      if (type === 'T1') {
-        body += `<p style="margin:3pt 0">（　）${num}.${q.text||''}</p>`;
-      } else if (type === 'T2') {
-        body += `<p style="margin:3pt 0">${num}.${q.text||''}</p>`;
-        if (q.options?.length) {
-          body += `<p style="margin:2pt 0 2pt 2em">${q.options.map((o,i)=>`(${String.fromCharCode(65+i)})${o}`).join('　')}</p>`;
-        }
-        if (q.tail) body += `<p style="margin:2pt 0 2pt 1em">${q.tail}</p>`;
-      } else if (type === 'T6') {
-        body += `<p style="margin:3pt 0">${num}.${q.text||''}</p>`;
-        body += `<p style="margin:2pt 0;color:#555">答：</p><p>&nbsp;</p><p>&nbsp;</p>`;
-      } else {
-        body += `<p style="margin:3pt 0">${num}.${q.text||''}</p>`;
-      }
-    });
+export function exportToWord(examData, questions, paperKey = 'A4') {
+  const a = loadAppearance();
+  const margins = loadWordMargins();
+  const size = PAPER_SIZES[paperKey] || PAPER_SIZES.A4;
+  const title = examData.title || '試卷';
+  const fontStack = fontStackById(a.font);
+  const paper = document.createElement('div');
+  paper.innerHTML = buildPaperHtml(examData, questions);
+  // Word 不一定讓表格儲存格繼承外層字型，直接寫入每個儲存格。
+  paper.querySelectorAll('.ep-answer-table td').forEach(cell => {
+    cell.style.fontFamily = fontStack;
+    cell.style.fontSize = `${a.fontSize}px`;
+    cell.style.lineHeight = String(a.lineHeight);
   });
-
-  body += `<p style="page-break-before:always;font-weight:bold;margin-bottom:8pt">【解答】</p>`;
-  types.forEach((type, secIdx) => {
-    const qs = grouped[type];
-    body += `<p style="font-weight:bold;margin-top:6pt">${ROMANS[secIdx]}、${TYPE_LABELS[type]}</p>`;
-    if (type === 'T6' || type === 'T5' || type === 'T4') {
-      qs.forEach((q,i) => {
-        body += `<p style="margin:3pt 0">${i+1}.${q.answer||''}</p>`;
-        if (q.analysis) body += `<p style="margin:2pt 0 2pt 1.5em;color:#444">【解析】${q.analysis}</p>`;
-      });
-    } else {
-      const row = qs.map((q,i) => `${i+1}.${q.answer||''}`).join('　　');
-      body += `<p style="margin:3pt 0">${row}</p>`;
-      qs.forEach((q,i) => {
-        if (q.analysis) body += `<p style="margin:2pt 0 2pt 1.5em;color:#444">${i+1}.【解析】${q.analysis}</p>`;
-      });
-    }
-    body += `<p>&nbsp;</p>`;
-  });
+  const body = paper.innerHTML;
 
   // ── Word HTML wrapper：套用使用者外觀偏好 ──────────────
-  const fontStack = fontStackById(a.font);
   const wordHtml = `<html xmlns:o="urn:schemas-microsoft-com:office:office"
     xmlns:w="urn:schemas-microsoft-com:office:word"
     xmlns="http://www.w3.org/TR/REC-html40">
@@ -599,13 +659,22 @@ export function exportToWord(examData, questions) {
 <w:View>Print</w:View><w:Zoom>90</w:Zoom>
 </w:WordDocument></xml><![endif]-->
 <style>
-  @page Section1 { size:210mm 297mm; margin:2cm 2.5cm; }
-  body { font-family:${fontStack}; font-size:${a.fontSize}pt; line-height:${a.lineHeight}; div:Section1; }
-  p    { margin:3pt 0; }
-  table { border-collapse:collapse; width:100%; }
-  td   { padding:5pt 8pt; }
+  @page Section1 { size:${size.width}mm ${size.height}mm; margin:${margins.top}mm ${margins.right}mm ${margins.bottom}mm ${margins.left}mm; }
+  div.Section1 { page:Section1; }
+  body { margin:0; color:#000; }
+  #epPaper { font-family:${fontStack}; font-size:${a.fontSize}px; line-height:${a.lineHeight}; color:#000; }
+  .ep-exam-header { border:2px solid #333; padding:10px 14px; margin-bottom:14px; font-size:.94em; }
+  .ep-exam-header .title-row { font-size:1.05em; font-weight:700; margin-bottom:6px; }
+  .ep-exam-header .info-row { display:flex; gap:24px; }
+  .ep-section-head { font-weight:700; margin:14px 0 8px; }
+  .ep-q { margin-bottom:8px; page-break-inside:avoid; }
+  .ep-q .q-no { font-weight:700; }
+  .ep-answer-table { width:100%; border:0; border-collapse:collapse; table-layout:auto; }
+  .ep-answer-table td { border:0; padding:0; vertical-align:top; }
+  .ep-answer-table .ep-answer-prefix { width:1%; white-space:nowrap; }
+  .ep-answer-blank { color:#888; margin-top:4px; }
 </style>
-</head><body>${body}</body></html>`;
+</head><body><div class="Section1">${body}</div></body></html>`;
 
   const blob = new Blob(['\uFEFF' + wordHtml], { type:'application/msword;charset=utf-8' });
   const a2 = document.createElement('a');
@@ -613,4 +682,35 @@ export function exportToWord(examData, questions) {
   a2.download = `${title}.doc`;
   document.body.appendChild(a2); a2.click();
   document.body.removeChild(a2); URL.revokeObjectURL(a2.href);
+}
+
+// PDF 以預覽的試卷 HTML 製作，保留中文及瀏覽器中的視覺樣式。
+export async function exportToPdf(examData, questions, paperKey = 'A4') {
+  try {
+    ensurePreviewModal();
+    const html2pdf = await loadPdfLibrary();
+    const appearance = loadAppearance();
+    const margins = loadWordMargins();
+    const size = PAPER_SIZES[paperKey] || PAPER_SIZES.A4;
+    const paper = document.createElement('div');
+    paper.innerHTML = buildPaperHtml(examData, questions);
+    const content = paper.firstElementChild;
+    content.style.fontFamily = fontStackById(appearance.font);
+    content.style.fontSize = `${appearance.fontSize}px`;
+    content.style.lineHeight = appearance.lineHeight;
+    content.style.color = '#000';
+    content.style.background = '#fff';
+    const filename = `${(examData.title || '試卷').replace(/[\\/:*?"<>|]/g, '_')}.pdf`;
+    await html2pdf().set({
+      margin: [margins.top, margins.right, margins.bottom, margins.left],
+      filename,
+      image: { type:'jpeg', quality:0.98 },
+      html2canvas: { scale:2, useCORS:true, backgroundColor:'#fff' },
+      jsPDF: { unit:'mm', format:[size.width, size.height], orientation:'portrait', compress:true },
+      pagebreak: { mode:['css','legacy'], avoid:['.ep-q', '.ep-section-head'] }
+    }).from(content).save();
+  } catch (error) {
+    console.error('PDF 匯出失敗', error);
+    UI.toast(`PDF 下載失敗：${error.message || '請稍後再試'}`, 'danger');
+  }
 }
