@@ -39,7 +39,7 @@
       const I = window.ICONS || {};
       const item = (page, icon, label, href = `${page}.html`) => `<a class="nav-item" href="${href}" data-page="${page}" title="${label}"><span class="icon">${icon || ''}</span><span class="nav-label">${label}</span></a>`;
       const section = label => `<div class="nav-section-title"><span class="nav-label">${label}</span></div>`;
-      const brandIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5C9 3 6 3 3 4v15c3-1 6-1 9 1 3-2 6-2 9-1V4c-3-1-6-1-9 1Z"/><path d="M12 5v15"/></svg>';
+      const brandIcon = '<img src="img/youth.png" alt="" aria-hidden="true" draggable="false">';
       el.innerHTML = `
         <div class="sidebar-top">
           <button class="sidebar-brand-toggle" id="sidebarToggle" type="button" aria-controls="sidebarNav">${brandIcon}</button>
