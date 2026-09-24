@@ -14,14 +14,25 @@ const EXAM_OPTIONS  = ['第一次段考','第二次段考','期中考','期末�
 
 // ── 字型 / 字體大小 / 行距 預設與選項 ─────────────────
 // 字型優先用 Google Fonts Web Font（跨平台一致），fallback 到本機相近字型
-const FONT_OPTIONS = [
+export const FONT_OPTIONS = [
   { id:'serif',  label:'宋體（Noto Serif）',  stack:'"Noto Serif TC","新細明體","PMingLiU",serif' },
   { id:'sans',   label:'黑體（Noto Sans）',   stack:'"Noto Sans TC","Microsoft JhengHei","PingFang TC",sans-serif' },
   { id:'kaiti',  label:'楷體（依本機字型）',   stack:'"標楷體","DFKai-SB","BiauKai","cwTeXKai",serif' },
   { id:'system', label:'系統預設字型',        stack:'system-ui,-apple-system,"Microsoft JhengHei","PingFang TC","Noto Sans TC",sans-serif' },
 ];
-const FONT_SIZE_RANGE = { min: 11, max: 20, step: 1, default: 14 };
-const LINE_HEIGHT_RANGE = { min: 1.4, max: 2.4, step: 0.05, default: 1.85 };
+export const FONT_SIZE_RANGE = { min: 11, max: 20, step: 1, default: 16 };
+export const LINE_HEIGHT_RANGE = { min: 1.4, max: 2.4, step: 0.05, default: 1.85 };
+export const HEADER_FIELDS = [
+  { id:'year', label:'學年度與學期' }, { id:'subject', label:'科目' },
+  { id:'grade', label:'年級' }, { id:'examType', label:'試別' },
+  { id:'class', label:'班級' }, { id:'name', label:'姓名' },
+  { id:'seat', label:'座號' }, { id:'school', label:'學校' },
+  { id:'range', label:'考試範圍' },
+];
+export const DEFAULT_HEADER_LAYOUT = Object.fromEntries(HEADER_FIELDS.map((field, index) => [field.id, {
+  row: index < 4 ? 1 : index < 8 ? 2 : 3,
+  position: index < 4 ? index + 1 : index < 8 ? index - 3 : 1,
+}]));
 
 // ── localStorage Keys ─────────────────────────────────
 const HEADER_KEY = 'examHeaderData';
@@ -131,12 +142,12 @@ export function resetWordMargins() {
 // ══════════════════════════════════════════════════════════
 //  讀寫表頭 / 外觀偏好
 // ══════════════════════════════════════════════════════════
-function loadHeader() {
+export function loadHeader() {
   try { return JSON.parse(localStorage.getItem(HEADER_KEY) || '{}'); }
   catch { return {}; }
 }
-function saveHeader(d) {
-  try { localStorage.setItem(HEADER_KEY, JSON.stringify(d)); } catch{}
+export function saveHeader(d) {
+  localStorage.setItem(HEADER_KEY, JSON.stringify({ ...loadHeader(), ...d }));
 }
 
 // 舊版字型 id → 新版對應（相容處理：使用者上次選的 mingti/heiti 還能正常還原）
@@ -145,24 +156,24 @@ const FONT_ID_MIGRATION = {
   heiti:  'sans',
 };
 
-function loadAppearance() {
+export function loadAppearance() {
   try {
     const a = JSON.parse(localStorage.getItem(APPEARANCE_KEY) || '{}');
-    let font = a.font || 'serif';
+    let font = a.font || 'sans';
     if (FONT_ID_MIGRATION[font]) font = FONT_ID_MIGRATION[font];
     // 若 id 已不存在於選項中（更新後遺留），回到預設
-    if (!FONT_OPTIONS.find(f => f.id === font)) font = 'serif';
+    if (!FONT_OPTIONS.find(f => f.id === font)) font = 'sans';
     return {
       font,
-      fontSize:   a.fontSize   || FONT_SIZE_RANGE.default,
-      lineHeight: a.lineHeight || LINE_HEIGHT_RANGE.default,
+      fontSize:   Number(a.fontSize) >= FONT_SIZE_RANGE.min && Number(a.fontSize) <= FONT_SIZE_RANGE.max ? Number(a.fontSize) : FONT_SIZE_RANGE.default,
+      lineHeight: Number(a.lineHeight) >= LINE_HEIGHT_RANGE.min && Number(a.lineHeight) <= LINE_HEIGHT_RANGE.max ? Number(a.lineHeight) : LINE_HEIGHT_RANGE.default,
     };
   } catch {
-    return { font:'serif', fontSize:FONT_SIZE_RANGE.default, lineHeight:LINE_HEIGHT_RANGE.default };
+    return { font:'sans', fontSize:FONT_SIZE_RANGE.default, lineHeight:LINE_HEIGHT_RANGE.default };
   }
 }
-function saveAppearance(d) {
-  try { localStorage.setItem(APPEARANCE_KEY, JSON.stringify(d)); } catch{}
+export function saveAppearance(d) {
+  localStorage.setItem(APPEARANCE_KEY, JSON.stringify(d));
 }
 
 function fontStackById(id) {
@@ -237,7 +248,7 @@ function ensureHeaderModal() {
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="document.getElementById('hdModal').classList.add('hidden')">取消</button>
-      <button class="btn btn-outline" id="hdResetBtn">清除設定</button>
+      <button class="btn btn-outline" id="hdResetBtn">清除表頭文字</button>
       <button class="btn btn-primary" id="hdSaveBtn">儲存</button>
     </div>
   </div>
@@ -252,9 +263,10 @@ function ensureHeaderModal() {
     if (window._epRefresh) window._epRefresh();
   };
   document.getElementById('hdResetBtn').onclick = () => {
-    if (!confirm('確定要清除表頭設定？')) return;
-    localStorage.removeItem(HEADER_KEY);
+    if (!confirm('確定要清除這些表頭文字？')) return;
+    saveHeader({ school:'', year:'', semester:'○', grade:'', examType:'', range:'' });
     fillHeaderForm({});
+    if (window._epRefresh) window._epRefresh();
     UI.toast('已清除', 'info');
   };
 }
@@ -308,8 +320,9 @@ function ensurePreviewModal() {
 /* 試卷區 */
 #epPaper{color:#000;padding:0 4px}
 .ep-exam-header{border:2px solid #333;padding:10px 14px;margin-bottom:14px;font-size:.94em}
-.ep-exam-header .title-row{font-size:1.05em;font-weight:700;margin-bottom:6px}
-.ep-exam-header .info-row{display:flex;gap:24px}
+.ep-exam-header .ep-header-row{display:flex;flex-wrap:wrap;gap:4px 20px}
+.ep-exam-header .ep-header-row + .ep-header-row{margin-top:6px}
+.ep-exam-header .title-row{font-size:1.05em;font-weight:700}
 .ep-section-head{font-weight:700;margin:14px 0 8px}
 .ep-q{margin-bottom:8px;line-height:inherit}
 .ep-q .q-no{font-weight:700}
@@ -385,7 +398,7 @@ function ensurePreviewModal() {
   lineRng.addEventListener('input',  onAppearChange);
 
   document.getElementById('epAppearReset').onclick = () => {
-    fontSel.value = 'serif';
+    fontSel.value = 'sans';
     sizeRng.value = FONT_SIZE_RANGE.default;
     lineRng.value = LINE_HEIGHT_RANGE.default;
     onAppearChange();
@@ -465,8 +478,9 @@ export function printExam(examData, questions, paperKey = 'A4') {
       * { box-sizing: border-box; }
       body { margin: 0; color: #000; }
       .ep-exam-header { border: 2px solid #333; padding: 10px 14px; margin-bottom: 14px; font-size: .94em; }
-      .ep-exam-header .title-row { font-size: 1.05em; font-weight: 700; margin-bottom: 6px; }
-      .ep-exam-header .info-row { display: flex; gap: 24px; }
+      .ep-exam-header .ep-header-row { display:flex; flex-wrap:wrap; gap:4px 20px; }
+      .ep-exam-header .ep-header-row + .ep-header-row { margin-top:6px; }
+      .ep-exam-header .title-row { font-size: 1.05em; font-weight: 700; }
       .ep-section-head { font-weight: 700; margin: 14px 0 8px; }
       .ep-q { margin-bottom: 8px; break-inside: avoid; line-height: inherit; }
       .ep-answer-table { width: 100%; border: 0; border-collapse: collapse; table-layout: auto; font: inherit; line-height: inherit; }
@@ -507,26 +521,32 @@ function buildPaperHtml(examData, questions) {
   const grouped    = groupByType(questions);
   const types      = orderedTypes(grouped);
 
-  const yearText = h.year ? h.year : '○○○';
-  const semText  = h.semester || '○';
-  const headerLine1 = [
-    `${yearText}學年度第${semText}學期`,
-    subject,
-    h.grade,
-    h.examType,
-  ].filter(Boolean).join('　');
-  const rangeText = h.range ? '　範圍：' + h.range : '';
+  const escapeHeader = value => String(value || '').replace(/[&<>"']/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[char]);
+  const headerValues = {
+    year: `${h.year || '○○○'}學年度第${h.semester || '○'}學期`,
+    subject: h.subjectText || subject,
+    grade: h.grade || '', examType: h.examType || '',
+    class: h.classText ?? '班級：＿＿＿',
+    name: h.nameText ?? '姓名：＿＿＿＿＿＿',
+    seat: h.seatText ?? '座號：＿＿＿',
+    school: h.school || '', range: h.range ? `範圍：${h.range}` : '',
+  };
+  const headerLayout = h.layout || {};
+  const headerRows = [1,2,3].map(row => HEADER_FIELDS
+    .filter(field => {
+      const place = headerLayout[field.id] || DEFAULT_HEADER_LAYOUT[field.id];
+      return Number(place.row) === row && headerValues[field.id];
+    })
+    .sort((a,b) => {
+      const pa = headerLayout[a.id] || DEFAULT_HEADER_LAYOUT[a.id];
+      const pb = headerLayout[b.id] || DEFAULT_HEADER_LAYOUT[b.id];
+      return Number(pa.position) - Number(pb.position) || HEADER_FIELDS.indexOf(a) - HEADER_FIELDS.indexOf(b);
+    })
+    .map(field => `<span>${escapeHeader(headerValues[field.id])}</span>`).join(''));
 
   let html = `<div id="epPaper">
     <div class="ep-exam-header">
-      <div class="title-row">${headerLine1}</div>
-      <div class="info-row">
-        <span>班級：＿＿＿</span>
-        <span>姓名：＿＿＿＿＿＿</span>
-        <span>座號：＿＿＿</span>
-        ${h.school ? `<span style="margin-left:auto">${h.school}</span>` : ''}
-      </div>
-      ${rangeText ? `<div style="margin-top:4px;font-size:.86em">範圍：${h.range}</div>` : ''}
+      ${headerRows.map((content, index) => content ? `<div class="ep-header-row${index === 0 ? ' title-row' : ''}">${content}</div>` : '').join('')}
     </div>`;
 
   types.forEach((type, secIdx) => {
@@ -634,8 +654,9 @@ export function exportToWord(examData, questions, paperKey = 'A4') {
   body { margin:0; color:#000; }
   #epPaper { font-family:${fontStack}; font-size:${a.fontSize}px; line-height:${lineHeightPx}; color:#000; }
   .ep-exam-header { border:2px solid #333; padding:10px 14px; margin-bottom:14px; font-size:.94em; }
-  .ep-exam-header .title-row { font-size:1.05em; font-weight:700; margin-bottom:6px; }
-  .ep-exam-header .info-row { display:flex; gap:24px; }
+  .ep-exam-header .ep-header-row { margin-bottom:6px; }
+  .ep-exam-header .ep-header-row span { display:inline-block; margin-right:20px; }
+  .ep-exam-header .title-row { font-size:1.05em; font-weight:700; }
   .ep-section-head { font-weight:700; margin:14px 0 8px; }
   .ep-q { margin-bottom:8px; page-break-inside:avoid; line-height:${lineHeightPx}; }
   .ep-q .q-no { font-weight:700; }

@@ -166,6 +166,7 @@ function nav(page) {
     dashboard:'dashboard.html', import:'import.html', questions:'questions.html',
     compose:'compose.html', manual:'manual.html', coded:'coded.html',
     exams:'exams.html', settings:'settings.html',
+    'catalog-settings':'settings.html?view=catalog', 'account-admin':'settings.html?view=accounts',
     textbooks:'textbooks.html'
   };
   if (pages[page]) window.location.href = pages[page];

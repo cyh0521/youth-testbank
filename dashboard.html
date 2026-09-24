@@ -17,7 +17,7 @@
   <main class="main" inert>
     <div class="topbar">
       <span class="topbar-title">首頁總覽</span>
-      <div class="topbar-actions"><span class="text-sm text-muted" id="welcomeText"></span><a class="toolbar-account" href="settings.html" aria-label="帳號與設定" id="toolbarAccount"></a></div>
+      <div class="topbar-actions"><span class="text-sm text-muted" id="welcomeText"></span><a class="toolbar-account" href="settings.html" aria-label="我的帳號" id="toolbarAccount"></a></div>
     </div>
     <div class="page-content" id="content" aria-busy="true">
       <div class="dashboard-overview"><div class="skeleton dash-skel-section"></div><div class="skeleton dash-skel-section"></div></div>
@@ -238,7 +238,7 @@ async function renderStaff() {
       <div class="card table-wrapper"><table class="data-table recent-table"><thead><tr><th>試卷名稱</th><th>科目</th><th>題數</th><th>建立時間</th><th>操作</th></tr></thead><tbody id="recentExamRows"></tbody></table></div>
       <p class="exam-result-count" id="examResultCount" aria-live="polite"></p>
     </section>
-    ${isAdmin ? `<nav class="admin-shortcuts" aria-label="管理員快速操作"><span>題庫管理</span><a href="import.html">${I.upload16} 匯入題目</a><a href="questions.html">${I.list16} 題目維護</a><a href="textbooks.html">${I.book16} 課本管理</a><a href="settings.html">${I.settings16} 帳號與設定</a></nav>` : ''}`;
+    ${isAdmin ? `<nav class="admin-shortcuts" aria-label="管理員快速操作"><span>題庫管理</span><a href="import.html">${I.upload16} 匯入題目</a><a href="questions.html">${I.list16} 題目維護</a><a href="textbooks.html">${I.book16} 課本管理</a><a href="settings.html?view=accounts">${I.settings16} 帳號管理</a></nav>` : ''}`;
   if (statsResult.status === 'fulfilled') renderOverviewChart(stats.byType || {}, stats.total || 0);
   document.getElementById('overviewSubject').addEventListener('change', updateOverview);
   document.getElementById('overviewBook').addEventListener('change', renderSelectedBook);

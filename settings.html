@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>帳號與設定 — 幼獅題庫系統</title>
+<title>我的帳號 — 幼獅題庫系統</title>
 <link rel="stylesheet" href="css/theme.css">
 <script>if(localStorage.getItem("sidebarCollapsed")==="1")document.documentElement.classList.add("sidebar-collapsed");</script>
 <style>
@@ -38,6 +38,10 @@
 .catalog-books{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:9px;padding:12px 14px}
 .catalog-books label{display:flex;align-items:center;gap:7px;font-size:.84rem}
 .catalog-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:14px 0}
+.catalog-section[hidden]{display:none}
+#catalogSubnav{flex-wrap:wrap}
+.header-layout-row{display:grid;grid-template-columns:minmax(110px,1fr) 120px 100px;gap:10px;align-items:center;margin-bottom:10px}
+@media(max-width:600px){.header-layout-row{grid-template-columns:1fr 1fr}.header-layout-row strong{grid-column:1/-1}}
 @media(max-width:440px){.avatar-options{grid-template-columns:repeat(3,minmax(0,1fr))}}
 .password-card{max-width:560px}
 .password-card .card-body{display:grid;gap:16px}
@@ -70,7 +74,7 @@
   <script src="js/shell.js"></script>
   <div class="main" inert>
     <div class="topbar">
-      <span class="topbar-title">帳號與設定</span>
+      <span class="topbar-title" id="settingsPageTitle">我的帳號</span>
     </div>
     <div class="page-content" id="pageContent">
       <!-- 動態填入 Tabs -->
@@ -195,22 +199,33 @@
 
 <script type="module">
 import { guardPage } from './js/auth-guard.js';
-import { DEFAULT_WORD_MARGINS, loadWordMargins, saveWordMargins, resetWordMargins } from './js/exam-preview.js';
+import { DEFAULT_WORD_MARGINS, loadWordMargins, saveWordMargins, resetWordMargins, FONT_OPTIONS, FONT_SIZE_RANGE, LINE_HEIGHT_RANGE, loadAppearance, saveAppearance, loadHeader, saveHeader, HEADER_FIELDS, DEFAULT_HEADER_LAYOUT } from './js/exam-preview.js';
 
-window._activeNav = 'settings';
+const settingsView = new URLSearchParams(location.search).get('view');
+window._activeNav = settingsView === 'catalog' ? 'catalog-settings' : settingsView === 'accounts' ? 'account-admin' : 'settings';
 const user = await guardPage();
 if (!user) throw new Error('not auth');
 const isAdmin = DataService.isAdmin();
+if (settingsView === 'accounts' && !isAdmin) location.replace('settings.html');
+const pageTitle = settingsView === 'catalog' ? '進階設定' : settingsView === 'accounts' ? '帳號管理' : '我的帳號';
+document.title = `${pageTitle} — 幼獅題庫系統`;
+document.getElementById('settingsPageTitle').textContent = pageTitle;
 
 // ══════════════════════════════════════════════════
 //  Tab 結構
 // ══════════════════════════════════════════════════
 function buildTabs() {
+  if (settingsView === 'catalog') {
+    document.getElementById('pageContent').innerHTML = '<div id="spanel-catalog"></div>';
+    buildCatalogPanel();
+    return;
+  }
   const tabs = [];
-  if (isAdmin) tabs.push({ id:'accounts', label:'👥 帳號管理' });
-  tabs.push({ id:'profile', label:'👤 個人資料' });
-  tabs.push({ id:'password', label:'🔒 密碼設定' });
-  tabs.push({ id:'catalog', label:'📚 題庫環境設定' });
+  if (settingsView === 'accounts' && isAdmin) tabs.push({ id:'accounts', label:'👥 帳號管理' });
+  else {
+    tabs.push({ id:'profile', label:'👤 個人資料' });
+    tabs.push({ id:'password', label:'🔒 密碼設定' });
+  }
 
   const tabsHTML = `<div class="settings-tabs">
     ${tabs.map((t,i)=>`<button class="settings-tab ${i===0?'active':''}" id="stab-${t.id}" onclick="switchTab('${t.id}')">${t.label}</button>`).join('')}
@@ -220,10 +235,8 @@ function buildTabs() {
   document.getElementById('pageContent').innerHTML = tabsHTML;
 
   // 渲染每個 tab 的內容
-  if (isAdmin) buildAccountsPanel();
-  buildProfilePanel();
-  buildPasswordPanel();
-  buildCatalogPanel();
+  if (settingsView === 'accounts' && isAdmin) buildAccountsPanel();
+  else { buildProfilePanel(); buildPasswordPanel(); }
 }
 
 window.switchTab = id => {
@@ -568,10 +581,14 @@ window.saveAvatar = async () => {
 
 async function buildCatalogPanel() {
   const panel = document.getElementById('spanel-catalog');
-  panel.innerHTML = `<section class="card" style="max-width:760px">
-    <div class="card-header"><h2>題庫環境設定</h2></div>
+  panel.innerHTML = `<div class="settings-tabs" id="catalogSubnav" aria-label="進階設定項目">
+    <button class="settings-tab" type="button" data-section="subjects">選擇科目</button>
+    <button class="settings-tab" type="button" data-section="appearance">版面設定</button>
+    <button class="settings-tab" type="button" data-section="header">表頭設定</button>
+  </div>
+  <section class="card catalog-section" data-section="subjects" style="max-width:760px">
+    <div class="card-header"><h2>選擇科目</h2></div>
     <div class="card-body">
-      <h3 style="font-size:1rem;margin:0 0 6px">選擇科目</h3>
       <p style="font-size:.84rem;color:var(--text-secondary);margin:0 0 14px">勾選要在系統中顯示的科目與冊別。未勾選的內容將從選單、題目與試卷清單隱藏。</p>
       <div id="catalogChoices" aria-busy="true">載入科目中…</div>
       <div class="catalog-actions">
@@ -582,9 +599,16 @@ async function buildCatalogPanel() {
       </div>
     </div>
   </section>
-  <section class="card" style="max-width:760px;margin-top:16px">
-    <div class="card-header"><h2>試卷輸出頁邊距</h2></div>
+  <section class="card catalog-section" data-section="appearance" style="max-width:760px">
+    <div class="card-header"><h2>版面設定</h2></div>
     <div class="card-body">
+      <p style="font-size:.84rem;color:var(--text-secondary);margin:0 0 14px">此處設定試卷預設字型、大小與行距。預覽、Word 與 PDF 共用；預覽視窗調整後也會更新此設定。</p>
+      <div class="grid-2">
+        <div class="form-group"><label class="form-label" for="defaultExamFont">預設字型</label><select class="form-control" id="defaultExamFont"></select></div>
+        <div class="form-group"><label class="form-label" for="defaultExamFontSize">字體大小（px）</label><input class="form-control" id="defaultExamFontSize" type="number" min="11" max="20" step="1" required></div>
+        <div class="form-group"><label class="form-label" for="defaultExamLineHeight">行距</label><input class="form-control" id="defaultExamLineHeight" type="number" min="1.4" max="2.4" step="0.05" required></div>
+      </div>
+      <h3 style="font-size:1rem;margin:24px 0 6px">試卷邊距</h3>
       <p style="font-size:.84rem;color:var(--text-secondary);margin:0 0 14px">Word 與 PDF 共用此設定，單位為 mm，可設定 5 至 50。設定儲存在目前瀏覽器。</p>
       <div class="grid-2">
         <div class="form-group"><label class="form-label" for="examMargin-top">上邊距（mm）</label><input class="form-control" id="examMargin-top" type="number" min="5" max="50" step="1" required></div>
@@ -592,40 +616,28 @@ async function buildCatalogPanel() {
         <div class="form-group"><label class="form-label" for="examMargin-left">左邊距（mm）</label><input class="form-control" id="examMargin-left" type="number" min="5" max="50" step="1" required></div>
         <div class="form-group"><label class="form-label" for="examMargin-right">右邊距（mm）</label><input class="form-control" id="examMargin-right" type="number" min="5" max="50" step="1" required></div>
       </div>
-      <div class="catalog-actions">
-        <button class="btn btn-primary" type="button" id="examMarginsSave">儲存頁邊距</button>
-        <button class="btn btn-outline" type="button" id="examMarginsReset">恢復預設（10 mm）</button>
-        <span id="examMarginsStatus" role="status" aria-live="polite"></span>
-      </div>
+      <div class="catalog-actions"><button class="btn btn-primary" type="button" id="appearanceSave">儲存版面設定</button><button class="btn btn-outline" type="button" id="appearanceReset">恢復預設</button><span id="appearanceStatus" role="status" aria-live="polite"></span></div>
+    </div>
+  </section>
+  <section class="card catalog-section" data-section="header" style="max-width:760px">
+    <div class="card-header"><h2>表頭設定</h2></div>
+    <div class="card-body">
+      <p style="font-size:.84rem;color:var(--text-secondary);margin:0 0 14px">設定預設表頭文字，並指定每個欄位顯示的列與順序。未填寫的選填欄位不會顯示。</p>
+      <div id="headerSettingsFields"></div>
+      <div class="catalog-actions"><button class="btn btn-primary" type="button" id="headerSettingsSave">儲存表頭設定</button><button class="btn btn-outline" type="button" id="headerSettingsReset">恢復預設</button><span id="headerSettingsStatus" role="status" aria-live="polite"></span></div>
     </div>
   </section>`;
-  const setMarginInputs = values => {
-    for (const [side, value] of Object.entries(values)) document.getElementById(`examMargin-${side}`).value = value;
+  const sections = new Set(['subjects','appearance','header']);
+  const selectSection = section => {
+    const active = section === 'margins' ? 'appearance' : sections.has(section) ? section : 'subjects';
+    panel.querySelectorAll('#catalogSubnav .settings-tab').forEach(button => button.classList.toggle('active', button.dataset.section === active));
+    panel.querySelectorAll('.catalog-section').forEach(card => { card.hidden = card.dataset.section !== active; });
+    history.replaceState(null, '', `settings.html?view=catalog&section=${active}`);
   };
-  setMarginInputs(loadWordMargins());
-  document.getElementById('examMarginsSave').addEventListener('click', () => {
-    const values = {};
-    for (const side of Object.keys(DEFAULT_WORD_MARGINS)) {
-      const input = document.getElementById(`examMargin-${side}`);
-      if (!input.reportValidity()) return;
-      values[side] = Number(input.value);
-    }
-    const status = document.getElementById('examMarginsStatus');
-    try {
-      saveWordMargins(values);
-      status.textContent = '已儲存';
-      UI.toast('Word／PDF 頁邊距已儲存', 'success');
-    } catch (error) { status.textContent = `儲存失敗：${error.message || '請稍後再試'}`; }
-  });
-  document.getElementById('examMarginsReset').addEventListener('click', () => {
-    const status = document.getElementById('examMarginsStatus');
-    try {
-      resetWordMargins();
-      setMarginInputs(DEFAULT_WORD_MARGINS);
-      status.textContent = '已恢復預設';
-      UI.toast('頁邊距已恢復為 10 mm', 'success');
-    } catch (error) { status.textContent = `重設失敗：${error.message || '請稍後再試'}`; }
-  });
+  panel.querySelectorAll('#catalogSubnav .settings-tab').forEach(button => button.addEventListener('click', () => selectSection(button.dataset.section)));
+  selectSection(new URLSearchParams(location.search).get('section'));
+  buildAppearanceSettings();
+  buildHeaderSettings();
   const choices = document.getElementById('catalogChoices');
   const save = document.getElementById('catalogSave');
   save.disabled = true;
@@ -674,7 +686,7 @@ async function buildCatalogPanel() {
         await DataService.updateProfile(DataService.getCurrentUser().uid, { visibleCatalog:selected });
         window._tbCache = null;
         status.textContent = '已儲存；切換頁面後依新設定顯示';
-        UI.toast('題庫環境設定已更新', 'success');
+        UI.toast('選擇科目設定已更新', 'success');
       } catch (error) {
         status.textContent = `儲存失敗：${error.message || '請稍後再試'}`;
       } finally { save.disabled = false; }
@@ -683,6 +695,96 @@ async function buildCatalogPanel() {
     choices.textContent = `科目載入失敗：${error.message || '請稍後再試'}`;
     choices.setAttribute('aria-busy', 'false');
   }
+}
+
+function buildAppearanceSettings() {
+  const font = document.getElementById('defaultExamFont');
+  const size = document.getElementById('defaultExamFontSize');
+  const line = document.getElementById('defaultExamLineHeight');
+  font.innerHTML = FONT_OPTIONS.map(option => `<option value="${option.id}">${option.label}</option>`).join('');
+  size.min = FONT_SIZE_RANGE.min;
+  size.max = FONT_SIZE_RANGE.max;
+  line.min = LINE_HEIGHT_RANGE.min;
+  line.max = LINE_HEIGHT_RANGE.max;
+  const fill = values => { font.value = values.font; size.value = values.fontSize; line.value = values.lineHeight; };
+  const fillMargins = values => {
+    for (const [side, value] of Object.entries(values)) document.getElementById(`examMargin-${side}`).value = value;
+  };
+  fill(loadAppearance());
+  fillMargins(loadWordMargins());
+  const status = document.getElementById('appearanceStatus');
+  document.getElementById('appearanceSave').addEventListener('click', () => {
+    if (!size.reportValidity() || !line.reportValidity()) return;
+    const margins = {};
+    for (const side of Object.keys(DEFAULT_WORD_MARGINS)) {
+      const input = document.getElementById(`examMargin-${side}`);
+      if (!input.reportValidity()) return;
+      margins[side] = Number(input.value);
+    }
+    try {
+      saveAppearance({ font:font.value, fontSize:Number(size.value), lineHeight:Number(line.value) });
+      saveWordMargins(margins);
+      status.textContent = '已儲存';
+      UI.toast('版面設定已儲存', 'success');
+    } catch (error) { status.textContent = `儲存失敗：${error.message || '請稍後再試'}`; }
+  });
+  document.getElementById('appearanceReset').addEventListener('click', () => {
+    const defaults = { font:'sans', fontSize:FONT_SIZE_RANGE.default, lineHeight:LINE_HEIGHT_RANGE.default };
+    try {
+      saveAppearance(defaults);
+      resetWordMargins();
+      fill(defaults);
+      fillMargins(DEFAULT_WORD_MARGINS);
+      status.textContent = '已恢復預設';
+    }
+    catch (error) { status.textContent = `重設失敗：${error.message || '請稍後再試'}`; }
+  });
+}
+
+function buildHeaderSettings() {
+  const host = document.getElementById('headerSettingsFields');
+  const textFields = [
+    ['school','學校'], ['year','學年度'], ['semester','學期'], ['grade','年級'],
+    ['examType','試別'], ['range','考試範圍'], ['subjectText','科目文字（留空使用試卷科目）'],
+    ['classText','班級欄文字'], ['nameText','姓名欄文字'], ['seatText','座號欄文字'],
+  ];
+  host.innerHTML = `<h3 style="font-size:1rem;margin:0 0 12px">預設文字</h3><div class="grid-2">
+    ${textFields.map(([key,label]) => `<div class="form-group"><label class="form-label" for="headerText-${key}">${label}</label><input class="form-control" id="headerText-${key}"></div>`).join('')}
+    </div><h3 style="font-size:1rem;margin:20px 0 12px">欄位位置</h3>
+    <p style="font-size:.84rem;color:var(--text-secondary)">選擇列與該列內的順序；同一順序會依下方欄位列表排列。</p>
+    ${HEADER_FIELDS.map(field => `<div class="header-layout-row"><strong>${field.label}</strong>
+      <select class="form-control" id="headerRow-${field.id}" aria-label="${field.label}所在列">
+        <option value="1">第 1 列</option><option value="2">第 2 列</option><option value="3">第 3 列</option>
+      </select><select class="form-control" id="headerPosition-${field.id}" aria-label="${field.label}列內順序">
+        ${Array.from({length:9}, (_,index) => `<option value="${index+1}">第 ${index+1} 位</option>`).join('')}
+      </select></div>`).join('')}`;
+  const defaults = { semester:'○', classText:'班級：＿＿＿', nameText:'姓名：＿＿＿＿＿＿', seatText:'座號：＿＿＿' };
+  const fill = data => {
+    for (const [key] of textFields) document.getElementById(`headerText-${key}`).value = data[key] ?? defaults[key] ?? '';
+    for (const field of HEADER_FIELDS) {
+      const place = data.layout?.[field.id] || DEFAULT_HEADER_LAYOUT[field.id];
+      document.getElementById(`headerRow-${field.id}`).value = place.row;
+      document.getElementById(`headerPosition-${field.id}`).value = place.position;
+    }
+  };
+  fill(loadHeader());
+  const status = document.getElementById('headerSettingsStatus');
+  document.getElementById('headerSettingsSave').addEventListener('click', () => {
+    const data = { layout:{} };
+    for (const [key] of textFields) data[key] = document.getElementById(`headerText-${key}`).value.trim();
+    for (const field of HEADER_FIELDS) data.layout[field.id] = {
+      row:Number(document.getElementById(`headerRow-${field.id}`).value),
+      position:Number(document.getElementById(`headerPosition-${field.id}`).value),
+    };
+    try { saveHeader(data); status.textContent = '已儲存'; UI.toast('表頭設定已儲存', 'success'); }
+    catch (error) { status.textContent = `儲存失敗：${error.message || '請稍後再試'}`; }
+  });
+  document.getElementById('headerSettingsReset').addEventListener('click', () => {
+    const resetData = Object.fromEntries(textFields.map(([key]) => [key, defaults[key] ?? '']));
+    resetData.layout = DEFAULT_HEADER_LAYOUT;
+    try { saveHeader(resetData); fill(resetData); status.textContent = '已恢復預設'; }
+    catch (error) { status.textContent = `重設失敗：${error.message || '請稍後再試'}`; }
+  });
 }
 
 function buildPasswordPanel() {

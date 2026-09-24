@@ -8,7 +8,12 @@
   const COLLAPSED_KEY = 'sidebarCollapsed';
   const read = (storage, key) => { try { return window[storage].getItem(key); } catch { return null; } };
   const write = (storage, key, value) => { try { window[storage].setItem(key, value); } catch { /* Storage may be unavailable. */ } };
-  const activePage = () => location.pathname.split('/').pop().replace(/\.html$/, '');
+  const activePage = () => {
+    const page = location.pathname.split('/').pop().replace(/\.html$/, '');
+    if (page !== 'settings') return page;
+    const view = new URLSearchParams(location.search).get('view');
+    return view === 'catalog' ? 'catalog-settings' : view === 'accounts' ? 'account-admin' : 'settings';
+  };
   const isCollapsed = () => {
     const saved = read('localStorage', COLLAPSED_KEY);
     return saved === null ? matchMedia('(max-width: 760px)').matches : saved === '1';
@@ -32,7 +37,7 @@
     const navRole = role === 'admin' ? 'admin' : 'teacher';
     if (el.dataset.navRole !== navRole) {
       const I = window.ICONS || {};
-      const item = (page, icon, label) => `<a class="nav-item" href="${page}.html" data-page="${page}" title="${label}"><span class="icon">${icon || ''}</span><span class="nav-label">${label}</span></a>`;
+      const item = (page, icon, label, href = `${page}.html`) => `<a class="nav-item" href="${href}" data-page="${page}" title="${label}"><span class="icon">${icon || ''}</span><span class="nav-label">${label}</span></a>`;
       const section = label => `<div class="nav-section-title"><span class="nav-label">${label}</span></div>`;
       const brandIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5C9 3 6 3 3 4v15c3-1 6-1 9 1 3-2 6-2 9-1V4c-3-1-6-1-9 1Z"/><path d="M12 5v15"/></svg>';
       el.innerHTML = `
@@ -49,7 +54,9 @@
           ${item('coded', I.code20, '編碼選題')}
           ${item('exams', I.folder20, '試卷管理')}
           ${section('系統設定')}
-          ${item('settings', I.settings20, '帳號與設定')}
+          ${item('settings', I.settings20, '我的帳號')}
+          ${item('catalog-settings', I.book20, '進階設定', 'settings.html?view=catalog')}
+          ${navRole === 'admin' ? item('account-admin', I.settings20, '帳號管理', 'settings.html?view=accounts') : ''}
         </nav>
         <div class="sidebar-footer">
           <button class="logout-btn" id="logoutBtn" aria-label="登出" title="登出" disabled>${I.logout18 || '⬅'}<span class="nav-label">登出</span></button>
