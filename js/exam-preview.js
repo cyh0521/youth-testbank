@@ -27,11 +27,11 @@ const LINE_HEIGHT_RANGE = { min: 1.4, max: 2.4, step: 0.05, default: 1.85 };
 const HEADER_KEY = 'examHeaderData';
 const APPEARANCE_KEY = 'examAppearance';
 const WORD_MARGIN_KEY = 'examWordMargins';
-const DEFAULT_WORD_MARGINS = { top:10, right:10, bottom:10, left:10 };
+export const DEFAULT_WORD_MARGINS = { top:10, right:10, bottom:10, left:10 };
 const PAPER_SIZE_KEY = 'examPaperSize';
 const PAPER_SIZES = {
+  A3: { width:297, height:420 },
   A4: { width:210, height:297 },
-  B3: { width:364, height:515 },
   B4: { width:257, height:364 },
 };
 let pdfLibraryPromise;
@@ -47,11 +47,12 @@ function choosePaperSize(format) {
             <input type="radio" name="epPaperSize" value="${key}"><span><strong>${key}${key.startsWith('B') ? '（JIS）' : ''}</strong>　${size.width} × ${size.height} mm</span>
           </label>`).join('')}
         </div>
-        <div class="modal-footer"><button class="btn btn-ghost" type="button" id="epPaperSizeCancel">取消</button><button class="btn btn-primary" type="button" id="epPaperSizeConfirm">下載</button></div>
+        <div class="modal-footer"><button class="btn btn-ghost" type="button" id="epPaperSizeCancel">取消</button><button class="btn btn-primary" type="button" id="epPaperSizeConfirm">確定</button></div>
       </div></div>`);
     modal = document.getElementById('epPaperSizeModal');
   }
-  document.getElementById('epPaperSizeTitle').textContent = `下載 ${format}：選擇紙張大小`;
+  document.getElementById('epPaperSizeTitle').textContent = `${format === '列印' ? '列印' : `下載 ${format}`}：選擇紙張大小`;
+  document.getElementById('epPaperSizeConfirm').textContent = format === '列印' ? '列印' : '下載';
   let saved = 'A4';
   try { saved = localStorage.getItem(PAPER_SIZE_KEY) || 'A4'; } catch {}
   modal.querySelector(`input[value="${PAPER_SIZES[saved] ? saved : 'A4'}"]`).checked = true;
@@ -82,6 +83,11 @@ export async function downloadExam(examData, questions, format) {
   else await exportToPdf(examData, questions, paperKey);
 }
 
+export async function printWithPaperChoice(examData, questions) {
+  const paperKey = await choosePaperSize('列印');
+  if (paperKey) printExam(examData, questions, paperKey);
+}
+
 function loadPdfLibrary() {
   if (window.html2pdf) return Promise.resolve(window.html2pdf);
   if (!pdfLibraryPromise) {
@@ -98,7 +104,7 @@ function loadPdfLibrary() {
   return pdfLibraryPromise;
 }
 
-function loadWordMargins() {
+export function loadWordMargins() {
   try {
     const saved = JSON.parse(localStorage.getItem(WORD_MARGIN_KEY) || '{}');
     return Object.fromEntries(Object.entries(DEFAULT_WORD_MARGINS).map(([side, fallback]) => {
@@ -108,42 +114,18 @@ function loadWordMargins() {
   } catch { return { ...DEFAULT_WORD_MARGINS }; }
 }
 
-function showWordMargins() {
-  let modal = document.getElementById('epMarginModal');
-  if (!modal) {
-    document.body.insertAdjacentHTML('beforeend', `<div class="modal-overlay hidden" id="epMarginModal" style="z-index:1200">
-      <div class="modal" style="max-width:420px;width:96%">
-        <div class="modal-header"><h3>Word／PDF 頁邊距</h3><button class="modal-close" type="button" id="epMarginClose">✕</button></div>
-        <div class="modal-body" style="padding:16px 20px">
-          <p style="margin-bottom:12px;color:var(--text-muted)">單位：mm；可設定 5 至 50。</p>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-            ${[['top','上'],['bottom','下'],['left','左'],['right','右']].map(([side,label]) =>
-              `<label class="form-group">${label}<input class="form-control" id="epMargin-${side}" type="number" min="5" max="50" step="1" required></label>`).join('')}
-          </div>
-        </div>
-        <div class="modal-footer"><button class="btn btn-ghost" type="button" id="epMarginReset">恢復預設</button><button class="btn btn-primary" type="button" id="epMarginSave">儲存</button></div>
-      </div></div>`);
-    modal = document.getElementById('epMarginModal');
-    document.getElementById('epMarginClose').onclick = () => modal.classList.add('hidden');
-    document.getElementById('epMarginReset').onclick = () => {
-      localStorage.removeItem(WORD_MARGIN_KEY);
-      for (const [side, value] of Object.entries(DEFAULT_WORD_MARGINS)) document.getElementById(`epMargin-${side}`).value = value;
-    };
-    document.getElementById('epMarginSave').onclick = () => {
-      const values = {};
-      for (const side of Object.keys(DEFAULT_WORD_MARGINS)) {
-        const input = document.getElementById(`epMargin-${side}`);
-        if (!input.reportValidity()) return;
-        values[side] = Number(input.value);
-      }
-      localStorage.setItem(WORD_MARGIN_KEY, JSON.stringify(values));
-      modal.classList.add('hidden');
-      UI.toast('Word／PDF 頁邊距已儲存', 'success');
-    };
+export function saveWordMargins(values) {
+  const margins = {};
+  for (const side of Object.keys(DEFAULT_WORD_MARGINS)) {
+    const value = Number(values[side]);
+    if (!Number.isFinite(value) || value < 5 || value > 50) throw new Error('頁邊距需介於 5 至 50 mm');
+    margins[side] = value;
   }
-  const values = loadWordMargins();
-  for (const [side, value] of Object.entries(values)) document.getElementById(`epMargin-${side}`).value = value;
-  modal.classList.remove('hidden');
+  localStorage.setItem(WORD_MARGIN_KEY, JSON.stringify(margins));
+}
+
+export function resetWordMargins() {
+  localStorage.removeItem(WORD_MARGIN_KEY);
 }
 
 // ══════════════════════════════════════════════════════════
@@ -329,11 +311,12 @@ function ensurePreviewModal() {
 .ep-exam-header .title-row{font-size:1.05em;font-weight:700;margin-bottom:6px}
 .ep-exam-header .info-row{display:flex;gap:24px}
 .ep-section-head{font-weight:700;margin:14px 0 8px}
-.ep-q{margin-bottom:8px}
+.ep-q{margin-bottom:8px;line-height:inherit}
 .ep-q .q-no{font-weight:700}
-.ep-answer-table{width:100%;border:0;border-collapse:collapse;table-layout:auto}
-.ep-answer-table td{border:0;padding:0;vertical-align:top}
+.ep-answer-table{width:100%;border:0;border-collapse:collapse;table-layout:auto;font:inherit;line-height:inherit}
+.ep-answer-table td{border:0;padding:0;vertical-align:top;font:inherit;line-height:inherit}
 .ep-answer-table .ep-answer-prefix{width:1%;white-space:nowrap}
+.ep-q p,.ep-answer-table p{margin:0;line-height:inherit}
 .ep-answer-blank{color:#888;margin-top:4px}
 </style>
 <div class="modal-overlay hidden" id="epModal">
@@ -343,7 +326,6 @@ function ensurePreviewModal() {
       <div style="display:flex;gap:6px;align-items:center">
         <button class="btn btn-ghost btn-sm" onclick="window._epOpenHeader()" title="編輯試卷表頭">✎ 表頭</button>
         <button class="btn btn-outline btn-sm" onclick="window._epDoPrint()">🖨 列印</button>
-        <button class="btn btn-ghost btn-sm" onclick="window._epWordMargins()">頁邊距</button>
         <button class="btn btn-primary btn-sm" onclick="window._epDoExport()">⬇ 輸出 Word</button>
         <button class="btn btn-outline btn-sm" onclick="window._epDoExportPdf()">⬇ 下載 PDF</button>
         <button class="modal-close" onclick="document.getElementById('epModal').classList.add('hidden')">✕</button>
@@ -374,7 +356,6 @@ function ensurePreviewModal() {
           <span class="val" id="epLineHeightVal">${LINE_HEIGHT_RANGE.default}</span>
         </div>
         <button class="btn btn-ghost btn-sm" id="epAppearReset" title="恢復預設">↺ 重設</button>
-        <span class="info-pill" id="epFontHint">調整即時生效，並會套用到 Word 輸出</span>
       </div>
     </div>
     <div id="epBody" style="padding:0 20px 20px;overflow-y:auto;flex:1;overscroll-behavior:contain"></div>
@@ -398,20 +379,6 @@ function ensurePreviewModal() {
     lineVal.textContent = a.lineHeight.toFixed(2);
     saveAppearance(a);
     applyAppearance();
-    // 字型提示
-    const hint = document.getElementById('epFontHint');
-    if (hint) {
-      if (a.font === 'kaiti') {
-        hint.textContent = '⚠ 楷體依本機字型，沒安裝者會 fallback 到預設字型';
-        hint.style.color = '#b54400';
-      } else if (a.font === 'system') {
-        hint.textContent = '系統預設字型 — 各裝置顯示可能不同';
-        hint.style.color = 'var(--text-muted)';
-      } else {
-        hint.textContent = '透過 Google Fonts 載入，跨平台顯示一致';
-        hint.style.color = 'var(--text-muted)';
-      }
-    }
   };
   fontSel.addEventListener('change', onAppearChange);
   sizeRng.addEventListener('input',  onAppearChange);
@@ -444,20 +411,6 @@ function applyAppearance() {
   if (sizeVal) sizeVal.textContent = a.fontSize + 'px';
   if (lineRng) lineRng.value = a.lineHeight;
   if (lineVal) lineVal.textContent = a.lineHeight.toFixed(2);
-  // 同步字型提示
-  const hint = document.getElementById('epFontHint');
-  if (hint) {
-    if (a.font === 'kaiti') {
-      hint.textContent = '⚠ 楷體依本機字型，沒安裝者會 fallback 到預設字型';
-      hint.style.color = '#b54400';
-    } else if (a.font === 'system') {
-      hint.textContent = '系統預設字型 — 各裝置顯示可能不同';
-      hint.style.color = 'var(--text-muted)';
-    } else {
-      hint.textContent = '透過 Google Fonts 載入，跨平台顯示一致';
-      hint.style.color = 'var(--text-muted)';
-    }
-  }
 }
 
 
@@ -472,10 +425,9 @@ export function showExamPreview(examData, questions) {
   window._epExamData   = examData;
   window._epQuestions  = questions;
   window._epRefresh    = () => { renderPaper(examData, questions); applyAppearance(); };
-  window._epDoPrint    = () => printExam(examData, questions);
+  window._epDoPrint    = () => printWithPaperChoice(examData, questions);
   window._epDoExport   = () => downloadExam(examData, questions, 'Word');
   window._epDoExportPdf = () => downloadExam(examData, questions, 'PDF');
-  window._epWordMargins = showWordMargins;
   window._epOpenHeader = () => showHeaderSettings();
 
   renderPaper(examData, questions);
@@ -486,13 +438,14 @@ export function showExamPreview(examData, questions) {
 // ══════════════════════════════════════════════════════════
 //  直接列印（使用與預覽相同的表頭、字型與版面）
 // ══════════════════════════════════════════════════════════
-export function printExam(examData, questions) {
+export function printExam(examData, questions, paperKey = 'A4') {
   ensurePreviewModal();
   renderPaper(examData, questions);
   applyAppearance();
 
   const paper = document.getElementById('epPaper');
   if (!paper) return;
+  const size = PAPER_SIZES[paperKey] || PAPER_SIZES.A4;
 
   const frame = document.createElement('iframe');
   frame.setAttribute('title', '試卷列印');
@@ -508,17 +461,18 @@ export function printExam(examData, questions) {
   doc.open();
   doc.write(`<!DOCTYPE html><html lang="zh-TW"><head><meta charset="UTF-8"><title>${examData.title || '試卷'}</title>
     <style>
-      @page { size: A4; margin: 18mm 20mm; }
+      @page { size: ${size.width}mm ${size.height}mm; margin: 18mm 20mm; }
       * { box-sizing: border-box; }
       body { margin: 0; color: #000; }
       .ep-exam-header { border: 2px solid #333; padding: 10px 14px; margin-bottom: 14px; font-size: .94em; }
       .ep-exam-header .title-row { font-size: 1.05em; font-weight: 700; margin-bottom: 6px; }
       .ep-exam-header .info-row { display: flex; gap: 24px; }
       .ep-section-head { font-weight: 700; margin: 14px 0 8px; }
-      .ep-q { margin-bottom: 8px; break-inside: avoid; }
-      .ep-answer-table { width: 100%; border: 0; border-collapse: collapse; table-layout: auto; }
-      .ep-answer-table td { border: 0; padding: 0; vertical-align: top; }
+      .ep-q { margin-bottom: 8px; break-inside: avoid; line-height: inherit; }
+      .ep-answer-table { width: 100%; border: 0; border-collapse: collapse; table-layout: auto; font: inherit; line-height: inherit; }
+      .ep-answer-table td { border: 0; padding: 0; vertical-align: top; font: inherit; line-height: inherit; }
       .ep-answer-table .ep-answer-prefix { width: 1%; white-space: nowrap; }
+      .ep-q p, .ep-answer-table p { margin: 0; line-height: inherit; }
       .ep-answer-blank { color: #555; margin-top: 4px; }
     </style></head><body>${paper.outerHTML}</body></html>`);
   doc.close();
@@ -615,12 +569,12 @@ function buildPaperHtml(examData, questions) {
 function renderQPreview(q, num, type) {
   let body = '';
   if (type === 'T1') {
-    body = `<table class="ep-answer-table" role="presentation"><tr><td class="ep-answer-prefix">（　）${num}.</td><td>${q.text||''}</td></tr></table>`;
+    body = `<table class="ep-answer-table" role="presentation"><tr><td class="ep-answer-prefix">（　　）${num}.</td><td>${q.text||''}</td></tr></table>`;
   } else if (type === 'T2') {
     const opts = q.options?.length
       ? `　${q.options.map((o,i)=>`(${String.fromCharCode(65+i)})${o}`).join('　')}` : '';
     const tail = q.tail?.trim() || '';
-    body = `<table class="ep-answer-table" role="presentation"><tr><td class="ep-answer-prefix">（　）${num}.</td><td>${q.text||''}${opts}${tail ? `${tail === '。' ? '' : '　'}${tail}` : ''}</td></tr></table>`;
+    body = `<table class="ep-answer-table" role="presentation"><tr><td class="ep-answer-prefix">（　　）${num}.</td><td>${q.text||''}${opts}${tail ? `${tail === '。' ? '' : '　'}${tail}` : ''}</td></tr></table>`;
   } else if (type === 'T6') {
     body = `${num}.${q.text||''}<div class="ep-answer-blank">答：</div>`;
   } else {
@@ -639,13 +593,29 @@ export function exportToWord(examData, questions, paperKey = 'A4') {
   const size = PAPER_SIZES[paperKey] || PAPER_SIZES.A4;
   const title = examData.title || '試卷';
   const fontStack = fontStackById(a.font);
+  const lineHeightPx = `${(a.fontSize * a.lineHeight).toFixed(2)}px`;
   const paper = document.createElement('div');
   paper.innerHTML = buildPaperHtml(examData, questions);
-  // Word 不一定讓表格儲存格繼承外層字型，直接寫入每個儲存格。
-  paper.querySelectorAll('.ep-answer-table td').forEach(cell => {
-    cell.style.fontFamily = fontStack;
-    cell.style.fontSize = `${a.fontSize}px`;
-    cell.style.lineHeight = String(a.lineHeight);
+  // Word 在表格欄位交界加入可見編輯記號，也容易拉大題號後的空白。
+  // Word 版改為單一段落的懸掛縮排；預覽與 PDF 仍使用原本表格版面。
+  paper.querySelectorAll('.ep-q').forEach(question => {
+    const table = question.querySelector('.ep-answer-table');
+    if (!table) return;
+    const prefix = table.querySelector('.ep-answer-prefix');
+    const content = table.querySelector('td:not(.ep-answer-prefix)');
+    if (!prefix || !content) return;
+    const number = prefix.textContent.match(/\d+(?=\.$)/)?.[0] || '1';
+    const indent = Math.round(a.fontSize * (4.2 + 0.6 * number.length));
+    const paragraph = document.createElement('p');
+    paragraph.className = 'ep-word-question';
+    paragraph.style.margin = `0 0 8px ${indent}px`;
+    paragraph.style.textIndent = `-${indent}px`;
+    paragraph.style.fontFamily = fontStack;
+    paragraph.style.fontSize = `${a.fontSize}px`;
+    paragraph.style.lineHeight = lineHeightPx;
+    paragraph.appendChild(document.createTextNode(prefix.textContent));
+    while (content.firstChild) paragraph.appendChild(content.firstChild);
+    question.replaceWith(paragraph);
   });
   const body = paper.innerHTML;
 
@@ -662,16 +632,15 @@ export function exportToWord(examData, questions, paperKey = 'A4') {
   @page Section1 { size:${size.width}mm ${size.height}mm; margin:${margins.top}mm ${margins.right}mm ${margins.bottom}mm ${margins.left}mm; }
   div.Section1 { page:Section1; }
   body { margin:0; color:#000; }
-  #epPaper { font-family:${fontStack}; font-size:${a.fontSize}px; line-height:${a.lineHeight}; color:#000; }
+  #epPaper { font-family:${fontStack}; font-size:${a.fontSize}px; line-height:${lineHeightPx}; color:#000; }
   .ep-exam-header { border:2px solid #333; padding:10px 14px; margin-bottom:14px; font-size:.94em; }
   .ep-exam-header .title-row { font-size:1.05em; font-weight:700; margin-bottom:6px; }
   .ep-exam-header .info-row { display:flex; gap:24px; }
   .ep-section-head { font-weight:700; margin:14px 0 8px; }
-  .ep-q { margin-bottom:8px; page-break-inside:avoid; }
+  .ep-q { margin-bottom:8px; page-break-inside:avoid; line-height:${lineHeightPx}; }
   .ep-q .q-no { font-weight:700; }
-  .ep-answer-table { width:100%; border:0; border-collapse:collapse; table-layout:auto; }
-  .ep-answer-table td { border:0; padding:0; vertical-align:top; }
-  .ep-answer-table .ep-answer-prefix { width:1%; white-space:nowrap; }
+  .ep-word-question { page-break-inside:avoid; }
+  .ep-q p { margin:0; line-height:${lineHeightPx}; }
   .ep-answer-blank { color:#888; margin-top:4px; }
 </style>
 </head><body><div class="Section1">${body}</div></body></html>`;

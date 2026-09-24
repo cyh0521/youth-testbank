@@ -139,19 +139,9 @@
     </div>
     <div class="modal-body" style="padding:16px 20px">
       <!-- 基本資訊 -->
-      <div class="grid-2" style="margin-bottom:16px">
-        <div class="form-group">
-          <label class="form-label">試卷名稱 <span class="required">*</span></label>
-          <input class="form-control" id="editExamTitle">
-        </div>
-        <div class="form-group">
-          <label class="form-label">說明</label>
-          <input class="form-control" id="editExamDesc" placeholder="選填">
-        </div>
-        <div class="form-group">
-          <label class="form-label">班級分類</label>
-          <select class="form-control" id="editExamClass"><option value="">未分類</option></select>
-        </div>
+      <div class="form-group" style="margin-bottom:16px">
+        <label class="form-label">試卷名稱 <span class="required">*</span></label>
+        <input class="form-control" id="editExamTitle">
       </div>
       <!-- 各題型分數 -->
       <div style="margin-bottom:14px">
@@ -169,7 +159,7 @@
 
 <script type="module">
 import { guardPage } from './js/auth-guard.js';
-import { showExamPreview, downloadExam, printExam, showHeaderSettings } from './js/exam-preview.js';
+import { showExamPreview, downloadExam, printWithPaperChoice, showHeaderSettings } from './js/exam-preview.js';
 window.openHeaderSettings = showHeaderSettings;
 window._activeNav = 'exams';
 const user = await guardPage(['admin','teacher']);
@@ -572,7 +562,7 @@ window.printSavedExam = async (id) => {
   await loadExamQuestions(e);
   const qs = getExamQuestions(e);
   if (!qs.length) { UI.toast('此試卷無法載入題目', 'warning'); return; }
-  printExam(e, qs);
+  await printWithPaperChoice(e, qs);
 };
 
 // ── 刪除 ─────────────────────────────────────────
@@ -599,8 +589,6 @@ window.openEdit = async (id) => {
 
   document.getElementById('editTitle').textContent = `編輯試卷：${e.title||''}`;
   document.getElementById('editExamTitle').value  = e.title || '';
-  document.getElementById('editExamDesc').value   = e.description || '';
-  await loadClassOptions('editExamClass', examClassIds(e)[0] || '');
   renderEditScoreRows(e.typeScores||{});
   renderEditQList();
   document.getElementById('editModal').classList.remove('hidden');
@@ -718,21 +706,13 @@ window.saveEdit = async () => {
     totalScore += typeScores[q.type] || 2;
   });
   try {
-    const classSelect = document.getElementById('editExamClass');
-    const classOption = classSelect.selectedOptions[0];
     await DataService.saveExam({
       id:            editExamId,
       title,
-      description:   document.getElementById('editExamDesc').value.trim(),
       typeScores,
       totalScore,
       questionIds:   [...editQOrder],
       questionCount: editQOrder.length,
-      classId:        classSelect.value || null,
-      className:      classSelect.value ? classOption.dataset.name : '',
-      classSchool:    classSelect.value ? classOption.dataset.school : '',
-      classIds:       [],
-      classNames:     [],
     });
     UI.toast('試卷已儲存', 'success');
     closeEdit();
