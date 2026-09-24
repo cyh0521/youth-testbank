@@ -41,6 +41,9 @@
 .catalog-section[hidden]{display:none}
 #catalogSubnav{flex-wrap:wrap}
 .header-layout-row{display:grid;grid-template-columns:minmax(110px,1fr) 120px 100px;gap:10px;align-items:center;margin-bottom:10px}
+.header-length-select{width:84px}
+.header-length-group{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.header-length-group .header-length-select{width:100%;min-width:0}
 @media(max-width:600px){.header-layout-row{grid-template-columns:1fr 1fr}.header-layout-row strong{grid-column:1/-1}}
 @media(max-width:440px){.avatar-options{grid-template-columns:repeat(3,minmax(0,1fr))}}
 .password-card{max-width:560px}
@@ -199,7 +202,7 @@
 
 <script type="module">
 import { guardPage } from './js/auth-guard.js';
-import { DEFAULT_WORD_MARGINS, loadWordMargins, saveWordMargins, resetWordMargins, FONT_OPTIONS, FONT_SIZE_RANGE, LINE_HEIGHT_RANGE, loadAppearance, saveAppearance, loadHeader, saveHeader, HEADER_FIELDS, DEFAULT_HEADER_LAYOUT } from './js/exam-preview.js';
+import { DEFAULT_WORD_MARGINS, loadWordMargins, saveWordMargins, resetWordMargins, FONT_OPTIONS, FONT_SIZE_RANGE, LINE_HEIGHT_RANGE, loadAppearance, saveAppearance, loadHeader, saveHeader, HEADER_FIELDS, DEFAULT_HEADER_LAYOUT, HEADER_BLANK_DEFAULTS, HEADER_BLANK_LABELS, headerYearSemesterText, headerBlankParts } from './js/exam-preview.js';
 
 const settingsView = new URLSearchParams(location.search).get('view');
 window._activeNav = settingsView === 'catalog' ? 'catalog-settings' : settingsView === 'accounts' ? 'account-admin' : 'settings';
@@ -770,12 +773,14 @@ function buildHeaderSettings() {
   const host = document.getElementById('headerSettingsFields');
   const layoutHost = document.getElementById('headerLayoutFields');
   const textFields = [
-    ['school','學校'], ['year','學年度'], ['semester','學期'], ['grade','年級'],
-    ['examType','試別'], ['range','考試範圍'], ['subjectText','科目文字（留空使用試卷科目）'],
-    ['classText','班級欄文字'], ['nameText','姓名欄文字'], ['seatText','座號欄文字'],
+    ['school','學校','例：幼獅高中'], ['yearSemesterText','學年度與學期','例：115學年度上學期'],
+    ['examType','試別','例：第一次段考'], ['subjectText','科目','全民國防教育'],
+    ['range','考試範圍','第1-3章'],
   ];
+  const lengthFields = [{ field:'class', label:'班級欄' }, { field:'name', label:'姓名欄' }, { field:'seat', label:'座號欄' }];
   host.innerHTML = `<div class="grid-2">
-    ${textFields.map(([key,label]) => `<div class="form-group"><label class="form-label" for="headerText-${key}">${label}</label><input class="form-control" id="headerText-${key}"></div>`).join('')}
+    ${textFields.map(([key,label,placeholder]) => `<div class="form-group"><label class="form-label" for="headerText-${key}">${label}</label><input class="form-control" id="headerText-${key}" placeholder="${placeholder}"></div>`).join('')}
+    <div class="header-length-group">${lengthFields.map(({field,label}) => `<div class="form-group"><label class="form-label" for="headerLength-${field}">${label}</label><select class="form-control header-length-select" id="headerLength-${field}" aria-label="${label}空格數">${Array.from({length:31}, (_,count) => `<option value="${count}">${count} 格</option>`).join('')}</select></div>`).join('')}</div>
     </div>`;
   layoutHost.innerHTML = HEADER_FIELDS.map(field => `<div class="header-layout-row"><strong>${field.label}</strong>
       <select class="form-control" id="headerRow-${field.id}" aria-label="${field.label}所在列">
@@ -783,9 +788,13 @@ function buildHeaderSettings() {
       </select><select class="form-control" id="headerPosition-${field.id}" aria-label="${field.label}列內順序">
         ${Array.from({length:9}, (_,index) => `<option value="${index+1}">第 ${index+1} 位</option>`).join('')}
       </select></div>`).join('');
-  const defaults = { semester:'○', classText:'班級：＿＿＿', nameText:'姓名：＿＿＿＿＿＿', seatText:'座號：＿＿＿' };
+  const defaults = { yearSemesterText:'', classLength:HEADER_BLANK_DEFAULTS.class, nameLength:HEADER_BLANK_DEFAULTS.name, seatLength:HEADER_BLANK_DEFAULTS.seat };
   const fillText = data => {
-    for (const [key] of textFields) document.getElementById(`headerText-${key}`).value = data[key] ?? defaults[key] ?? '';
+    for (const [key] of textFields) {
+      document.getElementById(`headerText-${key}`).value = key === 'yearSemesterText'
+        ? headerYearSemesterText(data) : data[key] ?? '';
+    }
+    for (const {field} of lengthFields) document.getElementById(`headerLength-${field}`).value = headerBlankParts(data, field).length;
   };
   const fillLayout = data => {
     for (const field of HEADER_FIELDS) {
@@ -801,11 +810,19 @@ function buildHeaderSettings() {
   document.getElementById('headerSettingsSave').addEventListener('click', () => {
     const data = {};
     for (const [key] of textFields) data[key] = document.getElementById(`headerText-${key}`).value.trim();
+    for (const {field} of lengthFields) {
+      const input = document.getElementById(`headerLength-${field}`);
+      if (!input.reportValidity()) return;
+      data[`${field}Length`] = Number(input.value);
+      data[`${field}Text`] = HEADER_BLANK_LABELS[field];
+    }
     try { saveHeader(data); status.textContent = '已儲存'; UI.toast('表頭文字已儲存', 'success'); }
     catch (error) { status.textContent = `儲存失敗：${error.message || '請稍後再試'}`; }
   });
   document.getElementById('headerSettingsReset').addEventListener('click', () => {
-    const resetData = Object.fromEntries(textFields.map(([key]) => [key, defaults[key] ?? '']));
+    const resetData = { ...Object.fromEntries(textFields.map(([key]) => [key, ''])),
+      classLength:defaults.classLength, nameLength:defaults.nameLength, seatLength:defaults.seatLength,
+      classText:HEADER_BLANK_LABELS.class, nameText:HEADER_BLANK_LABELS.name, seatText:HEADER_BLANK_LABELS.seat };
     try { saveHeader(resetData); fillText(resetData); status.textContent = '已恢復預設'; }
     catch (error) { status.textContent = `重設失敗：${error.message || '請稍後再試'}`; }
   });
