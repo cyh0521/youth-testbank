@@ -90,50 +90,29 @@ input, select, textarea { font-family: var(--font-sans); }
 .sidebar-top {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 12px 12px 12px 12px;
-  min-height: 60px;         /* 固定高度，不因 logo 顯示與否而變 */
+  padding: 16px;
+  min-height: 102px;
 }
-.sidebar-logo {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  padding: 0 4px;
-}
-.sidebar-logo h1 {
-  font-family: var(--font-serif);
-  font-size: 1rem;
-  color: var(--text-white);
-  line-height: 1.4;
-  white-space: nowrap;
-}
-.sidebar-logo span {
-  display: block;
-  font-size: .75rem;
-  color: var(--accent-light);
-  font-weight: 300;
-  margin-top: 2px;
-  white-space: nowrap;
-}
-/* 幼獅品牌圖示同時控制側欄開閉 */
+/* 整個品牌區塊可收合側欄；收合後只保留白獅。 */
 .sidebar-brand-toggle {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 38px; height: 38px;
-  flex-shrink: 0;
-  background: #6fbd45;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  width: 100%;
+  padding: 0;
+  background: transparent;
   border: 0;
-  border-radius: 8px;
   color: #fff;
-  box-shadow: none;
   cursor: pointer;
-  transition: background-color .15s;
+  text-align: left;
 }
-.sidebar-brand-toggle:hover {
-  background: #5ca83a;
-}
-.sidebar-brand-toggle img { width: 32px; height: 24px; display: block; object-fit: contain; }
+.sidebar-brand-main { display:flex; align-items:center; gap:10px; min-height:38px; }
+.sidebar-brand-mark { width:38px; height:38px; flex:none; display:flex; align-items:center; justify-content:center; }
+.sidebar-brand-mark img { width:36px; height:26px; display:block; object-fit:contain; }
+.sidebar-brand-name { font-size:1.18rem; font-weight:650; line-height:1.2; letter-spacing:.02em; white-space:nowrap; }
+.sidebar-brand-subtitle { display:block; width:100%; box-sizing:border-box; padding:4px 6px; border-radius:4px; background:#fff; color:var(--bg-sidebar); font-size:.72rem; font-weight:600; line-height:1.3; letter-spacing:.12em; text-align:center; white-space:nowrap; }
+.sidebar-brand-toggle:hover .sidebar-brand-subtitle { background:#eef2f5; }
 
 .sidebar-user {
   padding: 14px 16px;
@@ -239,13 +218,17 @@ input, select, textarea { font-family: var(--font-sans); }
 .sidebar-collapsed .main {
   margin-left: var(--sidebar-collapsed-width);
 }
-/* sidebar-top 保持水平、toggle 保持靠左原位（不做任何位移） */
 .sidebar-collapsed .sidebar-top {
-  padding: 12px;           /* 左右對稱，讓 toggle 在收合寬度 (60px) 內居中 */
+  padding: 20px 17px;
 }
-.sidebar-collapsed .sidebar-logo {
-  display: none;           /* 收合時隱藏 logo 文字區 */
+.sidebar-collapsed .sidebar-brand-toggle {
+  width: 38px;
+  height: 38px;
+  justify-content: center;
 }
+.sidebar-collapsed .sidebar-brand-main { justify-content:center; }
+.sidebar-collapsed .sidebar-brand-name,
+.sidebar-collapsed .sidebar-brand-subtitle { display:none; }
 /* User 區：保持 padding，只把資訊隱藏 */
 .sidebar-collapsed .sidebar-user {
   justify-content: center;
@@ -923,10 +906,7 @@ body:has(.layout) {
   border: 0;
   box-shadow: inset -1px 0 rgba(255,255,255,.07);
 }
-.sidebar-top { flex-direction: row; align-items: center; padding: 20px 16px; gap: 12px; flex-shrink: 0; }
-.sidebar-logo { padding: 0; flex: 1; min-width: 0; }
-.sidebar-logo h1 { font-size: 1.3rem; font-weight: 650; letter-spacing: .04em; }
-.sidebar-logo span { color: #d0d9e3; font-size: .75rem; margin-top: 3px; }
+.sidebar-top { flex-direction: row; align-items: center; flex-shrink: 0; }
 .sidebar-nav { padding: 0 10px 14px; flex: 1 0 auto; }
 .sidebar::-webkit-scrollbar-track { background: transparent; }
 .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,.18); }

@@ -42,8 +42,10 @@
       const brandIcon = '<img src="img/youth.png" alt="" aria-hidden="true" draggable="false">';
       el.innerHTML = `
         <div class="sidebar-top">
-          <button class="sidebar-brand-toggle" id="sidebarToggle" type="button" aria-controls="sidebarNav">${brandIcon}</button>
-          <div class="sidebar-logo"><h1 class="nav-label">幼獅文化</h1><span class="nav-label">線上命題系統</span></div>
+          <button class="sidebar-brand-toggle" id="sidebarToggle" type="button" aria-controls="sidebarNav">
+            <span class="sidebar-brand-main"><span class="sidebar-brand-mark">${brandIcon}</span><strong class="sidebar-brand-name">幼獅文化</strong></span>
+            <span class="sidebar-brand-subtitle">線上命題系統</span>
+          </button>
         </div>
         <nav class="sidebar-nav" id="sidebarNav" aria-label="主要導覽">
           ${item('dashboard', I.home20, '首頁總覽')}
