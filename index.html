@@ -14,12 +14,19 @@ body{min-height:100vh;background:#eef2f1;overflow-x:hidden}
 .hero::before{content:'';position:absolute;z-index:-1;width:78vmin;height:78vmin;right:-20vmin;top:13%;border:1px solid rgba(232,205,142,.2);border-radius:50%;box-shadow:0 0 0 70px rgba(255,255,255,.025),0 0 0 140px rgba(255,255,255,.018);animation:float 12s ease-in-out infinite alternate}
 .hero::after{content:'';position:absolute;z-index:-1;inset:0;background:radial-gradient(circle at 78% 32%,rgba(193,168,100,.19),transparent 33%),radial-gradient(circle at 5% 100%,rgba(116,183,172,.18),transparent 45%)}
 .hero-grid{position:absolute;inset:0;z-index:-1;opacity:.24;background-image:linear-gradient(rgba(255,255,255,.13) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.13) 1px,transparent 1px);background-size:72px 72px;mask-image:linear-gradient(90deg,transparent 12%,#000 100%)}
-.brand{display:flex;align-items:center;gap:13px;font-size:.78rem;font-weight:700;letter-spacing:.2em;color:#e8d3a3}
-.brand-mark{display:grid;place-items:center;width:44px;height:44px;border:1px solid rgba(232,211,163,.5);border-radius:13px;font-size:1.25rem;letter-spacing:0}
-.hero-copy{max-width:620px;position:relative;padding:40px 0}
-.eyebrow{display:inline-flex;align-items:center;gap:11px;color:#e8d3a3;font-size:.75rem;font-weight:700;letter-spacing:.24em;margin-bottom:28px}
-.eyebrow::before{content:'';width:31px;height:1px;background:currentColor}
-.hero h1{font-family:var(--font-serif);font-size:clamp(2.45rem,4.2vw,4.65rem);font-weight:800;line-height:1.35;letter-spacing:.035em;text-wrap:balance}
+.brand{display:inline-flex;align-items:center;align-self:flex-start;gap:14px;padding:0 0 17px;border-bottom:1px solid rgba(255,255,255,.28)}
+.brand-mark{display:grid;place-items:center;width:37px;height:35px;flex:none}
+.brand-mark img{display:block;width:37px;height:auto;max-height:32px;object-fit:contain}
+.brand-name{color:#fff;font-size:1.12rem;font-weight:800;letter-spacing:.17em;line-height:1}
+.hero-watermark{position:absolute;z-index:-1;width:min(55vw,650px);right:-15%;bottom:7%;opacity:.055;transform:rotate(-8deg);pointer-events:none;animation:mark-drift 14s ease-in-out infinite alternate}
+.hero-copy{max-width:680px;position:relative;padding:40px 0;margin:auto 0}
+.hero-copy .brand{margin-bottom:38px}
+.eyebrow{display:flex;align-items:center;gap:11px;color:#e8d3a3;font-size:.72rem;font-weight:700;letter-spacing:.24em;margin-bottom:15px}
+.eyebrow::before{content:'';width:28px;height:2px;background:currentColor}
+.hero h1{font-family:var(--font-serif);font-size:clamp(2.45rem,4.2vw,4.65rem);font-weight:800;line-height:1.32;letter-spacing:.035em;text-wrap:balance}
+.title-main{display:inline-block;position:relative;color:#fff;font-weight:900;letter-spacing:.07em;padding-bottom:.23em}
+.title-main::after{content:'';position:absolute;left:0;bottom:0;width:43%;height:5px;border-radius:8px;background:linear-gradient(90deg,#d7b777,#f2dca5 72%,transparent)}
+.title-main::before{content:'';position:absolute;width:9px;height:9px;right:-20px;top:7px;border-radius:50%;background:#e5c98e;box-shadow:0 0 20px rgba(229,201,142,.65)}
 .hero-copy p{font-size:clamp(1rem,1.35vw,1.2rem);color:#d0e2dd;line-height:1.9;margin-top:26px;letter-spacing:.08em}
 .hero-foot{font-size:.72rem;color:#a8c1bd;letter-spacing:.12em}
 .login-side{display:flex;align-items:center;justify-content:center;padding:48px 5vw;background:radial-gradient(circle at 95% 5%,#fff 0%,transparent 43%),#f4f6f4}
@@ -55,19 +62,21 @@ body{min-height:100vh;background:#eef2f1;overflow-x:hidden}
 #fbStatus{text-align:center;font-size:.75rem;margin-top:10px;color:var(--text-secondary)}
 #fbStatus.err{color:#ff8a80}
 @keyframes float{from{transform:translate(0,0) scale(1)}to{transform:translate(-28px,22px) scale(1.06)}}
+@keyframes mark-drift{from{transform:translateY(0) rotate(-8deg)}to{transform:translateY(-24px) rotate(-5deg)}}
 @media(max-width:800px){.page{grid-template-columns:1fr}.hero{min-height:300px;padding:28px 32px}.hero-copy{padding:35px 0 20px}.hero h1{font-size:clamp(2rem,6vw,3rem)}.hero-copy p{margin-top:10px}.hero-foot{display:none}.login-side{padding:42px 20px 60px}.form-heading{margin-bottom:22px}}
-@media(max-width:480px){.hero{min-height:255px;padding:22px}.hero-copy{padding:25px 0 12px}.eyebrow{margin-bottom:14px}.hero h1{font-size:1.9rem}.hero-copy p{font-size:.9rem}.login-side{padding:30px 16px 48px}.panel{padding:24px}.form-heading h2{font-size:1.7rem}}
-@media(prefers-reduced-motion:reduce){.hero::before{animation:none}.big-btn{transition:none}}
+@media(max-width:480px){.hero{min-height:255px;padding:22px}.brand{gap:10px;padding-bottom:11px}.brand-mark{width:29px;height:27px}.brand-mark img{width:29px;max-height:25px}.brand-name{font-size:.9rem}.hero-watermark{width:75vw;right:-25%}.hero-copy{padding:25px 0 12px}.hero-copy .brand{margin-bottom:24px}.eyebrow{font-size:.62rem;margin-bottom:10px}.hero h1{font-size:1.9rem}.title-main::after{height:3px}.hero-copy p{font-size:.9rem}.login-side{padding:30px 16px 48px}.panel{padding:24px}.form-heading h2{font-size:1.7rem}}
+@media(prefers-reduced-motion:reduce){.hero::before,.hero-watermark{animation:none}.big-btn{transition:none}}
 </style>
 </head>
 <body>
 <main class="page">
   <section class="hero" aria-labelledby="page-title">
     <div class="hero-grid" aria-hidden="true"></div>
-    <div class="brand"><span class="brand-mark" aria-hidden="true">獅</span>幼獅文化 · YOUTH LION</div>
+    <img class="hero-watermark" src="img/youth.png" alt="" aria-hidden="true">
     <div class="hero-copy">
+      <div class="brand"><span class="brand-mark"><img src="img/youth.png" alt=""></span><span class="brand-name">幼獅文化</span></div>
       <div class="eyebrow">TEACHING STARTS HERE</div>
-      <h1 id="page-title">幼獅文化<br>線上命題系統</h1>
+      <h1 id="page-title"><span class="title-main">線上命題系統</span></h1>
       <p>讓每一道好題，成為教學的起點。</p>
     </div>
     <div class="hero-foot">YOUTH CULTURAL ENTERPRISE CO., LTD.</div>
