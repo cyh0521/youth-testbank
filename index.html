@@ -3,22 +3,31 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>幼獅題庫系統 — 登入</title>
+<title>幼獅文化線上命題系統 — 登入</title>
 <link rel="stylesheet" href="css/theme.css">
 <script>if(localStorage.getItem("sidebarCollapsed")==="1")document.documentElement.classList.add("sidebar-collapsed");</script>
 <script>try{sessionStorage.removeItem('youth.shellRole');}catch{}</script>
 <style>
-body{background:#dce3ed;display:flex;align-items:center;justify-content:center;min-height:100vh;
-background-image:radial-gradient(ellipse at 20% 10%,rgba(255,255,255,.85) 0%,transparent 60%),
-radial-gradient(ellipse at 80% 90%,rgba(132,159,198,.32) 0%,transparent 60%)}
-.wrap{width:100%;max-width:460px;padding:20px}
-.logo-area{text-align:center;margin-bottom:22px}
-.logo-icon{display:inline-flex;align-items:center;justify-content:center;width:68px;height:68px;border-radius:18px;background:linear-gradient(135deg,var(--accent),var(--accent-light));font-size:2.2rem;margin-bottom:12px;box-shadow:0 8px 28px rgba(200,146,42,.45)}
-.logo-area h1{font-family:var(--font-serif);font-size:1.55rem;color:var(--text-primary);font-weight:700}
-.logo-area p{color:var(--text-secondary);font-size:.82rem;letter-spacing:.12em;margin-top:3px}
-.card{background:rgba(255,255,255,.8);backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,.9);border-radius:18px;box-shadow:0 20px 60px rgba(38,57,88,.16);overflow:hidden}
+body{min-height:100vh;background:#eef2f1;overflow-x:hidden}
+.page{min-height:100vh;display:grid;grid-template-columns:minmax(0,1.08fr) minmax(440px,.92fr)}
+.hero{position:relative;isolation:isolate;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;padding:clamp(32px,5vw,76px);color:#fff;background:linear-gradient(145deg,#112e39 0%,#183f47 50%,#245b5a 100%)}
+.hero::before{content:'';position:absolute;z-index:-1;width:78vmin;height:78vmin;right:-20vmin;top:13%;border:1px solid rgba(232,205,142,.2);border-radius:50%;box-shadow:0 0 0 70px rgba(255,255,255,.025),0 0 0 140px rgba(255,255,255,.018);animation:float 12s ease-in-out infinite alternate}
+.hero::after{content:'';position:absolute;z-index:-1;inset:0;background:radial-gradient(circle at 78% 32%,rgba(193,168,100,.19),transparent 33%),radial-gradient(circle at 5% 100%,rgba(116,183,172,.18),transparent 45%)}
+.hero-grid{position:absolute;inset:0;z-index:-1;opacity:.24;background-image:linear-gradient(rgba(255,255,255,.13) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.13) 1px,transparent 1px);background-size:72px 72px;mask-image:linear-gradient(90deg,transparent 12%,#000 100%)}
+.brand{display:flex;align-items:center;gap:13px;font-size:.78rem;font-weight:700;letter-spacing:.2em;color:#e8d3a3}
+.brand-mark{display:grid;place-items:center;width:44px;height:44px;border:1px solid rgba(232,211,163,.5);border-radius:13px;font-size:1.25rem;letter-spacing:0}
+.hero-copy{max-width:620px;position:relative;padding:40px 0}
+.eyebrow{display:inline-flex;align-items:center;gap:11px;color:#e8d3a3;font-size:.75rem;font-weight:700;letter-spacing:.24em;margin-bottom:28px}
+.eyebrow::before{content:'';width:31px;height:1px;background:currentColor}
+.hero h1{font-family:var(--font-serif);font-size:clamp(2.45rem,4.2vw,4.65rem);font-weight:800;line-height:1.35;letter-spacing:.035em;text-wrap:balance}
+.hero-copy p{font-size:clamp(1rem,1.35vw,1.2rem);color:#d0e2dd;line-height:1.9;margin-top:26px;letter-spacing:.08em}
+.hero-foot{font-size:.72rem;color:#a8c1bd;letter-spacing:.12em}
+.login-side{display:flex;align-items:center;justify-content:center;padding:48px 5vw;background:radial-gradient(circle at 95% 5%,#fff 0%,transparent 43%),#f4f6f4}
+.wrap{width:100%;max-width:430px}
+.form-heading{margin-bottom:32px}.form-heading .overline{font-size:.72rem;font-weight:800;color:#a07a39;letter-spacing:.23em}.form-heading h2{font-size:2rem;letter-spacing:.05em;color:#183b43;margin-top:8px}.form-heading p{font-size:.88rem;color:#738386;margin-top:8px}
+.card{background:#fff;border:1px solid #e3e9e6;border-radius:22px;box-shadow:0 25px 75px rgba(24,59,67,.09);overflow:hidden}
 /* panels */
-.panel{display:none;padding:20px 24px 16px}.panel.active{display:block}
+.panel{display:none;padding:32px}.panel.active{display:block}
 /* msg */
 .msg{border-radius:var(--radius);padding:9px 13px;font-size:.83rem;margin-bottom:12px;display:none;border:1px solid}
 .msg.show{display:block}
@@ -26,35 +35,46 @@ radial-gradient(ellipse at 80% 90%,rgba(132,159,198,.32) 0%,transparent 60%)}
 .msg.ok{background:#f0faf4;color:#1a5c33;border-color:#a8d5b5}
 .msg.warn{background:#fef9e7;color:#7c5000;border-color:#ffe082}
 /* form */
-.form-group{margin-bottom:13px}
-.form-label{display:block;font-size:.8rem;font-weight:500;color:var(--text-secondary);margin-bottom:5px}
+.form-group{margin-bottom:20px}
+.form-label{display:block;font-size:.81rem;font-weight:700;color:#39555a;margin-bottom:8px}
 .req{color:var(--danger);margin-left:2px}
-.form-control{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius);font-size:.88rem;font-family:var(--font-sans);color:var(--text-primary);background:white;transition:border-color .15s,box-shadow .15s}
+.form-control{width:100%;padding:13px 15px;border:1px solid #dce5e2;border-radius:11px;font-size:.9rem;font-family:var(--font-sans);color:var(--text-primary);background:#fbfcfb;transition:border-color .15s,box-shadow .15s}
 .form-control:focus{outline:none;border-color:var(--primary-light);box-shadow:0 0 0 3px rgba(44,95,138,.12)}
-.big-btn{width:100%;padding:12px;border:none;border-radius:var(--radius);font-size:.95rem;font-weight:700;cursor:pointer;font-family:var(--font-sans);margin-top:2px;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s}
-.big-btn.primary{background:linear-gradient(#3984ff,#1765ed);color:white;box-shadow:0 3px 8px rgba(52,120,246,.2)}
-.big-btn.primary:hover:not(:disabled){background:var(--primary-light);transform:translateY(-1px)}
+.big-btn{width:100%;padding:14px;border:none;border-radius:11px;font-size:.95rem;font-weight:700;cursor:pointer;font-family:var(--font-sans);margin-top:8px;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s}
+.big-btn.primary{background:#1d5557;color:white;box-shadow:0 8px 20px rgba(29,85,87,.18)}
+.big-btn.primary:hover:not(:disabled){background:#163f42;transform:translateY(-2px);box-shadow:0 12px 24px rgba(29,85,87,.22)}
 .big-btn.accent{background:var(--accent);color:white}
 .big-btn.accent:hover:not(:disabled){background:var(--accent-light);transform:translateY(-1px)}
 .big-btn:disabled{opacity:.6;cursor:not-allowed;transform:none!important}
-.hint{background:var(--bg-base);border:1px dashed var(--border);border-radius:var(--radius);padding:10px 13px;font-size:.75rem;color:var(--text-secondary);line-height:1.8;margin-top:12px}
-.hint strong{color:var(--primary);display:block;margin-bottom:2px}
+.hint{background:#f5f8f6;border-radius:10px;padding:12px 14px;font-size:.76rem;color:#667b7b;line-height:1.8;margin-top:24px}
+.hint strong{color:#315d5b;display:block;margin-bottom:2px}
 .divider{display:flex;align-items:center;gap:10px;margin:14px 0;font-size:.78rem;color:var(--text-muted)}
 .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
 @keyframes spin{to{transform:rotate(360deg)}}
 .spin{width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:white;border-radius:50%;animation:spin .6s linear infinite}
 #fbStatus{text-align:center;font-size:.75rem;margin-top:10px;color:var(--text-secondary)}
 #fbStatus.err{color:#ff8a80}
+@keyframes float{from{transform:translate(0,0) scale(1)}to{transform:translate(-28px,22px) scale(1.06)}}
+@media(max-width:800px){.page{grid-template-columns:1fr}.hero{min-height:300px;padding:28px 32px}.hero-copy{padding:35px 0 20px}.hero h1{font-size:clamp(2rem,6vw,3rem)}.hero-copy p{margin-top:10px}.hero-foot{display:none}.login-side{padding:42px 20px 60px}.form-heading{margin-bottom:22px}}
+@media(max-width:480px){.hero{min-height:255px;padding:22px}.hero-copy{padding:25px 0 12px}.eyebrow{margin-bottom:14px}.hero h1{font-size:1.9rem}.hero-copy p{font-size:.9rem}.login-side{padding:30px 16px 48px}.panel{padding:24px}.form-heading h2{font-size:1.7rem}}
+@media(prefers-reduced-motion:reduce){.hero::before{animation:none}.big-btn{transition:none}}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="logo-area">
-    <div class="logo-icon">📚</div>
-    <h1>幼獅題庫系統</h1>
-    <p>YOUTH LION TESTBANK</p>
-  </div>
-
+<main class="page">
+  <section class="hero" aria-labelledby="page-title">
+    <div class="hero-grid" aria-hidden="true"></div>
+    <div class="brand"><span class="brand-mark" aria-hidden="true">獅</span>幼獅文化 · YOUTH LION</div>
+    <div class="hero-copy">
+      <div class="eyebrow">TEACHING STARTS HERE</div>
+      <h1 id="page-title">幼獅文化<br>線上命題系統</h1>
+      <p>讓每一道好題，成為教學的起點。</p>
+    </div>
+    <div class="hero-foot">YOUTH CULTURAL ENTERPRISE CO., LTD.</div>
+  </section>
+  <section class="login-side" aria-label="帳號登入">
+  <div class="wrap">
+    <div class="form-heading"><div class="overline">WELCOME BACK</div><h2>歡迎回來</h2><p>登入帳號，開始您的命題工作。</p></div>
   <div class="card">
 
 
@@ -116,7 +136,9 @@ radial-gradient(ellipse at 80% 90%,rgba(132,159,198,.32) 0%,transparent 60%)}
     </div>
   </div>
   <div id="fbStatus">連線中…</div>
-</div>
+  </div>
+  </section>
+</main>
 
 <script type="module">
 import { initializeApp }                          from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
