@@ -91,14 +91,14 @@ input, select, textarea { font-family: var(--font-sans); }
   display: flex;
   align-items: center;
   padding: 20px 16px 20px 17px;
-  min-height: 114px;
+  min-height: 110px;
 }
 /* 整個品牌區塊可收合側欄；收合後只保留白獅。 */
 .sidebar-brand-toggle {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 9px;
+  gap: 2px;
   width: 100%;
   padding: 0;
   background: transparent;
@@ -106,13 +106,13 @@ input, select, textarea { font-family: var(--font-sans); }
   color: #fff;
   cursor: pointer;
   text-align: left;
+  box-sizing: border-box;
 }
-.sidebar-brand-main { display:flex; align-items:center; gap:11px; min-height:38px; }
+.sidebar-brand-main { display:flex; align-items:center; gap:10px; min-height:38px; }
 .sidebar-brand-mark { width:38px; height:38px; flex:none; display:flex; align-items:center; justify-content:center; }
 .sidebar-brand-mark img { width:36px; height:26px; display:block; object-fit:contain; }
 .sidebar-brand-name { font-size:1.14rem; font-weight:700; line-height:1.2; letter-spacing:.055em; white-space:nowrap; }
-.sidebar-brand-subtitle { display:flex; align-items:center; justify-content:center; width:100%; height:27px; box-sizing:border-box; border-radius:3px; background:rgba(255,255,255,.96); color:var(--bg-sidebar); font-size:.78rem; font-weight:700; line-height:1; letter-spacing:.14em; padding-left:.14em; white-space:nowrap; transition:background-color .15s; }
-.sidebar-brand-toggle:hover .sidebar-brand-subtitle { background:#fff; }
+.sidebar-brand-subtitle { display:flex; align-items:center; justify-content:center; width:100%; height:30px; box-sizing:border-box; border-radius:3px; background:#fff; color:var(--bg-sidebar); font-size:.82rem; font-weight:700; line-height:1; letter-spacing:.16em; padding-left:.16em; white-space:nowrap; }
 .sidebar-brand-toggle:focus-visible { outline:2px solid #fff; outline-offset:4px; border-radius:3px; }
 
 .sidebar-user {
@@ -224,7 +224,7 @@ input, select, textarea { font-family: var(--font-sans); }
   height: 38px;
   justify-content: center;
 }
-.sidebar-collapsed .sidebar-brand-main { justify-content:center; min-height:38px; }
+.sidebar-collapsed .sidebar-brand-main { justify-content:center; min-height:0; height:100%; }
 .sidebar-collapsed .sidebar-brand-name,
 .sidebar-collapsed .sidebar-brand-subtitle { display:none; }
 /* User 區：保持 padding，只把資訊隱藏 */
@@ -642,20 +642,6 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
 }
 .main {
   transition: margin-left .25s cubic-bezier(.4,0,.2,1);
-}
-@view-transition { navigation: auto; }
-.sidebar { view-transition-name: app-sidebar; }
-.topbar { view-transition-name: app-toolbar; }
-.page-content { view-transition-name: page-content; }
-::view-transition-group(*) { animation-duration: .12s; }
-::view-transition-old(root),
-::view-transition-old(app-sidebar),
-::view-transition-old(app-toolbar) { display: none; }
-::view-transition-new(root),
-::view-transition-new(app-sidebar),
-::view-transition-new(app-toolbar) { animation: none; mix-blend-mode: normal; }
-@media (prefers-reduced-motion: reduce) {
-  @view-transition { navigation: none; }
 }
 
 /* ============================================================
