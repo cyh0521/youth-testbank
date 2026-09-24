@@ -192,7 +192,7 @@
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" type="button" onclick="document.getElementById('avatarModal').classList.add('hidden')">取消</button>
-      <button class="btn btn-primary" type="button" id="amSaveBtn" onclick="saveAvatar()">儲存頭像</button>
+      <button class="btn btn-primary" type="button" id="amSaveBtn" onclick="saveAvatar()">儲存變更</button>
     </div>
   </div>
 </div>
@@ -443,7 +443,7 @@ function buildProfilePanel() {
 
   document.getElementById('spanel-profile').innerHTML = `
     <div class="card" style="max-width:560px">
-      <div class="card-header"><h2>個人資料</h2></div>
+      <div class="card-header"><h2>帳號資訊</h2></div>
       <div class="card-body">
         <div style="display:flex;align-items:center;gap:20px;padding-bottom:16px;border-bottom:1px solid var(--border-light);margin-bottom:20px">
           <div class="profile-avatar-group">
@@ -576,31 +576,31 @@ window.saveAvatar = async () => {
   } catch (e) {
     errEl.textContent = e.message || '儲存頭像失敗';
     errEl.style.display = 'block';
-  } finally { btn.disabled = false; btn.textContent = '儲存頭像'; }
+  } finally { btn.disabled = false; btn.textContent = '儲存變更'; }
 };
 
 async function buildCatalogPanel() {
   const panel = document.getElementById('spanel-catalog');
   panel.innerHTML = `<div class="settings-tabs" id="catalogSubnav" aria-label="進階設定項目">
     <button class="settings-tab" type="button" data-section="subjects">選擇科目</button>
-    <button class="settings-tab" type="button" data-section="appearance">版面設定</button>
-    <button class="settings-tab" type="button" data-section="header">表頭設定</button>
+    <button class="settings-tab" type="button" data-section="appearance">試卷版面設定</button>
+    <button class="settings-tab" type="button" data-section="header">試卷表頭設定</button>
   </div>
   <section class="card catalog-section" data-section="subjects" style="max-width:760px">
-    <div class="card-header"><h2>選擇科目</h2></div>
+    <div class="card-header"><h2>選擇要顯示的科目</h2></div>
     <div class="card-body">
       <p style="font-size:.84rem;color:var(--text-secondary);margin:0 0 14px">勾選要在系統中顯示的科目與冊別。未勾選的內容將從選單、題目與試卷清單隱藏。</p>
       <div id="catalogChoices" aria-busy="true">載入科目中…</div>
       <div class="catalog-actions">
         <button class="btn btn-outline btn-sm" type="button" id="catalogSelectAll">全選</button>
         <button class="btn btn-outline btn-sm" type="button" id="catalogClearAll">全部取消</button>
-        <button class="btn btn-primary" type="button" id="catalogSave">儲存設定</button>
+        <button class="btn btn-primary" type="button" id="catalogSave">儲存變更</button>
         <span id="catalogStatus" role="status" aria-live="polite"></span>
       </div>
     </div>
   </section>
   <section class="card catalog-section" data-section="appearance" style="max-width:760px">
-    <div class="card-header"><h2>版面設定</h2></div>
+    <div class="card-header"><h2>字體與行距</h2></div>
     <div class="card-body">
       <p style="font-size:.84rem;color:var(--text-secondary);margin:0 0 14px">此處設定試卷預設字型、大小與行距。預覽、Word 與 PDF 共用；預覽視窗調整後也會更新此設定。</p>
       <div class="grid-2">
@@ -608,7 +608,12 @@ async function buildCatalogPanel() {
         <div class="form-group"><label class="form-label" for="defaultExamFontSize">字體大小（px）</label><input class="form-control" id="defaultExamFontSize" type="number" min="11" max="20" step="1" required></div>
         <div class="form-group"><label class="form-label" for="defaultExamLineHeight">行距</label><input class="form-control" id="defaultExamLineHeight" type="number" min="1.4" max="2.4" step="0.05" required></div>
       </div>
-      <h3 style="font-size:1rem;margin:24px 0 6px">試卷邊距</h3>
+      <div class="catalog-actions"><button class="btn btn-primary" type="button" id="appearanceSave">儲存變更</button><button class="btn btn-outline" type="button" id="appearanceReset">恢復預設</button><span id="appearanceStatus" role="status" aria-live="polite"></span></div>
+    </div>
+  </section>
+  <section class="card catalog-section" data-section="appearance" style="max-width:760px;margin-top:16px">
+    <div class="card-header"><h2>試卷邊距</h2></div>
+    <div class="card-body">
       <p style="font-size:.84rem;color:var(--text-secondary);margin:0 0 14px">Word 與 PDF 共用此設定，單位為 mm，可設定 5 至 50。設定儲存在目前瀏覽器。</p>
       <div class="grid-2">
         <div class="form-group"><label class="form-label" for="examMargin-top">上邊距（mm）</label><input class="form-control" id="examMargin-top" type="number" min="5" max="50" step="1" required></div>
@@ -616,15 +621,23 @@ async function buildCatalogPanel() {
         <div class="form-group"><label class="form-label" for="examMargin-left">左邊距（mm）</label><input class="form-control" id="examMargin-left" type="number" min="5" max="50" step="1" required></div>
         <div class="form-group"><label class="form-label" for="examMargin-right">右邊距（mm）</label><input class="form-control" id="examMargin-right" type="number" min="5" max="50" step="1" required></div>
       </div>
-      <div class="catalog-actions"><button class="btn btn-primary" type="button" id="appearanceSave">儲存版面設定</button><button class="btn btn-outline" type="button" id="appearanceReset">恢復預設</button><span id="appearanceStatus" role="status" aria-live="polite"></span></div>
+      <div class="catalog-actions"><button class="btn btn-primary" type="button" id="examMarginsSave">儲存變更</button><button class="btn btn-outline" type="button" id="examMarginsReset">恢復預設</button><span id="examMarginsStatus" role="status" aria-live="polite"></span></div>
     </div>
   </section>
   <section class="card catalog-section" data-section="header" style="max-width:760px">
-    <div class="card-header"><h2>表頭設定</h2></div>
+    <div class="card-header"><h2>表頭文字</h2></div>
     <div class="card-body">
-      <p style="font-size:.84rem;color:var(--text-secondary);margin:0 0 14px">設定預設表頭文字，並指定每個欄位顯示的列與順序。未填寫的選填欄位不會顯示。</p>
+      <p style="font-size:.84rem;color:var(--text-secondary);margin:0 0 14px">設定試卷表頭的預設文字。未填寫的選填欄位不會顯示。</p>
       <div id="headerSettingsFields"></div>
-      <div class="catalog-actions"><button class="btn btn-primary" type="button" id="headerSettingsSave">儲存表頭設定</button><button class="btn btn-outline" type="button" id="headerSettingsReset">恢復預設</button><span id="headerSettingsStatus" role="status" aria-live="polite"></span></div>
+      <div class="catalog-actions"><button class="btn btn-primary" type="button" id="headerSettingsSave">儲存變更</button><button class="btn btn-outline" type="button" id="headerSettingsReset">恢復預設</button><span id="headerSettingsStatus" role="status" aria-live="polite"></span></div>
+    </div>
+  </section>
+  <section class="card catalog-section" data-section="header" style="max-width:760px;margin-top:16px">
+    <div class="card-header"><h2>欄位位置</h2></div>
+    <div class="card-body">
+      <p style="font-size:.84rem;color:var(--text-secondary);margin:0 0 14px">選擇每個欄位所在的列與列內順序；同一順序會依下方欄位列表排列。</p>
+      <div id="headerLayoutFields"></div>
+      <div class="catalog-actions"><button class="btn btn-primary" type="button" id="headerLayoutSave">儲存變更</button><button class="btn btn-outline" type="button" id="headerLayoutReset">恢復預設</button><span id="headerLayoutStatus" role="status" aria-live="polite"></span></div>
     </div>
   </section>`;
   const sections = new Set(['subjects','appearance','header']);
@@ -707,14 +720,31 @@ function buildAppearanceSettings() {
   line.min = LINE_HEIGHT_RANGE.min;
   line.max = LINE_HEIGHT_RANGE.max;
   const fill = values => { font.value = values.font; size.value = values.fontSize; line.value = values.lineHeight; };
-  const fillMargins = values => {
-    for (const [side, value] of Object.entries(values)) document.getElementById(`examMargin-${side}`).value = value;
-  };
   fill(loadAppearance());
-  fillMargins(loadWordMargins());
   const status = document.getElementById('appearanceStatus');
   document.getElementById('appearanceSave').addEventListener('click', () => {
     if (!size.reportValidity() || !line.reportValidity()) return;
+    try {
+      saveAppearance({ font:font.value, fontSize:Number(size.value), lineHeight:Number(line.value) });
+      status.textContent = '已儲存';
+      UI.toast('字體與行距已儲存', 'success');
+    } catch (error) { status.textContent = `儲存失敗：${error.message || '請稍後再試'}`; }
+  });
+  document.getElementById('appearanceReset').addEventListener('click', () => {
+    const defaults = { font:'sans', fontSize:FONT_SIZE_RANGE.default, lineHeight:LINE_HEIGHT_RANGE.default };
+    try {
+      saveAppearance(defaults);
+      fill(defaults);
+      status.textContent = '已恢復預設';
+    }
+    catch (error) { status.textContent = `重設失敗：${error.message || '請稍後再試'}`; }
+  });
+  const fillMargins = values => {
+    for (const [side, value] of Object.entries(values)) document.getElementById(`examMargin-${side}`).value = value;
+  };
+  fillMargins(loadWordMargins());
+  const marginStatus = document.getElementById('examMarginsStatus');
+  document.getElementById('examMarginsSave').addEventListener('click', () => {
     const margins = {};
     for (const side of Object.keys(DEFAULT_WORD_MARGINS)) {
       const input = document.getElementById(`examMargin-${side}`);
@@ -722,82 +752,93 @@ function buildAppearanceSettings() {
       margins[side] = Number(input.value);
     }
     try {
-      saveAppearance({ font:font.value, fontSize:Number(size.value), lineHeight:Number(line.value) });
       saveWordMargins(margins);
-      status.textContent = '已儲存';
-      UI.toast('版面設定已儲存', 'success');
-    } catch (error) { status.textContent = `儲存失敗：${error.message || '請稍後再試'}`; }
+      marginStatus.textContent = '已儲存';
+      UI.toast('試卷邊距已儲存', 'success');
+    } catch (error) { marginStatus.textContent = `儲存失敗：${error.message || '請稍後再試'}`; }
   });
-  document.getElementById('appearanceReset').addEventListener('click', () => {
-    const defaults = { font:'sans', fontSize:FONT_SIZE_RANGE.default, lineHeight:LINE_HEIGHT_RANGE.default };
+  document.getElementById('examMarginsReset').addEventListener('click', () => {
     try {
-      saveAppearance(defaults);
       resetWordMargins();
-      fill(defaults);
       fillMargins(DEFAULT_WORD_MARGINS);
-      status.textContent = '已恢復預設';
-    }
-    catch (error) { status.textContent = `重設失敗：${error.message || '請稍後再試'}`; }
+      marginStatus.textContent = '已恢復預設';
+    } catch (error) { marginStatus.textContent = `重設失敗：${error.message || '請稍後再試'}`; }
   });
 }
 
 function buildHeaderSettings() {
   const host = document.getElementById('headerSettingsFields');
+  const layoutHost = document.getElementById('headerLayoutFields');
   const textFields = [
     ['school','學校'], ['year','學年度'], ['semester','學期'], ['grade','年級'],
     ['examType','試別'], ['range','考試範圍'], ['subjectText','科目文字（留空使用試卷科目）'],
     ['classText','班級欄文字'], ['nameText','姓名欄文字'], ['seatText','座號欄文字'],
   ];
-  host.innerHTML = `<h3 style="font-size:1rem;margin:0 0 12px">預設文字</h3><div class="grid-2">
+  host.innerHTML = `<div class="grid-2">
     ${textFields.map(([key,label]) => `<div class="form-group"><label class="form-label" for="headerText-${key}">${label}</label><input class="form-control" id="headerText-${key}"></div>`).join('')}
-    </div><h3 style="font-size:1rem;margin:20px 0 12px">欄位位置</h3>
-    <p style="font-size:.84rem;color:var(--text-secondary)">選擇列與該列內的順序；同一順序會依下方欄位列表排列。</p>
-    ${HEADER_FIELDS.map(field => `<div class="header-layout-row"><strong>${field.label}</strong>
+    </div>`;
+  layoutHost.innerHTML = HEADER_FIELDS.map(field => `<div class="header-layout-row"><strong>${field.label}</strong>
       <select class="form-control" id="headerRow-${field.id}" aria-label="${field.label}所在列">
         <option value="1">第 1 列</option><option value="2">第 2 列</option><option value="3">第 3 列</option>
       </select><select class="form-control" id="headerPosition-${field.id}" aria-label="${field.label}列內順序">
         ${Array.from({length:9}, (_,index) => `<option value="${index+1}">第 ${index+1} 位</option>`).join('')}
-      </select></div>`).join('')}`;
+      </select></div>`).join('');
   const defaults = { semester:'○', classText:'班級：＿＿＿', nameText:'姓名：＿＿＿＿＿＿', seatText:'座號：＿＿＿' };
-  const fill = data => {
+  const fillText = data => {
     for (const [key] of textFields) document.getElementById(`headerText-${key}`).value = data[key] ?? defaults[key] ?? '';
+  };
+  const fillLayout = data => {
     for (const field of HEADER_FIELDS) {
       const place = data.layout?.[field.id] || DEFAULT_HEADER_LAYOUT[field.id];
       document.getElementById(`headerRow-${field.id}`).value = place.row;
       document.getElementById(`headerPosition-${field.id}`).value = place.position;
     }
   };
-  fill(loadHeader());
+  const saved = loadHeader();
+  fillText(saved);
+  fillLayout(saved);
   const status = document.getElementById('headerSettingsStatus');
   document.getElementById('headerSettingsSave').addEventListener('click', () => {
-    const data = { layout:{} };
+    const data = {};
     for (const [key] of textFields) data[key] = document.getElementById(`headerText-${key}`).value.trim();
-    for (const field of HEADER_FIELDS) data.layout[field.id] = {
-      row:Number(document.getElementById(`headerRow-${field.id}`).value),
-      position:Number(document.getElementById(`headerPosition-${field.id}`).value),
-    };
-    try { saveHeader(data); status.textContent = '已儲存'; UI.toast('表頭設定已儲存', 'success'); }
+    try { saveHeader(data); status.textContent = '已儲存'; UI.toast('表頭文字已儲存', 'success'); }
     catch (error) { status.textContent = `儲存失敗：${error.message || '請稍後再試'}`; }
   });
   document.getElementById('headerSettingsReset').addEventListener('click', () => {
     const resetData = Object.fromEntries(textFields.map(([key]) => [key, defaults[key] ?? '']));
-    resetData.layout = DEFAULT_HEADER_LAYOUT;
-    try { saveHeader(resetData); fill(resetData); status.textContent = '已恢復預設'; }
+    try { saveHeader(resetData); fillText(resetData); status.textContent = '已恢復預設'; }
     catch (error) { status.textContent = `重設失敗：${error.message || '請稍後再試'}`; }
+  });
+  const layoutStatus = document.getElementById('headerLayoutStatus');
+  document.getElementById('headerLayoutSave').addEventListener('click', () => {
+    const layout = {};
+    for (const field of HEADER_FIELDS) layout[field.id] = {
+      row:Number(document.getElementById(`headerRow-${field.id}`).value),
+      position:Number(document.getElementById(`headerPosition-${field.id}`).value),
+    };
+    try { saveHeader({ layout }); layoutStatus.textContent = '已儲存'; UI.toast('欄位位置已儲存', 'success'); }
+    catch (error) { layoutStatus.textContent = `儲存失敗：${error.message || '請稍後再試'}`; }
+  });
+  document.getElementById('headerLayoutReset').addEventListener('click', () => {
+    try {
+      saveHeader({ layout:DEFAULT_HEADER_LAYOUT });
+      fillLayout({ layout:DEFAULT_HEADER_LAYOUT });
+      layoutStatus.textContent = '已恢復預設';
+    } catch (error) { layoutStatus.textContent = `重設失敗：${error.message || '請稍後再試'}`; }
   });
 }
 
 function buildPasswordPanel() {
   document.getElementById('spanel-password').innerHTML = `
     <section class="card password-card" aria-labelledby="passwordHeading">
-      <div class="card-header"><h2 id="passwordHeading">密碼設定</h2></div>
+      <div class="card-header"><h2 id="passwordHeading">更新密碼</h2></div>
       <form class="card-body" id="passwordForm">
         <p class="password-hint">請先輸入目前密碼，再設定新密碼。</p>
         <div class="password-field"><label for="currentPassword">目前密碼</label><div class="password-input"><input class="form-control" id="currentPassword" type="password" autocomplete="current-password" required><button class="password-toggle" type="button" data-toggle="currentPassword" aria-label="顯示目前密碼">顯示</button></div></div>
         <div class="password-field"><label for="newPassword">新密碼</label><div class="password-input"><input class="form-control" id="newPassword" type="password" autocomplete="new-password" minlength="6" required><button class="password-toggle" type="button" data-toggle="newPassword" aria-label="顯示新密碼">顯示</button></div><small class="password-hint">至少 6 個字元</small></div>
         <div class="password-field"><label for="confirmPassword">確認新密碼</label><div class="password-input"><input class="form-control" id="confirmPassword" type="password" autocomplete="new-password" minlength="6" required><button class="password-toggle" type="button" data-toggle="confirmPassword" aria-label="顯示確認新密碼">顯示</button></div></div>
         <div class="password-message" id="passwordMessage" role="status" aria-live="polite"></div>
-        <div class="password-actions"><button class="btn btn-primary" id="passwordSave" type="submit">更新密碼</button></div>
+        <div class="password-actions"><button class="btn btn-primary" id="passwordSave" type="submit">儲存變更</button></div>
       </form>
     </section>`;
 
@@ -845,7 +886,7 @@ function buildPasswordPanel() {
       showMessage(descriptions[error.code] || error.message || '更新密碼失敗');
     } finally {
       saveButton.disabled = false;
-      saveButton.textContent = '更新密碼';
+      saveButton.textContent = '儲存變更';
     }
   });
 }
