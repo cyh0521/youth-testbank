@@ -505,6 +505,19 @@ window.DataService = {
     await deleteDoc(doc(db, 'exams', id));
   },
 
+  async preserveExamHeaders(header) {
+    const uid = DataService._currentUser?.uid;
+    if (!uid) throw new Error('請先登入');
+    const source = DataService.isAdmin()
+      ? collection(db, 'exams')
+      : query(collection(db, 'exams'), where('createdBy', '==', uid));
+    const snap = await getDocs(source);
+    for (const examDoc of snap.docs) {
+      if (examDoc.data().header != null) continue;
+      await updateDoc(examDoc.ref, { header });
+    }
+  },
+
   async changePassword(currentPassword, newPassword) {
     const firebaseUser = auth.currentUser;
     if (!firebaseUser?.email || firebaseUser.uid !== DataService._currentUser?.uid) {

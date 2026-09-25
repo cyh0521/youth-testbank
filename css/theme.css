@@ -386,6 +386,7 @@ input, select, textarea { font-family: var(--font-sans); }
   box-shadow: 0 0 0 3px rgba(44,95,138,.12);
 }
 .form-control::placeholder { color: var(--text-muted); }
+.header-example-input:focus::placeholder { color: transparent; }
 select.form-control { cursor: pointer; }
 textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
 

@@ -154,7 +154,7 @@
 
 <script type="module">
 import { guardPage } from './js/auth-guard.js';
-import { showExamPreview, showHeaderSettings } from './js/exam-preview.js';
+import { showExamPreview, showHeaderSettings, loadHeader } from './js/exam-preview.js';
 window.openHeaderSettings = showHeaderSettings;
 window._activeNav = 'compose';
 const user = await guardPage(['admin','teacher']);
@@ -185,6 +185,7 @@ document.getElementById('typeRows').innerHTML = TYPE_CONFIGS.map(t => `
 
 let chapterData = {};
 let generatedQuestions = [];
+let draftPreviewData = null;
 
 window.onSubjectChange = () => {
   const sc = cSubject.value;
@@ -416,12 +417,14 @@ window.previewExam = () => {
     const el = document.getElementById('score-'+t.code);
     if (el) typeScores[t.code] = parseInt(el.value)||t.defaultScore;
   });
-  showExamPreview({
+  draftPreviewData = {
     title,
     typeScores,
     subjectCode: cSubject.value,
     bookCode: document.getElementById('cBook').value,
-  }, generatedQuestions);
+    header: draftPreviewData?.header ?? loadHeader(),
+  };
+  showExamPreview(draftPreviewData, generatedQuestions);
 };
 
 window.updateScoreRows = () => {
@@ -664,6 +667,7 @@ window.doSaveExam = async () => {
 
   const exam = {
     title,
+    header: draftPreviewData?.header ?? loadHeader(),
     description: document.getElementById('examDesc').value.trim(),
     subjectCode: sc,
     bookCode: bc,
@@ -679,6 +683,7 @@ window.doSaveExam = async () => {
 
   try {
     await DataService.saveExam(exam);
+    draftPreviewData = null;
     UI.toast('試卷已儲存！', 'success');
     document.getElementById('saveModal').classList.add('hidden');
   } catch(e) {

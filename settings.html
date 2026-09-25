@@ -40,11 +40,20 @@
 .catalog-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:14px 0}
 .catalog-section[hidden]{display:none}
 #catalogSubnav{flex-wrap:wrap}
-.header-layout-row{display:grid;grid-template-columns:minmax(110px,1fr) 120px 100px;gap:10px;align-items:center;margin-bottom:10px}
+.header-layout-board{display:grid;gap:12px}
+.header-layout-line{display:grid;grid-template-columns:64px minmax(0,1fr);gap:10px;align-items:start}
+.header-layout-line>strong{padding-top:12px;color:var(--text-secondary);font-size:.84rem}
+.header-layout-dropzone{display:flex;flex-wrap:wrap;align-content:flex-start;gap:8px;min-height:64px;padding:10px;border:1px dashed #b9c5d4;border-radius:10px;background:#f8fafc}
+.header-layout-dropzone.is-target{border-color:#3974c7;background:#eef5ff}
+.header-layout-chip{display:inline-flex;align-items:center;gap:6px;padding:8px 10px;border:1px solid #c6d4e7;border-radius:8px;background:#fff;color:#2f425c;font:inherit;font-size:.83rem;cursor:grab;user-select:none}
+.header-layout-chip::before{content:'⋮⋮';color:#8395aa;letter-spacing:-3px}
+.header-layout-chip.dragging{opacity:.45}
+.header-layout-chip:focus-visible{outline:2px solid #3974c7;outline-offset:2px}
+.header-layout-placeholder{width:64px;min-height:34px;border:2px dashed #3974c7;border-radius:8px;background:#eaf2ff}
 .header-length-select{width:84px}
 .header-length-group{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
 .header-length-group .header-length-select{width:100%;min-width:0}
-@media(max-width:600px){.header-layout-row{grid-template-columns:1fr 1fr}.header-layout-row strong{grid-column:1/-1}}
+@media(max-width:600px){.header-layout-line{grid-template-columns:1fr;gap:4px}.header-layout-line>strong{padding-top:0}}
 @media(max-width:440px){.avatar-options{grid-template-columns:repeat(3,minmax(0,1fr))}}
 .password-card{max-width:560px}
 .password-card .card-body{display:grid;gap:16px}
@@ -202,7 +211,7 @@
 
 <script type="module">
 import { guardPage } from './js/auth-guard.js';
-import { DEFAULT_WORD_MARGINS, loadWordMargins, saveWordMargins, resetWordMargins, FONT_OPTIONS, FONT_SIZE_RANGE, LINE_HEIGHT_RANGE, loadAppearance, saveAppearance, loadHeader, saveHeader, HEADER_FIELDS, DEFAULT_HEADER_LAYOUT, HEADER_BLANK_DEFAULTS, HEADER_BLANK_LABELS, headerYearSemesterText, headerBlankParts } from './js/exam-preview.js';
+import { DEFAULT_WORD_MARGINS, loadWordMargins, saveWordMargins, resetWordMargins, FONT_OPTIONS, FONT_SIZE_RANGE, LINE_HEIGHT_RANGE, loadAppearance, saveAppearance, loadHeader, saveHeader, HEADER_FIELDS, DEFAULT_HEADER_LAYOUT, HEADER_BLANK_DEFAULTS, HEADER_BLANK_LABELS, headerYearSemesterText, headerBlankParts, normalizeHeaderLayout } from './js/exam-preview.js';
 
 const settingsView = new URLSearchParams(location.search).get('view');
 window._activeNav = settingsView === 'catalog' ? 'catalog-settings' : settingsView === 'accounts' ? 'account-admin' : 'settings';
@@ -638,7 +647,7 @@ async function buildCatalogPanel() {
   <section class="card catalog-section" data-section="header" style="max-width:760px;margin-top:16px">
     <div class="card-header"><h2>欄位位置</h2></div>
     <div class="card-body">
-      <p style="font-size:.84rem;color:var(--text-secondary);margin:0 0 14px">選擇每個欄位所在的列與列內順序；同一順序會依下方欄位列表排列。</p>
+      <p style="font-size:.84rem;color:var(--text-secondary);margin:0 0 14px">拖曳欄位標籤調整順序，也可移到上、下兩行之間。</p>
       <div id="headerLayoutFields"></div>
       <div class="catalog-actions"><button class="btn btn-primary" type="button" id="headerLayoutSave">儲存變更</button><button class="btn btn-outline" type="button" id="headerLayoutReset">恢復預設</button><span id="headerLayoutStatus" role="status" aria-live="polite"></span></div>
     </div>
@@ -774,20 +783,26 @@ function buildHeaderSettings() {
   const layoutHost = document.getElementById('headerLayoutFields');
   const textFields = [
     ['school','學校','例：幼獅高中'], ['yearSemesterText','學年度與學期','例：115學年度上學期'],
-    ['examType','試別','例：第一次段考'], ['subjectText','科目','全民國防教育'],
-    ['range','考試範圍','第1-3章'],
+    ['examType','試別','例：第一次段考'], ['subjectText','科目','例：全民國防教育'],
+    ['range','考試範圍','例：第1-3章'],
   ];
   const lengthFields = [{ field:'class', label:'班級欄' }, { field:'name', label:'姓名欄' }, { field:'seat', label:'座號欄' }];
   host.innerHTML = `<div class="grid-2">
-    ${textFields.map(([key,label,placeholder]) => `<div class="form-group"><label class="form-label" for="headerText-${key}">${label}</label><input class="form-control" id="headerText-${key}" placeholder="${placeholder}"></div>`).join('')}
+    ${textFields.map(([key,label,placeholder]) => `<div class="form-group"><label class="form-label" for="headerText-${key}">${label}</label><input class="form-control header-example-input" id="headerText-${key}" placeholder="${placeholder}"></div>`).join('')}
     <div class="header-length-group">${lengthFields.map(({field,label}) => `<div class="form-group"><label class="form-label" for="headerLength-${field}">${label}</label><select class="form-control header-length-select" id="headerLength-${field}" aria-label="${label}空格數">${Array.from({length:31}, (_,count) => `<option value="${count}">${count} 格</option>`).join('')}</select></div>`).join('')}</div>
     </div>`;
-  layoutHost.innerHTML = HEADER_FIELDS.map(field => `<div class="header-layout-row"><strong>${field.label}</strong>
-      <select class="form-control" id="headerRow-${field.id}" aria-label="${field.label}所在列">
-        <option value="1">第 1 列</option><option value="2">第 2 列</option><option value="3">第 3 列</option>
-      </select><select class="form-control" id="headerPosition-${field.id}" aria-label="${field.label}列內順序">
-        ${Array.from({length:9}, (_,index) => `<option value="${index+1}">第 ${index+1} 位</option>`).join('')}
-      </select></div>`).join('');
+  layoutHost.innerHTML = `<div class="header-layout-board">${[1,2].map(row => `<div class="header-layout-line"><strong>第 ${row} 行</strong><div class="header-layout-dropzone" data-row="${row}" aria-label="第 ${row} 行欄位"></div></div>`).join('')}</div>`;
+  const layoutZones = Object.fromEntries([1,2].map(row => [row, layoutHost.querySelector(`[data-row="${row}"]`)]));
+  const layoutChips = Object.fromEntries(HEADER_FIELDS.map(field => {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'header-layout-chip';
+    chip.draggable = true;
+    chip.dataset.field = field.id;
+    chip.textContent = field.label;
+    chip.title = `拖曳「${field.label}」調整位置`;
+    return [field.id, chip];
+  }));
   const defaults = { yearSemesterText:'', classLength:HEADER_BLANK_DEFAULTS.class, nameLength:HEADER_BLANK_DEFAULTS.name, seatLength:HEADER_BLANK_DEFAULTS.seat };
   const fillText = data => {
     for (const [key] of textFields) {
@@ -797,17 +812,56 @@ function buildHeaderSettings() {
     for (const {field} of lengthFields) document.getElementById(`headerLength-${field}`).value = headerBlankParts(data, field).length;
   };
   const fillLayout = data => {
-    for (const field of HEADER_FIELDS) {
-      const place = data.layout?.[field.id] || DEFAULT_HEADER_LAYOUT[field.id];
-      document.getElementById(`headerRow-${field.id}`).value = place.row;
-      document.getElementById(`headerPosition-${field.id}`).value = place.position;
-    }
+    const layout = normalizeHeaderLayout(data.layout);
+    HEADER_FIELDS.slice().sort((a,b) => layout[a.id].row - layout[b.id].row || layout[a.id].position - layout[b.id].position)
+      .forEach(field => layoutZones[layout[field.id].row].appendChild(layoutChips[field.id]));
   };
+  let draggedChip = null;
+  const placeholder = document.createElement('span');
+  placeholder.className = 'header-layout-placeholder';
+  const finishDrag = () => {
+    draggedChip?.classList.remove('dragging');
+    draggedChip = null;
+    placeholder.remove();
+    Object.values(layoutZones).forEach(zone => zone.classList.remove('is-target'));
+  };
+  layoutHost.addEventListener('dragstart', event => {
+    const chip = event.target.closest('.header-layout-chip');
+    if (!chip) return;
+    draggedChip = chip;
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', chip.dataset.field);
+    chip.classList.add('dragging');
+  });
+  layoutHost.addEventListener('dragover', event => {
+    const zone = event.target.closest('.header-layout-dropzone');
+    if (!draggedChip || !zone) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+    Object.values(layoutZones).forEach(item => item.classList.toggle('is-target', item === zone));
+    const before = [...zone.querySelectorAll('.header-layout-chip:not(.dragging)')].find(chip => {
+      const rect = chip.getBoundingClientRect();
+      return event.clientY < rect.top + rect.height / 2 || (event.clientY <= rect.bottom && event.clientX < rect.left + rect.width / 2);
+    });
+    zone.insertBefore(placeholder, before || null);
+  });
+  layoutHost.addEventListener('drop', event => {
+    const zone = event.target.closest('.header-layout-dropzone');
+    if (!draggedChip || !zone) return;
+    event.preventDefault();
+    zone.insertBefore(draggedChip, placeholder);
+    finishDrag();
+  });
+  layoutHost.addEventListener('dragend', finishDrag);
   const saved = loadHeader();
   fillText(saved);
   fillLayout(saved);
   const status = document.getElementById('headerSettingsStatus');
-  document.getElementById('headerSettingsSave').addEventListener('click', () => {
+  async function saveHeaderDefaults(data) {
+    await DataService.preserveExamHeaders(loadHeader());
+    saveHeader(data);
+  }
+  document.getElementById('headerSettingsSave').addEventListener('click', async () => {
     const data = {};
     for (const [key] of textFields) data[key] = document.getElementById(`headerText-${key}`).value.trim();
     for (const {field} of lengthFields) {
@@ -816,29 +870,27 @@ function buildHeaderSettings() {
       data[`${field}Length`] = Number(input.value);
       data[`${field}Text`] = HEADER_BLANK_LABELS[field];
     }
-    try { saveHeader(data); status.textContent = '已儲存'; UI.toast('表頭文字已儲存', 'success'); }
+    try { await saveHeaderDefaults(data); status.textContent = '已儲存'; UI.toast('表頭文字已儲存', 'success'); }
     catch (error) { status.textContent = `儲存失敗：${error.message || '請稍後再試'}`; }
   });
-  document.getElementById('headerSettingsReset').addEventListener('click', () => {
+  document.getElementById('headerSettingsReset').addEventListener('click', async () => {
     const resetData = { ...Object.fromEntries(textFields.map(([key]) => [key, ''])),
       classLength:defaults.classLength, nameLength:defaults.nameLength, seatLength:defaults.seatLength,
       classText:HEADER_BLANK_LABELS.class, nameText:HEADER_BLANK_LABELS.name, seatText:HEADER_BLANK_LABELS.seat };
-    try { saveHeader(resetData); fillText(resetData); status.textContent = '已恢復預設'; }
+    try { await saveHeaderDefaults(resetData); fillText(resetData); status.textContent = '已恢復預設'; }
     catch (error) { status.textContent = `重設失敗：${error.message || '請稍後再試'}`; }
   });
   const layoutStatus = document.getElementById('headerLayoutStatus');
-  document.getElementById('headerLayoutSave').addEventListener('click', () => {
-    const layout = {};
-    for (const field of HEADER_FIELDS) layout[field.id] = {
-      row:Number(document.getElementById(`headerRow-${field.id}`).value),
-      position:Number(document.getElementById(`headerPosition-${field.id}`).value),
-    };
-    try { saveHeader({ layout }); layoutStatus.textContent = '已儲存'; UI.toast('欄位位置已儲存', 'success'); }
+  document.getElementById('headerLayoutSave').addEventListener('click', async () => {
+    const layout = Object.fromEntries([1,2].flatMap(row =>
+      [...layoutZones[row].querySelectorAll('.header-layout-chip')].map((chip, index) =>
+        [chip.dataset.field, { row, position:index+1 }])));
+    try { await saveHeaderDefaults({ layout }); layoutStatus.textContent = '已儲存'; UI.toast('欄位位置已儲存', 'success'); }
     catch (error) { layoutStatus.textContent = `儲存失敗：${error.message || '請稍後再試'}`; }
   });
-  document.getElementById('headerLayoutReset').addEventListener('click', () => {
+  document.getElementById('headerLayoutReset').addEventListener('click', async () => {
     try {
-      saveHeader({ layout:DEFAULT_HEADER_LAYOUT });
+      await saveHeaderDefaults({ layout:DEFAULT_HEADER_LAYOUT });
       fillLayout({ layout:DEFAULT_HEADER_LAYOUT });
       layoutStatus.textContent = '已恢復預設';
     } catch (error) { layoutStatus.textContent = `重設失敗：${error.message || '請稍後再試'}`; }

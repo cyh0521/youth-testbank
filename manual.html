@@ -215,7 +215,7 @@
 
 <script type="module">
 import { guardPage } from './js/auth-guard.js';
-import { showExamPreview, showHeaderSettings } from './js/exam-preview.js';
+import { showExamPreview, showHeaderSettings, loadHeader } from './js/exam-preview.js';
 window.openHeaderSettings = showHeaderSettings;
 window._activeNav = 'manual';
 const user = await guardPage(['admin','teacher']);
@@ -235,6 +235,7 @@ let selectedIds = new Set();
 let selectedOrder = [];
 let selQuestions = {};
 let _bookObj = null, _chapters = [];
+let draftPreviewData = null;
 
 // ── 科目/冊次 ─────────────────────────────────────
 window.onSubjectChange = () => {
@@ -610,7 +611,9 @@ window.previewSelected = () => {
   Object.keys(TYPE_SCORES).forEach(t=>{const el=document.getElementById('sc-'+t);typeScores[t]=el?parseInt(el.value)||TYPE_SCORES[t]:TYPE_SCORES[t];});
   const qs = selectedOrder.map(id=>selQuestions[id]).filter(Boolean);
   const firstQ = qs[0];
-  showExamPreview({ title:'（預覽）', typeScores, subjectCode:firstQ?.subjectCode||'', bookCode:firstQ?.bookCode||'' }, qs);
+  draftPreviewData = { title:'（預覽）', typeScores, subjectCode:firstQ?.subjectCode||'', bookCode:firstQ?.bookCode||'',
+    header:draftPreviewData?.header ?? loadHeader() };
+  showExamPreview(draftPreviewData, qs);
 };
 window.openSaveModal = async () => {
   if (!selectedOrder.length) { UI.toast('請先選題','warning'); return; }
@@ -627,7 +630,7 @@ window.doSaveExam = async () => {
   const classSelect = document.getElementById('examClass');
   const classOption = classSelect.selectedOptions[0];
   const exam = {
-    title, description: document.getElementById('examDesc').value.trim(),
+    title, header: draftPreviewData?.header ?? loadHeader(), description: document.getElementById('examDesc').value.trim(),
     subjectCode: firstQ?.subjectCode||'', bookCode: firstQ?.bookCode||'',
     totalScore, typeScores, questionIds:[...selectedOrder],
     questionCount: selectedOrder.length, composeMode:'manual',
@@ -637,6 +640,7 @@ window.doSaveExam = async () => {
   };
   try {
     await DataService.saveExam(exam);
+    draftPreviewData = null;
     UI.toast('試卷已儲存！','success');
     document.getElementById('saveModal').classList.add('hidden');
   } catch(e) { document.getElementById('saveErr').textContent='儲存失敗：'+e.message; document.getElementById('saveErr').classList.remove('hidden'); }
