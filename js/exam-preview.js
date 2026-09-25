@@ -22,16 +22,15 @@ export const FONT_OPTIONS = [
 export const FONT_SIZE_RANGE = { min: 11, max: 20, step: 1, default: 16 };
 export const LINE_HEIGHT_RANGE = { min: 1.0, max: 2.4, step: 0.05, default: 1.3 };
 export const HEADER_FIELDS = [
-  { id:'year', label:'學年度與學期' }, { id:'subject', label:'科目' },
-  { id:'examType', label:'試別' },
-  { id:'class', label:'班級' }, { id:'name', label:'姓名' },
-  { id:'seat', label:'座號' }, { id:'school', label:'學校' },
-  { id:'range', label:'考試範圍' },
+  { id:'school', label:'學校' }, { id:'year', label:'學年度與學期' },
+  { id:'subject', label:'科目' }, { id:'examType', label:'試別' },
+  { id:'range', label:'考試範圍' }, { id:'class', label:'班級' },
+  { id:'name', label:'姓名' }, { id:'seat', label:'座號' },
 ];
 export const DEFAULT_HEADER_LAYOUT = {
-  year:{ row:1, position:1 }, subject:{ row:1, position:2 }, examType:{ row:1, position:3 },
-  class:{ row:2, position:1 }, name:{ row:2, position:2 }, seat:{ row:2, position:3 }, school:{ row:2, position:4 },
-  range:{ row:2, position:5 },
+  school:{ row:1, position:1 }, year:{ row:1, position:2 }, subject:{ row:1, position:3 },
+  examType:{ row:1, position:4 }, range:{ row:1, position:5 },
+  class:{ row:2, position:1 }, name:{ row:2, position:2 }, seat:{ row:2, position:3 },
 };
 export function normalizeHeaderLayout(layout = {}) {
   const ordered = HEADER_FIELDS.map((field, index) => {
