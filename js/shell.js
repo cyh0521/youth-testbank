@@ -12,7 +12,7 @@
     const page = location.pathname.split('/').pop().replace(/\.html$/, '');
     if (page !== 'settings') return page;
     const view = new URLSearchParams(location.search).get('view');
-    return view === 'catalog' ? 'catalog-settings' : view === 'accounts' ? 'account-admin' : 'settings';
+    return view === 'accounts' ? 'account-admin' : 'settings';
   };
   const isCollapsed = () => {
     const saved = read('localStorage', COLLAPSED_KEY);
@@ -54,10 +54,10 @@
           ${item('compose', I.auto20, '電腦選題')}
           ${item('manual', I.edit20, '手動選題')}
           ${item('coded', I.code20, '編碼選題')}
+          ${item('booklet', I.printer20, '題本列印')}
           ${item('exams', I.folder20, '試卷管理')}
           ${section('系統設定')}
-          ${item('settings', I.settings20, '我的帳號')}
-          ${item('catalog-settings', I.book20, '進階設定', 'settings.html?view=catalog')}
+          ${item('settings', I.settings20, '進階設定')}
           ${navRole === 'admin' ? item('account-admin', I.settings20, '帳號管理', 'settings.html?view=accounts') : ''}
         </nav>
         <div class="sidebar-footer">

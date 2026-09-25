@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>我的帳號 — 幼獅題庫系統</title>
+<title>進階設定 — 幼獅題庫系統</title>
 <link rel="stylesheet" href="css/theme.css">
 <script>if(localStorage.getItem("sidebarCollapsed")==="1")document.documentElement.classList.add("sidebar-collapsed");</script>
 <style>
@@ -50,9 +50,6 @@
 .header-layout-chip.dragging{opacity:.45}
 .header-layout-chip:focus-visible{outline:2px solid #3974c7;outline-offset:2px}
 .header-layout-placeholder{width:64px;min-height:34px;border:2px dashed #3974c7;border-radius:8px;background:#eaf2ff}
-.header-length-select{width:84px}
-.header-length-group{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
-.header-length-group .header-length-select{width:100%;min-width:0}
 @media(max-width:600px){.header-layout-line{grid-template-columns:1fr;gap:4px}.header-layout-line>strong{padding-top:0}}
 @media(max-width:440px){.avatar-options{grid-template-columns:repeat(3,minmax(0,1fr))}}
 .password-card{max-width:560px}
@@ -86,7 +83,7 @@
   <script src="js/shell.js"></script>
   <div class="main" inert>
     <div class="topbar">
-      <span class="topbar-title" id="settingsPageTitle">我的帳號</span>
+      <span class="topbar-title" id="settingsPageTitle">進階設定</span>
     </div>
     <div class="page-content" id="pageContent">
       <!-- 動態填入 Tabs -->
@@ -211,15 +208,15 @@
 
 <script type="module">
 import { guardPage } from './js/auth-guard.js';
-import { DEFAULT_WORD_MARGINS, loadWordMargins, saveWordMargins, resetWordMargins, FONT_OPTIONS, FONT_SIZE_RANGE, LINE_HEIGHT_RANGE, loadAppearance, saveAppearance, loadHeader, saveHeader, HEADER_FIELDS, DEFAULT_HEADER_LAYOUT, HEADER_BLANK_DEFAULTS, HEADER_BLANK_LABELS, headerYearSemesterText, headerBlankParts, normalizeHeaderLayout } from './js/exam-preview.js';
+import { DEFAULT_WORD_MARGINS, loadWordMargins, saveWordMargins, resetWordMargins, FONT_OPTIONS, FONT_SIZE_RANGE, LINE_HEIGHT_RANGE, loadAppearance, saveAppearance, loadHeader, saveHeader, HEADER_FIELDS, DEFAULT_HEADER_LAYOUT, normalizeHeaderLayout } from './js/exam-preview.js';
 
 const settingsView = new URLSearchParams(location.search).get('view');
-window._activeNav = settingsView === 'catalog' ? 'catalog-settings' : settingsView === 'accounts' ? 'account-admin' : 'settings';
+window._activeNav = settingsView === 'accounts' ? 'account-admin' : 'settings';
 const user = await guardPage();
 if (!user) throw new Error('not auth');
 const isAdmin = DataService.isAdmin();
 if (settingsView === 'accounts' && !isAdmin) location.replace('settings.html');
-const pageTitle = settingsView === 'catalog' ? '進階設定' : settingsView === 'accounts' ? '帳號管理' : '我的帳號';
+const pageTitle = settingsView === 'accounts' ? '帳號管理' : '進階設定';
 document.title = `${pageTitle} — 幼獅題庫系統`;
 document.getElementById('settingsPageTitle').textContent = pageTitle;
 
@@ -227,16 +224,12 @@ document.getElementById('settingsPageTitle').textContent = pageTitle;
 //  Tab 結構
 // ══════════════════════════════════════════════════
 function buildTabs() {
-  if (settingsView === 'catalog') {
-    document.getElementById('pageContent').innerHTML = '<div id="spanel-catalog"></div>';
-    buildCatalogPanel();
-    return;
-  }
   const tabs = [];
   if (settingsView === 'accounts' && isAdmin) tabs.push({ id:'accounts', label:'👥 帳號管理' });
   else {
     tabs.push({ id:'profile', label:'👤 個人資料' });
-    tabs.push({ id:'password', label:'🔒 密碼設定' });
+    tabs.push({ id:'subjects', label:'常用科目' });
+    tabs.push({ id:'appearance', label:'試卷版面設定' });
   }
 
   const tabsHTML = `<div class="settings-tabs">
@@ -248,7 +241,13 @@ function buildTabs() {
 
   // 渲染每個 tab 的內容
   if (settingsView === 'accounts' && isAdmin) buildAccountsPanel();
-  else { buildProfilePanel(); buildPasswordPanel(); }
+  else {
+    buildProfilePanel();
+    buildCatalogPanel();
+    const requested = new URLSearchParams(location.search).get('section');
+    if (settingsView === 'catalog') switchTab(requested === 'appearance' || requested === 'margins' || requested === 'header' ? 'appearance' : 'subjects');
+    else if (requested === 'subjects' || requested === 'appearance') switchTab(requested);
+  }
 }
 
 window.switchTab = id => {
@@ -472,10 +471,11 @@ function buildProfilePanel() {
           <button class="btn btn-outline" type="button" id="editAvatarBtn">🖼️ 編輯頭像</button>
         </div>
       </div>
-    </div>`;
+    </div><div id="passwordContainer" style="margin-top:16px"></div>`;
 
   document.getElementById('editProfileBtn').addEventListener('click', openProfileModal);
   document.getElementById('editAvatarBtn').addEventListener('click', openAvatarModal);
+  buildPasswordPanel();
 }
 
 let selectedAvatar = '';
@@ -592,13 +592,8 @@ window.saveAvatar = async () => {
 };
 
 async function buildCatalogPanel() {
-  const panel = document.getElementById('spanel-catalog');
-  panel.innerHTML = `<div class="settings-tabs" id="catalogSubnav" aria-label="進階設定項目">
-    <button class="settings-tab" type="button" data-section="subjects">選擇科目</button>
-    <button class="settings-tab" type="button" data-section="appearance">試卷版面設定</button>
-    <button class="settings-tab" type="button" data-section="header">試卷表頭設定</button>
-  </div>
-  <section class="card catalog-section" data-section="subjects" style="max-width:760px">
+  const panel = document.createElement('div');
+  panel.innerHTML = `<section class="card catalog-section" data-section="subjects" style="max-width:760px">
     <div class="card-header"><h2>選擇要顯示的科目</h2></div>
     <div class="card-body">
       <p style="font-size:.84rem;color:var(--text-secondary);margin:0 0 14px">勾選要在系統中顯示的科目與冊別。未勾選的內容將從選單、題目與試卷清單隱藏。</p>
@@ -612,6 +607,14 @@ async function buildCatalogPanel() {
     </div>
   </section>
   <section class="card catalog-section" data-section="appearance" style="max-width:760px">
+    <div class="card-header"><h2>表頭欄位位置</h2></div>
+    <div class="card-body">
+      <p style="font-size:.84rem;color:var(--text-secondary);margin:0 0 14px">拖曳欄位標籤調整順序，也可移到上、下兩行之間。</p>
+      <div id="headerLayoutFields"></div>
+      <div class="catalog-actions"><button class="btn btn-primary" type="button" id="headerLayoutSave">儲存變更</button><button class="btn btn-outline" type="button" id="headerLayoutReset">恢復預設</button><span id="headerLayoutStatus" role="status" aria-live="polite"></span></div>
+    </div>
+  </section>
+  <section class="card catalog-section" data-section="appearance" style="max-width:760px;margin-top:16px">
     <div class="card-header"><h2>字體與行距</h2></div>
     <div class="card-body">
       <p style="font-size:.84rem;color:var(--text-secondary);margin:0 0 14px">此處設定新建試卷的預設字型、大小與行距。個別試卷可在預覽視窗調整，且不會改動此處的預設值。</p>
@@ -635,32 +638,8 @@ async function buildCatalogPanel() {
       </div>
       <div class="catalog-actions"><button class="btn btn-primary" type="button" id="examMarginsSave">儲存變更</button><button class="btn btn-outline" type="button" id="examMarginsReset">恢復預設</button><span id="examMarginsStatus" role="status" aria-live="polite"></span></div>
     </div>
-  </section>
-  <section class="card catalog-section" data-section="header" style="max-width:760px">
-    <div class="card-header"><h2>表頭文字</h2></div>
-    <div class="card-body">
-      <p style="font-size:.84rem;color:var(--text-secondary);margin:0 0 14px">設定試卷表頭的預設文字。未填寫的選填欄位不會顯示。</p>
-      <div id="headerSettingsFields"></div>
-      <div class="catalog-actions"><button class="btn btn-primary" type="button" id="headerSettingsSave">儲存變更</button><button class="btn btn-outline" type="button" id="headerSettingsReset">恢復預設</button><span id="headerSettingsStatus" role="status" aria-live="polite"></span></div>
-    </div>
-  </section>
-  <section class="card catalog-section" data-section="header" style="max-width:760px;margin-top:16px">
-    <div class="card-header"><h2>欄位位置</h2></div>
-    <div class="card-body">
-      <p style="font-size:.84rem;color:var(--text-secondary);margin:0 0 14px">拖曳欄位標籤調整順序，也可移到上、下兩行之間。</p>
-      <div id="headerLayoutFields"></div>
-      <div class="catalog-actions"><button class="btn btn-primary" type="button" id="headerLayoutSave">儲存變更</button><button class="btn btn-outline" type="button" id="headerLayoutReset">恢復預設</button><span id="headerLayoutStatus" role="status" aria-live="polite"></span></div>
-    </div>
   </section>`;
-  const sections = new Set(['subjects','appearance','header']);
-  const selectSection = section => {
-    const active = section === 'margins' ? 'appearance' : sections.has(section) ? section : 'subjects';
-    panel.querySelectorAll('#catalogSubnav .settings-tab').forEach(button => button.classList.toggle('active', button.dataset.section === active));
-    panel.querySelectorAll('.catalog-section').forEach(card => { card.hidden = card.dataset.section !== active; });
-    history.replaceState(null, '', `settings.html?view=catalog&section=${active}`);
-  };
-  panel.querySelectorAll('#catalogSubnav .settings-tab').forEach(button => button.addEventListener('click', () => selectSection(button.dataset.section)));
-  selectSection(new URLSearchParams(location.search).get('section'));
+  panel.querySelectorAll('.catalog-section').forEach(card => document.getElementById(`spanel-${card.dataset.section}`).append(card));
   buildAppearanceSettings();
   buildHeaderSettings();
   const choices = document.getElementById('catalogChoices');
@@ -711,7 +690,7 @@ async function buildCatalogPanel() {
         await DataService.updateProfile(DataService.getCurrentUser().uid, { visibleCatalog:selected });
         window._tbCache = null;
         status.textContent = '已儲存；切換頁面後依新設定顯示';
-        UI.toast('選擇科目設定已更新', 'success');
+        UI.toast('常用科目設定已更新', 'success');
       } catch (error) {
         status.textContent = `儲存失敗：${error.message || '請稍後再試'}`;
       } finally { save.disabled = false; }
@@ -781,18 +760,7 @@ function buildAppearanceSettings() {
 }
 
 function buildHeaderSettings() {
-  const host = document.getElementById('headerSettingsFields');
   const layoutHost = document.getElementById('headerLayoutFields');
-  const textFields = [
-    ['school','學校','例：幼獅高中'], ['yearSemesterText','學年度與學期','例：115學年度上學期'],
-    ['examType','試別','例：第一次段考'], ['subjectText','科目','例：全民國防教育'],
-    ['range','考試範圍','例：第1-3章'],
-  ];
-  const lengthFields = [{ field:'class', label:'班級欄' }, { field:'name', label:'姓名欄' }, { field:'seat', label:'座號欄' }];
-  host.innerHTML = `<div class="grid-2">
-    ${textFields.map(([key,label,placeholder]) => `<div class="form-group"><label class="form-label" for="headerText-${key}">${label}</label><input class="form-control header-example-input" id="headerText-${key}" placeholder="${placeholder}"></div>`).join('')}
-    <div class="header-length-group">${lengthFields.map(({field,label}) => `<div class="form-group"><label class="form-label" for="headerLength-${field}">${label}</label><select class="form-control header-length-select" id="headerLength-${field}" aria-label="${label}空格數">${Array.from({length:13}, (_,count) => `<option value="${count}">${count} 格</option>`).join('')}</select></div>`).join('')}</div>
-    </div>`;
   layoutHost.innerHTML = `<div class="header-layout-board">${[1,2].map(row => `<div class="header-layout-line"><strong>第 ${row} 行</strong><div class="header-layout-dropzone" data-row="${row}" aria-label="第 ${row} 行欄位"></div></div>`).join('')}</div>`;
   const layoutZones = Object.fromEntries([1,2].map(row => [row, layoutHost.querySelector(`[data-row="${row}"]`)]));
   const layoutChips = Object.fromEntries(HEADER_FIELDS.map(field => {
@@ -805,14 +773,6 @@ function buildHeaderSettings() {
     chip.title = `拖曳「${field.label}」調整位置`;
     return [field.id, chip];
   }));
-  const defaults = { yearSemesterText:'', classLength:HEADER_BLANK_DEFAULTS.class, nameLength:HEADER_BLANK_DEFAULTS.name, seatLength:HEADER_BLANK_DEFAULTS.seat };
-  const fillText = data => {
-    for (const [key] of textFields) {
-      document.getElementById(`headerText-${key}`).value = key === 'yearSemesterText'
-        ? headerYearSemesterText(data) : data[key] ?? '';
-    }
-    for (const {field} of lengthFields) document.getElementById(`headerLength-${field}`).value = headerBlankParts(data, field).length;
-  };
   const fillLayout = data => {
     const layout = normalizeHeaderLayout(data.layout);
     HEADER_FIELDS.slice().sort((a,b) => layout[a.id].row - layout[b.id].row || layout[a.id].position - layout[b.id].position)
@@ -856,32 +816,11 @@ function buildHeaderSettings() {
   });
   layoutHost.addEventListener('dragend', finishDrag);
   const saved = loadHeader();
-  fillText(saved);
   fillLayout(saved);
-  const status = document.getElementById('headerSettingsStatus');
   async function saveHeaderDefaults(data) {
     await DataService.preserveExamHeaders(loadHeader());
     await saveHeader(data);
   }
-  document.getElementById('headerSettingsSave').addEventListener('click', async () => {
-    const data = {};
-    for (const [key] of textFields) data[key] = document.getElementById(`headerText-${key}`).value.trim();
-    for (const {field} of lengthFields) {
-      const input = document.getElementById(`headerLength-${field}`);
-      if (!input.reportValidity()) return;
-      data[`${field}Length`] = Number(input.value);
-      data[`${field}Text`] = HEADER_BLANK_LABELS[field];
-    }
-    try { await saveHeaderDefaults(data); status.textContent = '已儲存'; UI.toast('表頭文字已儲存', 'success'); }
-    catch (error) { status.textContent = `儲存失敗：${error.message || '請稍後再試'}`; }
-  });
-  document.getElementById('headerSettingsReset').addEventListener('click', async () => {
-    const resetData = { ...Object.fromEntries(textFields.map(([key]) => [key, ''])),
-      classLength:defaults.classLength, nameLength:defaults.nameLength, seatLength:defaults.seatLength,
-      classText:HEADER_BLANK_LABELS.class, nameText:HEADER_BLANK_LABELS.name, seatText:HEADER_BLANK_LABELS.seat };
-    try { await saveHeaderDefaults(resetData); fillText(resetData); status.textContent = '已恢復預設'; }
-    catch (error) { status.textContent = `重設失敗：${error.message || '請稍後再試'}`; }
-  });
   const layoutStatus = document.getElementById('headerLayoutStatus');
   document.getElementById('headerLayoutSave').addEventListener('click', async () => {
     const layout = Object.fromEntries([1,2].flatMap(row =>
@@ -900,7 +839,7 @@ function buildHeaderSettings() {
 }
 
 function buildPasswordPanel() {
-  document.getElementById('spanel-password').innerHTML = `
+  document.getElementById('passwordContainer').innerHTML = `
     <section class="card password-card" aria-labelledby="passwordHeading">
       <div class="card-header"><h2 id="passwordHeading">更新密碼</h2></div>
       <form class="card-body" id="passwordForm">

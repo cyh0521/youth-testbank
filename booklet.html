@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>題本列印 — 幼獅題庫系統</title>
+<link rel="stylesheet" href="css/theme.css">
+<script>if(localStorage.getItem('sidebarCollapsed')==='1')document.documentElement.classList.add('sidebar-collapsed');</script>
+</head>
+<body>
+<script src="js/icons.js"></script>
+<script src="js/core.js"></script>
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <script src="js/shell.js"></script>
+  <div class="main" inert>
+    <div class="topbar"><span class="topbar-title">題本列印</span></div>
+    <div class="page-content">
+      <div class="card" style="max-width:760px">
+        <div class="card-header"><h2>題本列印</h2></div>
+        <div class="card-body"><p style="color:var(--text-secondary);margin:0">功能規劃中。</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="module">
+import { guardPage } from './js/auth-guard.js';
+window._activeNav = 'booklet';
+await guardPage(['admin','teacher']);
+</script>
+</body>
+</html>

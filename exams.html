@@ -42,6 +42,9 @@
 .sort-option.active{background:var(--primary);border-color:var(--primary);color:white}
 
 /* 試卷編輯 Modal */
+#editModal .modal{display:flex;flex-direction:column;max-height:90vh;overflow:hidden}
+#editModal .modal-header{position:relative;top:auto;flex:none}
+#editModal .modal-body{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain}
 .edit-q-item{display:flex;align-items:flex-start;gap:8px;padding:9px 12px;border-bottom:1px solid var(--border-light);font-size:.83rem}
 .edit-q-item:last-child{border-bottom:none}
 .edit-q-item:hover{background:#faf8f5}
@@ -135,7 +138,7 @@
 <!-- 試卷編輯 Modal -->
 <div class="modal-overlay hidden" id="editModal">
   <div class="modal modal-xl">
-    <div class="modal-header" style="position:sticky;top:0;background:white;z-index:10">
+    <div class="modal-header">
       <h3 id="editTitle">編輯試卷</h3>
       <div style="display:flex;gap:6px;align-items:center">
         <button class="btn btn-ghost btn-sm" onclick="shuffleEditQs()" title="各題型內亂數排序"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m18 14 4 4-4 4M18 2l4 4-4 4M2 18h2.5a6 6 0 0 0 5.1-3l4.8-8a6 6 0 0 1 5.1-3H22M2 6h2.5a6 6 0 0 1 5.1 3l.5.8M14 17.2a6 6 0 0 0 5.5 2.8H22"/></svg>亂數排序</button>

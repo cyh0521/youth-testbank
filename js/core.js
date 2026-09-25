@@ -164,7 +164,7 @@ if (typeof document !== 'undefined') {
 function nav(page) {
   const pages = {
     dashboard:'dashboard.html', import:'import.html', questions:'questions.html',
-    compose:'compose.html', manual:'manual.html', coded:'coded.html',
+    compose:'compose.html', manual:'manual.html', coded:'coded.html', booklet:'booklet.html',
     exams:'exams.html', settings:'settings.html',
     'catalog-settings':'settings.html?view=catalog', 'account-admin':'settings.html?view=accounts',
     textbooks:'textbooks.html'

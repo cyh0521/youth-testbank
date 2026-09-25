@@ -350,9 +350,76 @@ export function mountInlineHeaderEditor(container, examData, onChange, onCancel)
   container.innerHTML = `<div class="ep-inline-header-fields">
     ${fields.map(([key,label,placeholder]) => `<label class="form-group"><span class="form-label">${label}</span><input class="form-control header-example-input" data-header-field="${key}" placeholder="${placeholder}"></label>`).join('')}
     <div class="ep-inline-header-lengths">${Object.entries(HEADER_BLANK_LABELS).map(([field,label]) => `<label class="form-group"><span class="form-label">${label.replace('：','')}欄</span><select class="form-control" data-header-length="${field}">${Array.from({length:13}, (_,n) => `<option value="${n}">${n} 格</option>`).join('')}</select></label>`).join('')}</div>
+  </div><button class="ep-header-layout-toggle" type="button" data-header-layout-toggle aria-expanded="false"><span class="ep-header-layout-toggle-icon" aria-hidden="true">↕</span><span class="ep-header-layout-toggle-copy"><strong>調整欄位位置</strong><small>點此展開，可拖曳欄位到第一行或第二行</small></span><span class="ep-header-layout-toggle-chevron" data-layout-chevron aria-hidden="true">▾</span></button>
+  <div class="ep-header-layout-panel" data-header-layout-panel hidden><p>拖曳欄位到第一行或第二行，變更會立即顯示在表頭。</p>
+    <div class="ep-header-layout-board">${[1,2].map(row => `<div class="ep-header-layout-line"><strong>第 ${row} 行</strong><div class="ep-header-layout-zone" data-row="${row}" aria-label="第 ${row} 行欄位"></div></div>`).join('')}</div>
   </div><div class="ep-inline-header-actions"><button class="btn btn-primary btn-sm" type="button" data-header-save>儲存變更</button><button class="btn btn-outline btn-sm" type="button" data-header-clear>清除</button><button class="btn btn-ghost btn-sm" type="button" data-header-cancel>取消</button><span data-header-status role="status" aria-live="polite"></span></div>`;
   for (const [key] of fields) container.querySelector(`[data-header-field="${key}"]`).value = key === 'yearSemesterText' ? headerYearSemesterText(header) : header[key] || '';
   for (const field of Object.keys(HEADER_BLANK_LABELS)) container.querySelector(`[data-header-length="${field}"]`).value = headerBlankParts(header, field).length;
+  const layoutToggle = container.querySelector('[data-header-layout-toggle]');
+  const layoutPanel = container.querySelector('[data-header-layout-panel]');
+  layoutToggle.onclick = () => {
+    layoutPanel.hidden = !layoutPanel.hidden;
+    layoutToggle.setAttribute('aria-expanded', String(!layoutPanel.hidden));
+    layoutToggle.querySelector('[data-layout-chevron]').textContent = layoutPanel.hidden ? '▾' : '▴';
+  };
+  const zones = Object.fromEntries([1,2].map(row => [row, layoutPanel.querySelector(`.ep-header-layout-zone[data-row="${row}"]`)]));
+  const layout = normalizeHeaderLayout(header.layout);
+  HEADER_FIELDS.slice().sort((a,b) => layout[a.id].row - layout[b.id].row || layout[a.id].position - layout[b.id].position)
+    .forEach(field => {
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'ep-header-layout-chip';
+      chip.draggable = true;
+      chip.dataset.field = field.id;
+      chip.textContent = field.label;
+      chip.title = `拖曳「${field.label}」調整位置`;
+      zones[layout[field.id].row].appendChild(chip);
+    });
+  const board = layoutPanel.querySelector('.ep-header-layout-board');
+  let draggedChip = null;
+  const placeholder = document.createElement('span');
+  placeholder.className = 'ep-header-layout-placeholder';
+  const finishDrag = () => {
+    draggedChip?.classList.remove('dragging');
+    draggedChip = null;
+    placeholder.remove();
+    Object.values(zones).forEach(zone => zone.classList.remove('is-target'));
+  };
+  board.addEventListener('dragstart', event => {
+    const chip = event.target.closest('.ep-header-layout-chip');
+    if (!chip) return;
+    draggedChip = chip;
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', chip.dataset.field);
+    chip.classList.add('dragging');
+  });
+  board.addEventListener('dragover', event => {
+    const zone = event.target.closest('.ep-header-layout-zone');
+    if (!draggedChip || !zone) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+    Object.values(zones).forEach(item => item.classList.toggle('is-target', item === zone));
+    const before = [...zone.querySelectorAll('.ep-header-layout-chip:not(.dragging)')].find(chip => {
+      const rect = chip.getBoundingClientRect();
+      return event.clientY < rect.top + rect.height / 2 || (event.clientY <= rect.bottom && event.clientX < rect.left + rect.width / 2);
+    });
+    zone.insertBefore(placeholder, before || null);
+  });
+  board.addEventListener('drop', event => {
+    const zone = event.target.closest('.ep-header-layout-zone');
+    if (!draggedChip || !zone) return;
+    event.preventDefault();
+    zone.insertBefore(draggedChip, placeholder);
+    finishDrag();
+    examData.header = { ...examData.header, layout:Object.fromEntries([1,2].flatMap(row =>
+      [...zones[row].querySelectorAll('.ep-header-layout-chip')].map((chip, index) =>
+        [chip.dataset.field, { row, position:index+1 }])))};
+    onChange?.();
+    const status = container.querySelector('[data-header-status]');
+    if (status) status.textContent = '尚未儲存';
+  });
+  board.addEventListener('dragend', finishDrag);
   const update = () => {
     const data = Object.fromEntries(fields.map(([key]) => [key, container.querySelector(`[data-header-field="${key}"]`).value]));
     for (const field of Object.keys(HEADER_BLANK_LABELS)) {
