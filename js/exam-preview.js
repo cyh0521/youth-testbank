@@ -1,3 +1,5 @@
+import { createDocxBlob } from './docx-export.js';
+
 /**
  * 幼獅題庫系統 — 試卷預覽 & Word 輸出模組 v3
  * - 表頭設定獨立成 showHeaderSettings()
@@ -18,7 +20,7 @@ export const FONT_OPTIONS = [
   { id:'system', label:'系統預設字型',        stack:'system-ui,-apple-system,"Microsoft JhengHei","PingFang TC","Noto Sans TC",sans-serif' },
 ];
 export const FONT_SIZE_RANGE = { min: 11, max: 20, step: 1, default: 16 };
-export const LINE_HEIGHT_RANGE = { min: 1.4, max: 2.4, step: 0.05, default: 1.85 };
+export const LINE_HEIGHT_RANGE = { min: 1.0, max: 2.4, step: 0.05, default: 1.3 };
 export const HEADER_FIELDS = [
   { id:'year', label:'學年度與學期' }, { id:'subject', label:'科目' },
   { id:'examType', label:'試別' },
@@ -58,6 +60,22 @@ const PAPER_SIZES = {
   B4: { width:257, height:364 },
 };
 let pdfLibraryPromise;
+let docxLibraryPromise;
+let appearanceSaveQueue = Promise.resolve();
+
+function loadDocxLibrary() {
+  if (window.docx?.Packer) return Promise.resolve(window.docx);
+  if (!docxLibraryPromise) {
+    docxLibraryPromise = new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = new URL('../vendor/docx.iife.js', import.meta.url).href;
+      script.onload = () => window.docx?.Packer ? resolve(window.docx) : reject(new Error('DOCX 元件載入失敗'));
+      script.onerror = () => reject(new Error('DOCX 元件載入失敗'));
+      document.head.appendChild(script);
+    }).catch(error => { docxLibraryPromise = null; throw error; });
+  }
+  return docxLibraryPromise;
+}
 
 function choosePaperLayout(format) {
   let modal = document.getElementById('epPaperSizeModal');
@@ -109,7 +127,7 @@ export async function downloadExam(examData, questions, format) {
   if (format !== 'Word' && format !== 'PDF') throw new Error('不支援的下載格式');
   const layout = await choosePaperLayout(format);
   if (!layout) return;
-  if (format === 'Word') exportToWord(examData, questions, layout.paperKey, layout.columns);
+  if (format === 'Word') await exportToWord(examData, questions, layout.paperKey, layout.columns);
   else await exportToPdf(examData, questions, layout.paperKey, layout.columns);
 }
 
@@ -169,7 +187,7 @@ export function saveHeader(d) {
   localStorage.setItem(HEADER_KEY, JSON.stringify({ ...loadHeader(), ...d }));
 }
 
-export const HEADER_BLANK_DEFAULTS = { class:6, name:6, seat:3 };
+export const HEADER_BLANK_DEFAULTS = { class:8, name:8, seat:0 };
 export const HEADER_BLANK_LABELS = { class:'班級：', name:'姓名：', seat:'座號：' };
 export function headerYearSemesterText(data) {
   if (data.yearSemesterText != null) return data.yearSemesterText === '○○○學年度第○學期' ? '' : data.yearSemesterText;
@@ -182,8 +200,8 @@ export function headerBlankParts(data, field) {
   const savedLength = data[`${field}Length`];
   const length = savedLength === undefined || savedLength === null || savedLength === ''
     ? storedText == null ? HEADER_BLANK_DEFAULTS[field] : trailing
-    : Math.max(0, Math.min(30, Number(savedLength) || 0));
-  return { text:HEADER_BLANK_LABELS[field], length };
+    : Number(savedLength) || 0;
+  return { text:HEADER_BLANK_LABELS[field], length:Math.max(0, Math.min(12, length)) };
 }
 
 // 舊版字型 id → 新版對應（相容處理：使用者上次選的 mingti/heiti 還能正常還原）
@@ -195,21 +213,25 @@ const FONT_ID_MIGRATION = {
 export function loadAppearance() {
   try {
     const a = JSON.parse(localStorage.getItem(APPEARANCE_KEY) || '{}');
-    let font = a.font || 'sans';
+    let font = a.font || 'system';
     if (FONT_ID_MIGRATION[font]) font = FONT_ID_MIGRATION[font];
     // 若 id 已不存在於選項中（更新後遺留），回到預設
-    if (!FONT_OPTIONS.find(f => f.id === font)) font = 'sans';
+    if (!FONT_OPTIONS.find(f => f.id === font)) font = 'system';
     return {
       font,
       fontSize:   Number(a.fontSize) >= FONT_SIZE_RANGE.min && Number(a.fontSize) <= FONT_SIZE_RANGE.max ? Number(a.fontSize) : FONT_SIZE_RANGE.default,
       lineHeight: Number(a.lineHeight) >= LINE_HEIGHT_RANGE.min && Number(a.lineHeight) <= LINE_HEIGHT_RANGE.max ? Number(a.lineHeight) : LINE_HEIGHT_RANGE.default,
     };
   } catch {
-    return { font:'sans', fontSize:FONT_SIZE_RANGE.default, lineHeight:LINE_HEIGHT_RANGE.default };
+    return { font:'system', fontSize:FONT_SIZE_RANGE.default, lineHeight:LINE_HEIGHT_RANGE.default };
   }
 }
 export function saveAppearance(d) {
   localStorage.setItem(APPEARANCE_KEY, JSON.stringify(d));
+}
+
+function examAppearance(examData) {
+  return examData.appearance ??= { ...loadAppearance() };
 }
 
 function fontStackById(id) {
@@ -250,7 +272,7 @@ function ensureHeaderModal() {
         <div class="form-group"><label class="form-label" for="hdSubjectText">科目</label><input class="form-control header-example-input" id="hdSubjectText" placeholder="例：全民國防教育"></div>
         <div class="form-group"><label class="form-label" for="hdRange">考試範圍</label><input class="form-control header-example-input" id="hdRange" placeholder="例：第1-3章"></div>
         <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px">
-          ${Object.entries(HEADER_BLANK_LABELS).map(([field,label]) => `<div class="form-group"><label class="form-label" for="hdLength-${field}">${label.replace('：','')}欄</label><select class="form-control" id="hdLength-${field}" aria-label="${label}空格數">${Array.from({length:31}, (_,count) => `<option value="${count}">${count} 格</option>`).join('')}</select></div>`).join('')}
+          ${Object.entries(HEADER_BLANK_LABELS).map(([field,label]) => `<div class="form-group"><label class="form-label" for="hdLength-${field}">${label.replace('：','')}欄</label><select class="form-control" id="hdLength-${field}" aria-label="${label}空格數">${Array.from({length:13}, (_,count) => `<option value="${count}">${count} 格</option>`).join('')}</select></div>`).join('')}
         </div>
       </div>
     </div>
@@ -326,6 +348,66 @@ export function showHeaderSettings(examData = null) {
   document.getElementById('hdModal').classList.remove('hidden');
 }
 
+export function mountInlineHeaderEditor(container, examData, onChange, onCancel) {
+  const fields = [
+    ['school','學校','例：幼獅高中'],
+    ['yearSemesterText','學年度與學期','例：115學年度上學期'],
+    ['examType','試別','例：第一次段考'],
+    ['subjectText','科目','例：全民國防教育'],
+    ['range','考試範圍','例：第1-3章'],
+  ];
+  const header = examData.header ?? loadHeader();
+  let savedHeader = { ...header };
+  container.innerHTML = `<div class="ep-inline-header-fields">
+    ${fields.map(([key,label,placeholder]) => `<label class="form-group"><span class="form-label">${label}</span><input class="form-control header-example-input" data-header-field="${key}" placeholder="${placeholder}"></label>`).join('')}
+    <div class="ep-inline-header-lengths">${Object.entries(HEADER_BLANK_LABELS).map(([field,label]) => `<label class="form-group"><span class="form-label">${label.replace('：','')}欄</span><select class="form-control" data-header-length="${field}">${Array.from({length:13}, (_,n) => `<option value="${n}">${n} 格</option>`).join('')}</select></label>`).join('')}</div>
+  </div><div class="ep-inline-header-actions"><button class="btn btn-primary btn-sm" type="button" data-header-save>儲存變更</button><button class="btn btn-outline btn-sm" type="button" data-header-clear>清除</button><button class="btn btn-ghost btn-sm" type="button" data-header-cancel>取消</button><span data-header-status role="status" aria-live="polite"></span></div>`;
+  for (const [key] of fields) container.querySelector(`[data-header-field="${key}"]`).value = key === 'yearSemesterText' ? headerYearSemesterText(header) : header[key] || '';
+  for (const field of Object.keys(HEADER_BLANK_LABELS)) container.querySelector(`[data-header-length="${field}"]`).value = headerBlankParts(header, field).length;
+  const update = () => {
+    const data = Object.fromEntries(fields.map(([key]) => [key, container.querySelector(`[data-header-field="${key}"]`).value]));
+    for (const field of Object.keys(HEADER_BLANK_LABELS)) {
+      data[`${field}Length`] = Number(container.querySelector(`[data-header-length="${field}"]`).value);
+      data[`${field}Text`] = HEADER_BLANK_LABELS[field];
+    }
+    examData.header = { ...examData.header, ...data };
+    onChange?.();
+    const status = container.querySelector('[data-header-status]');
+    if (status) status.textContent = '尚未儲存';
+  };
+  container.querySelectorAll('input').forEach(input => input.addEventListener('input', update));
+  container.querySelectorAll('select').forEach(select => select.addEventListener('change', update));
+  container.querySelector('[data-header-clear]').onclick = () => {
+    for (const [key] of fields) container.querySelector(`[data-header-field="${key}"]`).value = '';
+    for (const field of Object.keys(HEADER_BLANK_LABELS)) container.querySelector(`[data-header-length="${field}"]`).value = HEADER_BLANK_DEFAULTS[field];
+    update();
+  };
+  container.querySelector('[data-header-cancel]').onclick = () => {
+    examData.header = { ...savedHeader };
+    onChange?.();
+    onCancel?.();
+  };
+  const save = container.querySelector('[data-header-save]');
+  const clear = container.querySelector('[data-header-clear]');
+  const cancel = container.querySelector('[data-header-cancel]');
+  save.onclick = async () => {
+    const controls = [...container.querySelectorAll('input,select')];
+    save.disabled = clear.disabled = cancel.disabled = true;
+    controls.forEach(control => { control.disabled = true; });
+    try {
+      if (examData.id) await DataService.saveExam({ id:examData.id, header:examData.header });
+      savedHeader = { ...examData.header };
+      examData.onHeaderSaved?.();
+      container.querySelector('[data-header-status]').textContent = examData.id ? '已儲存至此試卷' : '已套用至目前草稿';
+      onCancel?.();
+    } catch (error) { container.querySelector('[data-header-status]').textContent = `儲存失敗：${error.message}`; }
+    finally {
+      save.disabled = clear.disabled = cancel.disabled = false;
+      controls.forEach(control => { control.disabled = false; });
+    }
+  };
+}
+
 
 // ══════════════════════════════════════════════════════════
 //  ❷  Modal：試卷預覽（含外觀調整）
@@ -352,7 +434,7 @@ function ensurePreviewModal() {
 .ep-preview-options input{accent-color:#3974c7}
 /* 試卷區 */
 #epPaper{color:#000;padding:0 4px}
-.ep-exam-header{border:0;border-bottom:2px solid #333;padding:10px 14px;margin-bottom:14px;font-size:.94em}
+.ep-exam-header{border:0;border-bottom:2px solid #333;padding:10px 14px;margin-bottom:14px;font-size:.94em;line-height:1.6}
 .ep-exam-header .ep-header-row{display:flex;flex-wrap:wrap;gap:4px 20px}
 .ep-exam-header .ep-header-row span{white-space:pre-wrap}
 .ep-exam-header .ep-header-row + .ep-header-row{margin-top:6px}
@@ -380,15 +462,16 @@ function ensurePreviewModal() {
     <div class="modal-header" style="flex-shrink:0">
       <h3 id="epTitle" style="flex:1">試卷預覽</h3>
       <div style="display:flex;gap:6px;align-items:center">
-        <button class="btn btn-ghost btn-sm" type="button" onclick="window._epOpenHeader()" title="編輯試卷表頭"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>試卷表頭</button>
+        <button class="btn btn-ghost btn-sm" type="button" id="epHeaderToggle" aria-expanded="false" aria-controls="epHeaderPanel" title="編輯試卷表頭"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>試卷表頭</button>
         <button class="btn btn-ghost btn-sm" type="button" id="epAppearanceToggle" aria-expanded="false" aria-controls="epToolbar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h11M4 17h16"/><circle cx="18" cy="12" r="2"/></svg>字體與行距</button>
         <button class="btn btn-outline btn-sm" onclick="window._epDoPrint()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>列印</button>
-        <button class="btn btn-primary btn-sm" onclick="window._epDoExport()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>輸出 Word</button>
-        <button class="btn btn-outline btn-sm" onclick="window._epDoExportPdf()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>下載 PDF</button>
-        <button class="modal-close" onclick="document.getElementById('epModal').classList.add('hidden')">✕</button>
+        <button class="btn btn-primary btn-sm" onclick="window._epDoExport()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>DOCX</button>
+        <button class="btn btn-outline btn-sm" onclick="window._epDoExportPdf()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>PDF</button>
+        <button class="modal-close" onclick="window._epClose()">✕</button>
       </div>
     </div>
     <div style="padding:14px 20px 0;flex-shrink:0">
+      <div class="ep-inline-header hidden" id="epHeaderPanel"></div>
       <div class="ep-toolbar hidden" id="epToolbar">
         <div class="group">
           <label>字型</label>
@@ -436,6 +519,16 @@ function ensurePreviewModal() {
     const expanded = !toolbar.classList.toggle('hidden');
     appearanceToggle.setAttribute('aria-expanded', String(expanded));
   });
+  const headerToggle = document.getElementById('epHeaderToggle');
+  headerToggle.addEventListener('click', () => {
+    const panel = document.getElementById('epHeaderPanel');
+    const expanded = !panel.classList.toggle('hidden');
+    headerToggle.setAttribute('aria-expanded', String(expanded));
+    if (expanded) mountInlineHeaderEditor(panel, window._epExamData, window._epRefresh, () => {
+      panel.classList.add('hidden');
+      headerToggle.setAttribute('aria-expanded', 'false');
+    });
+  });
 
   const onAppearChange = () => {
     const a = {
@@ -445,18 +538,33 @@ function ensurePreviewModal() {
     };
     sizeVal.textContent = a.fontSize + 'px';
     lineVal.textContent = a.lineHeight.toFixed(2);
-    saveAppearance(a);
+    window._epExamData.appearance = a;
     applyAppearance();
   };
   fontSel.addEventListener('change', onAppearChange);
   sizeRng.addEventListener('input',  onAppearChange);
   lineRng.addEventListener('input',  onAppearChange);
+  const persistAppearance = () => {
+    const exam = window._epExamData;
+    if (!exam?.id) return;
+    const appearance = { ...exam.appearance };
+    appearanceSaveQueue = appearanceSaveQueue.catch(() => {}).then(async () => {
+      try {
+        await DataService.saveExam({ id:exam.id, appearance });
+        exam.onAppearanceSaved?.();
+      } catch (error) { UI.toast(`試卷版面儲存失敗：${error.message}`, 'danger'); }
+    });
+  };
+  fontSel.addEventListener('change', persistAppearance);
+  sizeRng.addEventListener('change', persistAppearance);
+  lineRng.addEventListener('change', persistAppearance);
 
   document.getElementById('epAppearReset').onclick = () => {
-    fontSel.value = 'sans';
+    fontSel.value = 'system';
     sizeRng.value = FONT_SIZE_RANGE.default;
     lineRng.value = LINE_HEIGHT_RANGE.default;
     onAppearChange();
+    persistAppearance();
   };
   ['epShowAnswers', 'epShowAnalysis', 'epShowSource'].forEach(id => {
     document.getElementById(id).addEventListener('change', () => window._epRefresh?.());
@@ -471,9 +579,9 @@ function previewDisplay() {
   };
 }
 
-// 套用外觀（讀 localStorage → 設定 #epPaper 樣式）
+// 套用目前試卷的外觀設定
 function applyAppearance() {
-  const a = loadAppearance();
+  const a = examAppearance(window._epExamData);
   const paper = document.getElementById('epPaper');
   if (!paper) return;
   paper.style.fontFamily = fontStackById(a.font);
@@ -499,8 +607,11 @@ function applyAppearance() {
 export function showExamPreview(examData, questions) {
   ensurePreviewModal();
   examData.header ??= loadHeader();
+  examAppearance(examData);
   document.getElementById('epToolbar').classList.add('hidden');
   document.getElementById('epAppearanceToggle').setAttribute('aria-expanded', 'false');
+  document.getElementById('epHeaderPanel').classList.add('hidden');
+  document.getElementById('epHeaderToggle').setAttribute('aria-expanded', 'false');
 
   document.getElementById('epTitle').textContent = `預覽：${examData.title || '試卷'}`;
 
@@ -513,7 +624,10 @@ export function showExamPreview(examData, questions) {
   window._epDoPrint    = () => printWithPaperChoice(examData, questions);
   window._epDoExport   = () => downloadExam(examData, questions, 'Word');
   window._epDoExportPdf = () => downloadExam(examData, questions, 'PDF');
-  window._epOpenHeader = () => showHeaderSettings(examData);
+  window._epClose = () => {
+    document.getElementById('epModal').classList.add('hidden');
+    examData.onPreviewClose?.();
+  };
 
   renderPaper(examData, questions, previewDisplay());
   applyAppearance();
@@ -527,7 +641,7 @@ export function printExam(examData, questions, paperKey = 'A4', columns = 1) {
   ensurePreviewModal();
   const paper = document.createElement('div');
   paper.innerHTML = buildPaperHtml(examData, questions);
-  const appearance = loadAppearance();
+  const appearance = examAppearance(examData);
   const printContent = paper.firstElementChild;
   printContent.style.fontFamily = fontStackById(appearance.font);
   printContent.style.fontSize = `${appearance.fontSize}px`;
@@ -554,7 +668,7 @@ export function printExam(examData, questions, paperKey = 'A4', columns = 1) {
       @page { size: ${size.width}mm ${size.height}mm; margin: ${margins.top}mm ${margins.right}mm ${margins.bottom}mm ${margins.left}mm; }
       * { box-sizing: border-box; }
       body { margin: 0; color: #000; }
-      .ep-exam-header { border: 0; border-bottom: 2px solid #333; padding: 10px 14px; margin-bottom: 14px; font-size: .94em; }
+      .ep-exam-header { border: 0; border-bottom: 2px solid #333; padding: 10px 14px; margin-bottom: 14px; font-size: .94em; line-height: 1.6; }
       .ep-exam-header .ep-header-row { display:flex; flex-wrap:wrap; gap:4px 20px; }
       .ep-exam-header .ep-header-row span { white-space: pre-wrap; }
       .ep-exam-header .ep-header-row + .ep-header-row { margin-top:6px; }
@@ -589,12 +703,7 @@ function renderPaper(examData, questions, display) {
   document.getElementById('epBody').innerHTML = buildPaperHtml(examData, questions, display);
 }
 
-function buildPaperHtml(examData, questions, previewOptions) {
-  const h    = examData.header ?? loadHeader();
-  const typeScores = examData.typeScores || {};
-  const grouped    = groupByType(questions);
-  const types      = orderedTypes(grouped);
-
+export function buildHeaderHtml(h) {
   const escapeHeader = value => String(value || '').replace(/[&<>"']/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[char]);
   const blankValue = field => {
     const { text, length } = headerBlankParts(h, field);
@@ -620,12 +729,23 @@ function buildPaperHtml(examData, questions, previewOptions) {
       const pb = headerLayout[b.id];
       return Number(pa.position) - Number(pb.position) || HEADER_FIELDS.indexOf(a) - HEADER_FIELDS.indexOf(b);
     })
-    .map(field => `<span>${escapeHeader(headerValues[field.id])}</span>`).join(''));
+    .map(field => {
+      const value = escapeHeader(headerValues[field.id]);
+      return `<span>${row === 1 || ['class','name','seat'].includes(field.id) ? `<strong>${value}</strong>` : value}</span>`;
+    }).join(''));
 
-  let html = `<div id="epPaper">
-    <div class="ep-exam-header">
-      ${headerRows.map((content, index) => content ? `<div class="ep-header-row${index === 0 ? ' title-row' : ''}">${content}</div>` : '').join('')}
-    </div>`;
+  return `<div class="ep-exam-header">
+    ${headerRows.map((content, index) => content ? `<div class="ep-header-row${index === 0 ? ' title-row' : ''}">${content}</div>` : '').join('')}
+  </div>`;
+}
+
+function buildPaperHtml(examData, questions, previewOptions) {
+  const h = examData.header ?? loadHeader();
+  const typeScores = examData.typeScores || {};
+  const grouped = groupByType(questions);
+  const types = orderedTypes(grouped);
+
+  let html = `<div id="epPaper">${buildHeaderHtml(h)}`;
 
   html += '<div class="ep-question-columns">';
   types.forEach((type, secIdx) => {
@@ -699,8 +819,8 @@ function renderQPreview(q, num, type, previewOptions) {
 // ══════════════════════════════════════════════════════════
 //  輸出 Word（讀取相同的表頭與外觀偏好）
 // ══════════════════════════════════════════════════════════
-export function exportToWord(examData, questions, paperKey = 'A4', columns = 1) {
-  const a = loadAppearance();
+export async function exportToWord(examData, questions, paperKey = 'A4', columns = 1) {
+  const a = examAppearance(examData);
   const margins = loadWordMargins();
   const size = PAPER_SIZES[paperKey] || PAPER_SIZES.A4;
   const title = examData.title || '試卷';
@@ -729,53 +849,20 @@ export function exportToWord(examData, questions, paperKey = 'A4', columns = 1) 
     while (content.firstChild) paragraph.appendChild(content.firstChild);
     question.replaceWith(paragraph);
   });
-  const content = paper.firstElementChild;
-  const body = columns === 2
-    ? `<div class="Section1">${content.querySelector('.ep-exam-header').outerHTML}</div>
-       <br clear="all" style="mso-break-type:section-break;page-break-before:auto">
-       <div class="Section2">${content.querySelector('.ep-question-columns').innerHTML}</div>
-       ${content.querySelector('.ep-answers') ? `<br clear="all" style="mso-break-type:section-break;page-break-before:auto">
-       <div class="Section3">${content.querySelector('.ep-answers').outerHTML}</div>` : ''}`
-    : `<div class="Section1">${content.innerHTML}</div>`;
-
-  // ── Word HTML wrapper：套用使用者外觀偏好 ──────────────
-  const wordHtml = `<html xmlns:o="urn:schemas-microsoft-com:office:office"
-    xmlns:w="urn:schemas-microsoft-com:office:word"
-    xmlns="http://www.w3.org/TR/REC-html40">
-<head><meta charset="UTF-8">
-<meta name=ProgId content=Word.Document>
-<!--[if gte mso 9]><xml><w:WordDocument>
-<w:View>Print</w:View><w:Zoom>90</w:Zoom>
-</w:WordDocument></xml><![endif]-->
-<style>
-  @page Section1 { size:${size.width}mm ${size.height}mm; margin:${margins.top}mm ${margins.right}mm ${margins.bottom}mm ${margins.left}mm; }
-  ${columns === 2 ? `@page Section2 { size:${size.width}mm ${size.height}mm; margin:${margins.top}mm ${margins.right}mm ${margins.bottom}mm ${margins.left}mm; mso-columns:2 even 28.35pt; }
-  @page Section3 { size:${size.width}mm ${size.height}mm; margin:${margins.top}mm ${margins.right}mm ${margins.bottom}mm ${margins.left}mm; }
-  div.Section2 { page:Section2; }
-  div.Section3 { page:Section3; }` : ''}
-  div.Section1 { page:Section1; }
-  body { margin:0; color:#000; }
-  .Section1, .Section2, .Section3 { font-family:${fontStack}; font-size:${a.fontSize}px; line-height:${lineHeightPx}; color:#000; }
-  .ep-exam-header { border:0; border-bottom:2px solid #333; padding:10px 14px; margin-bottom:14px; font-size:.94em; }
-  .ep-exam-header .ep-header-row { margin-bottom:6px; }
-  .ep-exam-header .ep-header-row span { display:inline-block; margin-right:20px; white-space:pre-wrap; }
-  .ep-exam-header .title-row { font-size:1.05em; font-weight:700; }
-  .ep-exam-header .title-row span { margin-right:.5em; }
-  .ep-section-head { font-weight:700; margin:14px 0 8px; }
-  .ep-q { margin-bottom:8px; page-break-inside:avoid; line-height:${lineHeightPx}; text-align:justify; text-justify:inter-ideograph; }
-  .ep-q .q-no { font-weight:700; }
-  .ep-word-question { page-break-inside:avoid; text-align:justify; text-justify:inter-ideograph; }
-  .ep-q p { margin:0; line-height:${lineHeightPx}; }
-  .ep-answer-blank { color:#888; margin-top:4px; }
-</style>
-</head><body>${body}</body></html>`;
-
-  const blob = new Blob(['\uFEFF' + wordHtml], { type:'application/msword;charset=utf-8' });
-  const a2 = document.createElement('a');
-  a2.href = URL.createObjectURL(blob);
-  a2.download = `${title}.doc`;
-  document.body.appendChild(a2); a2.click();
-  document.body.removeChild(a2); URL.revokeObjectURL(a2.href);
+  try {
+    const docx = await loadDocxLibrary();
+    const blob = await createDocxBlob({ docx, content:paper.firstElementChild, title, appearance:a, margins, paperSize:size, columns });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `${title.replace(/[\\/:*?"<>|]/g, '_')}.docx`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(link.href), 60000);
+  } catch (error) {
+    console.error('DOCX 匯出失敗', error);
+    UI.toast(`Word 下載失敗：${error.message || '請稍後再試'}`, 'danger');
+  }
 }
 
 // PDF 以預覽的試卷 HTML 製作，保留中文及瀏覽器中的視覺樣式。
@@ -783,7 +870,7 @@ export async function exportToPdf(examData, questions, paperKey = 'A4', columns 
   try {
     ensurePreviewModal();
     const html2pdf = await loadPdfLibrary();
-    const appearance = loadAppearance();
+    const appearance = examAppearance(examData);
     const margins = loadWordMargins();
     const size = PAPER_SIZES[paperKey] || PAPER_SIZES.A4;
     const paper = document.createElement('div');

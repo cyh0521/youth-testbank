@@ -92,6 +92,60 @@
 - **驗證**：HTML 內四個按鈕均含 SVG；JavaScript 語法與變更空白檢查。
 - **待驗證**：重新載入頁面後目視確認四個圖示均顯示。
 
+## 2026-09-25 — Word 表頭第一列未顯示粗體
+
+- **現象**：預覽表頭第一列為粗體，下載 Word 後未保持相同字重。
+- **原因**：Word 對表頭容器上的 CSS `font-weight` 套用不穩定。
+- **修正**：第一列欄位加入語意化 `<strong>`，並在 Word 樣式中明確指定粗體。試卷列表的卡片、資訊與操作按鈕圖示同步改為單色線條 SVG。
+- **影響檔案**：`js/exam-preview.js`、`exams.html`。
+- **驗證**：JavaScript 語法及變更空白檢查。
+- **待驗證**：需在 Microsoft Word 實際開啟新下載的檔案，目視確認第一列表頭的字重。
+
+## 2026-09-25 — Word 下載副檔名與實際格式不一致
+
+- **現象**：原下載檔使用 `.doc`，實際內容是 HTML，無法直接當作真正的 `.docx`。
+- **原因**：舊匯出流程將 HTML 字串以 `application/msword` 儲存。
+- **修正**：改用 docx.js 組成 OOXML 文件並下載 `.docx`；保留紙張尺寸、邊距、單雙欄、表頭、題目及解答。班級、姓名、座號格數預設改為 8、8、0，選單限制在 0–12 格。
+- **影響檔案**：`js/exam-preview.js`、`js/docx-export.js`、`settings.html`、`vendor/docx.iife.js`、`vendor/docx.LICENSE`、`README.md`。
+- **驗證**：以瀏覽器產生單欄及雙欄測試 DOCX，確認為有效 ZIP／OOXML，包含表頭粗體、JIS B4 頁面尺寸與雙欄 section；可由 python-docx 開啟。從網站的 Word 匯出函式進行整合測試，下載檔名為 `.docx`，內容包含題目、三個 section 與粗體表頭。JavaScript 語法與變更空白檢查通過。
+- **待驗證**：需用真實試卷在 Microsoft Word 目視檢查字型、換行、分頁與圖片；遠端圖片若不允許瀏覽器擷取，會退回替代文字。
+
+## 2026-09-25 — DOCX 在 Word 中題距過大並顯示黑色方塊
+
+- **現象**：Word 開啟新匯出的 DOCX 時，題目與表頭間距被拉大，段落左側出現黑色方塊。
+- **原因**：東亞文字貼齊 Word 文件格線，將指定行高向上取整；`keepNext` 與 `keepLines` 段落屬性在顯示格式標記時呈現黑色方塊。
+- **修正**：每個文字 run 明確指定東亞字型並關閉貼齊格線；移除表頭、題型標題與題目的上述段落限制。
+- **影響檔案**：`js/docx-export.js`。
+- **驗證**：從網站匯出流程產生測試 DOCX；檢查 OOXML 中沒有 `keepNext`／`keepLines`，所有文字 run 都含 `snapToGrid=false`，且東亞字型一致；python-docx 可開啟。
+- **待驗證**：此執行環境無法啟動 Word COM，需在 Word 中重新下載並目視確認實際行距與分頁。
+
+## 2026-09-25 — Word 字型與行距仍不同於預覽
+
+- **現象**：使用者提供的 DOCX 在 Word 中，字型及行距仍與網站預覽不同。
+- **原因**：匯出將預覽的 Noto Sans TC 換成微軟正黑體；行距規則輸出為 `exactly`，不是 Word 使用的 `exact`。
+- **修正**：匯出沿用預覽的 Noto Sans TC／Noto Serif TC 字型；行距改用 Word 可辨識的 `exact` 規則。
+- **影響檔案**：`js/docx-export.js`。
+- **驗證**：以 16px、1.85 行距產生 DOCX，確認 OOXML 寫入 Noto Sans TC、444 twips 與 `lineRule=exact`，且 python-docx 可解析行距。
+- **待驗證**：需於 Microsoft Word 開啟重新下載的實際試卷，確認視覺效果。
+
+## 2026-09-25 — Word 解答標題與表頭分隔線、表頭設定儲存行為
+
+- **現象**：Word 的「【解答與解析】」未加粗且缺少題目與解答間的分隔線；表頭第二列與底線距離不同於預覽；儲存試卷表頭後設定區未關閉。
+- **原因**：DOCX 匯出未轉換解答區標題的粗體與上方虛線，也未設定表頭底線到文字的距離；儲存處理只更新狀態文字。
+- **修正**：解答標題套用粗體與虛線上框；表頭第二列底線加入 8pt 間距；儲存成功後關閉表頭設定區。
+- **影響檔案**：`js/docx-export.js`、`js/exam-preview.js`。
+- **驗證**：產生測試 DOCX，確認解答標題粗體、虛線上框及表頭底框間距均寫入 OOXML，且 python-docx 可開啟；JavaScript 語法與變更空白檢查通過。
+- **待驗證**：需在 Microsoft Word 目視確認線條和間距的實際呈現。
+
+## 2026-09-25 — 試卷行距與個別外觀設定
+
+- **現象**：調整預覽中的字體與行距會覆寫進階設定的預設值，其他試卷的預覽與匯出隨之改變；表頭行距也跟著題目行距變動。
+- **原因**：預覽與匯出都讀寫同一份瀏覽器外觀設定，表頭繼承試卷行距。
+- **修正**：預設題目行距改為 1.3，表頭固定 1.6；各試卷獨立保存外觀，預覽、列印、Word、PDF 使用試卷外觀。進階設定只作為新試卷預設值，變更前先為尚無外觀資料的既有試卷保存原值。
+- **影響檔案**：`js/exam-preview.js`、`js/docx-export.js`、`js/firebase.js`、`settings.html`、`compose.html`、`manual.html`、`coded.html`、`exams.html`、`README.md`。
+- **驗證**：JavaScript 語法、試卷建立與匯出路徑檢查；DOCX 行距寫入檢查。
+- **待驗證**：在網站以多張真實試卷確認跨頁面資料保存及 Word 視覺效果。
+
 ## 後續記錄格式
 
 ```md

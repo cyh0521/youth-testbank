@@ -518,6 +518,17 @@ window.DataService = {
     }
   },
 
+  async preserveExamAppearances(appearance) {
+    const uid = DataService._currentUser?.uid;
+    if (!uid) throw new Error('請先登入');
+    const source = query(collection(db, 'exams'), where('createdBy', '==', uid));
+    const snap = await getDocs(source);
+    for (const examDoc of snap.docs) {
+      if (examDoc.data().appearance != null) continue;
+      await updateDoc(examDoc.ref, { appearance });
+    }
+  },
+
   async changePassword(currentPassword, newPassword) {
     const firebaseUser = auth.currentUser;
     if (!firebaseUser?.email || firebaseUser.uid !== DataService._currentUser?.uid) {

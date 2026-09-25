@@ -154,7 +154,7 @@
 
 <script type="module">
 import { guardPage } from './js/auth-guard.js';
-import { showExamPreview, showHeaderSettings, loadHeader } from './js/exam-preview.js';
+import { showExamPreview, showHeaderSettings, loadHeader, loadAppearance } from './js/exam-preview.js';
 window.openHeaderSettings = showHeaderSettings;
 window._activeNav = 'compose';
 const user = await guardPage(['admin','teacher']);
@@ -423,6 +423,7 @@ window.previewExam = () => {
     subjectCode: cSubject.value,
     bookCode: document.getElementById('cBook').value,
     header: draftPreviewData?.header ?? loadHeader(),
+    appearance: draftPreviewData?.appearance ?? loadAppearance(),
   };
   showExamPreview(draftPreviewData, generatedQuestions);
 };
@@ -668,6 +669,7 @@ window.doSaveExam = async () => {
   const exam = {
     title,
     header: draftPreviewData?.header ?? loadHeader(),
+    appearance: draftPreviewData?.appearance ?? loadAppearance(),
     description: document.getElementById('examDesc').value.trim(),
     subjectCode: sc,
     bookCode: bc,

@@ -387,6 +387,13 @@ input, select, textarea { font-family: var(--font-sans); }
 }
 .form-control::placeholder { color: var(--text-muted); }
 .header-example-input:focus::placeholder { color: transparent; }
+.ep-inline-header{padding:12px 16px;background:#f5f3ee;border:1px solid #e0dcd2;border-radius:6px;margin-bottom:14px}
+.ep-inline-header-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 12px}
+.ep-inline-header-fields .form-group{margin:0;min-width:0}
+.ep-inline-header-fields .form-label{display:block;margin-bottom:4px}
+.ep-inline-header-lengths{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;align-items:end}
+.ep-inline-header-actions{display:flex;align-items:center;gap:10px;margin-top:10px;font-size:.78rem;color:var(--text-secondary)}
+@media(max-width:680px){.ep-inline-header-fields{grid-template-columns:repeat(2,minmax(0,1fr))}.ep-inline-header-lengths{grid-column:1/-1}}
 select.form-control { cursor: pointer; }
 textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
 

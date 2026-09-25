@@ -215,7 +215,7 @@
 
 <script type="module">
 import { guardPage } from './js/auth-guard.js';
-import { showExamPreview, showHeaderSettings, loadHeader } from './js/exam-preview.js';
+import { showExamPreview, showHeaderSettings, loadHeader, loadAppearance } from './js/exam-preview.js';
 window.openHeaderSettings = showHeaderSettings;
 window._activeNav = 'manual';
 const user = await guardPage(['admin','teacher']);
@@ -612,7 +612,7 @@ window.previewSelected = () => {
   const qs = selectedOrder.map(id=>selQuestions[id]).filter(Boolean);
   const firstQ = qs[0];
   draftPreviewData = { title:'（預覽）', typeScores, subjectCode:firstQ?.subjectCode||'', bookCode:firstQ?.bookCode||'',
-    header:draftPreviewData?.header ?? loadHeader() };
+    header:draftPreviewData?.header ?? loadHeader(), appearance:draftPreviewData?.appearance ?? loadAppearance() };
   showExamPreview(draftPreviewData, qs);
 };
 window.openSaveModal = async () => {
@@ -630,7 +630,7 @@ window.doSaveExam = async () => {
   const classSelect = document.getElementById('examClass');
   const classOption = classSelect.selectedOptions[0];
   const exam = {
-    title, header: draftPreviewData?.header ?? loadHeader(), description: document.getElementById('examDesc').value.trim(),
+    title, header: draftPreviewData?.header ?? loadHeader(), appearance: draftPreviewData?.appearance ?? loadAppearance(), description: document.getElementById('examDesc').value.trim(),
     subjectCode: firstQ?.subjectCode||'', bookCode: firstQ?.bookCode||'',
     totalScore, typeScores, questionIds:[...selectedOrder],
     questionCount: selectedOrder.length, composeMode:'manual',

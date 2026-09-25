@@ -614,11 +614,11 @@ async function buildCatalogPanel() {
   <section class="card catalog-section" data-section="appearance" style="max-width:760px">
     <div class="card-header"><h2>字體與行距</h2></div>
     <div class="card-body">
-      <p style="font-size:.84rem;color:var(--text-secondary);margin:0 0 14px">此處設定試卷預設字型、大小與行距。預覽、Word 與 PDF 共用；預覽視窗調整後也會更新此設定。</p>
+      <p style="font-size:.84rem;color:var(--text-secondary);margin:0 0 14px">此處設定新建試卷的預設字型、大小與行距。個別試卷可在預覽視窗調整，且不會改動此處的預設值。</p>
       <div class="grid-2">
         <div class="form-group"><label class="form-label" for="defaultExamFont">預設字型</label><select class="form-control" id="defaultExamFont"></select></div>
         <div class="form-group"><label class="form-label" for="defaultExamFontSize">字體大小（px）</label><input class="form-control" id="defaultExamFontSize" type="number" min="11" max="20" step="1" required></div>
-        <div class="form-group"><label class="form-label" for="defaultExamLineHeight">行距</label><input class="form-control" id="defaultExamLineHeight" type="number" min="1.4" max="2.4" step="0.05" required></div>
+        <div class="form-group"><label class="form-label" for="defaultExamLineHeight">行距</label><input class="form-control" id="defaultExamLineHeight" type="number" min="1.0" max="2.4" step="0.05" required></div>
       </div>
       <div class="catalog-actions"><button class="btn btn-primary" type="button" id="appearanceSave">儲存變更</button><button class="btn btn-outline" type="button" id="appearanceReset">恢復預設</button><span id="appearanceStatus" role="status" aria-live="polite"></span></div>
     </div>
@@ -734,17 +734,19 @@ function buildAppearanceSettings() {
   const fill = values => { font.value = values.font; size.value = values.fontSize; line.value = values.lineHeight; };
   fill(loadAppearance());
   const status = document.getElementById('appearanceStatus');
-  document.getElementById('appearanceSave').addEventListener('click', () => {
+  document.getElementById('appearanceSave').addEventListener('click', async () => {
     if (!size.reportValidity() || !line.reportValidity()) return;
     try {
+      await DataService.preserveExamAppearances(loadAppearance());
       saveAppearance({ font:font.value, fontSize:Number(size.value), lineHeight:Number(line.value) });
       status.textContent = '已儲存';
       UI.toast('字體與行距已儲存', 'success');
     } catch (error) { status.textContent = `儲存失敗：${error.message || '請稍後再試'}`; }
   });
-  document.getElementById('appearanceReset').addEventListener('click', () => {
-    const defaults = { font:'sans', fontSize:FONT_SIZE_RANGE.default, lineHeight:LINE_HEIGHT_RANGE.default };
+  document.getElementById('appearanceReset').addEventListener('click', async () => {
+    const defaults = { font:'system', fontSize:FONT_SIZE_RANGE.default, lineHeight:LINE_HEIGHT_RANGE.default };
     try {
+      await DataService.preserveExamAppearances(loadAppearance());
       saveAppearance(defaults);
       fill(defaults);
       status.textContent = '已恢復預設';
@@ -789,7 +791,7 @@ function buildHeaderSettings() {
   const lengthFields = [{ field:'class', label:'班級欄' }, { field:'name', label:'姓名欄' }, { field:'seat', label:'座號欄' }];
   host.innerHTML = `<div class="grid-2">
     ${textFields.map(([key,label,placeholder]) => `<div class="form-group"><label class="form-label" for="headerText-${key}">${label}</label><input class="form-control header-example-input" id="headerText-${key}" placeholder="${placeholder}"></div>`).join('')}
-    <div class="header-length-group">${lengthFields.map(({field,label}) => `<div class="form-group"><label class="form-label" for="headerLength-${field}">${label}</label><select class="form-control header-length-select" id="headerLength-${field}" aria-label="${label}空格數">${Array.from({length:31}, (_,count) => `<option value="${count}">${count} 格</option>`).join('')}</select></div>`).join('')}</div>
+    <div class="header-length-group">${lengthFields.map(({field,label}) => `<div class="form-group"><label class="form-label" for="headerLength-${field}">${label}</label><select class="form-control header-length-select" id="headerLength-${field}" aria-label="${label}空格數">${Array.from({length:13}, (_,count) => `<option value="${count}">${count} 格</option>`).join('')}</select></div>`).join('')}</div>
     </div>`;
   layoutHost.innerHTML = `<div class="header-layout-board">${[1,2].map(row => `<div class="header-layout-line"><strong>第 ${row} 行</strong><div class="header-layout-dropzone" data-row="${row}" aria-label="第 ${row} 行欄位"></div></div>`).join('')}</div>`;
   const layoutZones = Object.fromEntries([1,2].map(row => [row, layoutHost.querySelector(`[data-row="${row}"]`)]));

@@ -13,6 +13,8 @@
 .exam-info{flex:1;min-width:0}
 .exam-title{font-weight:700;font-size:.95rem;color:var(--primary);margin-bottom:4px}
 .exam-meta{display:flex;gap:8px;flex-wrap:wrap;font-size:.78rem;color:var(--text-muted);align-items:center}
+.exam-meta span{display:inline-flex;align-items:center;gap:4px}
+.exam-meta svg,.exam-actions svg{display:block;flex:none}
 .exam-actions{display:flex;gap:5px;flex-shrink:0;align-items:center;flex-wrap:wrap}
 .filter-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
 .empty-exams{text-align:center;padding:60px 24px;color:var(--text-muted)}
@@ -50,6 +52,12 @@
 .eq-remove:hover{color:var(--danger)}
 .drag-handle{cursor:grab;color:var(--text-muted);font-size:.8rem;flex-shrink:0;padding-top:2px}
 .eq-item.dragging{opacity:.4}.eq-item.drag-over{border-top:2px solid var(--primary-light)}
+.edit-header-sample{padding:10px 14px;margin-bottom:12px;border-bottom:2px solid #333;color:#000;background:#f5f3ee;line-height:1.6}
+.edit-header-sample .ep-exam-header{border:0;padding:0;margin:0}
+.edit-header-sample .ep-header-row{display:flex;flex-wrap:wrap;gap:4px 20px}
+.edit-header-sample .ep-header-row span{white-space:pre-wrap}
+.edit-header-sample .ep-header-row+.ep-header-row{margin-top:6px}
+.edit-header-sample .title-row{font-size:1.05em;font-weight:700;column-gap:.5em}
 @media(max-width:1000px){
   .exam-card{display:grid;grid-template-columns:44px minmax(0,1fr)}
   .exam-actions{grid-column:1/-1;justify-content:flex-end;border-top:1px solid var(--border-light);padding-top:10px}
@@ -131,13 +139,17 @@
       <h3 id="editTitle">編輯試卷</h3>
       <div style="display:flex;gap:6px;align-items:center">
         <button class="btn btn-ghost btn-sm" onclick="shuffleEditQs()" title="各題型內亂數排序"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m18 14 4 4-4 4M18 2l4 4-4 4M2 18h2.5a6 6 0 0 0 5.1-3l4.8-8a6 6 0 0 1 5.1-3H22M2 6h2.5a6 6 0 0 1 5.1 3l.5.8M14 17.2a6 6 0 0 0 5.5 2.8H22"/></svg>亂數排序</button>
-        <button class="btn btn-ghost btn-sm" onclick="openHeaderSettings()" title="設定試卷上方表頭資訊"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>試卷表頭</button>
+        <button class="btn btn-ghost btn-sm" id="editHeaderToggle" onclick="toggleEditHeader()" aria-expanded="false" aria-controls="editHeaderPanel" title="設定試卷上方表頭資訊"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>試卷表頭</button>
         <button class="btn btn-outline btn-sm" onclick="previewEdit()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>預覽</button>
         <button class="btn btn-primary btn-sm" onclick="saveEdit()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2zM17 21v-8H7v8M7 3v5h8"/></svg>儲存</button>
         <button class="modal-close" onclick="closeEdit()">✕</button>
       </div>
     </div>
     <div class="modal-body" style="padding:16px 20px">
+      <div id="editHeaderPanel" class="ep-inline-header hidden">
+        <div id="editHeaderSample" class="edit-header-sample"></div>
+        <div id="editHeaderFields"></div>
+      </div>
       <!-- 基本資訊 -->
       <div class="form-group" style="margin-bottom:16px">
         <label class="form-label">試卷名稱 <span class="required">*</span></label>
@@ -159,7 +171,7 @@
 
 <script type="module">
 import { guardPage } from './js/auth-guard.js';
-import { showExamPreview, downloadExam, printWithPaperChoice, showHeaderSettings } from './js/exam-preview.js';
+import { showExamPreview, downloadExam, printWithPaperChoice, showHeaderSettings, loadHeader, loadAppearance, mountInlineHeaderEditor, buildHeaderHtml } from './js/exam-preview.js';
 window.openHeaderSettings = showHeaderSettings;
 window._activeNav = 'exams';
 const user = await guardPage(['admin','teacher']);
@@ -172,6 +184,7 @@ let allExams     = [];
 let allClasses   = [];
 let allQuestions = {};  // id -> q
 let editExamId   = null;
+let editDraftExam = null;
 let editQOrder   = [];  // array of question ids
 let editQMap     = {};  // id -> q
 let viewMode     = 'class';
@@ -409,6 +422,18 @@ window.filterExams = () => {
 };
 
 function renderExams(list) {
+  const icon = (path, size = 16) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${path}</svg>`;
+  const icons = {
+    paper:icon('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h8"/>', 22),
+    count:icon('<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>'),
+    score:icon('<circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/>'),
+    school:icon('<path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6M9 10h.01M15 10h.01"/>'),
+    eye:icon('<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>'),
+    print:icon('<path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>'),
+    download:icon('<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>'),
+    edit:icon('<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>'),
+    trash:icon('<path d="M3 6h18M8 6V4h8v2M6 6l1 15h10l1-15M10 10v7M14 10v7"/>'),
+  };
   const el = document.getElementById('examList');
   if (!list.length) {
     el.innerHTML = `<div class="empty-exams">
@@ -423,25 +448,25 @@ function renderExams(list) {
   }
   el.innerHTML = list.map(e => {
     return `<div class="exam-card">
-      <div class="exam-icon">📄</div>
+      <div class="exam-icon">${icons.paper}</div>
       <div class="exam-info">
         <div class="exam-title">${UI.escapeHtml(e.title||'（未命名）')}</div>
         <div class="exam-meta">
-          <span>📊 ${e.questionCount||0} 題</span>
-          <span>💯 ${e.totalScore||0} 分</span>
+          <span>${icons.count}${e.questionCount||0} 題</span>
+          <span>${icons.score}${e.totalScore||0} 分</span>
           <span>${UI.escapeHtml(examSubjectLabel(e))}</span>
-          <span>🏫 ${UI.escapeHtml(examClassLabel(e))}</span>
+          <span>${icons.school}${UI.escapeHtml(examClassLabel(e))}</span>
           <span style="color:var(--text-muted)">建立時間：${UI.formatDateTime(e.createdAt)}</span>
         </div>
         ${e.description?`<div style="font-size:.8rem;color:var(--text-secondary);margin-top:3px">${UI.escapeHtml(e.description)}</div>`:''}
       </div>
       <div class="exam-actions">
-        <button class="btn btn-sm btn-outline" onclick="previewExam('${e.id}')">👁 預覽</button>
-        <button class="btn btn-sm btn-primary" onclick="printSavedExam('${e.id}')">🖨 列印</button>
-        <button class="btn btn-sm btn-ghost"   onclick="downloadWord('${e.id}')">⬇ Word</button>
-        <button class="btn btn-sm btn-ghost"   onclick="downloadPdf('${e.id}')">⬇ PDF</button>
-        ${canEdit ? `<button class="btn btn-sm btn-outline" onclick="openEdit('${e.id}')">✏️ 編輯</button>` : ''}
-        ${canEdit ? `<button class="btn btn-sm btn-danger" onclick="deleteExam('${e.id}','${(e.title||'').replace(/'/g,'&apos;')}')">🗑</button>` : ''}
+        <button class="btn btn-sm btn-outline" onclick="previewExam('${e.id}')">${icons.eye}預覽</button>
+        <button class="btn btn-sm btn-primary" onclick="printSavedExam('${e.id}')">${icons.print}列印</button>
+        <button class="btn btn-sm btn-ghost" onclick="downloadWord('${e.id}')">${icons.download}DOCX</button>
+        <button class="btn btn-sm btn-ghost" onclick="downloadPdf('${e.id}')">${icons.download}PDF</button>
+        ${canEdit ? `<button class="btn btn-sm btn-outline" onclick="openEdit('${e.id}')">${icons.edit}編輯</button>` : ''}
+        ${canEdit ? `<button class="btn btn-sm btn-danger" onclick="deleteExam('${e.id}','${(e.title||'').replace(/'/g,'&apos;')}')">${icons.trash}刪除</button>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -581,6 +606,9 @@ window.openEdit = async (id) => {
   const e = allExams.find(x => x.id===id); if (!e) return;
   await loadExamQuestions(e);
   editExamId = id;
+  editDraftExam = { id, header:{ ...(e.header ?? loadHeader()) }, appearance:{ ...(e.appearance ?? loadAppearance()) },
+    onHeaderSaved:() => { e.header = { ...editDraftExam.header }; },
+    onAppearanceSaved:() => { e.appearance = { ...editDraftExam.appearance }; } };
   editQOrder = [...(e.questionIds||[])];
   editQMap   = {};
   editQOrder.forEach(qid => { if (allQuestions[qid]) editQMap[qid] = allQuestions[qid]; });
@@ -591,7 +619,25 @@ window.openEdit = async (id) => {
   document.getElementById('editExamTitle').value  = e.title || '';
   renderEditScoreRows(e.typeScores||{});
   renderEditQList();
+  document.getElementById('editHeaderPanel').classList.add('hidden');
+  document.getElementById('editHeaderToggle').setAttribute('aria-expanded', 'false');
   document.getElementById('editModal').classList.remove('hidden');
+};
+
+function renderEditHeaderSample() {
+  document.getElementById('editHeaderSample').innerHTML = buildHeaderHtml(editDraftExam.header);
+}
+window.toggleEditHeader = () => {
+  const panel = document.getElementById('editHeaderPanel');
+  const expanded = !panel.classList.toggle('hidden');
+  document.getElementById('editHeaderToggle').setAttribute('aria-expanded', String(expanded));
+  if (expanded) {
+    renderEditHeaderSample();
+    mountInlineHeaderEditor(document.getElementById('editHeaderFields'), editDraftExam, renderEditHeaderSample, () => {
+      panel.classList.add('hidden');
+      document.getElementById('editHeaderToggle').setAttribute('aria-expanded', 'false');
+    });
+  }
 };
 
 function renderEditScoreRows(typeScores) {
@@ -692,8 +738,18 @@ window.previewEdit = () => {
   const typeScores = getCurrentEditScores();
   const qs = editQOrder.map(id => editQMap[id]).filter(Boolean);
   const title = document.getElementById('editExamTitle').value.trim() || '試卷預覽';
-  const exam = allExams.find(item => item.id === editExamId);
-  showExamPreview({ id:editExamId, title, typeScores, header:exam?.header }, qs);
+  editDraftExam.title = title;
+  editDraftExam.typeScores = typeScores;
+  editDraftExam.onPreviewClose = () => {
+    if (!document.getElementById('editHeaderPanel').classList.contains('hidden')) {
+      renderEditHeaderSample();
+      mountInlineHeaderEditor(document.getElementById('editHeaderFields'), editDraftExam, renderEditHeaderSample, () => {
+        document.getElementById('editHeaderPanel').classList.add('hidden');
+        document.getElementById('editHeaderToggle').setAttribute('aria-expanded', 'false');
+      });
+    }
+  };
+  showExamPreview(editDraftExam, qs);
 };
 
 // Save edit
@@ -711,6 +767,8 @@ window.saveEdit = async () => {
       id:            editExamId,
       title,
       typeScores,
+      header:        editDraftExam.header,
+      appearance:    editDraftExam.appearance,
       totalScore,
       questionIds:   [...editQOrder],
       questionCount: editQOrder.length,
@@ -721,7 +779,10 @@ window.saveEdit = async () => {
   } catch(e) { UI.toast('儲存失敗：'+e.message, 'danger'); }
 };
 
-window.closeEdit = () => document.getElementById('editModal').classList.add('hidden');
+window.closeEdit = () => {
+  document.getElementById('editModal').classList.add('hidden');
+  editDraftExam = null;
+};
 
 init();
 </script>
