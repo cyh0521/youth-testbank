@@ -4,7 +4,7 @@ import { createDocxBlob } from './docx-export.js';
  * 幼獅題庫系統 — 試卷預覽 & Word 輸出模組 v3
  * - 表頭設定獨立成 showHeaderSettings()
  * - 預覽試卷支援即時調整字型 / 字體大小 / 行距
- * - 表頭與外觀偏好都會記在 localStorage
+ * - 預設表頭與外觀偏好儲存在使用者帳號
  */
 
 const TYPE_ORDER  = ['T1','T2','T3','T4','T5','T6'];
@@ -47,13 +47,7 @@ export function normalizeHeaderLayout(layout = {}) {
   }));
 }
 
-// ── localStorage Keys ─────────────────────────────────
-const HEADER_KEY = 'examHeaderData';
-const APPEARANCE_KEY = 'examAppearance';
-const WORD_MARGIN_KEY = 'examWordMargins';
 export const DEFAULT_WORD_MARGINS = { top:10, right:10, bottom:10, left:10 };
-const PAPER_SIZE_KEY = 'examPaperSize';
-const PAPER_COLUMNS_KEY = 'examPaperColumns';
 const PAPER_SIZES = {
   A3: { width:297, height:420 },
   A4: { width:210, height:297 },
@@ -99,10 +93,9 @@ function choosePaperLayout(format) {
   }
   document.getElementById('epPaperSizeTitle').textContent = `${format === '列印' ? '列印' : `下載 ${format}`}設定`;
   document.getElementById('epPaperSizeConfirm').textContent = format === '列印' ? '列印' : '下載';
-  let saved = 'A4', savedColumns = '1';
-  try { saved = localStorage.getItem(PAPER_SIZE_KEY) || 'A4'; savedColumns = localStorage.getItem(PAPER_COLUMNS_KEY) || '1'; } catch {}
-  modal.querySelector(`input[name="epPaperSize"][value="${PAPER_SIZES[saved] ? saved : 'A4'}"]`).checked = true;
-  modal.querySelector(`input[name="epPaperColumns"][value="${savedColumns === '2' ? '2' : '1'}"]`).checked = true;
+  const saved = DataService.getExamPreferences().paperLayout || {};
+  modal.querySelector(`input[name="epPaperSize"][value="${PAPER_SIZES[saved.paperKey] ? saved.paperKey : 'A4'}"]`).checked = true;
+  modal.querySelector(`input[name="epPaperColumns"][value="${saved.columns === 2 ? '2' : '1'}"]`).checked = true;
   modal.classList.remove('hidden');
   return new Promise(resolve => {
     const close = value => {
@@ -114,10 +107,14 @@ function choosePaperLayout(format) {
     };
     document.getElementById('epPaperSizeClose').onclick = () => close(null);
     document.getElementById('epPaperSizeCancel').onclick = () => close(null);
-    document.getElementById('epPaperSizeConfirm').onclick = () => {
+    document.getElementById('epPaperSizeConfirm').onclick = async () => {
+      const confirm = document.getElementById('epPaperSizeConfirm');
+      confirm.disabled = true;
       const paperKey = modal.querySelector('input[name="epPaperSize"]:checked').value;
       const columns = Number(modal.querySelector('input[name="epPaperColumns"]:checked').value);
-      try { localStorage.setItem(PAPER_SIZE_KEY, paperKey); localStorage.setItem(PAPER_COLUMNS_KEY, String(columns)); } catch {}
+      try { await DataService.updateExamPreferences({ paperLayout:{ paperKey, columns } }); }
+      catch (error) { UI.toast(`列印與下載設定儲存失敗：${error.message}`, 'danger'); confirm.disabled = false; return; }
+      confirm.disabled = false;
       close({ paperKey, columns });
     };
   });
@@ -153,38 +150,35 @@ function loadPdfLibrary() {
 }
 
 export function loadWordMargins() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(WORD_MARGIN_KEY) || '{}');
-    return Object.fromEntries(Object.entries(DEFAULT_WORD_MARGINS).map(([side, fallback]) => {
-      const value = Number(saved[side]);
-      return [side, Number.isFinite(value) && value >= 5 && value <= 50 ? value : fallback];
-    }));
-  } catch { return { ...DEFAULT_WORD_MARGINS }; }
+  const saved = DataService.getExamPreferences().margins || {};
+  return Object.fromEntries(Object.entries(DEFAULT_WORD_MARGINS).map(([side, fallback]) => {
+    const value = Number(saved[side]);
+    return [side, Number.isFinite(value) && value >= 5 && value <= 50 ? value : fallback];
+  }));
 }
 
-export function saveWordMargins(values) {
+export async function saveWordMargins(values) {
   const margins = {};
   for (const side of Object.keys(DEFAULT_WORD_MARGINS)) {
     const value = Number(values[side]);
     if (!Number.isFinite(value) || value < 5 || value > 50) throw new Error('頁邊距需介於 5 至 50 mm');
     margins[side] = value;
   }
-  localStorage.setItem(WORD_MARGIN_KEY, JSON.stringify(margins));
+  await DataService.updateExamPreferences({ margins });
 }
 
-export function resetWordMargins() {
-  localStorage.removeItem(WORD_MARGIN_KEY);
+export async function resetWordMargins() {
+  await DataService.updateExamPreferences({ margins:{ ...DEFAULT_WORD_MARGINS } });
 }
 
 // ══════════════════════════════════════════════════════════
 //  讀寫表頭 / 外觀偏好
 // ══════════════════════════════════════════════════════════
 export function loadHeader() {
-  try { return JSON.parse(localStorage.getItem(HEADER_KEY) || '{}'); }
-  catch { return {}; }
+  return DataService.getExamPreferences().header || {};
 }
-export function saveHeader(d) {
-  localStorage.setItem(HEADER_KEY, JSON.stringify({ ...loadHeader(), ...d }));
+export async function saveHeader(d) {
+  await DataService.updateExamPreferences({ header:{ ...loadHeader(), ...d } });
 }
 
 export const HEADER_BLANK_DEFAULTS = { class:8, name:8, seat:0 };
@@ -211,23 +205,19 @@ const FONT_ID_MIGRATION = {
 };
 
 export function loadAppearance() {
-  try {
-    const a = JSON.parse(localStorage.getItem(APPEARANCE_KEY) || '{}');
-    let font = a.font || 'system';
-    if (FONT_ID_MIGRATION[font]) font = FONT_ID_MIGRATION[font];
-    // 若 id 已不存在於選項中（更新後遺留），回到預設
-    if (!FONT_OPTIONS.find(f => f.id === font)) font = 'system';
-    return {
-      font,
-      fontSize:   Number(a.fontSize) >= FONT_SIZE_RANGE.min && Number(a.fontSize) <= FONT_SIZE_RANGE.max ? Number(a.fontSize) : FONT_SIZE_RANGE.default,
-      lineHeight: Number(a.lineHeight) >= LINE_HEIGHT_RANGE.min && Number(a.lineHeight) <= LINE_HEIGHT_RANGE.max ? Number(a.lineHeight) : LINE_HEIGHT_RANGE.default,
-    };
-  } catch {
-    return { font:'system', fontSize:FONT_SIZE_RANGE.default, lineHeight:LINE_HEIGHT_RANGE.default };
-  }
+  const a = DataService.getExamPreferences().appearance || {};
+  let font = a.font || 'system';
+  if (FONT_ID_MIGRATION[font]) font = FONT_ID_MIGRATION[font];
+  // 若 id 已不存在於選項中（更新後遺留），回到預設
+  if (!FONT_OPTIONS.find(f => f.id === font)) font = 'system';
+  return {
+    font,
+    fontSize:   Number(a.fontSize) >= FONT_SIZE_RANGE.min && Number(a.fontSize) <= FONT_SIZE_RANGE.max ? Number(a.fontSize) : FONT_SIZE_RANGE.default,
+    lineHeight: Number(a.lineHeight) >= LINE_HEIGHT_RANGE.min && Number(a.lineHeight) <= LINE_HEIGHT_RANGE.max ? Number(a.lineHeight) : LINE_HEIGHT_RANGE.default,
+  };
 }
-export function saveAppearance(d) {
-  localStorage.setItem(APPEARANCE_KEY, JSON.stringify(d));
+export async function saveAppearance(d) {
+  await DataService.updateExamPreferences({ appearance:d });
 }
 
 function examAppearance(examData) {
@@ -291,7 +281,7 @@ function ensureHeaderModal() {
         const header = { ...(headerModalExam.header ?? loadHeader()), ...data };
         if (headerModalExam.id) await DataService.saveExam({ id:headerModalExam.id, header });
         headerModalExam.header = header;
-      } else saveHeader(data);
+      } else await saveHeader(data);
     } catch (error) { UI.toast(`表頭儲存失敗：${error.message}`, 'danger'); return; }
     document.getElementById('hdModal').classList.add('hidden');
     UI.toast('表頭資訊已儲存', 'success');
@@ -308,7 +298,7 @@ function ensureHeaderModal() {
         const header = { ...(headerModalExam.header ?? loadHeader()), ...defaults };
         if (headerModalExam.id) await DataService.saveExam({ id:headerModalExam.id, header });
         headerModalExam.header = header;
-      } else saveHeader(defaults);
+      } else await saveHeader(defaults);
     } catch (error) { UI.toast(`表頭重設失敗：${error.message}`, 'danger'); return; }
     fillHeaderForm(defaults);
     if (window._epRefresh) window._epRefresh();
@@ -802,9 +792,9 @@ function renderQPreview(q, num, type, previewOptions) {
     body = `<table class="ep-answer-table" role="presentation"><tr><td class="ep-answer-prefix">${answerSlot}${num}.</td><td>${q.text||''}${sourceTag}</td></tr></table>`;
   } else if (type === 'T2' || type === 'T3') {
     const opts = q.options?.length
-      ? `　${q.options.map((o,i)=>`(${String.fromCharCode(65+i)})${o}`).join('　')}` : '';
+      ? ` ${q.options.map((o,i)=>`(${String.fromCharCode(65+i)})${o}`).join(' ')}` : '';
     const tail = q.tail?.trim() || '';
-    body = `<table class="ep-answer-table" role="presentation"><tr><td class="ep-answer-prefix">${answerSlot}${num}.</td><td>${q.text||''}${opts}${tail ? `${tail === '。' ? '' : '　'}${tail}` : ''}${sourceTag}</td></tr></table>`;
+    body = `<table class="ep-answer-table" role="presentation"><tr><td class="ep-answer-prefix">${answerSlot}${num}.</td><td>${q.text||''}${opts}${tail ? `${tail === '。' ? '' : ' '}${tail}` : ''}${sourceTag}</td></tr></table>`;
   } else if (type === 'T6') {
     body = `${num}.${q.text||''}${sourceTag}<div class="ep-answer-blank">答：${previewOptions?.answers ? `<span class="ep-answer-value">${escapeText(answer)}</span>` : ''}</div>`;
   } else {

@@ -626,7 +626,7 @@ async function buildCatalogPanel() {
   <section class="card catalog-section" data-section="appearance" style="max-width:760px;margin-top:16px">
     <div class="card-header"><h2>試卷邊距</h2></div>
     <div class="card-body">
-      <p style="font-size:.84rem;color:var(--text-secondary);margin:0 0 14px">Word 與 PDF 共用此設定，單位為 mm，可設定 5 至 50。設定儲存在目前瀏覽器。</p>
+      <p style="font-size:.84rem;color:var(--text-secondary);margin:0 0 14px">Word 與 PDF 共用此設定，單位為 mm，可設定 5 至 50。設定會隨帳號在不同裝置同步。</p>
       <div class="grid-2">
         <div class="form-group"><label class="form-label" for="examMargin-top">上邊距（mm）</label><input class="form-control" id="examMargin-top" type="number" min="5" max="50" step="1" required></div>
         <div class="form-group"><label class="form-label" for="examMargin-bottom">下邊距（mm）</label><input class="form-control" id="examMargin-bottom" type="number" min="5" max="50" step="1" required></div>
@@ -738,7 +738,7 @@ function buildAppearanceSettings() {
     if (!size.reportValidity() || !line.reportValidity()) return;
     try {
       await DataService.preserveExamAppearances(loadAppearance());
-      saveAppearance({ font:font.value, fontSize:Number(size.value), lineHeight:Number(line.value) });
+      await saveAppearance({ font:font.value, fontSize:Number(size.value), lineHeight:Number(line.value) });
       status.textContent = '已儲存';
       UI.toast('字體與行距已儲存', 'success');
     } catch (error) { status.textContent = `儲存失敗：${error.message || '請稍後再試'}`; }
@@ -747,7 +747,7 @@ function buildAppearanceSettings() {
     const defaults = { font:'system', fontSize:FONT_SIZE_RANGE.default, lineHeight:LINE_HEIGHT_RANGE.default };
     try {
       await DataService.preserveExamAppearances(loadAppearance());
-      saveAppearance(defaults);
+      await saveAppearance(defaults);
       fill(defaults);
       status.textContent = '已恢復預設';
     }
@@ -758,7 +758,7 @@ function buildAppearanceSettings() {
   };
   fillMargins(loadWordMargins());
   const marginStatus = document.getElementById('examMarginsStatus');
-  document.getElementById('examMarginsSave').addEventListener('click', () => {
+  document.getElementById('examMarginsSave').addEventListener('click', async () => {
     const margins = {};
     for (const side of Object.keys(DEFAULT_WORD_MARGINS)) {
       const input = document.getElementById(`examMargin-${side}`);
@@ -766,14 +766,14 @@ function buildAppearanceSettings() {
       margins[side] = Number(input.value);
     }
     try {
-      saveWordMargins(margins);
+      await saveWordMargins(margins);
       marginStatus.textContent = '已儲存';
       UI.toast('試卷邊距已儲存', 'success');
     } catch (error) { marginStatus.textContent = `儲存失敗：${error.message || '請稍後再試'}`; }
   });
-  document.getElementById('examMarginsReset').addEventListener('click', () => {
+  document.getElementById('examMarginsReset').addEventListener('click', async () => {
     try {
-      resetWordMargins();
+      await resetWordMargins();
       fillMargins(DEFAULT_WORD_MARGINS);
       marginStatus.textContent = '已恢復預設';
     } catch (error) { marginStatus.textContent = `重設失敗：${error.message || '請稍後再試'}`; }
@@ -861,7 +861,7 @@ function buildHeaderSettings() {
   const status = document.getElementById('headerSettingsStatus');
   async function saveHeaderDefaults(data) {
     await DataService.preserveExamHeaders(loadHeader());
-    saveHeader(data);
+    await saveHeader(data);
   }
   document.getElementById('headerSettingsSave').addEventListener('click', async () => {
     const data = {};

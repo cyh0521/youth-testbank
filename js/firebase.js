@@ -61,6 +61,33 @@ function docsToArr(snap) {
   return snap.docs.map(d => docToObj(d));
 }
 
+async function migrateLegacyExamPreferences() {
+  const user = DataService._currentUser;
+  if (!user?.uid) return;
+  const legacyKeys = ['examAppearance', 'examHeaderData', 'examWordMargins', 'examPaperSize', 'examPaperColumns'];
+  const readObject = key => {
+    try {
+      const value = JSON.parse(localStorage.getItem(key) || 'null');
+      return value && typeof value === 'object' && !Array.isArray(value) ? value : null;
+    } catch { return null; }
+  };
+  try {
+    const current = user.examPreferences || {};
+    const patch = {};
+    if (current.appearance == null) patch.appearance = readObject('examAppearance');
+    if (current.header == null) patch.header = readObject('examHeaderData');
+    if (current.margins == null) patch.margins = readObject('examWordMargins');
+    if (current.paperLayout == null) {
+      const paperKey = localStorage.getItem('examPaperSize');
+      const columns = localStorage.getItem('examPaperColumns');
+      if (paperKey || columns) patch.paperLayout = { paperKey:paperKey || 'A4', columns:Number(columns) === 2 ? 2 : 1 };
+    }
+    for (const key of Object.keys(patch)) if (patch[key] == null) delete patch[key];
+    if (Object.keys(patch).length) await DataService.updateExamPreferences(patch);
+    legacyKeys.forEach(key => localStorage.removeItem(key));
+  } catch (error) { console.warn('舊版試卷設定轉移失敗', error); }
+}
+
 // ══════════════════════════════════════════════════
 //  DataService — 所有頁面使用的統一介面
 // ══════════════════════════════════════════════════
@@ -78,6 +105,7 @@ window.DataService = {
             const snap = await getDoc(doc(db, 'users', firebaseUser.uid));
             if (snap.exists()) {
               DataService._currentUser = { uid: firebaseUser.uid, ...snap.data() };
+              await migrateLegacyExamPreferences();
             } else {
               DataService._currentUser = null;
             }
@@ -107,6 +135,7 @@ window.DataService = {
       const snap = await getDoc(doc(db, 'users', cred.user.uid));
       if (!snap.exists()) return { ok: false, msg: '使用者資料不存在' };
       DataService._currentUser = { uid: cred.user.uid, ...snap.data() };
+      await migrateLegacyExamPreferences();
       return { ok: true, user: DataService._currentUser };
     } catch(e) {
       const msg = {
@@ -176,6 +205,20 @@ window.DataService = {
     if (DataService._currentUser?.uid === uid) {
       Object.assign(DataService._currentUser, data);
     }
+  },
+
+  getExamPreferences() {
+    return DataService._currentUser?.examPreferences || {};
+  },
+  async updateExamPreferences(patch) {
+    const uid = DataService._currentUser?.uid;
+    if (!uid) throw new Error('請先登入');
+    const allowed = ['appearance', 'header', 'margins', 'paperLayout'];
+    const entries = Object.entries(patch).filter(([key]) => allowed.includes(key));
+    if (!entries.length) return;
+    const payload = Object.fromEntries(entries.map(([key, value]) => [`examPreferences.${key}`, value]));
+    await updateDoc(doc(db, 'users', uid), { ...payload, updatedAt:serverTimestamp() });
+    DataService._currentUser.examPreferences = { ...DataService.getExamPreferences(), ...Object.fromEntries(entries) };
   },
 
   // 尚未設定時顯示完整題庫；設定後只顯示勾選的科目與冊別。
