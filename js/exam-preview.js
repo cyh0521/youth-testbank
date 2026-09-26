@@ -485,9 +485,12 @@ function ensurePreviewModal() {
 .ep-toolbar .info-pill{
   margin-left:auto;font-size:.76rem;color:var(--text-muted);
 }
-.ep-preview-options{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin:0 0 12px;font-size:.85rem}
-.ep-preview-options label{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
-.ep-preview-options input{accent-color:#3974c7}
+.ep-preview-options{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:0 0 10px}
+.ep-preview-options label{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;background:#fff;border:1px solid #b9cadc;border-radius:5px;color:#244566;font-size:.84rem;font-weight:700;cursor:pointer;transition:background .15s,border-color .15s,box-shadow .15s}
+.ep-preview-options label:hover{border-color:#3974c7;background:#f7fbff}
+.ep-preview-options label:has(input:checked){background:#dcecff;border-color:#3974c7;box-shadow:inset 0 0 0 1px #3974c7}
+.ep-preview-options label:has(input:focus-visible){outline:2px solid #3974c7;outline-offset:2px}
+.ep-preview-options input{width:16px;height:16px;margin:0;accent-color:#3974c7}
 /* 試卷區 */
 #epPaper{color:#000;padding:0 4px}
 .ep-exam-header{border:0;border-bottom:2px solid #333;padding:10px 14px;margin-bottom:14px;font-size:.94em;line-height:1.6}
@@ -521,7 +524,7 @@ function ensurePreviewModal() {
         <button class="btn btn-ghost btn-sm" type="button" id="epHeaderToggle" aria-expanded="false" aria-controls="epHeaderPanel" title="編輯試卷表頭"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>試卷表頭</button>
         <button class="btn btn-ghost btn-sm" type="button" id="epAppearanceToggle" aria-expanded="false" aria-controls="epToolbar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h11M4 17h16"/><circle cx="18" cy="12" r="2"/></svg>字體與行距</button>
         <button class="btn btn-outline btn-sm" onclick="window._epDoPrint()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>列印</button>
-        <button class="btn btn-primary btn-sm" onclick="window._epDoExport()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>DOCX</button>
+        <button class="btn btn-outline btn-sm" onclick="window._epDoExport()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>DOCX</button>
         <button class="btn btn-outline btn-sm" onclick="window._epDoExportPdf()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>PDF</button>
         <button class="modal-close" onclick="window._epClose()">✕</button>
       </div>
@@ -553,10 +556,10 @@ function ensurePreviewModal() {
         </div>
         <button class="btn btn-ghost btn-sm" id="epAppearReset" title="恢復預設">↺ 重設</button>
       </div>
-      <div class="ep-preview-options" aria-label="預覽內容">
-        <label><input type="checkbox" id="epShowAnswers">顯示解答</label>
-        <label><input type="checkbox" id="epShowAnalysis">顯示解析</label>
-        <label><input type="checkbox" id="epShowSource">顯示來源</label>
+      <div class="ep-preview-options" role="group" aria-label="預覽內容">
+        <label><input type="checkbox" id="epShowAnswers">解答</label>
+        <label><input type="checkbox" id="epShowAnalysis">解析</label>
+        <label><input type="checkbox" id="epShowSource">出處</label>
       </div>
     </div>
     <div id="epBody" style="padding:0 20px 20px;overflow-y:auto;flex:1;overscroll-behavior:contain"></div>

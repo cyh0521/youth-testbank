@@ -618,7 +618,7 @@ window.openEdit = id => {
         <textarea class="form-control" id="eq-text" rows="4">${q.text||''}</textarea>
       </div>
       ${optionFields(q)}
-      <div class="form-group"><label class="form-label">題尾（單選題用）</label>
+      <div class="form-group"><label class="form-label">題尾（選擇題用）</label>
         <input class="form-control" id="eq-tail" value="${(q.tail||'').replace(/"/g,'&quot;')}">
       </div>
       <div class="form-group"><label class="form-label">答案 <span class="required">*</span></label>

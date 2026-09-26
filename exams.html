@@ -46,6 +46,10 @@
 #editModal .modal-header{position:relative;top:auto;flex:none}
 #editModal .modal-body{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain}
 .edit-q-item{display:flex;align-items:flex-start;gap:8px;padding:9px 12px;border-bottom:1px solid var(--border-light);font-size:.83rem}
+.edit-q-section{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:7px 12px;background:var(--bg-base);border-top:1px solid var(--border);border-bottom:1px solid var(--border-light);font-size:.84rem;font-weight:700;color:var(--text-primary)}
+.edit-q-section:first-child{border-top:0}
+.edit-q-score{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;font-size:.8rem;font-weight:400}
+.edit-q-score input{width:64px;padding:3px 5px;text-align:center;font-size:.8rem}
 .edit-q-item:last-child{border-bottom:none}
 .edit-q-item:hover{background:#faf8f5}
 .eq-num{color:var(--text-muted);font-size:.72rem;width:22px;flex-shrink:0;text-align:right;padding-top:2px}
@@ -157,11 +161,6 @@
       <div class="form-group" style="margin-bottom:16px">
         <label class="form-label">試卷名稱 <span class="required">*</span></label>
         <input class="form-control" id="editExamTitle">
-      </div>
-      <!-- 各題型分數 -->
-      <div style="margin-bottom:14px">
-        <label class="form-label">各題型分數設定</label>
-        <div id="editScoreRows" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:6px"></div>
       </div>
       <div style="font-size:.82rem;color:var(--text-secondary);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
         <span>題目清單（可拖曳排序或移除）</span>
@@ -617,11 +616,11 @@ window.openEdit = async (id) => {
   editQOrder.forEach(qid => { if (allQuestions[qid]) editQMap[qid] = allQuestions[qid]; });
   // Remove ids without question data
   editQOrder = editQOrder.filter(qid => editQMap[qid]);
+  editQOrder = orderedEditTypes().flatMap(type => editQOrder.filter(id => editQMap[id].type === type));
 
   document.getElementById('editTitle').textContent = `編輯試卷：${e.title||''}`;
   document.getElementById('editExamTitle').value  = e.title || '';
-  renderEditScoreRows(e.typeScores||{});
-  renderEditQList();
+  renderEditQList(e.typeScores||{});
   document.getElementById('editHeaderPanel').classList.add('hidden');
   document.getElementById('editHeaderToggle').setAttribute('aria-expanded', 'false');
   document.getElementById('editModal').classList.remove('hidden');
@@ -643,41 +642,44 @@ window.toggleEditHeader = () => {
   }
 };
 
-function renderEditScoreRows(typeScores) {
-  const types = [...new Set(editQOrder.map(id => editQMap[id]?.type).filter(Boolean))];
-  const TYPE_LABELS = {T1:'是非題',T2:'單選題',T3:'複選題',T4:'填空題',T5:'配合題',T6:'問答題'};
-  document.getElementById('editScoreRows').innerHTML = types.map(t => {
-    const score = typeScores[t] || TYPE_SCORES[t] || 2;
-    const cnt = editQOrder.filter(id => editQMap[id]?.type===t).length;
-    return `<div style="display:flex;align-items:center;gap:6px;white-space:nowrap;font-size:.82rem">
-      <span>${TYPE_LABELS[t]||t} ×${cnt}：</span>
-      <input class="form-control" type="number" id="escore-${t}" value="${score}" min="1" max="99"
-             style="width:52px;font-size:.8rem;padding:3px 5px;text-align:center" oninput="updateEditTotal()">
-      <span style="color:var(--text-muted)">分/題</span>
-    </div>`;
-  }).join('');
-  updateEditTotal();
+const EDIT_TYPE_ORDER = ['T1','T2','T3','T4','T5','T6'];
+const EDIT_TYPE_LABELS = {T1:'是非題',T2:'選擇題',T3:'複選題',T4:'填空題',T5:'配合題',T6:'問答題'};
+const EDIT_ROMANS = ['一','二','三','四','五','六'];
+function orderedEditTypes() {
+  const present = [...new Set(editQOrder.map(id => editQMap[id]?.type).filter(Boolean))];
+  return [...EDIT_TYPE_ORDER.filter(type => present.includes(type)), ...present.filter(type => !EDIT_TYPE_ORDER.includes(type))];
 }
 
+function editScoreValue(value, type) {
+  const parsed = parseFloat(value);
+  const fallback = TYPE_SCORES[type] || 2;
+  return Math.round(Math.min(99.5, Math.max(0.5, Number.isFinite(parsed) ? parsed : fallback)) * 2) / 2;
+}
+
+window.normalizeEditScore = (input, type) => {
+  input.value = editScoreValue(input.value, type);
+  updateEditTotal();
+};
+
 function updateEditTotal() {
-  let total = 0;
-  editQOrder.forEach(id => {
-    const q = editQMap[id]; if (!q) return;
-    const el = document.getElementById('escore-'+q.type);
-    total += el ? parseInt(el.value)||0 : (TYPE_SCORES[q.type]||2);
-  });
+  const scores = getCurrentEditScores();
+  const total = editQOrder.reduce((sum, id) => sum + (scores[editQMap[id]?.type] || 0), 0);
   document.getElementById('editQCount').textContent = `${editQOrder.length} 題 / 共 ${total} 分`;
 }
 
-function renderEditQList() {
+function renderEditQList(typeScores = getCurrentEditScores()) {
   const container = document.getElementById('editQList');
   if (!editQOrder.length) {
     container.innerHTML = '<div style="padding:32px;text-align:center;color:var(--text-muted)">尚無題目</div>';
+    updateEditTotal();
     return;
   }
-  container.innerHTML = editQOrder.map((id, idx) => {
-    const q = editQMap[id];
-    return `<div class="edit-q-item eq-item" draggable="true" data-id="${id}"
+  container.innerHTML = orderedEditTypes().map((type, sectionIndex) => {
+    const ids = editQOrder.filter(id => editQMap[id]?.type === type);
+    const score = editScoreValue(typeScores[type], type);
+    return `<div class="edit-q-section"><span>${EDIT_ROMANS[sectionIndex] || sectionIndex + 1}、${EDIT_TYPE_LABELS[type] || type}（${ids.length} 題）</span><label class="edit-q-score">每題 <input class="form-control" type="number" id="escore-${type}" value="${score}" min="0.5" max="99.5" step="0.5" oninput="updateEditTotal()" onchange="normalizeEditScore(this,'${type}')"> 分</label></div>` + ids.map((id, idx) => {
+      const q = editQMap[id];
+      return `<div class="edit-q-item eq-item" draggable="true" data-id="${id}"
       ondragstart="eqDragStart(event,'${id}')" ondragover="eqDragOver(event,'${id}')"
       ondrop="eqDrop(event,'${id}')" ondragend="eqDragEnd()">
       <span class="drag-handle">⠿</span>
@@ -687,22 +689,23 @@ function renderEditQList() {
       <span class="eq-text" title="${(q.text||'').replace(/"/g,'&quot;')}">${q.text||'—'}</span>
       <button class="eq-remove" onclick="removeEditQ('${id}')" title="從試卷移除">✕</button>
     </div>`;
+    }).join('');
   }).join('');
   updateEditTotal();
 }
 
 window.removeEditQ = (id) => {
+  const scores = getCurrentEditScores();
   editQOrder = editQOrder.filter(x => x!==id);
-  renderEditQList();
-  renderEditScoreRows(getCurrentEditScores());
+  renderEditQList(scores);
 };
 
 function getCurrentEditScores() {
   const scores = {};
-  const types = [...new Set(editQOrder.map(id => editQMap[id]?.type).filter(Boolean))];
+  const types = orderedEditTypes();
   types.forEach(t => {
     const el = document.getElementById('escore-'+t);
-    scores[t] = el ? parseInt(el.value)||TYPE_SCORES[t]||2 : TYPE_SCORES[t]||2;
+    scores[t] = editScoreValue(el?.value, t);
   });
   return scores;
 }
@@ -711,10 +714,14 @@ function getCurrentEditScores() {
 let _eDragId = null;
 window.eqDragStart = (e,id) => { _eDragId=id; e.currentTarget.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; };
 window.eqDragEnd   = ()     => { _eDragId=null; document.querySelectorAll('.eq-item').forEach(el=>el.classList.remove('dragging','drag-over')); };
-window.eqDragOver  = (e,id) => { e.preventDefault(); if(id!==_eDragId) document.querySelector(`.eq-item[data-id="${id}"]`)?.classList.add('drag-over'); };
+window.eqDragOver  = (e,id) => {
+  if (!_eDragId || id === _eDragId || editQMap[id]?.type !== editQMap[_eDragId]?.type) return;
+  e.preventDefault();
+  document.querySelector(`.eq-item[data-id="${id}"]`)?.classList.add('drag-over');
+};
 window.eqDrop      = (e,targetId) => {
   e.preventDefault();
-  if (!_eDragId || _eDragId===targetId) return;
+  if (!_eDragId || _eDragId===targetId || editQMap[targetId]?.type !== editQMap[_eDragId]?.type) return;
   const from=editQOrder.indexOf(_eDragId), to=editQOrder.indexOf(targetId);
   if (from<0||to<0) return;
   editQOrder.splice(from,1); editQOrder.splice(to,0,_eDragId);
@@ -730,8 +737,7 @@ window.shuffleEditQs = () => {
     byType[q.type].push(id);
   });
   Object.values(byType).forEach(arr => arr.sort(() => Math.random()-.5));
-  const TYPE_ORDER = ['T1','T2','T3','T4','T5','T6'];
-  editQOrder = TYPE_ORDER.flatMap(t => byType[t]||[]);
+  editQOrder = orderedEditTypes().flatMap(t => byType[t]||[]);
   renderEditQList();
   UI.toast('已亂數排序', 'success');
 };
