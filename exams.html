@@ -173,7 +173,7 @@
 
 <script type="module">
 import { guardPage } from './js/auth-guard.js';
-import { showExamPreview, downloadExam, printWithPaperChoice, showHeaderSettings, loadHeader, loadAppearance, mountInlineHeaderEditor, buildHeaderHtml } from './js/exam-preview.js';
+import { showExamPreview, downloadExam, printWithPaperChoice, showHeaderSettings, loadHeader, loadAppearance, mountInlineHeaderEditor, buildHeaderHtml, fontStackById } from './js/exam-preview.js';
 window.openHeaderSettings = showHeaderSettings;
 window._activeNav = 'exams';
 const user = await guardPage(['admin','teacher']);
@@ -230,9 +230,16 @@ async function init() {
     allClasses = classes;
     if (!initialized) {
       const params = new URLSearchParams(location.search);
+      const requestedEdit = params.get('edit');
       const requestedClass = params.get('class');
       const requestedSubject = params.get('subject');
-      if (requestedClass) {
+      if (requestedEdit && canEdit) {
+        viewMode = 'all';
+        activeGroup = null;
+        const exam = exams.find(item => item.id === requestedEdit);
+        if (exam) await openEdit(exam.id);
+        else UI.toast('找不到此試卷', 'warning');
+      } else if (requestedClass) {
         viewMode = 'class';
         const c = classes.find(item => item.id === requestedClass);
         if (requestedClass === '__none') activeGroup = { key:'__none', label:'未指定班級' };
@@ -627,7 +634,9 @@ window.openEdit = async (id) => {
 };
 
 function renderEditHeaderSample() {
-  document.getElementById('editHeaderSample').innerHTML = buildHeaderHtml(editDraftExam.header);
+  const sample = document.getElementById('editHeaderSample');
+  sample.style.fontFamily = fontStackById(editDraftExam.appearance.font);
+  sample.innerHTML = buildHeaderHtml(editDraftExam.header);
 }
 window.toggleEditHeader = () => {
   const panel = document.getElementById('editHeaderPanel');

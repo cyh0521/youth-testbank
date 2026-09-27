@@ -223,7 +223,7 @@ function examAppearance(examData) {
   return examData.appearance ??= { ...loadAppearance() };
 }
 
-function fontStackById(id) {
+export function fontStackById(id) {
   return FONT_OPTIONS.find(f => f.id === id)?.stack || FONT_OPTIONS[0].stack;
 }
 

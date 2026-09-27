@@ -5,8 +5,7 @@
 .create-card, .overview-card { padding: 22px; }
 .overview-heading, .section-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .overview-heading h2, .section-heading h2 { font-size: 1.35rem; letter-spacing: .01em; font-weight: 700; }
-.overview-heading p { color: var(--text-light); font-size: .85rem; margin-top: 2px; }
-.section-icon { color: #9aabc2; }
+.overview-heading p, .section-heading p { color: var(--text-light); font-size: .85rem; margin-top: 2px; }
 .create-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 18px; }
 .create-action { display: flex; align-items: center; gap: 14px; padding: 21px 16px; border: 1px solid transparent; border-radius: 11px; transition: transform .18s, box-shadow .18s; min-width: 0; }
 .create-action:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(35,65,112,.09); }
@@ -25,8 +24,6 @@
 .create-icon { display: flex; flex-shrink: 0; }
 .create-icon svg { width: 39px; height: 39px; stroke-width: 1.6; }
 .action-arrow { margin-left: auto; font-size: 1.8rem; font-weight: 300; }
-.text-link { color: #2570ec; display: inline-flex; gap: 9px; align-items: center; white-space: nowrap; font-size: .8rem; }
-.text-link span { font-size: 1.3rem; }
 .question-total { font-size: 2.7rem; font-weight: 700; letter-spacing: -.025em; line-height: 1.25; margin: 13px 0 3px; color: #142238; font-variant-numeric: tabular-nums; }
 .question-total span { font-size: .95rem; font-weight: 500; margin-left: 5px; color: var(--text-secondary); }
 .overview-filters { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 19px; }
@@ -42,23 +39,19 @@
 .tone-4 { background: #ffe5e8; color: #b64359; }
 .tone-5 { background: #e2f1f5; color: #397889; }
 .section-heading { margin: 0 4px 14px; }
-.recent-toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 0 4px 14px; }
-.collection-pill { display: inline-flex; align-items: center; gap: 12px; color: white; background: linear-gradient(#3883ff, #1c68ed); padding: 6px 18px; border-radius: 9px; font-size: .8rem; box-shadow: 0 2px 5px #3478f62b; }
-.collection-pill span { background: rgba(255,255,255,.2); border-radius: 5px; padding: 0 5px; font-size: .73rem; }
-.recent-toolbar .form-control { width: auto; max-width: 230px; padding: 7px 10px; font-size: .78rem; }
-.exam-search { display: flex; align-items: center; gap: 8px; margin-left: auto; border: 1px solid var(--border); background: #fff; border-radius: 9px; padding: 7px 10px; color: var(--text-light); }
-.exam-search input { border: 0; outline: 0; background: transparent; width: 155px; min-width: 0; color: var(--text-primary); font-size: .78rem; }
-.exam-search:focus-within { outline: 3px solid #3478f62b; border-color: #82adfa; }
-.exam-search input:focus-visible { outline: none; }
-.exam-search input::placeholder { color: var(--text-light); }
-.recent-table { font-size: .82rem; }
+.recent-table { font-size: .82rem; table-layout: fixed; min-width: 1180px; }
+.recent-col-subject { width: 140px; }
+.recent-col-count { width: 90px; }
+.recent-col-date { width: 190px; }
+.recent-col-actions { width: 472px; }
 .recent-table th { padding: 12px 18px; background: #fff; }
 .recent-table td { padding: 12px 18px; }
+.recent-table th, .recent-table td { text-align: left; }
 .recent-table tbody tr:nth-child(even) { background: #fbfcfe; }
 .recent-table tbody tr:hover { background: #edf3ff; }
-.exam-name { display: flex; align-items: center; gap: 12px; min-width: 170px; }
+.exam-name { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .exam-name svg { color: #5b7295; flex-shrink: 0; }
-.exam-name strong { font-weight: 550; }
+.exam-name strong { font-weight: 550; min-width: 0; overflow-wrap: anywhere; }
 .exam-date { color: var(--text-light); font-size: .76rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .exam-manage { display: inline-flex; align-items: center; gap: 6px; color: #4a6184; white-space: nowrap; font-size: .76rem; }
 .exam-manage:hover { color: #2570ec; }
@@ -84,10 +77,6 @@
   .create-card, .overview-card { padding: 18px; }
   .create-actions { grid-template-columns: 1fr; }
   .create-action { padding: 16px; }
-  .recent-toolbar .form-control { max-width: 100%; }
-  .exam-search { margin-left: 0; width: 100%; }
-  .exam-search input { flex: 1; width: 100%; }
-  .recent-toolbar { align-items: stretch; }
   .overview-heading h2, .section-heading h2 { font-size: 1.15rem; }
 }
 @media(max-width: 430px) {
@@ -95,3 +84,10 @@
   .bar-label { width: 68px; }
   .bar-count { width: 32px; }
 }
+
+.recent-exam-actions { display: flex; gap: 8px; align-items: center; justify-content: flex-start; flex-wrap: nowrap; }
+.recent-exam-actions .btn { flex: 0 0 auto; gap: 4px; padding: 4px 8px; white-space: nowrap; }
+.recent-exam-actions svg { display: block; flex: none; }
+
+.recent-management-link { color: #2570ec; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+.recent-management-link:hover { color: #174fae; }
