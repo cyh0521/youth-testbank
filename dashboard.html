@@ -278,9 +278,9 @@ async function renderStaff() {
         <div class="overview-chart" id="overviewChart" aria-label="題型分布" aria-live="polite">${statsResult.status === 'fulfilled' ? '' : '<p class="dash-empty">題型分布暫時無法載入</p>'}</div>
       </section>
     </div>
-    <section class="recent-section" aria-labelledby="recentHeading">
+    <section class="card recent-section" aria-labelledby="recentHeading">
       <div class="section-heading"><div><h2 id="recentHeading">最近試卷</h2><p>查看最近建立的 10 份試卷，快速預覽、列印與管理；若要查看完整試卷清單，請移至「<a class="recent-management-link" href="exams.html">試卷管理</a>」。</p></div></div>
-      <div class="card table-wrapper"><table class="data-table recent-table"><colgroup><col class="recent-col-title"><col class="recent-col-subject"><col class="recent-col-count"><col class="recent-col-date"><col class="recent-col-actions"></colgroup><thead><tr><th>試卷名稱</th><th>科目（冊別）</th><th>題數</th><th>建立時間</th><th>操作</th></tr></thead><tbody id="recentExamRows"></tbody></table></div>
+      <div class="table-wrapper"><table class="data-table recent-table"><colgroup><col class="recent-col-title"><col class="recent-col-subject"><col class="recent-col-count"><col class="recent-col-date"><col class="recent-col-actions"></colgroup><thead><tr><th>試卷名稱</th><th>科目（冊別）</th><th>題數</th><th>建立時間</th><th>操作</th></tr></thead><tbody id="recentExamRows"></tbody></table></div>
       <p class="exam-result-count" id="examResultCount" aria-live="polite"></p>
     </section>
     ${isAdmin ? `<nav class="admin-shortcuts" aria-label="管理員快速操作"><span>題庫管理</span><a href="import.html">${I.upload16} 匯入題目</a><a href="questions.html">${I.list16} 題目維護</a><a href="textbooks.html">${I.book16} 課本管理</a><a href="settings.html?view=accounts">${I.settings16} 帳號管理</a></nav>` : ''}`;

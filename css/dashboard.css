@@ -2,7 +2,7 @@
 .toolbar-account { display: inline-flex; align-items: center; gap: 9px; padding-left: 18px; margin-left: 8px; border-left: 1px solid var(--border); color: var(--text-primary); font-size: .83rem; }
 .toolbar-account .user-avatar { box-shadow: 0 0 0 1px #dce2eb; }
 .dashboard-overview { display: grid; grid-template-columns: minmax(0,1.5fr) minmax(0,1fr); gap: 18px; margin-bottom: 28px; }
-.create-card, .overview-card { padding: 22px; }
+.create-card, .overview-card, .recent-section { padding: 22px; }
 .overview-heading, .section-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .overview-heading h2, .section-heading h2 { font-size: 1.35rem; letter-spacing: .01em; font-weight: 700; }
 .overview-heading p, .section-heading p { color: var(--text-light); font-size: .85rem; margin-top: 2px; }
@@ -38,7 +38,7 @@
 .tone-3 { background: #fff0ca; color: #88671b; }
 .tone-4 { background: #ffe5e8; color: #b64359; }
 .tone-5 { background: #e2f1f5; color: #397889; }
-.section-heading { margin: 0 4px 14px; }
+.section-heading { margin: 0 0 14px; }
 .recent-table { font-size: .82rem; table-layout: fixed; min-width: 1180px; }
 .recent-col-subject { width: 210px; }
 .recent-col-count { width: 90px; }
@@ -56,7 +56,7 @@
 .exam-manage { display: inline-flex; align-items: center; gap: 6px; color: #4a6184; white-space: nowrap; font-size: .76rem; }
 .exam-manage:hover { color: #2570ec; }
 .nowrap { white-space: nowrap; }
-.exam-result-count { color: var(--text-light); font-size: .73rem; margin: 9px 4px 24px; }
+.exam-result-count { color: var(--text-light); font-size: .73rem; margin: 12px 0 0; }
 .bar-item { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: .77rem; }
 .bar-item:last-child { margin-bottom: 0; }
 .bar-label { width: 112px; flex-shrink: 0; color: var(--text-secondary); }
@@ -74,7 +74,7 @@
 }
 @media(max-width: 760px) {
   .toolbar-account { padding-left: 0; border: 0; }
-  .create-card, .overview-card { padding: 18px; }
+  .create-card, .overview-card, .recent-section { padding: 18px; }
   .create-actions { grid-template-columns: 1fr; }
   .create-action { padding: 16px; }
   .overview-heading h2, .section-heading h2 { font-size: 1.15rem; }
