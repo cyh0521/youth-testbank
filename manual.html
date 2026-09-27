@@ -198,12 +198,8 @@
         <input class="form-control" id="examTitle" placeholder="例：113學年度第一次月考">
       </div>
       <div class="form-group">
-        <label class="form-label">班級分類</label>
-        <select class="form-control" id="examClass"><option value="">未分類</option></select>
-      </div>
-      <div class="form-group">
         <label class="form-label">說明（選填）</label>
-        <textarea class="form-control" id="examDesc" rows="2" placeholder="考試說明、範圍…"></textarea>
+        <textarea class="form-control" id="examDesc" rows="2" placeholder="可填寫考試時間、試題範圍等相關事項。"></textarea>
       </div>
     </div>
     <div class="modal-footer">
@@ -618,7 +614,6 @@ window.previewSelected = () => {
 window.openSaveModal = async () => {
   if (!selectedOrder.length) { UI.toast('請先選題','warning'); return; }
   document.getElementById('saveErr').classList.add('hidden');
-  await loadClassOptions('examClass');
   document.getElementById('saveModal').classList.remove('hidden');
 };
 window.doSaveExam = async () => {
@@ -627,16 +622,14 @@ window.doSaveExam = async () => {
   let totalScore=0; const typeScores={};
   selectedOrder.forEach(id=>{const q=selQuestions[id];if(!q)return;const inp=document.getElementById('sc-'+q.type);const score=inp?parseInt(inp.value)||2:2;typeScores[q.type]=score;totalScore+=score;});
   const firstQ = selQuestions[selectedOrder[0]];
-  const classSelect = document.getElementById('examClass');
-  const classOption = classSelect.selectedOptions[0];
   const exam = {
     title, header: draftPreviewData?.header ?? loadHeader(), appearance: draftPreviewData?.appearance ?? loadAppearance(), description: document.getElementById('examDesc').value.trim(),
     subjectCode: firstQ?.subjectCode||'', bookCode: firstQ?.bookCode||'',
     totalScore, typeScores, questionIds:[...selectedOrder],
     questionCount: selectedOrder.length, composeMode:'manual',
-    classId: classSelect.value || null,
-    className: classSelect.value ? classOption.dataset.name : '',
-    classSchool: classSelect.value ? classOption.dataset.school : '',
+    classId: null,
+    className: '',
+    classSchool: '',
   };
   try {
     await DataService.saveExam(exam);

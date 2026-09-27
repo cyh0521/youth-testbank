@@ -11,7 +11,9 @@
 .exam-icon{width:44px;height:44px;border-radius:var(--radius-lg);display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0}
 .exam-icon{background:#e8eef6;color:var(--primary)}
 .exam-info{flex:1;min-width:0}
-.exam-title{font-weight:700;font-size:.95rem;color:var(--primary);margin-bottom:4px}
+.exam-title{font-weight:700;font-size:.95rem;color:var(--primary);min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.exam-title-row{display:flex;align-items:baseline;gap:10px;min-width:0;margin-bottom:4px}
+.exam-title-row.has-description .exam-title{flex:0 1 auto;max-width:65%}
 .exam-meta{display:flex;gap:8px;flex-wrap:wrap;font-size:.78rem;color:var(--text-muted);align-items:center}
 .exam-meta span{display:inline-flex;align-items:center;gap:4px}
 .exam-meta svg,.exam-actions svg{display:block;flex:none}
@@ -42,6 +44,9 @@
 .sort-option.active{background:var(--primary);border-color:var(--primary);color:white}
 
 /* 試卷編輯 Modal */
+.edit-basic-fields{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.edit-basic-fields .form-group{margin-bottom:0}
+@media(max-width:600px){.edit-basic-fields{grid-template-columns:1fr}}
 #editModal .modal{display:flex;flex-direction:column;max-height:90vh;overflow:hidden}
 #editModal .modal-header{position:relative;top:auto;flex:none}
 #editModal .modal-body{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain}
@@ -68,7 +73,6 @@
 @media(max-width:1000px){
   .exam-card{display:grid;grid-template-columns:44px minmax(0,1fr)}
   .exam-actions{grid-column:1/-1;justify-content:flex-end;border-top:1px solid var(--border-light);padding-top:10px}
-  .exam-title{overflow-wrap:anywhere}
 }
 </style>
 </head>
@@ -158,9 +162,15 @@
         <div id="editHeaderFields"></div>
       </div>
       <!-- 基本資訊 -->
-      <div class="form-group" style="margin-bottom:16px">
-        <label class="form-label">試卷名稱 <span class="required">*</span></label>
-        <input class="form-control" id="editExamTitle">
+      <div class="edit-basic-fields">
+        <div class="form-group">
+          <label class="form-label" for="editExamTitle">試卷名稱 <span class="required">*</span></label>
+          <input class="form-control" id="editExamTitle">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="editExamDescription">說明</label>
+          <input class="form-control" id="editExamDescription" placeholder="可填寫考試時間、試題範圍等相關事項。">
+        </div>
       </div>
       <div style="font-size:.82rem;color:var(--text-secondary);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
         <span>題目清單（可拖曳排序或移除）</span>
@@ -459,7 +469,7 @@ function renderExams(list) {
     return `<div class="exam-card">
       <div class="exam-icon">${icons.paper}</div>
       <div class="exam-info">
-        <div class="exam-title">${UI.escapeHtml(e.title||'（未命名）')}</div>
+        <div class="exam-title-row${e.description ? ' has-description' : ''}"><div class="exam-title" title="${UI.escapeHtml(e.title||'（未命名）')}">${UI.escapeHtml(e.title||'（未命名）')}</div>${e.description ? `<span class="exam-description" title="${UI.escapeHtml(e.description)}">${UI.escapeHtml(e.description)}</span>` : ''}</div>
         <div class="exam-meta">
           <span>${icons.count}${e.questionCount||0} 題</span>
           <span>${icons.score}${e.totalScore||0} 分</span>
@@ -467,14 +477,12 @@ function renderExams(list) {
           <span>${icons.school}${UI.escapeHtml(examClassLabel(e))}</span>
           <span style="color:var(--text-muted)">建立時間：${UI.formatDateTime(e.createdAt)}</span>
         </div>
-        ${e.description?`<div style="font-size:.8rem;color:var(--text-secondary);margin-top:3px">${UI.escapeHtml(e.description)}</div>`:''}
       </div>
       <div class="exam-actions">
         <button class="btn btn-sm btn-outline" onclick="previewExam('${e.id}')">${icons.eye}預覽</button>
-        <button class="btn btn-sm btn-primary" onclick="printSavedExam('${e.id}')">${icons.print}列印</button>
-        <button class="btn btn-sm btn-ghost" onclick="downloadWord('${e.id}')">${icons.download}DOCX</button>
-        <button class="btn btn-sm btn-ghost" onclick="downloadPdf('${e.id}')">${icons.download}PDF</button>
         ${canEdit ? `<button class="btn btn-sm btn-outline" onclick="openEdit('${e.id}')">${icons.edit}編輯</button>` : ''}
+        <button class="btn btn-sm btn-ghost" onclick="printSavedExam('${e.id}')">${icons.print}列印</button>
+        <button class="btn btn-sm btn-primary" onclick="downloadWord('${e.id}')">${icons.download}下載</button>
         ${canEdit ? `<button class="btn btn-sm btn-danger" onclick="deleteExam('${e.id}','${(e.title||'').replace(/'/g,'&apos;')}')">${icons.trash}刪除</button>` : ''}
       </div>
     </div>`;
@@ -583,14 +591,6 @@ window.downloadWord = async (id) => {
   await downloadExam(e, qs, 'Word');
 };
 
-window.downloadPdf = async (id) => {
-  const e = allExams.find(x => x.id===id); if (!e) return;
-  await loadExamQuestions(e);
-  const qs = getExamQuestions(e);
-  if (!qs.length) { UI.toast('此試卷無法載入題目', 'warning'); return; }
-  await downloadExam(e, qs, 'PDF');
-};
-
 window.printSavedExam = async (id) => {
   const e = allExams.find(x => x.id===id); if (!e) return;
   await loadExamQuestions(e);
@@ -627,6 +627,7 @@ window.openEdit = async (id) => {
 
   document.getElementById('editTitle').textContent = `編輯試卷：${e.title||''}`;
   document.getElementById('editExamTitle').value  = e.title || '';
+  document.getElementById('editExamDescription').value = e.description || '';
   renderEditQList(e.typeScores||{});
   document.getElementById('editHeaderPanel').classList.add('hidden');
   document.getElementById('editHeaderToggle').setAttribute('aria-expanded', 'false');
@@ -757,6 +758,7 @@ window.previewEdit = () => {
   const qs = editQOrder.map(id => editQMap[id]).filter(Boolean);
   const title = document.getElementById('editExamTitle').value.trim() || '試卷預覽';
   editDraftExam.title = title;
+  editDraftExam.description = document.getElementById('editExamDescription').value.trim();
   editDraftExam.typeScores = typeScores;
   editDraftExam.onPreviewClose = () => {
     if (!document.getElementById('editHeaderPanel').classList.contains('hidden')) {
@@ -784,6 +786,7 @@ window.saveEdit = async () => {
     await DataService.saveExam({
       id:            editExamId,
       title,
+      description: document.getElementById('editExamDescription').value.trim(),
       typeScores,
       header:        editDraftExam.header,
       appearance:    editDraftExam.appearance,

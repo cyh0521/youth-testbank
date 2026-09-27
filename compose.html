@@ -137,12 +137,8 @@
         <input class="form-control" id="examTitle" placeholder="例：113學年度第一次月考">
       </div>
       <div class="form-group">
-        <label class="form-label">班級分類</label>
-        <select class="form-control" id="examClass"><option value="">未分類</option></select>
-      </div>
-      <div class="form-group">
         <label class="form-label">說明（選填）</label>
-        <textarea class="form-control" id="examDesc" rows="2" placeholder="考試說明、範圍、注意事項…"></textarea>
+        <textarea class="form-control" id="examDesc" rows="2" placeholder="可填寫考試時間、試題範圍等相關事項。"></textarea>
       </div>
     </div>
     <div class="modal-footer">
@@ -634,7 +630,6 @@ window.openSaveModal = async () => {
   if (!generatedQuestions.length) { UI.toast('請先選題', 'warning'); return; }
   const quickTitle = document.getElementById('quickExamTitle')?.value.trim();
   if (quickTitle) document.getElementById('examTitle').value = quickTitle;
-  await loadClassOptions('examClass');
   document.getElementById('saveModal').classList.remove('hidden');
 };
 
@@ -649,8 +644,6 @@ window.doSaveExam = async () => {
 
   const sc = cSubject.value;
   const bc = document.getElementById('cBook').value;
-  const classSelect = document.getElementById('examClass');
-  const classOption = classSelect.selectedOptions[0];
 
   // 計算總分
   let totalScore = 0;
@@ -678,9 +671,9 @@ window.doSaveExam = async () => {
     questionIds,
     questionCount: questionIds.length,
     composeMode: 'auto',
-    classId: classSelect.value || null,
-    className: classSelect.value ? classOption.dataset.name : '',
-    classSchool: classSelect.value ? classOption.dataset.school : '',
+    classId: null,
+    className: '',
+    classSchool: '',
   };
 
   try {

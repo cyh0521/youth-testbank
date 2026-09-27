@@ -52,7 +52,6 @@ const PAPER_SIZES = {
   A4: { width:210, height:297 },
   B4: { width:257, height:364 },
 };
-let pdfLibraryPromise;
 let docxLibraryPromise;
 let appearanceSaveQueue = Promise.resolve();
 
@@ -90,7 +89,7 @@ function choosePaperLayout(format) {
       </div></div>`);
     modal = document.getElementById('epPaperSizeModal');
   }
-  document.getElementById('epPaperSizeTitle').textContent = `${format === '列印' ? '列印' : `下載 ${format}`}設定`;
+  document.getElementById('epPaperSizeTitle').textContent = format === '列印' ? '列印設定' : '下載檔案設定';
   document.getElementById('epPaperSizeConfirm').textContent = format === '列印' ? '列印' : '下載';
   const saved = DataService.getExamPreferences().paperLayout || {};
   modal.querySelector(`input[name="epPaperSize"][value="${PAPER_SIZES[saved.paperKey] ? saved.paperKey : 'A4'}"]`).checked = true;
@@ -120,32 +119,15 @@ function choosePaperLayout(format) {
 }
 
 export async function downloadExam(examData, questions, format) {
-  if (format !== 'Word' && format !== 'PDF') throw new Error('不支援的下載格式');
+  if (format !== 'Word') throw new Error('不支援的下載格式');
   const layout = await choosePaperLayout(format);
   if (!layout) return;
-  if (format === 'Word') await exportToWord(examData, questions, layout.paperKey, layout.columns);
-  else await exportToPdf(examData, questions, layout.paperKey, layout.columns);
+  await exportToWord(examData, questions, layout.paperKey, layout.columns);
 }
 
 export async function printWithPaperChoice(examData, questions) {
   const layout = await choosePaperLayout('列印');
   if (layout) printExam(examData, questions, layout.paperKey, layout.columns);
-}
-
-function loadPdfLibrary() {
-  if (window.html2pdf) return Promise.resolve(window.html2pdf);
-  if (!pdfLibraryPromise) {
-    pdfLibraryPromise = new Promise((resolve, reject) => {
-      const script = document.createElement('script');
-      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
-      script.integrity = 'sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==';
-      script.crossOrigin = 'anonymous';
-      script.onload = () => window.html2pdf ? resolve(window.html2pdf) : reject(new Error('PDF 工具載入失敗'));
-      script.onerror = () => reject(new Error('PDF 工具載入失敗，請檢查網路連線'));
-      document.head.appendChild(script);
-    }).catch(error => { pdfLibraryPromise = null; throw error; });
-  }
-  return pdfLibraryPromise;
 }
 
 export function loadWordMargins() {
@@ -252,7 +234,7 @@ function ensureHeaderModal() {
     </div>
     <div class="modal-body" style="padding:16px 20px;overflow-y:auto">
       <p style="font-size:.84rem;color:var(--text-muted);margin-bottom:14px">
-        於此設定試卷上方表頭資訊。空白欄位的範例不會輸出；設定會套用到預覽、列印、Word 與 PDF。
+        於此設定試卷上方表頭資訊。空白欄位的範例不會輸出；設定會套用到預覽、列印、Word。
       </p>
       <div class="grid-2">
         <div class="form-group"><label class="form-label" for="hdSchool">學校</label><input class="form-control header-example-input" id="hdSchool" placeholder="例：幼獅高中"></div>
@@ -524,8 +506,7 @@ function ensurePreviewModal() {
         <button class="btn btn-ghost btn-sm" type="button" id="epHeaderToggle" aria-expanded="false" aria-controls="epHeaderPanel" title="編輯試卷表頭"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>試卷表頭</button>
         <button class="btn btn-ghost btn-sm" type="button" id="epAppearanceToggle" aria-expanded="false" aria-controls="epToolbar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h11M4 17h16"/><circle cx="18" cy="12" r="2"/></svg>字體與行距</button>
         <button class="btn btn-outline btn-sm" onclick="window._epDoPrint()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>列印</button>
-        <button class="btn btn-outline btn-sm" onclick="window._epDoExport()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>DOCX</button>
-        <button class="btn btn-outline btn-sm" onclick="window._epDoExportPdf()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>PDF</button>
+        <button class="btn btn-outline btn-sm" onclick="window._epDoExport()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>下載</button>
         <button class="modal-close" onclick="window._epClose()">✕</button>
       </div>
     </div>
@@ -682,7 +663,6 @@ export function showExamPreview(examData, questions) {
   window._epRefresh    = () => { renderPaper(examData, questions, previewDisplay()); applyAppearance(); };
   window._epDoPrint    = () => printWithPaperChoice(examData, questions);
   window._epDoExport   = () => downloadExam(examData, questions, 'Word');
-  window._epDoExportPdf = () => downloadExam(examData, questions, 'PDF');
   window._epClose = () => {
     document.getElementById('epModal').classList.add('hidden');
     examData.onPreviewClose?.();
@@ -888,7 +868,7 @@ export async function exportToWord(examData, questions, paperKey = 'A4', columns
   const paper = document.createElement('div');
   paper.innerHTML = buildPaperHtml(examData, questions);
   // Word 在表格欄位交界加入可見編輯記號，也容易拉大題號後的空白。
-  // Word 版改為單一段落的懸掛縮排；預覽與 PDF 仍使用原本表格版面。
+  // Word 版改為單一段落的懸掛縮排；預覽仍使用原本表格版面。
   paper.querySelectorAll('.ep-q').forEach(question => {
     const table = question.querySelector('.ep-answer-table');
     if (!table) return;
@@ -922,94 +902,4 @@ export async function exportToWord(examData, questions, paperKey = 'A4', columns
     console.error('DOCX 匯出失敗', error);
     UI.toast(`Word 下載失敗：${error.message || '請稍後再試'}`, 'danger');
   }
-}
-
-// PDF 以預覽的試卷 HTML 製作，保留中文及瀏覽器中的視覺樣式。
-export async function exportToPdf(examData, questions, paperKey = 'A4', columns = 1) {
-  try {
-    ensurePreviewModal();
-    const html2pdf = await loadPdfLibrary();
-    const appearance = examAppearance(examData);
-    const margins = loadWordMargins();
-    const size = PAPER_SIZES[paperKey] || PAPER_SIZES.A4;
-    const paper = document.createElement('div');
-    paper.innerHTML = buildPaperHtml(examData, questions);
-    const content = paper.firstElementChild;
-    content.style.fontFamily = fontStackById(appearance.font);
-    content.style.fontSize = `${appearance.fontSize}px`;
-    content.style.lineHeight = appearance.lineHeight;
-    content.style.color = '#000';
-    content.style.background = '#fff';
-    if (columns === 2) layoutPdfTwoColumns(content, size, margins);
-    const filename = `${(examData.title || '試卷').replace(/[\\/:*?"<>|]/g, '_')}.pdf`;
-    await html2pdf().set({
-      margin: [margins.top, margins.right, margins.bottom, margins.left],
-      filename,
-      image: { type:'jpeg', quality:0.98 },
-      html2canvas: { scale:2, useCORS:true, backgroundColor:'#fff' },
-      jsPDF: { unit:'mm', format:[size.width, size.height], orientation:'portrait', compress:true },
-      pagebreak: { mode:['css','legacy'], avoid:['.ep-q', '.ep-section-head'] }
-    }).from(content).save();
-  } catch (error) {
-    console.error('PDF 匯出失敗', error);
-    UI.toast(`PDF 下載失敗：${error.message || '請稍後再試'}`, 'danger');
-  }
-}
-
-function layoutPdfTwoColumns(content, size, margins) {
-  const originalParent = content.parentElement;
-  const pxPerMm = 96 / 25.4;
-  const width = (size.width - margins.left - margins.right) * pxPerMm;
-  const height = (size.height - margins.top - margins.bottom) * pxPerMm;
-  const gap = 10 * pxPerMm;
-  const source = [...content.querySelector('.ep-question-columns').children];
-  const header = content.querySelector('.ep-exam-header');
-  const answers = content.querySelector('.ep-answers');
-  const host = document.createElement('div');
-  host.style.cssText = `position:fixed;left:-10000px;top:0;width:${width}px;visibility:hidden;font:inherit;`;
-  content.style.width = `${width}px`;
-  content.style.padding = '0';
-  document.body.appendChild(host);
-  host.appendChild(content);
-  const questionBody = content.querySelector('.ep-question-columns');
-  questionBody.remove();
-  answers?.remove();
-  const pages = [];
-  let page, column;
-  const nextColumn = () => {
-    if (!page || page.querySelectorAll('.ep-pdf-column').length === 2) {
-      page = document.createElement('div');
-      page.className = 'ep-pdf-page';
-      page.style.cssText = `width:${width}px;min-height:${height}px;break-after:page;page-break-after:always;`;
-      if (!pages.length) page.appendChild(header);
-      const row = document.createElement('div');
-      row.style.cssText = `display:flex;gap:${gap}px;`;
-      page.appendChild(row);
-      content.appendChild(page);
-      pages.push(page);
-    }
-    column = document.createElement('div');
-    column.className = 'ep-pdf-column';
-    column.style.cssText = `width:${(width - gap) / 2}px;flex:none;`;
-    page.lastElementChild.appendChild(column);
-  };
-  nextColumn();
-  source.forEach((item, index) => {
-    column.appendChild(item);
-    let overflows = page.scrollHeight > height + 1;
-    if (!overflows && item.classList.contains('ep-section-head') && source[index + 1]) {
-      const next = source[index + 1];
-      column.appendChild(next);
-      overflows = page.scrollHeight > height + 1;
-      column.removeChild(next);
-    }
-    if (overflows && column.children.length > 1) {
-      column.removeChild(item);
-      nextColumn();
-      column.appendChild(item);
-    }
-  });
-  if (answers) content.appendChild(answers);
-  originalParent.appendChild(content);
-  host.remove();
 }

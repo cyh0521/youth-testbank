@@ -48,6 +48,11 @@ document.getElementById('welcomeText').textContent = `歡迎回來，${greetingN
 document.getElementById('toolbarAccount').innerHTML = Avatar.markup(user.avatar, user.displayName || user.email, 'user-avatar--toolbar');
 
 const subjectName = code => dashboardSubjects[code] || code || '未分類';
+const examBookName = exam => {
+  const books = bookCache.get(exam.subjectCode);
+  const book = Array.isArray(books) ? books.find(item => item.code === exam.bookCode) : null;
+  return book?.name || exam.bookName || exam.bookCode || '未指定冊別';
+};
 const subjectTone = code => Math.max(0, Object.keys(SUBJECT_CODES).indexOf(code)) % 6;
 const examTime = value => {
   if (!value) return 0;
@@ -85,7 +90,7 @@ async function handleRecentExamAction(event) {
     const { showExamPreview, printWithPaperChoice, downloadExam } = await import('./js/exam-preview.js');
     if (action === 'preview') showExamPreview(exam, ordered);
     else if (action === 'print') await printWithPaperChoice(exam, ordered);
-    else if (action === 'word' || action === 'pdf') await downloadExam(exam, ordered, action === 'word' ? 'Word' : 'PDF');
+    else if (action === 'word') await downloadExam(exam, ordered, 'Word');
   } catch (error) {
     UI.toast('操作失敗：' + error.message, 'danger');
   } finally {
@@ -103,17 +108,16 @@ function renderExamRows() {
   document.getElementById('examResultCount').textContent = `共 ${filtered.length} 份${filtered.length > 10 ? '，顯示前 10 份' : ''}`;
   document.getElementById('recentExamRows').innerHTML = filtered.slice(0,10).map(e => `
     <tr>
-      <td><span class="exam-name">${I.test20}<strong>${esc(e.title || '（未命名）')}</strong></span></td>
-      <td><span class="subject-tag tone-${subjectTone(e.subjectCode)}">${esc(subjectName(e.subjectCode))}</span></td>
+      <td><span class="exam-name${e.description ? ' has-description' : ''}">${I.test20}<strong title="${esc(e.title || '（未命名）')}">${esc(e.title || '（未命名）')}</strong>${e.description ? `<span class="exam-description" title="${esc(e.description)}">${esc(e.description)}</span>` : ''}</span></td>
+      <td><span class="subject-tag tone-${subjectTone(e.subjectCode)}" title="${esc(examBookName(e))}">${esc(examBookName(e))}</span></td>
       <td class="nowrap">${Number(e.questionCount) || 0} 題</td>
       <td class="exam-date">${esc(dateLabel(e.createdAt))}</td>
       <td><div class="recent-exam-actions" data-exam-id="${esc(e.id)}">
         <button class="btn btn-sm btn-outline" data-exam-action="preview">${recentEyeIcon}預覽</button>
-        <button class="btn btn-sm btn-primary" data-exam-action="print">${I.printer16}列印</button>
-        <button class="btn btn-sm btn-ghost" data-exam-action="word">${I.download16}DOCX</button>
-        <button class="btn btn-sm btn-ghost" data-exam-action="pdf">${I.download16}PDF</button>
-        ${canEditExams ? `<a class="btn btn-sm btn-outline" href="exams.html?edit=${encodeURIComponent(e.id)}">${I.edit16}編輯</a>
-        <button class="btn btn-sm btn-danger" data-exam-action="delete">${I.trash16}刪除</button>` : ''}
+        ${canEditExams ? `<a class="btn btn-sm btn-outline" href="exams.html?edit=${encodeURIComponent(e.id)}">${I.edit16}編輯</a>` : ''}
+        <button class="btn btn-sm btn-ghost" data-exam-action="print">${I.printer16}列印</button>
+        <button class="btn btn-sm btn-primary" data-exam-action="word">${I.download16}下載</button>
+        ${canEditExams ? `<button class="btn btn-sm btn-danger" data-exam-action="delete">${I.trash16}刪除</button>` : ''}
       </div></td>
     </tr>`).join('') || `<tr><td colspan="5" class="dash-empty">尚無試卷，從上方選題方式開始建立第一份試卷。</td></tr>`;
 }
@@ -234,6 +238,16 @@ async function renderStaff() {
       }
     }
   }
+  await Promise.all([...new Set(dashboardExams.map(exam => exam.subjectCode).filter(Boolean))].map(async code => {
+    const subject = dashboardSubjectRecords.get(code);
+    if (!subject) return;
+    try {
+      const books = await DataService.getVisibleBooks(subject.id, code);
+      bookCache.set(code, books);
+    } catch (error) {
+      console.warn('Dashboard book names unavailable:', code, error);
+    }
+  }));
   for (const code of Object.keys(stats.bySubject || {})) {
     if (!dashboardSubjects[code]) dashboardSubjects[code] = code;
   }
@@ -266,7 +280,7 @@ async function renderStaff() {
     </div>
     <section class="recent-section" aria-labelledby="recentHeading">
       <div class="section-heading"><div><h2 id="recentHeading">最近試卷</h2><p>查看最近建立的 10 份試卷，快速預覽、列印與管理；若要查看完整試卷清單，請移至「<a class="recent-management-link" href="exams.html">試卷管理</a>」。</p></div></div>
-      <div class="card table-wrapper"><table class="data-table recent-table"><colgroup><col class="recent-col-title"><col class="recent-col-subject"><col class="recent-col-count"><col class="recent-col-date"><col class="recent-col-actions"></colgroup><thead><tr><th>試卷名稱</th><th>科目</th><th>題數</th><th>建立時間</th><th>操作</th></tr></thead><tbody id="recentExamRows"></tbody></table></div>
+      <div class="card table-wrapper"><table class="data-table recent-table"><colgroup><col class="recent-col-title"><col class="recent-col-subject"><col class="recent-col-count"><col class="recent-col-date"><col class="recent-col-actions"></colgroup><thead><tr><th>試卷名稱</th><th>科目（冊別）</th><th>題數</th><th>建立時間</th><th>操作</th></tr></thead><tbody id="recentExamRows"></tbody></table></div>
       <p class="exam-result-count" id="examResultCount" aria-live="polite"></p>
     </section>
     ${isAdmin ? `<nav class="admin-shortcuts" aria-label="管理員快速操作"><span>題庫管理</span><a href="import.html">${I.upload16} 匯入題目</a><a href="questions.html">${I.list16} 題目維護</a><a href="textbooks.html">${I.book16} 課本管理</a><a href="settings.html?view=accounts">${I.settings16} 帳號管理</a></nav>` : ''}`;

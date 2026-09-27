@@ -1011,3 +1011,6 @@ input[type=checkbox], input[type=radio] { accent-color: #3478f6; }
   *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }
 
+
+/* 試卷名稱旁的說明：完整內容由 title 顯示。 */
+.exam-description { flex: 1 1 0; min-width: 0; color: var(--text-light); font-size: .75rem; font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
