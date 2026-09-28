@@ -8,8 +8,11 @@
 <script>if(localStorage.getItem("sidebarCollapsed")==="1")document.documentElement.classList.add("sidebar-collapsed");</script>
 <style>
 .filter-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
-.sort-buttons{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-.sort-option.active{background:var(--primary);border-color:var(--primary);color:white}
+.filter-row select{max-width:180px}
+.exam-sort-heading{display:inline-flex;align-items:center;gap:5px;padding:0;border:0;background:none;color:inherit;font:inherit;font-weight:inherit;text-align:left;cursor:pointer}
+.exam-sort-heading:hover{color:var(--primary)}
+.exam-sort-heading:focus-visible{outline:2px solid var(--primary);outline-offset:3px;border-radius:2px}
+.exam-sort-indicator{min-width:1em;color:var(--primary)}
 
 /* 試卷編輯 Modal */
 .edit-basic-fields{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
@@ -54,13 +57,10 @@
       <section id="listView" class="card recent-section">
         <div class="filter-row">
           <input class="form-control" id="searchInput" placeholder="🔍 搜尋試卷名稱…" oninput="filterExams()" style="max-width:220px">
-          <div class="sort-buttons" aria-label="排序方式">
-            <button class="btn btn-sm btn-outline sort-option" id="sort-createdAt" onclick="setSortField('createdAt')">建立時間 ↓</button>
-            <button class="btn btn-sm btn-outline sort-option" id="sort-subject" onclick="setSortField('subject')">科目</button>
-          </div>
+          <select class="form-control" id="subjectFilter" aria-label="篩選科目" onchange="filterExams()"><option value="">全部科目</option></select>
           <span style="font-size:.82rem;color:var(--text-muted);margin-left:auto" id="examCount"></span>
         </div>
-        <div class="table-wrapper"><table class="data-table recent-table"><colgroup><col class="recent-col-title"><col class="recent-col-subject"><col class="recent-col-count"><col class="recent-col-date"><col class="recent-col-actions"></colgroup><thead><tr><th>試卷名稱</th><th>科目（冊別）</th><th>題數</th><th>建立時間</th><th>操作</th></tr></thead><tbody id="examList"><tr><td colspan="5" class="dash-empty">載入中…</td></tr></tbody></table></div>
+        <div class="table-wrapper"><table class="data-table recent-table"><colgroup><col class="recent-col-title"><col class="recent-col-subject"><col class="recent-col-count"><col class="recent-col-date"><col class="recent-col-actions"></colgroup><thead><tr><th data-sort-field="title"><button class="exam-sort-heading" type="button" onclick="setExamSort('title')">試卷名稱<span class="exam-sort-indicator" aria-hidden="true"></span></button></th><th data-sort-field="subject"><button class="exam-sort-heading" type="button" onclick="setExamSort('subject')">科目（冊別）<span class="exam-sort-indicator" aria-hidden="true"></span></button></th><th data-sort-field="questionCount"><button class="exam-sort-heading" type="button" onclick="setExamSort('questionCount')">題數<span class="exam-sort-indicator" aria-hidden="true"></span></button></th><th data-sort-field="createdAt"><button class="exam-sort-heading" type="button" onclick="setExamSort('createdAt')">建立時間<span class="exam-sort-indicator" aria-hidden="true"></span></button></th><th>操作</th></tr></thead><tbody id="examList"><tr><td colspan="5" class="dash-empty">載入中…</td></tr></tbody></table></div>
       </section>
     </div>
   </div>
@@ -73,7 +73,7 @@
       <h3 id="editTitle">編輯試卷</h3>
       <div style="display:flex;gap:6px;align-items:center">
         <button class="btn btn-ghost btn-sm" onclick="shuffleEditQs()" title="各題型內亂數排序"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m18 14 4 4-4 4M18 2l4 4-4 4M2 18h2.5a6 6 0 0 0 5.1-3l4.8-8a6 6 0 0 1 5.1-3H22M2 6h2.5a6 6 0 0 1 5.1 3l.5.8M14 17.2a6 6 0 0 0 5.5 2.8H22"/></svg>亂數排序</button>
-        <button class="btn btn-ghost btn-sm" id="editHeaderToggle" onclick="toggleEditHeader()" aria-expanded="false" aria-controls="editHeaderPanel" title="設定試卷上方表頭資訊"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>試卷表頭</button>
+        <button class="btn btn-ghost btn-sm ep-panel-toggle" id="editHeaderToggle" onclick="toggleEditHeader()" aria-expanded="false" aria-controls="editHeaderPanel" title="設定試卷上方表頭資訊"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>試卷表頭</button>
         <button class="btn btn-outline btn-sm" onclick="previewEdit()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>預覽</button>
         <button class="btn btn-primary btn-sm" onclick="saveEdit()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2zM17 21v-8H7v8M7 3v5h8"/></svg>儲存</button>
         <button class="modal-close" onclick="closeEdit()">✕</button>
@@ -122,11 +122,10 @@ let editDraftExam = null;
 let editQOrder   = [];  // array of question ids
 let editQMap     = {};  // id -> q
 let initialized  = false;
-let selectedSortField = 'createdAt';
-let selectedSortDirection = 'desc';
-
+let examSortField = 'createdAt';
+let examSortDirection = 'desc';
 function examSubjectLabel(exam) {
-  return SUBJECT_CODES[exam.subjectCode] || exam.subjectCode || '未指定科目';
+  return window._tbCache?.subjectByCode?.[exam.subjectCode]?.name || SUBJECT_CODES[exam.subjectCode] || exam.subjectCode || '未指定科目';
 }
 
 // ── 載入 ─────────────────────────────────────────
@@ -143,7 +142,7 @@ async function init() {
         else UI.toast('找不到此試卷', 'warning');
       }
     }
-    updateSortButtons();
+    renderSubjectFilter();
     filterExams();
   } catch(e) {
     document.getElementById('examList').innerHTML =
@@ -151,44 +150,47 @@ async function init() {
   }
 }
 
-function updateSortButtons() {
-  const labels = { createdAt:'建立時間', subject:'科目' };
-  Object.entries(labels).forEach(([field, label]) => {
-    const button = document.getElementById('sort-' + field);
-    const active = field === selectedSortField;
-    button.classList.toggle('active', active);
-    button.textContent = active ? `${label} ${selectedSortDirection === 'asc' ? '↑' : '↓'}` : label;
-    button.title = active ? '再次點擊可切換排序方向' : `改用${label}排序`;
-  });
+function renderSubjectFilter() {
+  const select = document.getElementById('subjectFilter');
+  const selected = select.value;
+  const codes = [...new Set(allExams.map(e => e.subjectCode || '__none'))]
+    .sort((a, b) => examSubjectLabel({subjectCode:a === '__none' ? '' : a}).localeCompare(examSubjectLabel({subjectCode:b === '__none' ? '' : b}), 'zh-Hant'));
+  select.innerHTML = '<option value="">全部科目</option>' + codes.map(code =>
+    `<option value="${UI.escapeHtml(code)}">${UI.escapeHtml(examSubjectLabel({subjectCode:code === '__none' ? '' : code}))}</option>`
+  ).join('');
+  select.value = codes.includes(selected) ? selected : '';
 }
 
-window.setSortField = field => {
-  if (selectedSortField === field) {
-    selectedSortDirection = selectedSortDirection === 'asc' ? 'desc' : 'asc';
-  } else {
-    selectedSortField = field;
-    selectedSortDirection = 'desc';
-  }
-  updateSortButtons();
+window.setExamSort = field => {
+  if (!['title','subject','questionCount','createdAt'].includes(field)) return;
+  examSortDirection = examSortField === field && examSortDirection === 'desc' ? 'asc' : 'desc';
+  examSortField = field;
   filterExams();
 };
 
+function updateExamSortHeadings() {
+  document.querySelectorAll('.recent-table th[data-sort-field]').forEach(th => {
+    const active = th.dataset.sortField === examSortField;
+    th.setAttribute('aria-sort', active ? (examSortDirection === 'asc' ? 'ascending' : 'descending') : 'none');
+    th.querySelector('.exam-sort-indicator').textContent = active ? (examSortDirection === 'asc' ? '↑' : '↓') : '';
+  });
+}
+
 window.filterExams = () => {
   const kw = document.getElementById('searchInput').value.trim().toLowerCase();
-  let list = allExams.filter(e => !kw || (e.title || '').toLowerCase().includes(kw));
-  const field = selectedSortField;
-  const direction = selectedSortDirection === 'asc' ? 1 : -1;
-  list = [...list].sort((a,b) => {
+  const subject = document.getElementById('subjectFilter').value;
+  const list = allExams.filter(e =>
+    (!kw || (e.title || '').toLowerCase().includes(kw)) &&
+    (!subject || (e.subjectCode || '__none') === subject)
+  ).sort((a,b) => {
     let result;
-    if (field === 'createdAt') {
-      result = (new Date(a.createdAt || 0).getTime() || 0) - (new Date(b.createdAt || 0).getTime() || 0);
-    } else {
-      const av = examSubjectLabel(a);
-      const bv = examSubjectLabel(b);
-      result = av.localeCompare(bv, 'zh-Hant', { numeric:true });
-    }
-    return (result || (a.title || '').localeCompare(b.title || '', 'zh-Hant', { numeric:true })) * direction;
+    if (examSortField === 'createdAt') result = (new Date(a.createdAt || 0).getTime() || 0) - (new Date(b.createdAt || 0).getTime() || 0);
+    else if (examSortField === 'questionCount') result = (Number(a.questionCount) || 0) - (Number(b.questionCount) || 0);
+    else if (examSortField === 'subject') result = examSubjectLabel(a).localeCompare(examSubjectLabel(b), 'zh-Hant', {numeric:true}) || examBookName(a).localeCompare(examBookName(b), 'zh-Hant', {numeric:true});
+    else result = (a.title || '').localeCompare(b.title || '', 'zh-Hant', {numeric:true});
+    return (result || (a.title || '').localeCompare(b.title || '', 'zh-Hant', {numeric:true})) * (examSortDirection === 'asc' ? 1 : -1);
   });
+  updateExamSortHeadings();
   document.getElementById('examCount').textContent = `共 ${list.length} 份試卷`;
   renderExams(list);
 };
@@ -218,7 +220,7 @@ function renderExams(list) {
         ${canEdit ? `<button class="btn btn-sm btn-danger" onclick="deleteExam('${e.id}')">${I.trash16}刪除</button>` : ''}
       </div></td>
     </tr>`;
-  }).join('') || `<tr><td colspan="5" class="dash-empty">${document.getElementById('searchInput').value.trim() ? '找不到符合條件的試卷' : '尚無試卷，請先透過選題功能建立試卷'}</td></tr>`;
+  }).join('') || `<tr><td colspan="5" class="dash-empty">${document.getElementById('searchInput').value.trim() || document.getElementById('subjectFilter').value ? '找不到符合條件的試卷' : '尚無試卷，請先透過選題功能建立試卷'}</td></tr>`;
 }
 
 // ── 取得試卷題目 ─────────────────────────────────
