@@ -517,9 +517,9 @@ window.DataService = {
   // ══════════════════════════════════════════════
 
   async getExams() {
-    const source = DataService.isAdmin()
-      ? collection(db, 'exams')
-      : query(collection(db, 'exams'), where('createdBy', '==', DataService._currentUser?.uid));
+    const uid = DataService._currentUser?.uid;
+    if (!uid) throw new Error('請先登入');
+    const source = query(collection(db, 'exams'), where('createdBy', '==', uid));
     const snap = await getDocs(source);
     const arr = docsToArr(snap);
     arr.sort((a, b) => {
@@ -551,9 +551,7 @@ window.DataService = {
   async preserveExamHeaders(header) {
     const uid = DataService._currentUser?.uid;
     if (!uid) throw new Error('請先登入');
-    const source = DataService.isAdmin()
-      ? collection(db, 'exams')
-      : query(collection(db, 'exams'), where('createdBy', '==', uid));
+    const source = query(collection(db, 'exams'), where('createdBy', '==', uid));
     const snap = await getDocs(source);
     for (const examDoc of snap.docs) {
       if (examDoc.data().header != null) continue;

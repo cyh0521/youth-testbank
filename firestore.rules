@@ -35,17 +35,15 @@ service cloud.firestore {
 
     // ── exams ─────────────────────────────────────────────────
     match /exams/{eid} {
-      // 管理員可以讀取所有試卷
-      allow read:  if isAdmin();
-      // 教師只能讀取自己建立的試卷
+      // 管理員與教師只能存取自己建立的試卷
       allow read:  if isTeacher() && resource.data.createdBy == request.auth.uid;
-      // 試卷建立者必須是本人，避免教師替其他人建立試卷
-      allow create: if isAdmin() || (isTeacher() && request.resource.data.createdBy == request.auth.uid);
-      // 教師只能修改自己的試卷，且不得更改建立者
-      allow update: if isAdmin() || (isTeacher()
+      // 試卷建立者必須是本人
+      allow create: if isTeacher() && request.resource.data.createdBy == request.auth.uid;
+      // 修改時不得更改建立者
+      allow update: if isTeacher()
                     && resource.data.createdBy == request.auth.uid
-                    && request.resource.data.createdBy == resource.data.createdBy);
-      allow delete: if isAdmin() || (isTeacher() && resource.data.createdBy == request.auth.uid);
+                    && request.resource.data.createdBy == resource.data.createdBy;
+      allow delete: if isTeacher() && resource.data.createdBy == request.auth.uid;
     }
 
     // ── settings（系統設定）────────────────────────────────

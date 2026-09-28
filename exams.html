@@ -64,7 +64,7 @@
       <section id="listView" class="card recent-section">
         <div class="filter-row">
           <input class="form-control" id="searchInput" placeholder="🔍 搜尋試卷名稱…" oninput="filterExams()" style="max-width:220px">
-          <select class="form-control" id="subjectFilter" aria-label="篩選科目" onchange="filterExams()"><option value="">全部科目</option></select>
+          <select class="form-control" id="bookFilter" aria-label="篩選冊別" onchange="filterExams()"><option value="">全部冊別</option></select>
           <span style="font-size:.82rem;color:var(--text-muted);margin-left:auto" id="examCount"></span>
         </div>
         <div class="table-wrapper"><table class="data-table recent-table"><colgroup><col class="recent-col-title"><col class="recent-col-subject"><col class="recent-col-count"><col class="recent-col-date"><col class="recent-col-actions"></colgroup><thead><tr><th data-sort-field="title"><button class="exam-sort-heading" type="button" onclick="setExamSort('title')">試卷名稱<span class="exam-sort-indicator" aria-hidden="true"></span></button></th><th data-sort-field="subject"><button class="exam-sort-heading" type="button" onclick="setExamSort('subject')">科目（冊別）<span class="exam-sort-indicator" aria-hidden="true"></span></button></th><th data-sort-field="questionCount"><button class="exam-sort-heading" type="button" onclick="setExamSort('questionCount')">題數<span class="exam-sort-indicator" aria-hidden="true"></span></button></th><th data-sort-field="createdAt"><button class="exam-sort-heading" type="button" onclick="setExamSort('createdAt')">建立時間<span class="exam-sort-indicator" aria-hidden="true"></span></button></th><th>操作</th></tr></thead><tbody id="examList"><tr><td colspan="5" class="dash-empty">載入中…</td></tr></tbody></table></div>
@@ -165,7 +165,7 @@ async function init() {
         else UI.toast('找不到此試卷', 'warning');
       }
     }
-    renderSubjectFilter();
+    renderBookFilter();
     filterExams();
   } catch(e) {
     document.getElementById('examList').innerHTML =
@@ -173,15 +173,33 @@ async function init() {
   }
 }
 
-function renderSubjectFilter() {
-  const select = document.getElementById('subjectFilter');
+function bookFilterKey(exam) {
+  return encodeURIComponent(JSON.stringify([exam.subjectCode || '', exam.bookCode || '']));
+}
+
+function renderBookFilter() {
+  const select = document.getElementById('bookFilter');
   const selected = select.value;
-  const codes = [...new Set(allExams.map(e => e.subjectCode || '__none'))]
-    .sort((a, b) => examSubjectLabel({subjectCode:a === '__none' ? '' : a}).localeCompare(examSubjectLabel({subjectCode:b === '__none' ? '' : b}), 'zh-Hant'));
-  select.innerHTML = '<option value="">全部科目</option>' + codes.map(code =>
-    `<option value="${UI.escapeHtml(code)}">${UI.escapeHtml(examSubjectLabel({subjectCode:code === '__none' ? '' : code}))}</option>`
+  const subjects = window._tbCache?.subjects || [];
+  const subjectOrder = new Map(subjects.map((subject, index) => [subject.code, index]));
+  const bookOrder = new Map(subjects.flatMap(subject =>
+    (window._tbCache?.booksBySubject?.[subject.id] || []).map((book, index) =>
+      [bookFilterKey({subjectCode:subject.code, bookCode:book.code}), index]
+    )
+  ));
+  const books = [...new Map(allExams.map(exam => [bookFilterKey(exam), exam])).entries()]
+    .sort((a, b) =>
+      (subjectOrder.get(a[1].subjectCode) ?? Infinity) - (subjectOrder.get(b[1].subjectCode) ?? Infinity) ||
+      (bookOrder.get(a[0]) ?? Infinity) - (bookOrder.get(b[0]) ?? Infinity) ||
+      examSubjectLabel(a[1]).localeCompare(examSubjectLabel(b[1]), 'zh-Hant') ||
+      examBookName(a[1]).localeCompare(examBookName(b[1]), 'zh-Hant', {numeric:true})
+    );
+  const nameCounts = new Map();
+  books.forEach(([, exam]) => nameCounts.set(examBookName(exam), (nameCounts.get(examBookName(exam)) || 0) + 1));
+  select.innerHTML = '<option value="">全部冊別</option>' + books.map(([key, exam]) =>
+    `<option value="${key}">${UI.escapeHtml(nameCounts.get(examBookName(exam)) > 1 ? `${examSubjectLabel(exam)}｜${examBookName(exam)}` : examBookName(exam))}</option>`
   ).join('');
-  select.value = codes.includes(selected) ? selected : '';
+  select.value = books.some(([key]) => key === selected) ? selected : '';
 }
 
 window.setExamSort = field => {
@@ -201,10 +219,10 @@ function updateExamSortHeadings() {
 
 window.filterExams = () => {
   const kw = document.getElementById('searchInput').value.trim().toLowerCase();
-  const subject = document.getElementById('subjectFilter').value;
+  const book = document.getElementById('bookFilter').value;
   const list = allExams.filter(e =>
     (!kw || (e.title || '').toLowerCase().includes(kw)) &&
-    (!subject || (e.subjectCode || '__none') === subject)
+    (!book || bookFilterKey(e) === book)
   ).sort((a,b) => {
     let result;
     if (examSortField === 'createdAt') result = (new Date(a.createdAt || 0).getTime() || 0) - (new Date(b.createdAt || 0).getTime() || 0);
@@ -243,7 +261,7 @@ function renderExams(list) {
         ${canEdit ? `<button class="btn btn-sm btn-danger" onclick="deleteExam('${e.id}')">${I.trash16}刪除</button>` : ''}
       </div></td>
     </tr>`;
-  }).join('') || `<tr><td colspan="5" class="dash-empty">${document.getElementById('searchInput').value.trim() || document.getElementById('subjectFilter').value ? '找不到符合條件的試卷' : '尚無試卷，請先透過選題功能建立試卷'}</td></tr>`;
+  }).join('') || `<tr><td colspan="5" class="dash-empty">${document.getElementById('searchInput').value.trim() || document.getElementById('bookFilter').value ? '找不到符合條件的試卷' : '尚無試卷，請先透過選題功能建立試卷'}</td></tr>`;
 }
 
 // ── 取得試卷題目 ─────────────────────────────────

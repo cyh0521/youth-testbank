@@ -44,7 +44,11 @@ const questionCache = new Map();
 const bookCache = new Map();
 let overviewBookCodes = new Map();
 let overviewRequest = 0;
-let overviewStats = { total: 0, byType: {} };
+const overviewSelectionKey = `youth.overviewSelection.${user.uid || user.email || 'default'}`;
+let savedOverviewSelection = (() => {
+  try { return JSON.parse(localStorage.getItem(overviewSelectionKey)) || {}; }
+  catch { return {}; }
+})();
 
 const greetingName = (user.displayName || user.email?.split('@')[0] || '').trim().replace(/\s*老師$/, '');
 document.getElementById('welcomeText').textContent = `歡迎回來，${greetingName ? `${greetingName} 老師` : '老師'}`;
@@ -156,10 +160,10 @@ async function updateOverview() {
   const chart = document.getElementById('overviewChart');
   overviewBookCodes = new Map();
   if (!subjectCode) {
-    bookSelect.innerHTML = '<option value="">全部冊別</option>';
+    bookSelect.innerHTML = '<option value="">尚無冊別</option>';
     bookSelect.disabled = true;
     chart.setAttribute('aria-busy', 'false');
-    renderOverviewChart(overviewStats.byType || {}, overviewStats.total || 0);
+    renderOverviewChart({}, 0);
     return;
   }
 
@@ -177,37 +181,36 @@ async function updateOverview() {
   const [booksResult, questionsResult] = await Promise.allSettled([booksPromise, questionsPromise]);
   if (request !== overviewRequest) return;
 
-  let books = [];
-  if (booksResult.status === 'fulfilled') {
-    bookCache.set(subjectCode, booksResult.value);
-    const uniqueCodes = new Map();
-    for (const book of booksResult.value) {
-      const code = String(book.code || '').trim();
-      if (code && !uniqueCodes.has(code)) uniqueCodes.set(code, String(book.name || code).trim());
-    }
-    const groups = new Map();
-    for (const [code, name] of uniqueCodes) {
-      if (!groups.has(name)) groups.set(name, new Set());
-      groups.get(name).add(code);
-    }
-    books = [...groups].map(([name, codes], index) => {
-      const key = String(index);
-      overviewBookCodes.set(key, codes);
-      return `<option value="${key}">${esc(name)}</option>`;
-    });
-  } else {
-    bookCache.delete(subjectCode);
-  }
-  bookSelect.innerHTML = '<option value="">全部冊別</option>' + books.join('');
-  bookSelect.disabled = books.length === 0;
+  if (booksResult.status === 'fulfilled') bookCache.set(subjectCode, booksResult.value);
+  else bookCache.delete(subjectCode);
   if (questionsResult.status === 'rejected') {
     questionCache.delete(subjectCode);
+    bookSelect.innerHTML = '<option value="">冊別無法載入</option>';
     chart.innerHTML = '<p class="dash-empty">題型分布暫時無法載入，請重新選擇科目。</p>';
     document.getElementById('overviewTotal').innerHTML = '— <span>題</span>';
     chart.setAttribute('aria-busy', 'false');
     return;
   }
   questionCache.set(subjectCode, questionsResult.value);
+  const importedCodes = new Set(questionsResult.value.map(q => String(q.bookCode || '').trim()));
+  const bookNames = new Map((booksResult.status === 'fulfilled' ? booksResult.value : [])
+    .map(book => [String(book.code || '').trim(), String(book.name || book.code || '').trim()]));
+  const groups = new Map();
+  for (const code of importedCodes) {
+    const name = bookNames.get(code) || code || '未指定冊別';
+    if (!groups.has(name)) groups.set(name, new Set());
+    groups.get(name).add(code);
+  }
+  const books = [...groups].map(([name, codes], index) => {
+    const key = String(index);
+    overviewBookCodes.set(key, codes);
+    return `<option value="${key}">${esc(name)}</option>`;
+  });
+  bookSelect.innerHTML = books.join('') || '<option value="">尚無冊別</option>';
+  bookSelect.disabled = books.length === 0;
+  const savedCode = savedOverviewSelection.subjectCode === subjectCode ? savedOverviewSelection.bookCode : null;
+  const savedBook = [...overviewBookCodes].find(([, codes]) => codes.has(savedCode))?.[0];
+  if (savedBook !== undefined) bookSelect.value = savedBook;
   chart.setAttribute('aria-busy', 'false');
   renderSelectedBook();
 }
@@ -217,10 +220,15 @@ function renderSelectedBook() {
   const bookCodes = overviewBookCodes.get(document.getElementById('overviewBook').value);
   const questions = questionCache.get(subjectCode);
   if (!Array.isArray(questions)) return;
-  const selected = bookCodes ? questions.filter(q => bookCodes.has(String(q.bookCode))) : questions;
+  const selected = bookCodes ? questions.filter(q => bookCodes.has(String(q.bookCode || '').trim())) : [];
   const byType = {};
   for (const q of selected) byType[q.type] = (byType[q.type] || 0) + 1;
   renderOverviewChart(byType, selected.length);
+  if (bookCodes) {
+    savedOverviewSelection = { subjectCode, bookCode: [...bookCodes][0] };
+    try { localStorage.setItem(overviewSelectionKey, JSON.stringify(savedOverviewSelection)); }
+    catch { /* 本機儲存無法使用時，當前篩選仍可操作。 */ }
+  }
 }
 
 async function renderStaff() {
@@ -238,10 +246,9 @@ async function renderStaff() {
     statsPromise, DataService.getExams(), DataService.getVisibleSubjects()
   ]);
   const stats = statsResult.status === 'fulfilled' ? statsResult.value : {total:0, byType:{}, bySubject:{}};
-  overviewStats = stats;
   dashboardExams = examsResult.status === 'fulfilled' ? examsResult.value : [];
   examsLoaded = examsResult.status === 'fulfilled';
-  // 保留預設科目，合併課本管理中的自訂名稱與科目；零題也要顯示。
+  // 合併課本管理中的自訂科目名稱；選單僅顯示有題目的科目。
   if (subjectsResult.status === 'fulfilled') {
     for (const subject of subjectsResult.value) {
       if (subject.code) {
@@ -263,6 +270,9 @@ async function renderStaff() {
   for (const code of Object.keys(stats.bySubject || {})) {
     if (!dashboardSubjects[code]) dashboardSubjects[code] = code;
   }
+  const overviewSubjectCodes = Object.keys(dashboardSubjects).filter(code => (Number(stats.bySubject?.[code]) || 0) > 0);
+  const initialSubjectCode = overviewSubjectCodes.includes(savedOverviewSelection.subjectCode)
+    ? savedOverviewSelection.subjectCode : overviewSubjectCodes[0] || '';
   const action = (page, icon, label, desc, cls='') => `<a class="create-action ${cls}" href="${page}.html"><span class="create-icon">${icon}</span><span><strong>${label}</strong><small>${desc}</small></span><span class="action-arrow" aria-hidden="true">›</span></a>`;
   const warnings = [statsResult.status === 'rejected' ? '題庫統計暫時無法載入' : '', examsResult.status === 'rejected' ? '試卷清單暫時無法載入' : ''].filter(Boolean);
   document.getElementById('content').innerHTML = `
@@ -283,11 +293,11 @@ async function renderStaff() {
       <section class="card overview-card">
         <div class="overview-heading"><div><h2>題庫概況</h2><p>專業命題，掌握題型配置</p></div></div>
         <div class="overview-filters">
-          <select class="form-control" id="overviewSubject" aria-label="篩選科目"><option value="">全部科目</option>${Object.keys(dashboardSubjects).map(code => `<option value="${esc(code)}">${esc(subjectName(code))}</option>`).join('')}</select>
-          <select class="form-control" id="overviewBook" aria-label="篩選冊別" disabled><option value="">全部冊別</option></select>
+          <select class="form-control" id="overviewSubject" aria-label="篩選科目" ${initialSubjectCode ? '' : 'disabled'}>${overviewSubjectCodes.length ? overviewSubjectCodes.map(code => `<option value="${esc(code)}" ${code === initialSubjectCode ? 'selected' : ''}>${esc(subjectName(code))}</option>`).join('') : '<option value="">尚無科目</option>'}</select>
+          <select class="form-control" id="overviewBook" aria-label="篩選冊別" disabled><option value="">${initialSubjectCode ? '載入冊別中…' : '尚無冊別'}</option></select>
         </div>
-        <div class="question-total" id="overviewTotal">${statsResult.status === 'fulfilled' ? (stats.total || 0).toLocaleString() : '—'} <span>題</span></div>
-        <div class="overview-chart" id="overviewChart" aria-label="題型分布" aria-live="polite">${statsResult.status === 'fulfilled' ? '' : '<p class="dash-empty">題型分布暫時無法載入</p>'}</div>
+        <div class="question-total" id="overviewTotal">— <span>題</span></div>
+        <div class="overview-chart" id="overviewChart" aria-label="題型分布" aria-live="polite"></div>
       </section>
     </div>
     <section class="card recent-section" aria-labelledby="recentHeading">
@@ -296,7 +306,8 @@ async function renderStaff() {
       <p class="exam-result-count" id="examResultCount" aria-live="polite"></p>
     </section>
     ${isAdmin ? `<nav class="admin-shortcuts" aria-label="管理員快速操作"><span>題庫管理</span><a href="import.html">${I.upload16} 匯入題目</a><a href="questions.html">${I.list16} 題目維護</a><a href="textbooks.html">${I.book16} 課本管理</a><a href="settings.html?view=accounts">${I.settings16} 帳號管理</a></nav>` : ''}`;
-  if (statsResult.status === 'fulfilled') renderOverviewChart(stats.byType || {}, stats.total || 0);
+  if (initialSubjectCode) await updateOverview();
+  else renderOverviewChart({}, 0);
   document.getElementById('overviewSubject').addEventListener('change', updateOverview);
   document.getElementById('overviewBook').addEventListener('change', renderSelectedBook);
   document.getElementById('recentExamRows').addEventListener('click', handleRecentExamAction);
