@@ -142,8 +142,9 @@ function renderOverviewChart(byType, total) {
     return;
   }
   const max = Math.max(...Object.values(byType), 1);
-  chart.innerHTML = Object.entries(QUESTION_TYPES).map(([code, name], index) => {
+  chart.innerHTML = Object.entries(QUESTION_TYPES).filter(([code]) => (Number(byType[code]) || 0) > 0).map(([code, name]) => {
     const count = Number(byType[code]) || 0;
+    const index = Object.keys(QUESTION_TYPES).indexOf(code);
     return `<div class="bar-item"><span class="bar-label">${esc(name)}</span><div class="bar-track"><div class="bar-fill" style="width:${Math.round(count/max*100)}%;background:${chartColors[index]}"></div></div><span class="bar-count">${count.toLocaleString()}</span></div>`;
   }).join('');
 }
@@ -155,7 +156,7 @@ async function updateOverview() {
   const chart = document.getElementById('overviewChart');
   overviewBookCodes = new Map();
   if (!subjectCode) {
-    bookSelect.innerHTML = '<option value="">全部科目</option>';
+    bookSelect.innerHTML = '<option value="">全部冊別</option>';
     bookSelect.disabled = true;
     chart.setAttribute('aria-busy', 'false');
     renderOverviewChart(overviewStats.byType || {}, overviewStats.total || 0);
@@ -197,7 +198,7 @@ async function updateOverview() {
   } else {
     bookCache.delete(subjectCode);
   }
-  bookSelect.innerHTML = '<option value="">全部科目</option>' + books.join('');
+  bookSelect.innerHTML = '<option value="">全部冊別</option>' + books.join('');
   bookSelect.disabled = books.length === 0;
   if (questionsResult.status === 'rejected') {
     questionCache.delete(subjectCode);
@@ -270,11 +271,11 @@ async function renderStaff() {
       <section class="card create-card">
         <div class="overview-heading"><div><h2>建立新試卷</h2><p>選擇方式，快速開始出題或列印題本</p></div></div>
         <div class="create-actions">
-          ${action('compose', '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="26" height="19" rx="3"/><path d="M12 23v5m8-5v5M9 28h14"/></svg>', '電腦選題','依範圍與條件，快速生成試卷','auto-action')}
-          ${action('manual', I.test, '手動選題','從題庫中挑選，彈性組卷','manual-action')}
-          ${action('coded', I.code, '編碼選題','輸入題目編號，精準加入試卷','coded-action')}
+          ${action('compose', I.navAuto20, '電腦選題','依範圍與條件，快速生成試卷','auto-action')}
+          ${action('manual', I.navManual20, '手動選題','從題庫中挑選，彈性組卷','manual-action')}
+          ${action('coded', I.navNumber20, '編碼選題','輸入題目編號，精準加入試卷','coded-action')}
           <button class="create-action print-action" type="button" disabled aria-label="題本列印，即將推出">
-            <span class="create-icon">${I.printer}</span>
+            <span class="create-icon">${I.navBooklet20}</span>
             <span><strong>題本列印 <span class="coming-soon">即將推出</span></strong><small>列印整冊題庫，方便教學使用</small></span>
           </button>
         </div>
@@ -282,8 +283,8 @@ async function renderStaff() {
       <section class="card overview-card">
         <div class="overview-heading"><div><h2>題庫概況</h2><p>專業命題，掌握題型配置</p></div></div>
         <div class="overview-filters">
-          <label>科目<select class="form-control" id="overviewSubject"><option value="">全部科目</option>${Object.keys(dashboardSubjects).map(code => `<option value="${esc(code)}">${esc(subjectName(code))}</option>`).join('')}</select></label>
-          <label>冊別<select class="form-control" id="overviewBook" disabled><option value="">全部科目</option></select></label>
+          <select class="form-control" id="overviewSubject" aria-label="篩選科目"><option value="">全部科目</option>${Object.keys(dashboardSubjects).map(code => `<option value="${esc(code)}">${esc(subjectName(code))}</option>`).join('')}</select>
+          <select class="form-control" id="overviewBook" aria-label="篩選冊別" disabled><option value="">全部冊別</option></select>
         </div>
         <div class="question-total" id="overviewTotal">${statsResult.status === 'fulfilled' ? (stats.total || 0).toLocaleString() : '—'} <span>題</span></div>
         <div class="overview-chart" id="overviewChart" aria-label="題型分布" aria-live="polite">${statsResult.status === 'fulfilled' ? '' : '<p class="dash-empty">題型分布暫時無法載入</p>'}</div>

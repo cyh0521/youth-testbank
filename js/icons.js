@@ -49,6 +49,21 @@
     hash:       '<line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/>',
   };
 
+  // 側邊欄專用圖示，統一圓角線條。編碼選題以題號清單表示。
+  const NAV_PATHS = {
+    navHome: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+    navTextbooks: '<path d="M12 6.5c-2.8-1.8-5.7-2-9-1.2v14c3.3-.8 6.2-.6 9 1.2 2.8-1.8 5.7-2 9-1.2v-14c-3.3-.8-6.2-.6-9 1.2z"/><path d="M12 6.5v14"/>',
+    navImport: '<path d="M12 3v12m-4-4 4 4 4-4M4 16v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/>',
+    navQuestions: '<path d="M8 6h13M8 12h13M8 18h13"/><path d="m2 6 1.5 1.5L6 4.5m-4 7.5 1.5 1.5L6 10.5m-4 7.5 1.5 1.5L6 16.5"/>',
+    navAuto: '<path d="M4 7h3c4 0 6 10 10 10h3m-3-3 3 3-3 3M4 17h3c1.5 0 2.8-1.4 4-3m2-4c1.2-1.6 2.5-3 4-3h3m-3-3 3 3-3 3"/>',
+    navManual: '<rect x="3" y="4" width="7" height="7" rx="1.5"/><path d="m5 7 1.5 1.5L9 5.5M14 7h7M3 17h7m4 0h7"/><rect x="3" y="14" width="7" height="7" rx="1.5"/>',
+    navNumber: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="m7 9 1-1v5m-1 0h2m4-3a2 2 0 0 1 4 0c0 1-1 1.5-4 3h4M7 17h10"/>',
+    navBooklet: '<path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>',
+    navExams: '<path d="M3 7V5a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/><path d="M8 12h8M8 16h6"/>',
+    navSettings: '<path d="M4 6h3m4 0h9M4 12h10m4 0h2M4 18h4m4 0h8"/><circle cx="9" cy="6" r="2"/><circle cx="16" cy="12" r="2"/><circle cx="10" cy="18" r="2"/>',
+    navAccounts: '<circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2H3zM17 5a3 3 0 0 1 0 6m2 9h2v-2a5 5 0 0 0-4-4.9"/>',
+  };
+
   // 對外提供
   const ICONS = {};
   for (const [k, p] of Object.entries(PATHS)) {
@@ -56,6 +71,9 @@
     ICONS[k+'16'] = svg(p, 16);
     ICONS[k+'18'] = svg(p, 18);
     ICONS[k+'20'] = svg(p, 20);
+  }
+  for (const [name, path] of Object.entries(NAV_PATHS)) {
+    ICONS[name + '20'] = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${path}</svg>`;
   }
   window.ICONS = ICONS;
 })();

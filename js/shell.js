@@ -48,17 +48,17 @@
           </button>
         </div>
         <nav class="sidebar-nav" id="sidebarNav" aria-label="主要導覽">
-          ${item('dashboard', I.home20, '首頁總覽')}
-          ${navRole === 'admin' ? section('題庫管理') + item('textbooks', I.book20, '課本管理') + item('import', I.upload20, '題目匯入') + item('questions', I.list20, '題目維護') : ''}
+          ${item('dashboard', I.navHome20, '首頁總覽')}
+          ${navRole === 'admin' ? section('題庫管理') + item('textbooks', I.navTextbooks20, '課本管理') + item('import', I.navImport20, '題目匯入') + item('questions', I.navQuestions20, '題目維護') : ''}
           ${section('出題管理')}
-          ${item('compose', I.auto20, '電腦選題')}
-          ${item('manual', I.edit20, '手動選題')}
-          ${item('coded', I.code20, '編碼選題')}
-          ${item('booklet', I.printer20, '題本列印')}
-          ${item('exams', I.folder20, '試卷管理')}
+          ${item('compose', I.navAuto20, '電腦選題')}
+          ${item('manual', I.navManual20, '手動選題')}
+          ${item('coded', I.navNumber20, '編碼選題')}
+          ${item('booklet', I.navBooklet20, '題本列印')}
+          ${item('exams', I.navExams20, '試卷管理')}
           ${section('系統設定')}
-          ${item('settings', I.settings20, '進階設定')}
-          ${navRole === 'admin' ? item('account-admin', I.settings20, '帳號管理', 'settings.html?view=accounts') : ''}
+          ${item('settings', I.navSettings20, '進階設定')}
+          ${navRole === 'admin' ? item('account-admin', I.navAccounts20, '帳號管理', 'settings.html?view=accounts') : ''}
         </nav>
         <div class="sidebar-footer">
           <button class="logout-btn" id="logoutBtn" aria-label="登出" title="登出" disabled>${I.logout18 || '⬅'}<span class="nav-label">登出</span></button>
