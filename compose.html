@@ -150,8 +150,7 @@
 
 <script type="module">
 import { guardPage } from './js/auth-guard.js';
-import { showExamPreview, showHeaderSettings, loadHeader, loadAppearance } from './js/exam-preview.js';
-window.openHeaderSettings = showHeaderSettings;
+import { showExamPreview, showHeaderSettings, newExamHeader, loadAppearance } from './js/exam-preview.js';
 window._activeNav = 'compose';
 const user = await guardPage(['admin','teacher']);
 if (!user) throw new Error('not auth');
@@ -182,6 +181,10 @@ document.getElementById('typeRows').innerHTML = TYPE_CONFIGS.map(t => `
 let chapterData = {};
 let generatedQuestions = [];
 let draftPreviewData = null;
+window.openHeaderSettings = () => {
+  draftPreviewData ??= { header:newExamHeader(), appearance:loadAppearance() };
+  showHeaderSettings(draftPreviewData);
+};
 
 window.onSubjectChange = () => {
   const sc = cSubject.value;
@@ -418,7 +421,7 @@ window.previewExam = () => {
     typeScores,
     subjectCode: cSubject.value,
     bookCode: document.getElementById('cBook').value,
-    header: draftPreviewData?.header ?? loadHeader(),
+    header: draftPreviewData?.header ?? newExamHeader(),
     appearance: draftPreviewData?.appearance ?? loadAppearance(),
   };
   showExamPreview(draftPreviewData, generatedQuestions);
@@ -578,7 +581,7 @@ function renderPreview(grouped) {
           <div class="result-q">
             <span class="q-num">${qNum++}.</span>
             <div class="q-body">
-              <div class="q-text">${q.text||'—'}</div>
+              <div class="q-text">${q.type==='T5' ? UI.matchingQuestionHtml(q.text) : q.text||'—'}</div>
               ${q.type==='T2'&&q.options?.length ? `<div style="font-size:.78rem;color:var(--text-secondary);margin-top:3px">${q.options.map((o,i)=>`（${'ＡＢＣＤＥ'[i]}）${o}`).join('　')}</div>` : ''}
               <div class="q-ans">答：${q.answer||'—'}</div>
             </div>
@@ -661,7 +664,7 @@ window.doSaveExam = async () => {
 
   const exam = {
     title,
-    header: draftPreviewData?.header ?? loadHeader(),
+    header: draftPreviewData?.header ?? newExamHeader(),
     appearance: draftPreviewData?.appearance ?? loadAppearance(),
     description: document.getElementById('examDesc').value.trim(),
     subjectCode: sc,

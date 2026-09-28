@@ -216,7 +216,7 @@
 
 <script type="module">
 import { guardPage } from './js/auth-guard.js';
-import { loadAppearance } from './js/exam-preview.js';
+import { loadAppearance, newExamHeader } from './js/exam-preview.js';
 window._activeNav = 'coded';
 const user = await guardPage(['admin','teacher']);
 if (!user) throw new Error('not auth');
@@ -517,6 +517,7 @@ window.doSaveExam = async () => {
   const exam = {
     title,
     appearance: loadAppearance(),
+    header: newExamHeader(),
     description: document.getElementById('examDesc').value.trim(),
     subjectCode: firstQ?.subjectCode || '',
     bookCode:    firstQ?.bookCode    || '',

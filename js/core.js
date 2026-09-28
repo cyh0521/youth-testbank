@@ -91,6 +91,19 @@ const UI = {
       .replaceAll("'", '&#39;');
   },
 
+  matchingQuestionHtml(value) {
+    let text = String(value ?? '').replace(/\r\n?/g, '\n');
+    // 只為完全失去換行的舊資料補排版；有換行的匯入內容依原檔呈現。
+    if (!text.includes('\n')) {
+      if (/[AＡ][.．、]/.test(text) && /[BＢ][.．、]/.test(text)) {
+        text = text.replace(/([^\n])(?=[AＡ][.．、])/, '$1\n');
+      }
+      text = text.replace(/([^\n])(?=[（(][\s　]*[）)][\s　]*[（(]\d+[）)])/g, '$1\n');
+    }
+    // pre-wrap 讓連續半形空格在瀏覽器中如實顯示，DOM 文字仍保留原本空格供 DOCX 輸出。
+    return `<span style="white-space:pre-wrap">${this.escapeHtml(text).replace(/\n/g, '<br>')}</span>`;
+  },
+
   /** 通知 toast — 使用 css/theme.css 內定義的 .toast 樣式 */
   toast(msg, type = 'info', duration = 3000) {
     let container = document.getElementById('toast-container');

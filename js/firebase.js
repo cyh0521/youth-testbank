@@ -296,18 +296,14 @@ window.DataService = {
   // ── 取得並遞增題目流水號（transaction 保證並發安全）──
   async _nextSeqNums(count) {
     const counterRef = doc(db, 'settings', 'questionCounter');
-    let startNum = 0;
-    try {
-      startNum = await runTransaction(db, async (tx) => {
-        const snap = await tx.get(counterRef);
-        const current = snap.exists() ? (snap.data().current || 0) : 0;
-        tx.set(counterRef, { current: current + count }, { merge: true });
-        return current;
-      });
-    } catch (e) {
-      console.warn('流水號 transaction 失敗，改用時間戳替代', e);
-      startNum = Date.now() % 99000;
-    }
+    const startNum = await runTransaction(db, async (tx) => {
+      const snap = await tx.get(counterRef);
+      const current = snap.exists() ? Number(snap.data().current) || 0 : 0;
+      tx.set(counterRef, { current: current + count }, { merge: true });
+      return current;
+    }).catch(error => {
+      throw new Error(`題目編號分配失敗，匯入已停止：${error.message}`);
+    });
     return Array.from({ length: count }, (_, i) =>
       String(startNum + i + 1).padStart(5, '0')
     );
@@ -580,10 +576,16 @@ window.DataService = {
     await updatePassword(firebaseUser, newPassword);
   },
 
-  // ── 重置題目流水號計數器 ────────────────────────
+  // ── 依現存最大題號校正計數器，避免重設後產生重複題號 ──
   async resetQuestionCounter() {
+    const questions = await getDocsFromServer(collection(db, 'questions'));
+    const maxNumber = questions.docs.reduce((max, item) => {
+      const qnum = String(item.data().qnum ?? '');
+      return /^\d+$/.test(qnum) ? Math.max(max, Number(qnum)) : max;
+    }, 0);
     const counterRef = doc(db, 'settings', 'questionCounter');
-    await setDoc(counterRef, { current: 0 });
+    await setDoc(counterRef, { current: maxNumber });
+    return maxNumber;
   },
 
   // ── 課本管理 (textbooks)

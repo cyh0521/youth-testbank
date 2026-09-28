@@ -158,6 +158,9 @@ export async function resetWordMargins() {
 export function loadHeader() {
   return DataService.getExamPreferences().header || {};
 }
+export function newExamHeader() {
+  return { layout: normalizeHeaderLayout(loadHeader().layout) };
+}
 export async function saveHeader(d) {
   await DataService.updateExamPreferences({ header:{ ...loadHeader(), ...d } });
 }
@@ -492,6 +495,7 @@ function ensurePreviewModal() {
 .ep-answer-table td:not(.ep-answer-prefix){text-align:justify;text-justify:inter-ideograph}
 .ep-q p,.ep-answer-table p{margin:0;line-height:inherit}
 .ep-answer-blank{color:#888;margin-top:4px}
+.ep-essay-blank{min-height:2lh;margin-top:4px}
 #epBody .ep-answer-blank{color:#555}
 #epBody .ep-answer-slot{display:inline-flex;align-items:center;width:4em;white-space:nowrap;color:#000}
 #epBody .ep-answer-slot .ep-answer-value{display:inline-block;width:2em;text-align:center}
@@ -723,6 +727,7 @@ export function printExam(examData, questions, paperKey = 'A4', columns = 1) {
       .ep-answer-table td:not(.ep-answer-prefix) { text-align: justify; text-justify: inter-ideograph; }
       .ep-q p, .ep-answer-table p { margin: 0; line-height: inherit; }
       .ep-answer-blank { color: #555; margin-top: 4px; }
+      .ep-essay-blank { min-height: 2lh; margin-top: 4px; }
       .ep-two-columns .ep-question-columns { column-count: 2; column-gap: 10mm; }
       .ep-two-columns .ep-section-head { break-after: avoid; }
     </style></head><body>${printPaper.outerHTML}</body></html>`);
@@ -847,8 +852,14 @@ function renderQPreview(q, num, type, previewOptions) {
       ? ` ${q.options.map((o,i)=>`(${String.fromCharCode(65+i)})${o}`).join(' ')}` : '';
     const tail = q.tail?.trim() || '';
     body = `<table class="ep-answer-table" role="presentation"><tr><td class="ep-answer-prefix">${answerSlot}${num}.</td><td>${q.text||''}${opts}${tail ? `${tail === '。' ? '' : ' '}${tail}` : ''}${sourceTag}</td></tr></table>`;
-  } else if (type === 'T6') {
-    body = `${num}.${q.text||''}${sourceTag}<div class="ep-answer-blank">答：${previewOptions?.answers ? `<span class="ep-answer-value">${escapeText(answer)}</span>` : ''}</div>`;
+  } else if (type === 'T4' || type === 'T5' || type === 'T6') {
+    const questionText = type === 'T5' ? UI.matchingQuestionHtml(q.text)
+      : escapeText(q.text).replace(/\r\n?|\n/g, '<br>');
+    const answerArea = type === 'T6'
+      ? `<div class="ep-essay-blank">${previewOptions?.answers && answer ? `<span class="ep-answer-value" style="white-space:pre-wrap">${escapeText(answer)}</span>` : ''}</div>`
+      : previewOptions?.answers && answer
+        ? `<div class="ep-answer-blank">【答案】<span class="ep-answer-value">${escapeText(answer)}</span></div>` : '';
+    body = `<table class="ep-answer-table ep-indented-question" role="presentation"><tr><td class="ep-answer-prefix">${num}.</td><td>${questionText}${sourceTag}${answerArea}</td></tr></table>`;
   } else {
     body = `${num}.${q.text||''}${sourceTag}`;
     if (previewOptions?.answers && answer) body += `<div class="ep-answer-blank">【答案】<span class="ep-answer-value">${escapeText(answer)}</span></div>`;
@@ -879,7 +890,8 @@ export async function exportToWord(examData, questions, paperKey = 'A4', columns
     const content = table.querySelector('td:not(.ep-answer-prefix)');
     if (!prefix || !content) return;
     const number = prefix.textContent.match(/\d+(?=\.$)/)?.[0] || '1';
-    const indent = Math.round(a.fontSize * (4.2 + 0.6 * number.length));
+    const indent = Math.round(a.fontSize * (table.classList.contains('ep-indented-question')
+      ? 0.5 + 0.6 * number.length : 4.2 + 0.6 * number.length));
     const paragraph = document.createElement('p');
     paragraph.className = 'ep-word-question';
     paragraph.style.margin = `0 0 8px ${indent}px`;
@@ -889,6 +901,8 @@ export async function exportToWord(examData, questions, paperKey = 'A4', columns
     paragraph.style.lineHeight = lineHeightPx;
     paragraph.appendChild(document.createTextNode(prefix.textContent));
     while (content.firstChild) paragraph.appendChild(content.firstChild);
+    const essayBlank = paragraph.querySelector('.ep-essay-blank');
+    if (essayBlank) essayBlank.replaceWith(document.createElement('br'), document.createElement('br'));
     question.replaceWith(paragraph);
   });
   try {

@@ -211,8 +211,7 @@
 
 <script type="module">
 import { guardPage } from './js/auth-guard.js';
-import { showExamPreview, showHeaderSettings, loadHeader, loadAppearance } from './js/exam-preview.js';
-window.openHeaderSettings = showHeaderSettings;
+import { showExamPreview, showHeaderSettings, newExamHeader, loadAppearance } from './js/exam-preview.js';
 window._activeNav = 'manual';
 const user = await guardPage(['admin','teacher']);
 if (!user) throw new Error('not auth');
@@ -232,6 +231,10 @@ let selectedOrder = [];
 let selQuestions = {};
 let _bookObj = null, _chapters = [];
 let draftPreviewData = null;
+window.openHeaderSettings = () => {
+  draftPreviewData ??= { header:newExamHeader(), appearance:loadAppearance() };
+  showHeaderSettings(draftPreviewData);
+};
 
 // ── 科目/冊次 ─────────────────────────────────────
 window.onSubjectChange = () => {
@@ -464,7 +467,7 @@ function renderBank() {
             <div class="q-check-col"><input type="checkbox" ${inSel?'checked':''} onclick="event.stopPropagation()" onchange="toggleQ('${q.id}',this.checked)"></div>
             <span class="q-num">${qNum++}.</span>
             <div class="q-body">
-              <div class="q-text">${q.text||'—'}</div>
+              <div class="q-text">${q.type==='T5' ? UI.matchingQuestionHtml(q.text) : q.text||'—'}</div>
               ${optHTML}
               <div class="q-ans">答：${q.answer||'—'}</div>
             </div>
@@ -554,7 +557,7 @@ function renderSelected() {
             <span class="drag-handle" style="padding-top:3px;cursor:grab" draggable="true" ondragstart="dragStart(event,'${id}')" title="拖曳排序">⠿</span>
             <span class="q-num">${idx+1}.</span>
             <div class="q-body">
-              <div class="q-text">${q.text||'—'}${tailHTML}</div>
+              <div class="q-text">${q.type==='T5' ? UI.matchingQuestionHtml(q.text) : q.text||'—'}${tailHTML}</div>
               ${optHTML}
               <div class="q-ans">答：${q.answer||'—'}</div>
             </div>
@@ -608,7 +611,7 @@ window.previewSelected = () => {
   const qs = selectedOrder.map(id=>selQuestions[id]).filter(Boolean);
   const firstQ = qs[0];
   draftPreviewData = { title:'（預覽）', typeScores, subjectCode:firstQ?.subjectCode||'', bookCode:firstQ?.bookCode||'',
-    header:draftPreviewData?.header ?? loadHeader(), appearance:draftPreviewData?.appearance ?? loadAppearance() };
+    header:draftPreviewData?.header ?? newExamHeader(), appearance:draftPreviewData?.appearance ?? loadAppearance() };
   showExamPreview(draftPreviewData, qs);
 };
 window.openSaveModal = async () => {
@@ -623,7 +626,7 @@ window.doSaveExam = async () => {
   selectedOrder.forEach(id=>{const q=selQuestions[id];if(!q)return;const inp=document.getElementById('sc-'+q.type);const score=inp?parseInt(inp.value)||2:2;typeScores[q.type]=score;totalScore+=score;});
   const firstQ = selQuestions[selectedOrder[0]];
   const exam = {
-    title, header: draftPreviewData?.header ?? loadHeader(), appearance: draftPreviewData?.appearance ?? loadAppearance(), description: document.getElementById('examDesc').value.trim(),
+    title, header: draftPreviewData?.header ?? newExamHeader(), appearance: draftPreviewData?.appearance ?? loadAppearance(), description: document.getElementById('examDesc').value.trim(),
     subjectCode: firstQ?.subjectCode||'', bookCode: firstQ?.bookCode||'',
     totalScore, typeScores, questionIds:[...selectedOrder],
     questionCount: selectedOrder.length, composeMode:'manual',

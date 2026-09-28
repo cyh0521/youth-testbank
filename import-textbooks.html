@@ -36,7 +36,7 @@
           <div style="display:flex;gap:10px;margin-bottom:16px">
             <button class="btn btn-primary" id="startBtn" onclick="startImport()">▶ 開始匯入</button>
             <button class="btn btn-ghost" id="clearBtn" onclick="clearAll()" style="color:var(--danger);border-color:var(--danger)">🗑 清除現有課本資料</button>
-            <button class="btn btn-ghost" id="resetCounterBtn" onclick="resetCounter()" style="color:var(--warning);border-color:var(--warning)">🔢 重置題目流水號</button>
+            <button class="btn btn-ghost" id="resetCounterBtn" onclick="resetCounter()" style="color:var(--warning);border-color:var(--warning)">🔢 校正題目流水號</button>
             <button class="btn btn-ghost" id="clearQBtn" onclick="clearQuestions()" style="color:var(--danger);border-color:var(--danger)">🗑 清除所有題目</button>
           </div>
           <div class="log-box" id="logBox">等待開始...\n</div>
@@ -142,11 +142,11 @@ window.clearAll = async () => {
 };
 
 window.resetCounter = async () => {
-  if (!confirm('確定要重置題目流水號？\n\n下次匯入的第一題編號將從 00001 開始。\n（不會影響已存在的題目）')) return;
+  if (!confirm('確定要依現有題目的最大編號校正流水號？\n\n下次匯入將接續最大編號，不會更改已存在的題號。')) return;
   document.getElementById('resetCounterBtn').disabled = true;
   try {
-    await DataService.resetQuestionCounter();
-    log('✅ 流水號已重置，下次匯入將從 00001 開始。', 'ok');
+    const current = await DataService.resetQuestionCounter();
+    log(`✅ 流水號已校正為 ${String(current).padStart(5, '0')}，下次匯入將接續編號。`, 'ok');
   } catch(e) {
     log('✗ 重置失敗：' + e.message, 'err');
   }
