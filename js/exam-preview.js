@@ -217,7 +217,10 @@ function groupByType(questions) {
   questions.forEach(q => { if (!g[q.type]) g[q.type] = []; g[q.type].push(q); });
   return g;
 }
-function orderedTypes(g) { return TYPE_ORDER.filter(t => g[t]?.length); }
+function orderedTypes(g, typeOrder) {
+  const order = Array.isArray(typeOrder) ? [...new Set([...typeOrder, ...TYPE_ORDER])] : TYPE_ORDER;
+  return [...order.filter(t => g[t]?.length), ...Object.keys(g).filter(t => !order.includes(t) && g[t]?.length)];
+}
 
 
 // ══════════════════════════════════════════════════════════
@@ -782,7 +785,7 @@ function buildPaperHtml(examData, questions, previewOptions) {
   const h = examData.header ?? loadHeader();
   const typeScores = examData.typeScores || {};
   const grouped = groupByType(questions);
-  const types = orderedTypes(grouped);
+  const types = orderedTypes(grouped, examData.typeOrder);
 
   let html = `<div id="epPaper">${buildHeaderHtml(h)}`;
 

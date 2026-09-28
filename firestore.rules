@@ -48,20 +48,6 @@ service cloud.firestore {
       allow delete: if isAdmin() || (isTeacher() && resource.data.createdBy == request.auth.uid);
     }
 
-    // ── classes（教師的試卷分類）────────────────────────────
-    match /classes/{classId} {
-      allow read: if isAdmin()
-                  || (isTeacher() && resource.data.teacherUid == request.auth.uid);
-      allow create: if isTeacher()
-                    && request.resource.data.teacherUid == request.auth.uid;
-      allow update: if isAdmin()
-                    || (isTeacher()
-                        && resource.data.teacherUid == request.auth.uid
-                        && request.resource.data.teacherUid == resource.data.teacherUid);
-      allow delete: if isAdmin()
-                    || (isTeacher() && resource.data.teacherUid == request.auth.uid);
-    }
-
     // ── settings（系統設定）────────────────────────────────
     match /settings/{docId} {
       allow read:  if isTeacher();

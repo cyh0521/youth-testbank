@@ -5,6 +5,7 @@
 <title>首頁總覽 — 幼獅題庫系統</title>
 <link rel="stylesheet" href="css/theme.css">
 <link rel="stylesheet" href="css/dashboard.css">
+<link rel="stylesheet" href="css/dashboard-exam-editor.css">
 <script>if(localStorage.getItem("sidebarCollapsed")==="1")document.documentElement.classList.add("sidebar-collapsed");</script>
 </head>
 <body>
@@ -27,6 +28,8 @@
 </div>
 <script type="module">
 import { guardPage } from './js/auth-guard.js';
+import { openDashboardExamEditor } from './js/dashboard-exam-editor.js';
+import { confirmExamDeletion } from './js/confirm-exam-deletion.js';
 window._activeNav = 'dashboard';
 const user = await guardPage();
 if (!user) throw new Error('not auth');
@@ -69,13 +72,21 @@ const canEditExams = DataService.isAdmin() || DataService.isTeacher();
 const recentEyeIcon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
 async function handleRecentExamAction(event) {
   const button = event.target.closest('[data-exam-action]');
-  if (!button || button.disabled) return;
+  if (!button || button.dataset.busy === 'true') return;
   const exam = dashboardExams.find(e => e.id === button.closest('[data-exam-id]').dataset.examId);
   if (!exam) return;
   const action = button.dataset.examAction;
-  if (action === 'delete' && (!canEditExams || !confirm(`確定要刪除試卷「${exam.title || ''}」？此操作無法復原。`))) return;
-  button.disabled = true;
+  if (action === 'delete' && !canEditExams) return;
+  button.dataset.busy = 'true';
   try {
+    if (action === 'delete' && !await confirmExamDeletion(exam.title || '')) return;
+    if (action === 'edit') {
+      await openDashboardExamEditor(exam, async () => {
+        dashboardExams = await DataService.getExams();
+        renderExamRows();
+      });
+      return;
+    }
     if (action === 'delete') {
       await DataService.deleteExam(exam.id);
       dashboardExams = dashboardExams.filter(e => e.id !== exam.id);
@@ -94,7 +105,7 @@ async function handleRecentExamAction(event) {
   } catch (error) {
     UI.toast('操作失敗：' + error.message, 'danger');
   } finally {
-    button.disabled = false;
+    delete button.dataset.busy;
   }
 }
 
@@ -114,7 +125,7 @@ function renderExamRows() {
       <td class="exam-date">${esc(dateLabel(e.createdAt))}</td>
       <td><div class="recent-exam-actions" data-exam-id="${esc(e.id)}">
         <button class="btn btn-sm btn-outline" data-exam-action="preview">${recentEyeIcon}預覽</button>
-        ${canEditExams ? `<a class="btn btn-sm btn-outline" href="exams.html?edit=${encodeURIComponent(e.id)}">${I.edit16}編輯</a>` : ''}
+        ${canEditExams ? `<button class="btn btn-sm btn-outline" data-exam-action="edit">${I.edit16}編輯</button>` : ''}
         <button class="btn btn-sm btn-ghost" data-exam-action="print">${I.printer16}列印</button>
         <button class="btn btn-sm btn-primary" data-exam-action="word">${I.download16}下載</button>
         ${canEditExams ? `<button class="btn btn-sm btn-danger" data-exam-action="delete">${I.trash16}刪除</button>` : ''}

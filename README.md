@@ -4,7 +4,7 @@
 
 本系統是供管理員與教師使用的線上題庫與試卷製作工具，主要流程為題庫建置、選題組卷、試卷存檔、預覽、列印與 Word 匯出。
 
-班級功能目前只作為教師整理試卷的分類資料夾，不包含學生名單、班級加入代碼、線上試卷、線上作答或成績管理。
+試卷表頭可保留「班級」欄位作為考卷內容；系統不提供班級分類、學生名單、線上作答或成績管理。
 
 Bug 修正與驗證紀錄請見 [`fix_report.md`](fix_report.md)。
 
@@ -143,7 +143,7 @@ youth-testbank/
 | `settings.html?view=accounts` | 管理工作人員帳號 | ✓ | |
 | `settings.html` | 個人資料與密碼、常用科目、試卷版面設定 | ✓ | ✓ |
 
-管理員可讀取所有試卷與班級分類；教師只能讀取及修改自己建立的試卷與班級分類。
+管理員可讀取所有試卷；教師只能讀取及修改自己建立的試卷。
 題目維護頁僅管理員可進入；教師仍可在選題頁讀取題目。Firestore 規則要求有效角色，並限制教師試卷的建立者欄位。
 
 ## HTML、CSS 與 JavaScript 載入關係
@@ -186,14 +186,15 @@ Word 入題檔的表格欄位為：難易、章數、節數、小節、題型、
 ### 建立與輸出試卷
 
 1. 使用電腦選題、人工選題或編碼選題建立試卷。
-2. 儲存時可選擇一個班級分類，也可保留為未分類。
-3. 儲存完成後仍停留在目前選題頁。
-4. 前往「試卷管理」，直接瀏覽全部試卷清單。
-5. 在試卷列表中進行預覽、直接列印、Word 匯出、編輯或刪除。列印或下載時可選擇 A3、A4 或 JIS B4 紙張與單欄／雙欄；預覽視窗也提供列印及Word 下載。
+2. 儲存完成後仍停留在目前選題頁。
+3. 前往「試卷管理」，直接瀏覽全部試卷清單。
+4. 在試卷列表中進行預覽、直接列印、Word 匯出、編輯或刪除。列印或下載時可選擇 A3、A4 或 JIS B4 紙張與單欄／雙欄；預覽視窗也提供列印及Word 下載。
 
 ## 試卷管理介面
 
 試卷管理直接顯示全部試卷清單，沿用首頁「最近試卷」的表格樣式，呈現試卷名稱、冊別、題數、建立時間與操作按鈕，支援試卷名稱搜尋及科目篩選。
+
+編輯試卷時可用「重新排序」隨機調整各題型內的題目順序；「題型排序」會開啟對話框，以拖曳調整題型先後。套用後的順序會儲存於試卷，並套用到預覽、列印及 DOCX。
 
 ### 列表篩選
 
@@ -208,15 +209,12 @@ Word 入題檔的表格欄位為：難易、章數、節數、小節、題型、
 |---|---|
 | `users/{uid}` | 管理員與教師資料、角色、服務學校及頭像設定 |
 | `questions/{questionId}` | 題目、答案、解析、題型與課本位置 |
-| `exams/{examId}` | 試卷名稱、題目順序、配分、科目及班級分類 |
-| `classes/{classId}` | 教師建立的學校與班級分類 |
+| `exams/{examId}` | 試卷名稱、題目順序、配分與科目 |
 | `textbooks/{subjectId}` | 科目資料 |
 | `textbooks/{subjectId}/books/{bookId}` | 冊別資料 |
 | `textbooks/{subjectId}/books/{bookId}/chapters/{chapterId}` | 章節資料 |
 | `settings/questionStats` | 題庫統計快取 |
 | `settings/questionCounter` | 題目流水號計數器 |
-
-新試卷使用 `classId`、`className`、`classSchool` 記錄單一班級分類。舊資料中的 `classIds` 與 `classNames` 仍可顯示；試卷重新儲存後會改用新格式。
 
 ## 建議 Firestore 索引
 
@@ -225,13 +223,12 @@ Word 入題檔的表格欄位為：難易、章數、節數、小節、題型、
 | `questions` | `subjectCode` ASC, `bookCode` ASC | 題目篩選 |
 | `questions` | `subjectCode` ASC, `type` ASC | 科目與題型篩選 |
 | `exams` | `createdBy` ASC, `createdAt` DESC | 教師讀取自己的試卷 |
-| `classes` | `teacherUid` ASC | 教師讀取自己的班級分類 |
 
 單欄位索引通常由 Firestore 自動建立。若查詢需要複合索引，Firebase 會在錯誤訊息中提供建立索引的連結。
 
 ## 部署注意事項
 
-- 修改 `firestore.rules` 後必須重新發布，否則班級分類與教師試卷權限不會更新。
+- 修改 `firestore.rules` 後必須重新發布，規則才會生效。
 - Firebase 設定同時存在於 `index.html` 與 `js/firebase.js`，更換 Firebase 專案時兩處都要同步。
 - 登入採用 `browserSessionPersistence`，關閉瀏覽器分頁後登入狀態會失效。
 - 現行網站只接受 `admin` 與 `teacher` 角色。

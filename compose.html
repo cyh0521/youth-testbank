@@ -138,7 +138,7 @@
       </div>
       <div class="form-group">
         <label class="form-label">說明（選填）</label>
-        <textarea class="form-control" id="examDesc" rows="2" placeholder="可填寫考試時間、試題範圍等相關事項。"></textarea>
+        <textarea class="form-control" id="examDesc" rows="2" placeholder="可填寫考試類型、試題範圍等資訊。"></textarea>
       </div>
     </div>
     <div class="modal-footer">
@@ -671,9 +671,6 @@ window.doSaveExam = async () => {
     questionIds,
     questionCount: questionIds.length,
     composeMode: 'auto',
-    classId: null,
-    className: '',
-    classSchool: '',
   };
 
   try {

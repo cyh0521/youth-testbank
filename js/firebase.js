@@ -582,40 +582,6 @@ window.DataService = {
     await updatePassword(firebaseUser, newPassword);
   },
 
-  // ══════════════════════════════════════════════
-  //  班級分類（僅供教師整理試卷，不含學生名單或成績）
-  // ══════════════════════════════════════════════
-
-  async getClasses() {
-    const source = DataService.isAdmin()
-      ? collection(db, 'classes')
-      : query(collection(db, 'classes'), where('teacherUid', '==', DataService._currentUser?.uid));
-    const snap = await getDocs(source);
-    return docsToArr(snap).sort((a, b) =>
-      `${a.school || ''}\u0000${a.name || ''}`.localeCompare(`${b.school || ''}\u0000${b.name || ''}`, 'zh-Hant')
-    );
-  },
-
-  async saveClass(classData) {
-    if (classData.id) {
-      const { id, teacherUid: _teacherUid, createdAt: _createdAt, ...data } = classData;
-      await updateDoc(doc(db, 'classes', id), { ...data, updatedAt: serverTimestamp() });
-      return id;
-    }
-    const { id: _id, ...data } = classData;
-    const ref = await addDoc(collection(db, 'classes'), {
-      ...data,
-      teacherUid: DataService._currentUser?.uid,
-      teacherName: DataService._currentUser?.displayName || DataService._currentUser?.email || '',
-      createdAt: serverTimestamp(),
-    });
-    return ref.id;
-  },
-
-  async deleteClass(id) {
-    await deleteDoc(doc(db, 'classes', id));
-  },
-
   // ── 重置題目流水號計數器 ────────────────────────
   async resetQuestionCounter() {
     const counterRef = doc(db, 'settings', 'questionCounter');

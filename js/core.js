@@ -191,25 +191,6 @@ window.tbSubjectOptions = function(selectedCode = '') {
   return h;
 };
 
-// ── 班級分類下拉選單（各出題頁與試卷編輯共用）────────────
-window.loadClassOptions = async function(selectId, selectedId = '') {
-  const select = document.getElementById(selectId);
-  if (!select) return [];
-  try {
-    const classes = await DataService.getClasses();
-    select.innerHTML = '<option value="">未分類</option>' + classes.map(c => {
-      const label = [c.school, c.name].filter(Boolean).join('｜');
-      return `<option value="${UI.escapeHtml(c.id)}" data-name="${UI.escapeHtml(c.name || '')}" data-school="${UI.escapeHtml(c.school || '')}">${UI.escapeHtml(label || '未命名班級')}</option>`;
-    }).join('');
-    select.value = selectedId || '';
-    return classes;
-  } catch (e) {
-    console.warn('Class options error:', e);
-    select.innerHTML = '<option value="">未分類（班級載入失敗）</option>';
-    return [];
-  }
-};
-
 window.tbBookOptions = function(subjectCode, selectedCode = '') {
   if (!window._tbCache) return '<option value="">（讀取中）</option>';
   const subj = window._tbCache.subjectByCode[subjectCode];
