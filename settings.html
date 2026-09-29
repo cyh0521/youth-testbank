@@ -19,6 +19,8 @@
 .settings-page .card-header h2{font-family:var(--font-sans);font-size:1.35rem;letter-spacing:.01em;font-weight:700;color:var(--text-primary)}
 .settings-page .card-body{padding:20px 22px 22px}
 .settings-page .card-header+.card-body{padding-top:18px}
+.settings-page .card-header+.card-body.card-body-with-description{padding-top:2px}
+.settings-page #spanel-profile .card-header+.card-body{padding-top:8px}
 .settings-page .accounts-card{max-width:none}
 .settings-page .accounts-card .card-header{align-items:center}
 .settings-page .accounts-card .search-bar{gap:10px;margin-bottom:16px}
@@ -28,7 +30,7 @@
 .settings-page .accounts-card .data-table td{padding:12px 16px}
 .settings-page .accounts-card .data-table tbody tr:nth-child(even){background:#fbfcfe}
 .settings-page .accounts-card .data-table tbody tr:hover{background:#edf3ff}
-.settings-page .password-card{max-width:900px}
+.settings-page #spanel-profile .card{max-width:560px}
 @media(max-width:600px){.settings-page .card-header{align-items:flex-start;flex-direction:column}.settings-page .accounts-card .user-count{margin-left:0}}
 
 .role-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:.75rem;font-weight:600}
@@ -54,6 +56,8 @@
 .profile-avatar-group{display:flex;flex-direction:column;align-items:center;gap:8px;flex:none}
 .profile-avatar-group .btn{white-space:nowrap}
 .profile-name-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:3px}
+.profile-school{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:.82rem}
+.profile-school svg{flex:none}
 .profile-actions{display:flex;gap:10px;flex-wrap:wrap}
 .profile-actions .btn{width:148px;justify-content:center}
 .catalog-subject{border:1px solid var(--border);border-radius:10px;margin-bottom:12px;overflow:hidden}
@@ -499,12 +503,12 @@ function buildProfilePanel() {
           <div>
             <div class="profile-name-row"><span style="font-size:1.05rem;font-weight:700">${UI.escapeHtml(u.displayName||'（未設定）')}</span>${roleTag(u.role)}</div>
             <div style="color:var(--text-muted);font-size:.84rem;margin-bottom:6px">${UI.escapeHtml(u.email||'')}</div>
-            ${showSchool&&u.school?`<div style="font-size:.82rem;margin-top:6px">${ICONS.school16} ${UI.escapeHtml(u.school)}</div>`:''}
+            ${showSchool&&u.school?`<div class="profile-school">${ICONS.schoolBuilding16}<span>${UI.escapeHtml(u.school)}</span></div>`:''}
           </div>
         </div>
         <div class="profile-actions">
           <button class="btn btn-outline" type="button" id="editProfileBtn">${ICONS.edit16}編輯個人資料</button>
-          <button class="btn btn-outline" type="button" id="editAvatarBtn">${ICONS.image16}編輯頭像</button>
+          <button class="btn btn-outline" type="button" id="editAvatarBtn">${ICONS.avatarEdit16}編輯頭像</button>
         </div>
       </div>
     </div><div id="passwordContainer" style="margin-top:16px"></div>`;
@@ -631,7 +635,7 @@ async function buildCatalogPanel() {
   const panel = document.createElement('div');
   panel.innerHTML = `<section class="card catalog-section" data-section="subjects">
     <div class="card-header"><h2>選擇要顯示的科目</h2></div>
-    <div class="card-body">
+    <div class="card-body card-body-with-description">
       <p style="font-size:.84rem;color:var(--text-secondary);margin:0 0 14px">勾選要在系統中顯示的科目與冊別。未勾選的內容將從選單、題目與試卷清單隱藏。</p>
       <div id="catalogChoices" aria-busy="true">載入科目中…</div>
       <div class="catalog-actions">
@@ -644,7 +648,7 @@ async function buildCatalogPanel() {
   </section>
   <section class="card catalog-section" data-section="appearance">
     <div class="card-header"><h2>表頭欄位位置</h2></div>
-    <div class="card-body">
+    <div class="card-body card-body-with-description">
       <p style="font-size:.84rem;color:var(--text-secondary);margin:0 0 14px">拖曳欄位標籤調整順序，也可移到上、下兩行之間。</p>
       <div id="headerLayoutFields"></div>
       <div class="catalog-actions"><button class="btn btn-primary" type="button" id="headerLayoutSave">儲存變更</button><button class="btn btn-outline" type="button" id="headerLayoutReset">恢復預設</button><span id="headerLayoutStatus" role="status" aria-live="polite"></span></div>
@@ -652,7 +656,7 @@ async function buildCatalogPanel() {
   </section>
   <section class="card catalog-section" data-section="appearance" style="margin-top:16px">
     <div class="card-header"><h2>字體與行距</h2></div>
-    <div class="card-body">
+    <div class="card-body card-body-with-description">
       <p style="font-size:.84rem;color:var(--text-secondary);margin:0 0 14px">此處設定新建試卷的預設字型、大小與行距。個別試卷可在預覽視窗調整，且不會改動此處的預設值。</p>
       <div class="grid-2">
         <div class="form-group"><label class="form-label" for="defaultExamFont">預設字型</label><select class="form-control" id="defaultExamFont"></select></div>
@@ -664,7 +668,7 @@ async function buildCatalogPanel() {
   </section>
   <section class="card catalog-section" data-section="appearance" style="margin-top:16px">
     <div class="card-header"><h2>試卷邊距</h2></div>
-    <div class="card-body">
+    <div class="card-body card-body-with-description">
       <p style="font-size:.84rem;color:var(--text-secondary);margin:0 0 14px">Word 與 PDF 共用此設定，單位為 mm，可設定 5 至 50。設定會隨帳號在不同裝置同步。</p>
       <div class="grid-2">
         <div class="form-group"><label class="form-label" for="examMargin-top">上邊距（mm）</label><input class="form-control" id="examMargin-top" type="number" min="5" max="50" step="1" required></div>
