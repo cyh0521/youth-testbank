@@ -31,6 +31,41 @@
     }
   }
 
+  function confirmLogout() {
+    const previousFocus = document.activeElement;
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-labelledby', 'logoutDialogTitle');
+    overlay.setAttribute('aria-describedby', 'logoutDialogMessage');
+    overlay.innerHTML = `<div class="modal" style="max-width:440px">
+      <div class="modal-header"><h3 id="logoutDialogTitle">確認登出</h3><button class="modal-close" type="button" data-choice="cancel" aria-label="關閉">✕</button></div>
+      <div class="modal-body"><p id="logoutDialogMessage">確定要離開幼獅線上命題系統嗎？</p></div>
+      <div class="modal-footer"><button class="btn btn-ghost" type="button" data-choice="cancel">取消</button><button class="btn btn-primary" type="button" data-choice="logout">登出</button></div>
+    </div>`;
+    const buttons = [...overlay.querySelectorAll('button')];
+    const close = confirmed => {
+      overlay.remove();
+      if (confirmed) window.DataService.logout();
+      else previousFocus?.focus?.();
+    };
+    overlay.addEventListener('click', event => {
+      const choice = event.target.closest('[data-choice]')?.dataset.choice;
+      if (choice) close(choice === 'logout');
+      else if (event.target === overlay) close(false);
+    });
+    overlay.addEventListener('keydown', event => {
+      if (event.key === 'Escape') { event.preventDefault(); close(false); }
+      if (event.key === 'Tab' && ((event.shiftKey && document.activeElement === buttons[0]) || (!event.shiftKey && document.activeElement === buttons.at(-1)))) {
+        event.preventDefault();
+        (event.shiftKey ? buttons.at(-1) : buttons[0]).focus();
+      }
+    });
+    document.body.appendChild(overlay);
+    overlay.querySelector('[data-choice="cancel"]').focus();
+  }
+
   function mount(role, active = activePage()) {
     const el = document.getElementById('sidebar');
     if (!el) return;
@@ -61,15 +96,13 @@
           ${navRole === 'admin' ? item('account-admin', I.navAccounts20, '帳號管理', 'settings.html?view=accounts') : ''}
         </nav>
         <div class="sidebar-footer">
-          <button class="logout-btn" id="logoutBtn" aria-label="登出" title="登出" disabled>${I.logout18 || '⬅'}<span class="nav-label">登出</span></button>
+          <button class="nav-item logout-btn" id="logoutBtn" type="button" aria-label="登出" title="登出" disabled><span class="icon">${I.logout20 || '⬅'}</span><span class="nav-label">登出</span></button>
         </div>`;
       el.dataset.navRole = navRole;
       document.getElementById('sidebarToggle').addEventListener('click', () => {
         applyCollapsed(!document.documentElement.classList.contains('sidebar-collapsed'), true);
       });
-      document.getElementById('logoutBtn').addEventListener('click', () => {
-        if (confirm('確定要登出嗎？')) window.DataService.logout();
-      });
+      document.getElementById('logoutBtn').addEventListener('click', confirmLogout);
     }
     el.querySelectorAll('[data-page]').forEach(link => {
       const selected = link.dataset.page === active;
