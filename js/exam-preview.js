@@ -460,6 +460,13 @@ function ensurePreviewModal() {
   if (document.getElementById('epModal')) return;
   document.body.insertAdjacentHTML('beforeend', `
 <style>
+/* 預覽視窗大小 */
+.ep-preview-modal{max-width:900px;width:96%;max-height:94vh;display:flex;flex-direction:column}
+#epModal.is-fullscreen{padding:0}
+#epModal.is-fullscreen .ep-preview-modal{width:100%;max-width:none;height:100vh;height:100dvh;max-height:100vh;max-height:100dvh;border:0;border-radius:0}
+#epModal .ep-fullscreen-icon-restore{display:none}
+#epModal.is-fullscreen .ep-fullscreen-icon-expand{display:none}
+#epModal.is-fullscreen .ep-fullscreen-icon-restore{display:block}
 /* 外觀調整工具列 */
 .ep-toolbar{
   display:flex;align-items:center;gap:14px;flex-wrap:wrap;
@@ -506,7 +513,7 @@ function ensurePreviewModal() {
 #epBody .ep-analysis-text{min-width:0}
 </style>
 <div class="modal-overlay hidden" id="epModal">
-  <div class="modal" style="max-width:900px;width:96%;max-height:94vh;display:flex;flex-direction:column">
+  <div class="modal ep-preview-modal">
     <div class="modal-header" style="flex-shrink:0">
       <h3 id="epTitle" style="flex:1">試卷預覽</h3>
       <div style="display:flex;gap:6px;align-items:center">
@@ -514,6 +521,7 @@ function ensurePreviewModal() {
         <button class="btn btn-ghost btn-sm ep-panel-toggle" type="button" id="epAppearanceToggle" aria-expanded="false" aria-controls="epToolbar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h11M4 17h16"/><circle cx="18" cy="12" r="2"/></svg>字體與行距</button>
         <button class="btn btn-outline btn-sm" onclick="window._epDoPrint()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>列印</button>
         <button class="btn btn-outline btn-sm" onclick="window._epDoExport()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>下載</button>
+        <button class="btn btn-ghost btn-sm" id="epFullscreenToggle" type="button" onclick="window._epToggleFullscreen()" aria-pressed="false" aria-label="放大視窗" title="放大視窗"><svg class="ep-fullscreen-icon-expand" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"/></svg><svg class="ep-fullscreen-icon-restore" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h5V3M21 8h-5V3M3 16h5v5M21 16h-5v5"/></svg><span id="epFullscreenLabel">放大</span></button>
         <button class="modal-close" onclick="window._epClose()">✕</button>
       </div>
     </div>
@@ -555,6 +563,9 @@ function ensurePreviewModal() {
 </div>`);
 
   // 外觀控制事件
+  window._epToggleFullscreen = () => {
+    setPreviewFullscreen(!document.getElementById('epModal').classList.contains('is-fullscreen'));
+  };
   const fontSel  = document.getElementById('epFont');
   const sizeRng  = document.getElementById('epFontSize');
   const sizeVal  = document.getElementById('epFontSizeVal');
@@ -618,6 +629,15 @@ function ensurePreviewModal() {
   });
 }
 
+function setPreviewFullscreen(fullscreen) {
+  document.getElementById('epModal').classList.toggle('is-fullscreen', fullscreen);
+  const button = document.getElementById('epFullscreenToggle');
+  button.setAttribute('aria-pressed', String(fullscreen));
+  button.setAttribute('aria-label', fullscreen ? '還原視窗' : '放大視窗');
+  button.title = fullscreen ? '還原視窗' : '放大視窗';
+  document.getElementById('epFullscreenLabel').textContent = fullscreen ? '還原' : '放大';
+}
+
 function previewDisplay() {
   return {
     answers: document.getElementById('epShowAnswers')?.checked ?? false,
@@ -653,6 +673,7 @@ function applyAppearance() {
 // ══════════════════════════════════════════════════════════
 export function showExamPreview(examData, questions) {
   ensurePreviewModal();
+  setPreviewFullscreen(false);
   examData.header ??= loadHeader();
   examAppearance(examData);
   document.getElementById('epToolbar').classList.add('hidden');
@@ -671,6 +692,7 @@ export function showExamPreview(examData, questions) {
   window._epDoPrint    = () => printWithPaperChoice(examData, questions);
   window._epDoExport   = () => downloadExam(examData, questions, 'Word');
   window._epClose = () => {
+    setPreviewFullscreen(false);
     document.getElementById('epModal').classList.add('hidden');
     examData.onPreviewClose?.();
   };

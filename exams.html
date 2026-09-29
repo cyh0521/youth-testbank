@@ -24,6 +24,12 @@
 #editModal .modal{display:flex;flex-direction:column;max-height:90vh;overflow:hidden}
 #editModal .modal-header{position:relative;top:auto;flex:none}
 #editModal .modal-body{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain}
+#editModal.is-fullscreen{padding:0}
+#editModal.is-fullscreen .modal{width:100%;max-width:none;height:100vh;height:100dvh;max-height:100vh;max-height:100dvh;border:0;border-radius:0}
+#editModal.is-fullscreen #editQList{max-height:none!important;min-height:50vh}
+#editModal .edit-fullscreen-icon-restore{display:none}
+#editModal.is-fullscreen .edit-fullscreen-icon-expand{display:none}
+#editModal.is-fullscreen .edit-fullscreen-icon-restore{display:block}
 .edit-q-item{display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--border-light);font-size:.9rem}
 .edit-q-section{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:7px 12px;background:var(--bg-base);border-top:1px solid var(--border);border-bottom:1px solid var(--border-light);font-size:.9rem;font-weight:700;color:var(--text-primary)}
 .edit-q-section:first-child{border-top:0}
@@ -88,6 +94,7 @@
         <button class="btn btn-ghost btn-sm ep-panel-toggle" id="editHeaderToggle" onclick="toggleEditHeader()" aria-expanded="false" aria-controls="editHeaderPanel" title="設定試卷上方表頭資訊"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>試卷表頭</button>
         <button class="btn btn-outline btn-sm" onclick="previewEdit()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>預覽</button>
         <button class="btn btn-primary btn-sm" onclick="saveEdit()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2zM17 21v-8H7v8M7 3v5h8"/></svg>儲存</button>
+        <button class="btn btn-ghost btn-sm" id="editFullscreenToggle" type="button" onclick="toggleEditFullscreen()" aria-pressed="false" aria-label="放大視窗" title="放大視窗"><svg class="edit-fullscreen-icon-expand" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"/></svg><svg class="edit-fullscreen-icon-restore" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h5V3M21 8h-5V3M3 16h5v5M21 16h-5v5"/></svg><span id="editFullscreenLabel">放大</span></button>
         <button class="modal-close" onclick="closeEdit()">✕</button>
       </div>
     </div>
@@ -340,7 +347,20 @@ window.openEdit = async (id) => {
   document.getElementById('editTypeOrderModal').classList.add('hidden');
   document.getElementById('editHeaderPanel').classList.add('hidden');
   document.getElementById('editHeaderToggle').setAttribute('aria-expanded', 'false');
+  setEditFullscreen(false);
   document.getElementById('editModal').classList.remove('hidden');
+};
+
+function setEditFullscreen(fullscreen) {
+  document.getElementById('editModal').classList.toggle('is-fullscreen', fullscreen);
+  const button = document.getElementById('editFullscreenToggle');
+  button.setAttribute('aria-pressed', String(fullscreen));
+  button.setAttribute('aria-label', fullscreen ? '還原視窗' : '放大視窗');
+  button.title = fullscreen ? '還原視窗' : '放大視窗';
+  document.getElementById('editFullscreenLabel').textContent = fullscreen ? '還原' : '放大';
+}
+window.toggleEditFullscreen = () => {
+  setEditFullscreen(!document.getElementById('editModal').classList.contains('is-fullscreen'));
 };
 
 function renderEditHeaderSample() {
@@ -576,6 +596,7 @@ window.saveEdit = async () => {
 
 window.closeEdit = () => {
   closeEditTypeOrder();
+  setEditFullscreen(false);
   document.getElementById('editModal').classList.add('hidden');
   editDraftExam = null;
 };
