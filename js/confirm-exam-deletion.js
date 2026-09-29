@@ -1,5 +1,5 @@
-// Shared in-page confirmation for deleting a saved exam.
-export function confirmExamDeletion(title) {
+// Shared in-page confirmation for destructive actions.
+export function confirmDeletion({ title, message, actionLabel }) {
   return new Promise(resolve => {
     const previousFocus = document.activeElement;
     const overlay = document.createElement('div');
@@ -9,11 +9,13 @@ export function confirmExamDeletion(title) {
     overlay.setAttribute('aria-labelledby', 'deleteExamDialogTitle');
     overlay.setAttribute('aria-describedby', 'deleteExamDialogMessage');
     overlay.innerHTML = `<div class="modal" style="max-width:440px">
-      <div class="modal-header"><h3 id="deleteExamDialogTitle">刪除試卷</h3><button class="modal-close" type="button" data-choice="cancel" aria-label="關閉">✕</button></div>
+      <div class="modal-header"><h3 id="deleteExamDialogTitle"></h3><button class="modal-close" type="button" data-choice="cancel" aria-label="關閉">✕</button></div>
       <div class="modal-body"><p id="deleteExamDialogMessage"></p><p style="margin-top:10px;color:var(--danger);font-size:.82rem">刪除後無法復原。</p></div>
-      <div class="modal-footer"><button class="btn btn-ghost" type="button" data-choice="cancel">取消</button><button class="btn btn-danger" type="button" data-choice="delete">刪除試卷</button></div>
+      <div class="modal-footer"><button class="btn btn-ghost" type="button" data-choice="cancel">取消</button><button class="btn btn-danger" type="button" data-choice="delete"></button></div>
     </div>`;
-    overlay.querySelector('#deleteExamDialogMessage').textContent = `確定要刪除試卷「${title}」？`;
+    overlay.querySelector('#deleteExamDialogTitle').textContent = title;
+    overlay.querySelector('#deleteExamDialogMessage').textContent = message;
+    overlay.querySelector('[data-choice="delete"]').textContent = actionLabel;
     const finish = confirmed => {
       overlay.removeEventListener('keydown', onKeydown);
       overlay.remove();
@@ -38,5 +40,13 @@ export function confirmExamDeletion(title) {
     });
     document.body.appendChild(overlay);
     overlay.querySelector('[data-choice="cancel"]').focus();
+  });
+}
+
+export function confirmExamDeletion(title) {
+  return confirmDeletion({
+    title: '刪除試卷',
+    message: `確定要刪除試卷「${title}」？`,
+    actionLabel: '刪除試卷'
   });
 }

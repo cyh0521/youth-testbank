@@ -9,6 +9,9 @@
 <style>
 .filter-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
 .filter-row select{max-width:180px}
+.recent-table{font-size:.9rem}
+.recent-table th{font-size:.86rem}
+.recent-table .exam-date,.recent-table .subject-tag,.recent-exam-actions .btn{font-size:.82rem}
 .exam-sort-heading{display:inline-flex;align-items:center;gap:5px;padding:0;border:0;background:none;color:inherit;font:inherit;font-weight:inherit;text-align:left;cursor:pointer}
 .exam-sort-heading:hover{color:var(--primary)}
 .exam-sort-heading:focus-visible{outline:2px solid var(--primary);outline-offset:3px;border-radius:2px}
@@ -21,11 +24,11 @@
 #editModal .modal{display:flex;flex-direction:column;max-height:90vh;overflow:hidden}
 #editModal .modal-header{position:relative;top:auto;flex:none}
 #editModal .modal-body{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain}
-.edit-q-item{display:flex;align-items:flex-start;gap:8px;padding:9px 12px;border-bottom:1px solid var(--border-light);font-size:.83rem}
-.edit-q-section{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:7px 12px;background:var(--bg-base);border-top:1px solid var(--border);border-bottom:1px solid var(--border-light);font-size:.84rem;font-weight:700;color:var(--text-primary)}
+.edit-q-item{display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--border-light);font-size:.9rem}
+.edit-q-section{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:7px 12px;background:var(--bg-base);border-top:1px solid var(--border);border-bottom:1px solid var(--border-light);font-size:.9rem;font-weight:700;color:var(--text-primary)}
 .edit-q-section:first-child{border-top:0}
-.edit-q-score{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;font-size:.8rem;font-weight:400}
-.edit-q-score input{width:64px;padding:3px 5px;text-align:center;font-size:.8rem}
+.edit-q-score{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;font-size:.9rem;font-weight:400}
+.edit-q-score input{width:64px;padding:3px 5px;text-align:center;font-size:.9rem}
 .edit-type-order-list{display:grid;gap:7px}
 .edit-type-order-item{display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid var(--border);border-radius:6px;background:white;font-size:.88rem;cursor:grab}
 .edit-type-order-item:active{cursor:grabbing}
@@ -35,12 +38,13 @@
 .edit-type-order-handle{color:var(--text-muted);font-weight:700}
 .edit-q-item:last-child{border-bottom:none}
 .edit-q-item:hover{background:#faf8f5}
-.eq-num{color:var(--text-muted);font-size:.72rem;width:22px;flex-shrink:0;text-align:right;padding-top:2px}
-.eq-qnum{font-family:var(--font-mono);font-size:.72rem;background:#e8eef6;color:var(--primary);padding:1px 5px;border-radius:3px;flex-shrink:0}
+.eq-num{color:var(--text-muted);font-size:.9rem;width:22px;flex-shrink:0;text-align:right}
+.eq-qnum{font-family:var(--font-mono);font-size:.9rem;background:#e8eef6;color:var(--primary);padding:1px 5px;border-radius:3px;flex-shrink:0}
 .eq-text{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.edit-q-item .badge{font-size:.9rem}
 .eq-remove{background:none;border:none;color:var(--text-muted);cursor:pointer;padding:0 3px;font-size:.9rem;flex-shrink:0}
 .eq-remove:hover{color:var(--danger)}
-.drag-handle{cursor:grab;color:var(--text-muted);font-size:.8rem;flex-shrink:0;padding-top:2px}
+.drag-handle{cursor:grab;color:var(--text-muted);font-size:.9rem;flex-shrink:0}
 .eq-item.dragging{opacity:.4}.eq-item.drag-over{border-top:2px solid var(--primary-light)}
 .edit-header-sample{padding:10px 14px;margin-bottom:12px;border-bottom:2px solid #333;color:#000;background:#f5f3ee;line-height:1.6}
 .edit-header-sample .ep-exam-header{border:0;padding:0;margin:0}
@@ -103,7 +107,7 @@
           <input class="form-control" id="editExamDescription" placeholder="可填寫考試類型、試題範圍等資訊。">
         </div>
       </div>
-      <div style="font-size:.82rem;color:var(--text-secondary);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
+      <div style="font-size:.9rem;color:var(--text-secondary);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
         <span>題目清單（可拖曳排序或移除）</span>
         <span id="editQCount" style="font-weight:600;color:var(--primary)"></span>
       </div>
@@ -450,6 +454,13 @@ function renderEditQList(typeScores = getCurrentEditScores()) {
     const score = editScoreValue(typeScores[type], type);
     return `<div class="edit-q-section"><span>${EDIT_ROMANS[sectionIndex] || sectionIndex + 1}、${EDIT_TYPE_LABELS[type] || type}（${ids.length} 題）</span><label class="edit-q-score">每題 <input class="form-control" type="number" id="escore-${type}" value="${score}" min="0.5" max="99.5" step="0.5" oninput="updateEditTotal()" onchange="normalizeEditScore(this,'${type}')"> 分</label></div>` + ids.map((id, idx) => {
       const q = editQMap[id];
+      const questionLine = [
+        q.text || '—',
+        ...((q.type === 'T2' || q.type === 'T3') && q.options?.length
+          ? q.options.map((option, index) => `(${String.fromCharCode(65 + index)}) ${option}`)
+          : []),
+        q.tail || ''
+      ].filter(Boolean).join('　');
       return `<div class="edit-q-item eq-item" draggable="true" data-id="${id}"
       ondragstart="eqDragStart(event,'${id}')" ondragover="eqDragOver(event,'${id}')"
       ondrop="eqDrop(event,'${id}')" ondragend="eqDragEnd()">
@@ -457,7 +468,7 @@ function renderEditQList(typeScores = getCurrentEditScores()) {
       <span class="eq-num">${idx+1}.</span>
       ${q.qnum?`<span class="eq-qnum">${q.qnum}</span>`:''}
       <span style="flex-shrink:0">${UI.typeBadge(q.type)}</span>
-      <span class="eq-text" title="${(q.text||'').replace(/"/g,'&quot;')}">${q.text||'—'}</span>
+      <span class="eq-text" title="${UI.escapeHtml(questionLine)}">${UI.escapeHtml(questionLine)}</span>
       <button class="eq-remove" onclick="removeEditQ('${id}')" title="從試卷移除">✕</button>
     </div>`;
     }).join('');
