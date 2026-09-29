@@ -702,8 +702,7 @@ window.DataService = {
       await updateDoc(doc(db, 'textbooks', id), { ...rest, updatedAt: serverTimestamp() });
       return data.id;
     } else {
-      const { id: _ignored, ...rest } = data;
-      const ref = await addDoc(collection(db, 'textbooks'), { ...rest, createdAt: serverTimestamp() });
+      const ref = await addDoc(collection(db, 'textbooks'), { ...data, createdAt: serverTimestamp() });
       return ref.id;
     }
   },
@@ -729,8 +728,7 @@ window.DataService = {
       await updateDoc(doc(db, 'textbooks', subjectId, 'books', id), { ...rest, updatedAt: serverTimestamp() });
       return data.id;
     } else {
-      const { id: _ignored, ...rest } = data;
-      const ref = await addDoc(collection(db, 'textbooks', subjectId, 'books'), { ...rest, createdAt: serverTimestamp() });
+      const ref = await addDoc(collection(db, 'textbooks', subjectId, 'books'), { ...data, createdAt: serverTimestamp() });
       return ref.id;
     }
   },

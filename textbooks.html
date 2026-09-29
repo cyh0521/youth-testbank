@@ -12,31 +12,22 @@
 .tb-panel .section-heading{padding:0 20px;margin-bottom:16px}
 .tb-panel .section-heading h2{font-size:1.2rem}
 .tb-panel .section-heading p{line-height:1.5}
-.tb-list{max-height:min(68vh,680px);min-height:180px;overflow-y:auto;padding:0 18px 8px}
-.tb-table{width:100%;min-width:0;table-layout:fixed;font-size:.875rem}
-.tb-table td{padding:11px 8px;text-align:left}
-.tb-table tbody tr:nth-child(even){background:#fbfcfe}
-.tb-table tbody tr:hover{background:#edf3ff}
-.tb-table tbody tr.tb-item-active{background:#edf3ff;box-shadow:inset 3px 0 var(--primary)}
-.tb-table .tb-selectable{cursor:pointer}
-.tb-table .tb-name{font-weight:500;color:var(--text-primary);overflow-wrap:anywhere}
-.tb-table .tb-code{color:var(--text-muted);font-family:var(--font-mono);overflow-wrap:anywhere}
-.tb-table .tb-primary-line{display:flex;align-items:baseline;gap:.5em;min-width:0}
-.tb-table .tb-action-cell{width:48px;padding:8px 8px 5px;text-align:center;vertical-align:top}
-.tb-table .tb-action-cell .btn{padding:5px 7px}
-.tb-more{background:transparent;border-color:transparent;color:var(--text-secondary);box-shadow:none}
-.tb-more:hover{background:rgba(33,104,223,.08);color:var(--primary)}
-.tb-more:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
-.tb-action-menu{position:fixed;z-index:200;min-width:112px;padding:5px;background:#fff;border:1px solid var(--border);border-radius:8px;box-shadow:var(--shadow-lg)}
-.tb-action-menu[hidden]{display:none}
-.tb-action-menu button{display:block;width:100%;padding:8px 12px;border:0;border-radius:5px;background:transparent;color:var(--text-primary);font:inherit;font-size:.875rem;text-align:left;cursor:pointer}
-.tb-action-menu button:hover,.tb-action-menu button:focus-visible{background:#edf3ff}
-.tb-action-menu .tb-delete{color:var(--danger)}
+.tb-list{max-height:min(68vh,680px);min-height:180px;overflow-y:auto;border-top:1px solid var(--border-light)}
+.tb-item{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 16px;border-bottom:1px solid var(--border-light);cursor:pointer;transition:background .12s;user-select:none}
+.tb-item:hover{background:#edf3ff}
+.tb-item-active{background:#edf3ff !important;box-shadow:inset 3px 0 var(--primary)}
+.tb-item-main{display:flex;flex-direction:column;gap:2px;overflow:hidden;flex:1}
+.tb-item-name{font-size:.875rem;font-weight:500;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tb-item-code{font-size:.84rem;color:var(--text-muted);font-family:var(--font-mono)}
+.tb-item-actions{display:flex;gap:4px;flex-shrink:0}
+.tb-item-actions .btn,.chapter-head .btn{padding:5px 7px}
 .tb-panel .btn{gap:5px;white-space:nowrap}
 .tb-panel .btn svg{display:block;flex:none}
-.tb-table .chapter-title{font-weight:600;color:var(--primary)}
+.chapter-row{border-bottom:1px solid var(--border-light);padding:14px 20px}
+.chapter-head{display:flex;align-items:center;justify-content:space-between}
+.chapter-title{font-weight:600;font-size:.875rem;color:var(--primary)}
 .section-line{margin-top:4px;padding-left:14px;font-size:.88rem;color:var(--text-secondary);line-height:1.8}
-.subsec-line{padding-left:18px;color:var(--text-muted)}
+.subsec-tag{margin-left:8px;color:var(--text-muted)}
 .section-row{background:var(--bg-base);border-radius:var(--radius);padding:10px 12px;margin-bottom:8px}
 .level-names-box{background:var(--bg-base);border:1px solid var(--border-light);border-radius:var(--radius);padding:10px 12px;margin-bottom:0}
 .level-names-box .lbl{font-size:.84rem;font-weight:600;color:var(--text-secondary);margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em}
@@ -96,8 +87,6 @@
     </div>
   </div>
 </div>
-
-<div id="textbookActionMenu" class="tb-action-menu" role="menu" hidden></div>
 
 <!-- 科目 Modal -->
 <div class="modal-overlay hidden" id="subjectModal">
@@ -176,7 +165,6 @@
 
 <script type="module">
 import { guardPage } from './js/auth-guard.js';
-import { confirmDeletion } from './js/confirm-exam-deletion.js';
 window._activeNav = 'textbooks';
 const user = await guardPage(['admin','manager']);
 if (!user) throw new Error('not auth');
@@ -185,40 +173,6 @@ const I = window.ICONS;
 let _subjects = [], _selSubject = null;
 let _books = [], _selBook = null, _selBookObj = null;
 let _chapters = [], _editingSections = [];
-const actionMenu = document.getElementById('textbookActionMenu');
-let actionMenuTrigger = null;
-function closeActionMenu() {
-  actionMenu.hidden = true;
-  actionMenuTrigger?.setAttribute('aria-expanded', 'false');
-  actionMenuTrigger = null;
-}
-window.toggleTextbookMenu = (button, type, id) => {
-  if (actionMenuTrigger === button && !actionMenu.hidden) { closeActionMenu(); return; }
-  closeActionMenu();
-  const item = type === 'subject' ? _subjects.find(x => x.id === id)
-    : type === 'book' ? _books.find(x => x.id === id)
-    : _chapters.find(x => x.id === id);
-  if (!item) return;
-  const edit = document.createElement('button');
-  edit.type = 'button'; edit.role = 'menuitem'; edit.textContent = '編輯';
-  const remove = document.createElement('button');
-  remove.type = 'button'; remove.role = 'menuitem'; remove.className = 'tb-delete'; remove.textContent = '刪除';
-  edit.onclick = () => { closeActionMenu(); if (type === 'subject') openSubjectModal(id); else if (type === 'book') openBookModal(id); else openChapterModal(id); };
-  remove.onclick = () => { closeActionMenu(); if (type === 'subject') deleteSubject(id, item.name); else if (type === 'book') deleteBook(id, item.name); else deleteChapter(id, item.title); };
-  actionMenu.replaceChildren(edit, remove);
-  actionMenu.hidden = false;
-  actionMenuTrigger = button;
-  button.setAttribute('aria-expanded', 'true');
-  const rect = button.getBoundingClientRect();
-  const menuWidth = actionMenu.offsetWidth, menuHeight = actionMenu.offsetHeight;
-  actionMenu.style.left = `${Math.max(8, Math.min(rect.right - menuWidth, window.innerWidth - menuWidth - 8))}px`;
-  actionMenu.style.top = `${rect.bottom + menuHeight + 4 <= window.innerHeight ? rect.bottom + 4 : rect.top - menuHeight - 4}px`;
-  edit.focus();
-};
-document.addEventListener('click', e => { if (!actionMenu.hidden && !actionMenu.contains(e.target) && !actionMenuTrigger?.contains(e.target)) closeActionMenu(); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape' && !actionMenu.hidden) { const trigger = actionMenuTrigger; closeActionMenu(); trigger?.focus(); } });
-document.addEventListener('scroll', closeActionMenu, true);
-window.addEventListener('resize', closeActionMenu);
 
 // 取得目前冊別的層級名稱
 function lvl() {
@@ -231,15 +185,17 @@ function lvl() {
 
 // ── 科目 ───────────────────────────────────────────
 async function loadSubjects() {
-  closeActionMenu();
   _subjects = await DataService.getSubjects();
   const el = document.getElementById('subjectList');
   if (!_subjects.length) { el.innerHTML = '<div class="empty-state" style="padding:24px 12px"><p>尚無科目</p></div>'; return; }
-  el.innerHTML = `<table class="data-table tb-table"><colgroup><col><col style="width:48px"></colgroup><tbody>${_subjects.map(s => `
-    <tr class="tb-selectable ${_selSubject===s.id?'tb-item-active':''}" onclick="selectSubject('${s.id}')">
-      <td><div class="tb-primary-line"><span class="tb-code">${s.code||''}</span><span class="tb-name">${s.name}</span></div></td>
-      <td class="tb-action-cell"><button class="btn btn-sm tb-more" aria-label="科目操作" title="科目操作" aria-haspopup="menu" aria-expanded="false" onclick="event.stopPropagation();toggleTextbookMenu(this,'subject','${s.id}')">${I.more16}</button></td>
-    </tr>`).join('')}</tbody></table>`;
+  el.innerHTML = _subjects.map(s => `
+    <div class="tb-item ${_selSubject===s.id?'tb-item-active':''}" onclick="selectSubject('${s.id}')">
+      <div class="tb-item-main"><span class="tb-item-name">${s.name}</span><span class="tb-item-code">${s.code||''}</span></div>
+      <div class="tb-item-actions">
+        <button class="btn btn-sm btn-outline" aria-label="編輯科目" title="編輯科目" onclick="event.stopPropagation();openSubjectModal('${s.id}')">${I.edit16}</button>
+        <button class="btn btn-sm btn-danger" aria-label="刪除科目" title="刪除科目" onclick="event.stopPropagation();deleteSubject('${s.id}','${s.name.replace(/'/g,'')}')">${I.trash16}</button>
+      </div>
+    </div>`).join('');
 }
 
 window.selectSubject = async (id) => {
@@ -265,30 +221,32 @@ window.saveSubject = async () => {
   const name = document.getElementById('smName').value.trim(), code = document.getElementById('smCode').value.trim();
   if (!name||!code) { UI.toast('科目名稱和代碼為必填','warning'); return; }
   const id = document.getElementById('smId').value, order = parseInt(document.getElementById('smOrder').value)||0;
-  try { await DataService.saveSubject({...id?{id}:{},name,code,order}); closeModal('subjectModal'); await loadSubjects(); UI.toast('科目已儲存','success'); }
+  try { await DataService.saveSubject({id:id||undefined,name,code,order}); closeModal('subjectModal'); await loadSubjects(); UI.toast('科目已儲存','success'); }
   catch(e) { UI.toast('儲存失敗：'+e.message,'danger'); }
 };
 window.deleteSubject = async (id, name) => {
-  if (!await confirmDeletion({title:'刪除科目',message:`確定要刪除科目「${name}」？此操作將同時刪除所有冊別與章節設定。`,actionLabel:'刪除科目'})) return;
+  if (!confirm(`確定要刪除科目「${name}」？\n此操作將同時刪除所有冊別與章節設定。`)) return;
   try {
     await DataService.deleteSubject(id);
-    if (_selSubject===id) { _selSubject=null; _selBook=null; _selBookObj=null; _books=[]; _chapters=[]; document.getElementById('addBookBtn').disabled=true; document.getElementById('addChapterBtn').disabled=true; document.getElementById('addChapterLabel').textContent='新增'; document.getElementById('bookList').innerHTML='<div class="empty-state" style="padding:24px 12px"><div class="empty-icon" style="font-size:1.5rem">←</div><p>請先選擇科目</p></div>'; document.getElementById('chapterList').innerHTML='<div class="empty-state" style="padding:24px 12px"><div class="empty-icon" style="font-size:1.5rem">←</div><p>請先選擇冊別</p></div>'; }
+    if (_selSubject===id) { _selSubject=null; _selBook=null; _selBookObj=null; document.getElementById('bookList').innerHTML='<div class="empty-state" style="padding:24px 12px"><div class="empty-icon" style="font-size:1.5rem">←</div><p>請先選擇科目</p></div>'; document.getElementById('chapterList').innerHTML='<div class="empty-state" style="padding:24px 12px"><div class="empty-icon" style="font-size:1.5rem">←</div><p>請先選擇冊別</p></div>'; }
     await loadSubjects(); UI.toast('已刪除','success');
   } catch(e) { UI.toast('刪除失敗：'+e.message,'danger'); }
 };
 
 // ── 冊別 ───────────────────────────────────────────
 function renderBookList() {
-  closeActionMenu();
   const el = document.getElementById('bookList');
   if (!_books.length) { el.innerHTML = '<div class="empty-state" style="padding:24px 12px"><p>尚無冊別</p></div>'; return; }
-  el.innerHTML = `<table class="data-table tb-table"><colgroup><col><col style="width:48px"></colgroup><tbody>${_books.map(b => {
+  el.innerHTML = _books.map(b => {
     const tags = [b.l1||'章', b.l2, b.l3].filter(Boolean).join('／');
-    return `<tr class="tb-selectable ${_selBook===b.id?'tb-item-active':''}" onclick="selectBook('${b.id}')">
-      <td><div class="tb-primary-line"><span class="tb-code">${b.code||''}</span><span class="tb-name">${b.name}</span></div><div class="tb-code" style="font-family:inherit;color:var(--text-light)">${tags}</div></td>
-      <td class="tb-action-cell"><button class="btn btn-sm tb-more" aria-label="冊別操作" title="冊別操作" aria-haspopup="menu" aria-expanded="false" onclick="event.stopPropagation();toggleTextbookMenu(this,'book','${b.id}')">${I.more16}</button></td>
-    </tr>`;
-  }).join('')}</tbody></table>`;
+    return `<div class="tb-item ${_selBook===b.id?'tb-item-active':''}" onclick="selectBook('${b.id}')">
+      <div class="tb-item-main"><span class="tb-item-name">${b.name}</span><span class="tb-item-code">${b.code||''} <span style="color:var(--text-light)">${tags}</span></span></div>
+      <div class="tb-item-actions">
+        <button class="btn btn-sm btn-outline" aria-label="編輯冊別" title="編輯冊別" onclick="event.stopPropagation();openBookModal('${b.id}')">${I.edit16}</button>
+        <button class="btn btn-sm btn-danger" aria-label="刪除冊別" title="刪除冊別" onclick="event.stopPropagation();deleteBook('${b.id}','${b.name.replace(/'/g,'')}')">${I.trash16}</button>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 window.selectBook = async (id) => {
@@ -321,7 +279,7 @@ window.saveBook = async () => {
   const l2 = document.getElementById('bmL2').value.trim();
   const l3 = document.getElementById('bmL3').value.trim();
   try {
-    const savedId = await DataService.saveBook(_selSubject, {...id?{id}:{},name,code,order,l1,l2,l3});
+    const savedId = await DataService.saveBook(_selSubject, {id:id||undefined,name,code,order,l1,l2,l3});
     closeModal('bookModal');
     _books = await DataService.getBooks(_selSubject);
     const targetId = id || savedId;
@@ -331,28 +289,34 @@ window.saveBook = async () => {
   } catch(e) { UI.toast('儲存失敗：'+e.message,'danger'); }
 };
 window.deleteBook = async (id, name) => {
-  if (!await confirmDeletion({title:'刪除冊別',message:`確定要刪除冊別「${name}」及其所有章節設定？`,actionLabel:'刪除冊別'})) return;
+  if (!confirm(`確定要刪除冊別「${name}」及其所有章節設定？`)) return;
   try {
     await DataService.deleteBook(_selSubject, id);
-    if (_selBook===id) { _selBook=null; _selBookObj=null; _chapters=[]; document.getElementById('addChapterBtn').disabled=true; document.getElementById('addChapterLabel').textContent='新增'; document.getElementById('chapterList').innerHTML='<div class="empty-state" style="padding:24px 12px"><div class="empty-icon" style="font-size:1.5rem">←</div><p>請先選擇冊別</p></div>'; }
+    if (_selBook===id) { _selBook=null; _selBookObj=null; _chapters=[]; document.getElementById('addChapterLabel').textContent='新增'; document.getElementById('chapterList').innerHTML='<div class="empty-state" style="padding:24px 12px"><div class="empty-icon" style="font-size:1.5rem">←</div><p>請先選擇冊別</p></div>'; }
     _books = await DataService.getBooks(_selSubject); renderBookList(); UI.toast('已刪除','success');
   } catch(e) { UI.toast('刪除失敗：'+e.message,'danger'); }
 };
 
 // ── 章節列表 ────────────────────────────────────────
 function renderChapterList() {
-  closeActionMenu();
   const el = document.getElementById('chapterList');
   const l  = lvl();
   if (!_chapters.length) { el.innerHTML = `<div class="empty-state" style="padding:24px 12px"><p>尚無資料，請點「新增${l.l1}」</p></div>`; return; }
-  el.innerHTML = `<table class="data-table tb-table"><colgroup><col><col style="width:48px"></colgroup><tbody>${_chapters.map(c => `
-    <tr><td><div class="chapter-title">${c.title}</div>
+  el.innerHTML = _chapters.map(c => `
+    <div class="chapter-row">
+      <div class="chapter-head">
+        <span class="chapter-title">${c.title}</span>
+        <div style="display:flex;gap:4px">
+          <button class="btn btn-sm btn-outline" aria-label="編輯章節" title="編輯章節" onclick="openChapterModal('${c.id}')">${I.edit16}</button>
+          <button class="btn btn-sm btn-danger" aria-label="刪除章節" title="刪除章節" onclick="deleteChapter('${c.id}','${c.title.replace(/'/g,'')}')">${I.trash16}</button>
+        </div>
+      </div>
       ${l.l2 ? (c.sections||[]).map(s => `
         <div class="section-line">
-          <div>${s.title}</div>
-          ${l.l3 ? (s.subsections||[]).map(ss=>`<div class="subsec-line">${ss.title}</div>`).join('') : ''}
+          ${s.title}
+          ${l.l3 ? (s.subsections||[]).map(ss=>`<span class="subsec-tag">▸ ${ss.title}</span>`).join('') : ''}
         </div>`).join('') : ''}
-      </td><td class="tb-action-cell"><button class="btn btn-sm tb-more" aria-label="章節操作" title="章節操作" aria-haspopup="menu" aria-expanded="false" onclick="toggleTextbookMenu(this,'chapter','${c.id}')">${I.more16}</button></td></tr>`).join('')}</tbody></table>`;
+    </div>`).join('');
 }
 
 // ── 章節 Modal ──────────────────────────────────────
@@ -470,16 +434,6 @@ window.saveChapter = async () => {
     renderChapterList();
     UI.toast('已儲存','success');
   } catch(e) { UI.toast('儲存失敗：'+e.message,'danger'); }
-};
-
-window.deleteChapter = async (id, title) => {
-  if (!await confirmDeletion({title:`刪除${lvl().l1}`,message:`確定要刪除${lvl().l1}「${title}」及其所有下層設定？`,actionLabel:`刪除${lvl().l1}`})) return;
-  try {
-    await DataService.deleteChapter(_selSubject, _selBook, id);
-    _chapters = await DataService.getChapterDefs(_selSubject, _selBook);
-    renderChapterList();
-    UI.toast('已刪除','success');
-  } catch(e) { UI.toast('刪除失敗：'+e.message,'danger'); }
 };
 
 
