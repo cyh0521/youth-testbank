@@ -38,12 +38,12 @@
 .tone-4 { background: #ffe5e8; color: #b64359; }
 .tone-5 { background: #e2f1f5; color: #397889; }
 .section-heading { margin: 0 0 14px; }
-.recent-table { font-size: .82rem; table-layout: fixed; min-width: 1180px; }
+.recent-table { font-size: .9rem; table-layout: fixed; min-width: 1180px; }
 .recent-col-subject { width: 210px; }
 .recent-col-count { width: 90px; }
 .recent-col-date { width: 190px; }
 .recent-col-actions { width: 402px; }
-.recent-table th { padding: 12px 18px; background: #fff; }
+.recent-table th { padding: 12px 18px; background: #fff; font-size: .86rem; }
 .recent-table td { padding: 12px 18px; }
 .recent-table th, .recent-table td { text-align: left; }
 .recent-table tbody tr:nth-child(even) { background: #fbfcfe; }
@@ -51,7 +51,8 @@
 .exam-name { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .exam-name svg { color: #5b7295; flex-shrink: 0; }
 .exam-name strong { font-size: .95rem; font-weight: 550; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.exam-date { color: var(--text-light); font-size: .76rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.exam-description { font-size: .9rem; }
+.exam-date { color: var(--text-light); font-size: .82rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .exam-manage { display: inline-flex; align-items: center; gap: 6px; color: #4a6184; white-space: nowrap; font-size: .76rem; }
 .exam-manage:hover { color: #2570ec; }
 .nowrap { white-space: nowrap; }
@@ -85,12 +86,12 @@
 }
 
 .recent-exam-actions { display: flex; gap: 8px; align-items: center; justify-content: flex-start; flex-wrap: nowrap; }
-.recent-exam-actions .btn { flex: 0 0 auto; gap: 4px; padding: 4px 8px; white-space: nowrap; }
+.recent-exam-actions .btn { flex: 0 0 auto; gap: 4px; padding: 4px 8px; white-space: nowrap; font-size: .82rem; }
 .recent-exam-actions svg { display: block; flex: none; }
 
 .recent-management-link { color: #2570ec; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
 .recent-management-link:hover { color: #174fae; }
 
-.recent-table .subject-tag { max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: inline-block; vertical-align: middle; }
+.recent-table .subject-tag { max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: inline-block; vertical-align: middle; font-size: .82rem; }
 
 .exam-name.has-description strong { flex: 0 1 auto; max-width: 65%; }
