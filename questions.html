@@ -20,9 +20,9 @@
 .filter-bar .filter-actions [data-icon],.filter-bar .filter-actions .btn span{display:inline-flex;align-items:center;justify-content:center;line-height:0}
 .filter-bar .filter-actions svg{display:block;width:16px;height:16px}
 .question-section .filter-bar{padding:0 0 14px;margin:0 0 14px;border:0;border-bottom:1px solid var(--border-light);border-radius:0;background:transparent}
-.question-section .result-bar{min-height:34px;margin-bottom:14px;justify-content:space-between}
+.question-section .result-bar{min-height:34px;margin-bottom:14px;justify-content:flex-start;gap:12px}
 .question-section .result-bar:has(.result-count:empty){display:none}
-.question-section .result-bar .view-toggle{height:32px;margin-left:auto;flex-shrink:0}
+.question-section .result-bar .view-toggle{height:32px;flex-shrink:0}
 .question-section .result-bar .view-toggle button{height:100%;padding:0 10px;justify-content:center;line-height:1}
 .question-section .result-bar .view-toggle button span{display:inline-flex;align-items:center;justify-content:center;line-height:0}
 .question-section .result-count{color:var(--text-light)}
@@ -187,7 +187,6 @@
 
       <!-- 結果列 -->
       <div class="result-bar">
-        <span class="result-count" id="resultCount"></span>
         <div class="view-toggle" role="tablist" aria-label="檢視模式">
           <button id="viewTableBtn" class="active" onclick="setView('table')" title="表格檢視">
             <span data-icon="list16"></span>表格
@@ -196,6 +195,7 @@
             <span data-icon="layers16"></span>卡片
           </button>
         </div>
+        <span class="result-count" id="resultCount"></span>
       </div>
 
       <!-- 批次提示 -->
