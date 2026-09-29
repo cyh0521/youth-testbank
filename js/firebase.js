@@ -9,7 +9,7 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import {
   getFirestore, collection, doc, getDoc, getDocs, addDoc, setDoc,
-  getDocsFromServer,
+  getDocsFromServer, getCountFromServer,
   updateDoc, deleteDoc, query, where,
   serverTimestamp, writeBatch, Timestamp,
   runTransaction, increment
@@ -106,6 +106,9 @@ window.DataService = {
             if (snap.exists()) {
               DataService._currentUser = { uid: firebaseUser.uid, ...snap.data() };
               await migrateLegacyExamPreferences();
+              if (DataService._currentUser.examCurrentCount == null) {
+                await DataService.syncExamInventory().catch(e => console.warn('試卷數量同步失敗', e));
+              }
             } else {
               DataService._currentUser = null;
             }
@@ -128,6 +131,20 @@ window.DataService = {
   isAdmin()        { return ['admin', 'manager'].includes(DataService._currentUser?.role); },
   isPrimaryAdmin() { return DataService._currentUser?.role === 'admin'; },
   isTeacher()      { return DataService._currentUser?.role === 'teacher'; },
+
+  async syncExamInventory() {
+    const uid = DataService._currentUser?.uid;
+    if (!uid) return;
+    const exams = query(collection(db, 'exams'), where('createdBy', '==', uid));
+    const count = (await getCountFromServer(exams)).data().count;
+    const updates = { examCurrentCount: count };
+    if (DataService._currentUser.examCreatedCount == null) {
+      updates.examCreatedCount = 0;
+      updates.metricsStartedAt = serverTimestamp();
+    }
+    await updateDoc(doc(db, 'users', uid), updates);
+    Object.assign(DataService._currentUser, { examCurrentCount: count, examCreatedCount: updates.examCreatedCount ?? DataService._currentUser.examCreatedCount });
+  },
 
   // ── 帳號：登入 ────────────────────────────────
   async login(email, password) {
@@ -170,6 +187,10 @@ window.DataService = {
       const userData = {
         email, displayName, role,
         school: school || null,
+        loginCount: 0,
+        examCreatedCount: 0,
+        examCurrentCount: 0,
+        metricsStartedAt: serverTimestamp(),
         createdAt: serverTimestamp()
       };
       await setDoc(doc(db, 'users', cred.user.uid), userData);
@@ -202,7 +223,7 @@ window.DataService = {
     // id 欄位即為 Firebase UID，方便前端使用
     return snap.docs.map(d => {
       const data = d.data();
-      return { id: d.id, uid: d.id, ...data, createdAt: ts2str(data.createdAt), updatedAt: ts2str(data.updatedAt) };
+      return { id: d.id, uid: d.id, ...data, createdAt: ts2str(data.createdAt), updatedAt: ts2str(data.updatedAt), lastLoginAt: ts2str(data.lastLoginAt), metricsStartedAt: ts2str(data.metricsStartedAt) };
     });
   },
 
@@ -540,6 +561,12 @@ window.DataService = {
     return arr.filter(item => DataService.isCatalogItemVisible(item));
   },
 
+  async getExamCountForUser(uid) {
+    if (!DataService.isAdmin() && uid !== DataService._currentUser?.uid) throw new Error('權限不足');
+    const source = query(collection(db, 'exams'), where('createdBy', '==', uid));
+    return (await getCountFromServer(source)).data().count;
+  },
+
   async saveExam(exam) {
     if (exam.id && !exam.id.startsWith('_new')) {
       // 更新
@@ -549,13 +576,42 @@ window.DataService = {
     } else {
       // 新增
       const { id: _id, ...data } = exam;
-      const ref = await addDoc(collection(db, 'exams'), { ...data, createdBy: DataService._currentUser?.uid, createdAt: serverTimestamp() });
+      const uid = DataService._currentUser?.uid;
+      if (!uid) throw new Error('請先登入');
+      if (DataService._currentUser.examCurrentCount == null) {
+        await DataService.syncExamInventory().catch(e => console.warn('試卷數量同步失敗', e));
+      }
+      const ref = doc(collection(db, 'exams'));
+      const batch = writeBatch(db);
+      batch.set(ref, { ...data, createdBy: uid, createdAt: serverTimestamp() });
+      const stats = { examCreatedCount: increment(1) };
+      if (DataService._currentUser.examCurrentCount != null) stats.examCurrentCount = increment(1);
+      if (DataService._currentUser.examCreatedCount == null) stats.metricsStartedAt = serverTimestamp();
+      batch.update(doc(db, 'users', uid), stats);
+      await batch.commit();
+      if (DataService._currentUser.examCreatedCount != null) DataService._currentUser.examCreatedCount++;
+      if (DataService._currentUser.examCurrentCount != null) DataService._currentUser.examCurrentCount++;
       return ref.id;
     }
   },
 
   async deleteExam(id) {
-    await deleteDoc(doc(db, 'exams', id));
+    const uid = DataService._currentUser?.uid;
+    if (!uid) throw new Error('請先登入');
+    const examRef = doc(db, 'exams', id);
+    const exam = await getDoc(examRef);
+    if (!exam.exists()) throw new Error('找不到這份試卷，請重新整理頁面');
+    if (exam.data().createdBy !== uid) throw new Error('只能刪除自己的試卷');
+    await deleteDoc(examRef);
+    if (DataService._currentUser.examCurrentCount != null) {
+      try {
+        await updateDoc(doc(db, 'users', uid), { examCurrentCount: increment(-1) });
+        DataService._currentUser.examCurrentCount--;
+      } catch (e) {
+        console.warn('試卷已刪除，但數量更新失敗', e);
+        DataService._currentUser.examCurrentCount = null;
+      }
+    }
   },
 
   async preserveExamHeaders(header) {

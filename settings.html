@@ -28,6 +28,12 @@
 .settings-page .accounts-card .data-table{font-size:.9rem}
 .settings-page .accounts-card .data-table th{padding:12px 16px;background:#fff;font-size:.86rem;text-align:left}
 .settings-page .accounts-card .data-table td{padding:12px 16px}
+.account-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.account-info-item{padding:12px 14px;border:1px solid var(--border-light);border-radius:var(--radius);background:var(--bg-base)}
+.account-info-item span{display:block;color:var(--text-muted);font-size:.84rem;margin-bottom:4px}
+.account-info-item strong{font-size:1.05rem;color:var(--text-primary)}
+.account-info-note{color:var(--text-muted);font-size:.84rem;margin:14px 0 0}
+@media(max-width:440px){.account-info-grid{grid-template-columns:1fr}}
 .settings-page .accounts-card .data-table tbody tr:nth-child(even){background:#fbfcfe}
 .settings-page .accounts-card .data-table tbody tr:hover{background:#edf3ff}
 .settings-page #spanel-profile .card{max-width:560px}
@@ -178,6 +184,27 @@
   </div>
 </div>
 
+<!-- 帳號資訊 Modal -->
+<div class="modal-overlay hidden" id="accountInfoModal" role="dialog" aria-modal="true" aria-labelledby="accountInfoTitle">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <h3 id="accountInfoTitle">帳號資訊</h3>
+      <button class="modal-close" type="button" onclick="closeAccountInfo()" aria-label="關閉">✕</button>
+    </div>
+    <div class="modal-body">
+      <p id="accountInfoIdentity" style="margin:0 0 16px;color:var(--text-secondary)"></p>
+      <div class="account-info-grid">
+        <div class="account-info-item"><span>登入次數</span><strong id="accountInfoLogins">—</strong></div>
+        <div class="account-info-item"><span>最後登入時間</span><strong id="accountInfoLastLogin">—</strong></div>
+        <div class="account-info-item"><span>累計建立試卷</span><strong id="accountInfoCreated">—</strong></div>
+        <div class="account-info-item"><span>目前保留試卷</span><strong id="accountInfoCurrent">—</strong></div>
+      </div>
+      <p class="account-info-note">登入與累計建卷次數從統計啟用後開始記錄；目前保留試卷數直接從試卷資料查詢。</p>
+    </div>
+    <div class="modal-footer"><button class="btn btn-ghost" type="button" onclick="closeAccountInfo()">關閉</button></div>
+  </div>
+</div>
+
 <!-- 個人資料 Modal -->
 <div class="modal-overlay hidden" id="profileModal">
   <div class="modal">
@@ -312,7 +339,7 @@ function buildAccountsPanel() {
         </div>
         <div class="table-wrapper">
           <table class="data-table" id="userTable">
-            <thead><tr><th>姓名</th><th>電子信箱</th><th>身份</th><th>服務學校</th><th>建立日期</th><th style="width:100px"></th></tr></thead>
+            <thead><tr><th>姓名</th><th>電子信箱</th><th>身份</th><th>服務學校</th><th>建立日期</th><th>操作</th></tr></thead>
             <tbody id="userTbody"><tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-muted)">載入中…</td></tr></tbody>
           </table>
         </div>
@@ -331,7 +358,7 @@ async function loadUsers() {
     filterUsers();
   } catch(e) {
     const tb = document.getElementById('userTbody');
-    if (tb) tb.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--danger);padding:24px">載入失敗：${e.message}</td></tr>`;
+    if (tb) tb.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--danger);padding:24px">載入失敗：${UI.escapeHtml(e.message)}</td></tr>`;
   }
 }
 
@@ -353,18 +380,66 @@ window.filterUsers = () => {
   }
   tbody.innerHTML = filtered.map(u => `
     <tr>
-      <td><strong>${u.displayName||'—'}</strong>
+      <td><strong>${UI.escapeHtml(u.displayName||'—')}</strong>
         ${u.uid===self.uid?'<span style="font-size:.82rem;background:#e8eef6;color:var(--primary);padding:1px 5px;border-radius:10px;margin-left:4px">我</span>':''}</td>
-      <td style="color:var(--text-secondary)">${u.email||'—'}</td>
+      <td style="color:var(--text-secondary)">${UI.escapeHtml(u.email||'—')}</td>
       <td>${roleTag(u.role)}</td>
-      <td>${u.school||'—'}</td>
+      <td>${UI.escapeHtml(u.school||'—')}</td>
       <td style="color:var(--text-muted)">${fmtDate(u.createdAt)}</td>
       <td><div style="display:flex;gap:5px">
+        <button class="btn btn-sm btn-outline" type="button" onclick="openAccountInfo('${u.id||u.uid}')">資訊</button>
         ${(isPrimaryAdmin || u.role==='teacher' || u.uid===self.uid) ? `<button class="btn btn-sm btn-outline" onclick="openUserModal('${u.id||u.uid}')">${ICONS.edit16}編輯</button>` : ''}
-        ${u.uid!==self.uid && u.role!=='admin' && (isPrimaryAdmin || u.role==='teacher')?`<button class="btn btn-sm btn-danger" onclick="doDelete('${u.id||u.uid}','${(u.displayName||u.email||'').replace(/'/g,"\\'")}')">${ICONS.trash16}刪除</button>`:''}
+        ${u.uid!==self.uid && u.role!=='admin' && (isPrimaryAdmin || u.role==='teacher')?`<button class="btn btn-sm btn-danger" onclick="doDelete('${u.id||u.uid}')">${ICONS.trash16}刪除</button>`:''}
       </div></td>
     </tr>`).join('');
 };
+
+let accountInfoPreviousFocus = null;
+window.openAccountInfo = async uid => {
+  const target = allUsers.find(u => u.uid === uid);
+  if (!target) { UI.toast('找不到帳號', 'danger'); return; }
+  accountInfoPreviousFocus = document.activeElement;
+  document.getElementById('accountInfoIdentity').textContent = `${target.displayName || '—'} · ${target.email || '—'}`;
+  document.getElementById('accountInfoLogins').textContent = target.loginCount ?? '—';
+  document.getElementById('accountInfoLastLogin').textContent = UI.formatDateTime(target.lastLoginAt);
+  document.getElementById('accountInfoCreated').textContent = target.examCreatedCount ?? '—';
+  const currentCount = document.getElementById('accountInfoCurrent');
+  currentCount.textContent = target.examCurrentCount ?? '查詢中…';
+  document.getElementById('accountInfoModal').dataset.uid = uid;
+  document.getElementById('accountInfoModal').classList.remove('hidden');
+  document.querySelector('#accountInfoModal .modal-close').focus();
+  try {
+    const count = await DataService.getExamCountForUser(uid);
+    if (document.getElementById('accountInfoModal').classList.contains('hidden') ||
+        document.getElementById('accountInfoModal').dataset.uid !== uid) return;
+    currentCount.textContent = count;
+    target.examCurrentCount = count;
+  } catch (error) {
+    if (!document.getElementById('accountInfoModal').classList.contains('hidden') &&
+        document.getElementById('accountInfoModal').dataset.uid === uid) {
+      const quotaExceeded = error.code === 'resource-exhausted' || /quota exceeded/i.test(error.message || '');
+      currentCount.textContent = target.examCurrentCount ?? (quotaExceeded ? '配額已滿' : '查詢失敗');
+      UI.toast(quotaExceeded ? 'Firestore 配額已滿，暫時無法查詢試卷數量' : '試卷數量查詢失敗：' + error.message, 'danger');
+    }
+  }
+};
+window.closeAccountInfo = () => {
+  document.getElementById('accountInfoModal').classList.add('hidden');
+  accountInfoPreviousFocus?.focus?.();
+};
+document.getElementById('accountInfoModal').addEventListener('click', event => {
+  if (event.target.id === 'accountInfoModal') closeAccountInfo();
+});
+document.getElementById('accountInfoModal').addEventListener('keydown', event => {
+  if (event.key === 'Escape') { event.preventDefault(); closeAccountInfo(); }
+  if (event.key === 'Tab') {
+    const buttons = [...event.currentTarget.querySelectorAll('button')];
+    if ((event.shiftKey && document.activeElement === buttons[0]) || (!event.shiftKey && document.activeElement === buttons.at(-1))) {
+      event.preventDefault();
+      (event.shiftKey ? buttons.at(-1) : buttons[0]).focus();
+    }
+  }
+});
 
 function roleTag(role) {
   const m = { admin:['role-admin',`${ICONS.users16}主要管理員`], manager:['role-admin',`${ICONS.users16}管理員`], teacher:['role-teacher',`${ICONS.school16}教師`] };
@@ -474,9 +549,10 @@ window.saveUser = async () => {
   }
 };
 
-window.doDelete = async (uid, name) => {
+window.doDelete = async uid => {
   const target = allUsers.find(u => u.uid===uid);
   if (!target || uid===user.uid || target.role==='admin' || (!isPrimaryAdmin && target.role!=='teacher')) { UI.toast('權限不足', 'danger'); return; }
+  const name = target.displayName || target.email || '';
   if (!await confirmDeletion({
     title: '刪除帳號',
     message: `確定要刪除帳號「${name}」？此操作僅刪除 Firestore 資料，Firebase Auth 帳號需至 Console 手動刪除。`,

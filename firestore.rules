@@ -48,6 +48,8 @@ service cloud.firestore {
     match /exams/{eid} {
       // 管理員與教師只能存取自己建立的試卷
       allow read:  if isTeacher() && resource.data.createdBy == request.auth.uid;
+      // 帳號管理的試卷數量統計需要查詢教師名下的試卷。
+      allow list:  if isAdmin();
       // 試卷建立者必須是本人
       allow create: if isTeacher() && request.resource.data.createdBy == request.auth.uid;
       // 修改時不得更改建立者

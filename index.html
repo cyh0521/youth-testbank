@@ -146,8 +146,8 @@ body{min-height:100vh;background:#eef2f1;overflow-x:hidden}
 
 <script type="module">
 import { initializeApp }                          from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getFirestore, doc, getDoc, setDoc,
-         serverTimestamp }                         from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { getFirestore, doc, getDoc, setDoc, updateDoc,
+         increment, serverTimestamp }              from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 import { getAuth, signInWithEmailAndPassword,
          createUserWithEmailAndPassword,
          signOut, onAuthStateChanged,
@@ -163,6 +163,7 @@ const firebaseConfig = {
 };
 
 let app, db, auth;
+let submittingLogin = false;
 try {
   app  = initializeApp(firebaseConfig);
   db   = getFirestore(app);
@@ -173,7 +174,7 @@ try {
   
   document.getElementById('fbStatus').textContent = '';
   onAuthStateChanged(auth, async u => {
-    if (!u) return;
+    if (!u || submittingLogin) return;
     try {
       const snap = await getDoc(doc(db, 'users', u.uid));
       if (snap.exists()) window.location.href = 'dashboard.html';
@@ -216,6 +217,7 @@ window.doLogin = async () => {
   if (!pw)    return showMsg('loginErr','請輸入密碼');
 
   btn.disabled = true; btn.innerHTML = '<div class="spin"></div> 登入中…';
+  submittingLogin = true;
   try {
     const cred = await signInWithEmailAndPassword(auth, email, pw);
     const snap = await getDoc(doc(db, 'users', cred.user.uid));
@@ -230,6 +232,11 @@ window.doLogin = async () => {
       btn.disabled=false; btn.textContent='登　入';
       return showMsg('loginErr','此系統僅供管理員與教師使用','warn');
     }
+    try {
+      const metrics = { loginCount: increment(1), lastLoginAt: serverTimestamp() };
+      if (snap.data().metricsStartedAt == null) metrics.metricsStartedAt = serverTimestamp();
+      await updateDoc(doc(db, 'users', cred.user.uid), metrics);
+    } catch (error) { console.warn('登入統計更新失敗', error); }
     window.location.href = 'dashboard.html';
   } catch(e) {
     btn.disabled=false; btn.innerHTML='登　入';
@@ -242,6 +249,8 @@ window.doLogin = async () => {
       'auth/network-request-failed':'網路連線失敗',
     };
     showMsg('loginErr', m[e.code]||('登入失敗：'+e.message));
+  } finally {
+    submittingLogin = false;
   }
 };
 
@@ -265,7 +274,9 @@ window.doInitAdmin = async () => {
   try {
     const cred = await createUserWithEmailAndPassword(auth, email, pw);
     await setDoc(doc(db,'users',cred.user.uid),{
-      email, displayName:name, role:'admin', school:null, createdAt:serverTimestamp()
+      email, displayName:name, role:'admin', school:null,
+      loginCount:0, examCreatedCount:0, examCurrentCount:0,
+      metricsStartedAt:serverTimestamp(), createdAt:serverTimestamp()
     });
     await signOut(auth);
     btn.disabled=false; btn.textContent='建立主要管理員帳號';
