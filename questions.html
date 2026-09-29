@@ -16,10 +16,15 @@
 .filter-bar .keyword-filter{width:180px;flex:0 0 180px}
 .filter-bar .keyword-filter .form-control{width:100%;min-width:0}
 .filter-bar .form-control,.filter-bar .filter-actions .btn{height:32px}
-.filter-bar .filter-actions .btn{padding:0 12px}
-.filter-bar .filter-actions svg{width:16px;height:16px}
+.filter-bar .filter-actions .btn{padding:0 12px;align-items:center;justify-content:center;line-height:1}
+.filter-bar .filter-actions [data-icon],.filter-bar .filter-actions .btn span{display:inline-flex;align-items:center;justify-content:center;line-height:0}
+.filter-bar .filter-actions svg{display:block;width:16px;height:16px}
 .question-section .filter-bar{padding:0 0 14px;margin:0 0 14px;border:0;border-bottom:1px solid var(--border-light);border-radius:0;background:transparent}
-.question-section .result-bar{margin-bottom:14px}
+.question-section .result-bar{min-height:34px;margin-bottom:14px;justify-content:space-between}
+.question-section .result-bar:has(.result-count:empty){display:none}
+.question-section .result-bar .view-toggle{height:32px;margin-left:auto;flex-shrink:0}
+.question-section .result-bar .view-toggle button{height:100%;padding:0 10px;justify-content:center;line-height:1}
+.question-section .result-bar .view-toggle button span{display:inline-flex;align-items:center;justify-content:center;line-height:0}
 .question-section .result-count{color:var(--text-light)}
 .question-section .batch-actions{display:flex;align-items:center;gap:8px;margin-left:auto}
 .question-section .batch-actions .btn{height:30px;display:inline-flex;align-items:center;gap:5px;padding:0 10px}
@@ -69,7 +74,7 @@
 }
 .view-toggle button:hover{background:var(--bg-base)}
 .view-toggle button.active{background:var(--primary);color:white}
-.view-toggle button svg{width:14px;height:14px}
+.view-toggle button svg{display:block;width:14px;height:14px}
 .view-toggle button + button{border-left:1px solid var(--border)}
 
 /* ── 卡片檢視 ── */
@@ -183,15 +188,13 @@
       <!-- 結果列 -->
       <div class="result-bar">
         <span class="result-count" id="resultCount"></span>
-        <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
-          <div class="view-toggle" role="tablist" aria-label="檢視模式">
-            <button id="viewTableBtn" class="active" onclick="setView('table')" title="表格檢視">
-              <span data-icon="list16"></span>表格
-            </button>
-            <button id="viewCardBtn" onclick="setView('card')" title="卡片檢視">
-              <span data-icon="layers16"></span>卡片
-            </button>
-          </div>
+        <div class="view-toggle" role="tablist" aria-label="檢視模式">
+          <button id="viewTableBtn" class="active" onclick="setView('table')" title="表格檢視">
+            <span data-icon="list16"></span>表格
+          </button>
+          <button id="viewCardBtn" onclick="setView('card')" title="卡片檢視">
+            <span data-icon="layers16"></span>卡片
+          </button>
         </div>
       </div>
 
@@ -402,13 +405,13 @@ let selectionAnchorId = null;
 
 async function loadAll() {
   // 不預先載入全部題目，等使用者選擇科目+冊次後再查詢
-  document.getElementById('resultCount').textContent = '請先選擇科目與冊次，再按「搜尋」';
+  document.getElementById('resultCount').textContent = '';
   document.getElementById('qTbody').innerHTML =
     `<tr><td colspan="8" style="text-align:center;padding:48px 24px;color:var(--text-muted)">
       <div style="font-size:2rem;margin-bottom:10px;opacity:.3">🔍</div>
-      <div style="font-size:.9rem">請先選擇科目與冊次後按「搜尋」</div>
-      <div style="font-size:.86rem;margin-top:6px">可依科目、冊次、章節、題型或關鍵字篩選</div>
+      <div style="font-size:.9rem">尚未搜尋題目</div>
     </td></tr>`;
+  document.getElementById('qCardGrid').innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted)">尚未搜尋題目</div>';
 }
 
 window.doSearch = async () => {

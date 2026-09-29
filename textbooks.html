@@ -4,18 +4,26 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>課本管理 — 幼獅題庫系統</title>
 <link rel="stylesheet" href="css/theme.css">
+<link rel="stylesheet" href="css/dashboard.css">
 <script>if(localStorage.getItem("sidebarCollapsed")==="1")document.documentElement.classList.add("sidebar-collapsed");</script>
 <style>
-.tb-columns{display:grid;grid-template-columns:220px 220px 1fr;gap:16px;align-items:start}
-.tb-item{display:flex;align-items:center;justify-content:space-between;padding:9px 14px;border-bottom:1px solid var(--border-light);cursor:pointer;transition:background .12s;user-select:none}
-.tb-item:hover{background:#f5f3ee}
-.tb-item-active{background:#eef2f8 !important;border-left:3px solid var(--primary)}
+.tb-columns{display:grid;grid-template-columns:minmax(220px,1fr) minmax(220px,1fr) minmax(320px,1.65fr);gap:18px;align-items:start}
+.tb-panel{min-width:0;padding:20px 0 8px}
+.tb-panel .section-heading{padding:0 20px;margin-bottom:16px}
+.tb-panel .section-heading h2{font-size:1.2rem}
+.tb-panel .section-heading p{line-height:1.5}
+.tb-list{max-height:min(68vh,680px);min-height:180px;overflow-y:auto;border-top:1px solid var(--border-light)}
+.tb-item{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 16px;border-bottom:1px solid var(--border-light);cursor:pointer;transition:background .12s;user-select:none}
+.tb-item:hover{background:#edf3ff}
+.tb-item-active{background:#edf3ff !important;box-shadow:inset 3px 0 var(--primary)}
 .tb-item-main{display:flex;flex-direction:column;gap:2px;overflow:hidden;flex:1}
 .tb-item-name{font-size:.875rem;font-weight:500;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tb-item-code{font-size:.84rem;color:var(--text-muted);font-family:var(--font-mono)}
-.tb-item-actions{display:flex;gap:2px;flex-shrink:0;opacity:0;transition:opacity .12s}
-.tb-item:hover .tb-item-actions,.tb-item-active .tb-item-actions{opacity:1}
-.chapter-row{border-bottom:1px solid var(--border-light);padding:10px 14px}
+.tb-item-actions{display:flex;gap:4px;flex-shrink:0}
+.tb-item-actions .btn,.chapter-head .btn{padding:5px 7px}
+.tb-panel .btn{gap:5px;white-space:nowrap}
+.tb-panel .btn svg{display:block;flex:none}
+.chapter-row{border-bottom:1px solid var(--border-light);padding:14px 20px}
 .chapter-head{display:flex;align-items:center;justify-content:space-between}
 .chapter-title{font-weight:600;font-size:.875rem;color:var(--primary)}
 .section-line{margin-top:4px;padding-left:14px;font-size:.88rem;color:var(--text-secondary);line-height:1.8}
@@ -24,6 +32,8 @@
 .level-names-box{background:var(--bg-base);border:1px solid var(--border-light);border-radius:var(--radius);padding:10px 12px;margin-bottom:0}
 .level-names-box .lbl{font-size:.84rem;font-weight:600;color:var(--text-secondary);margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em}
 .level-names-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+@media(max-width:1100px){.tb-columns{grid-template-columns:repeat(2,minmax(0,1fr))}.tb-panel:last-child{grid-column:1/-1}}
+@media(max-width:680px){.tb-columns{grid-template-columns:1fr}.tb-panel:last-child{grid-column:auto}.tb-list{max-height:360px;min-height:120px}.tb-panel .section-heading{padding:0 16px}.level-names-row{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -41,37 +51,37 @@
       <div class="tb-columns">
 
         <!-- 科目欄 -->
-        <div class="card">
-          <div class="card-header" style="padding:12px 14px">
-            <h2 style="font-size:.88rem">科目</h2>
-            <button class="btn btn-primary btn-sm" onclick="openSubjectModal()">＋ 新增</button>
+        <section class="card tb-panel">
+          <div class="section-heading">
+            <div><h2>科目</h2><p>選擇要設定的科目</p></div>
+            <button class="btn btn-primary btn-sm" onclick="openSubjectModal()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>新增</button>
           </div>
-          <div id="subjectList" style="max-height:560px;overflow-y:auto">
+          <div id="subjectList" class="tb-list">
             <div class="empty-state" style="padding:24px 12px"><p>載入中...</p></div>
           </div>
-        </div>
+        </section>
 
         <!-- 冊別欄 -->
-        <div class="card">
-          <div class="card-header" style="padding:12px 14px">
-            <h2 style="font-size:.88rem">冊別</h2>
-            <button class="btn btn-primary btn-sm" id="addBookBtn" onclick="openBookModal()" disabled>＋ 新增</button>
+        <section class="card tb-panel">
+          <div class="section-heading">
+            <div><h2>冊別</h2><p>管理科目中的冊別與層級</p></div>
+            <button class="btn btn-primary btn-sm" id="addBookBtn" onclick="openBookModal()" disabled><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>新增</button>
           </div>
-          <div id="bookList" style="max-height:560px;overflow-y:auto">
+          <div id="bookList" class="tb-list">
             <div class="empty-state" style="padding:24px 12px"><div class="empty-icon" style="font-size:1.5rem">←</div><p>請先選擇科目</p></div>
           </div>
-        </div>
+        </section>
 
         <!-- 章節欄 -->
-        <div class="card">
-          <div class="card-header" style="padding:12px 14px">
-            <h2 style="font-size:.88rem">章節</h2>
-            <button class="btn btn-primary btn-sm" id="addChapterBtn" onclick="openChapterModal()" disabled>＋ 新增</button>
+        <section class="card tb-panel">
+          <div class="section-heading">
+            <div><h2>章節</h2><p>設定章、節與小節內容</p></div>
+            <button class="btn btn-primary btn-sm" id="addChapterBtn" onclick="openChapterModal()" disabled><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span id="addChapterLabel">新增</span></button>
           </div>
-          <div id="chapterList" style="max-height:560px;overflow-y:auto">
+          <div id="chapterList" class="tb-list">
             <div class="empty-state" style="padding:24px 12px"><div class="empty-icon" style="font-size:1.5rem">←</div><p>請先選擇冊別</p></div>
           </div>
-        </div>
+        </section>
 
       </div>
     </div>
@@ -158,6 +168,7 @@ import { guardPage } from './js/auth-guard.js';
 window._activeNav = 'textbooks';
 const user = await guardPage(['admin','manager']);
 if (!user) throw new Error('not auth');
+const I = window.ICONS;
 
 let _subjects = [], _selSubject = null;
 let _books = [], _selBook = null, _selBookObj = null;
@@ -181,8 +192,8 @@ async function loadSubjects() {
     <div class="tb-item ${_selSubject===s.id?'tb-item-active':''}" onclick="selectSubject('${s.id}')">
       <div class="tb-item-main"><span class="tb-item-name">${s.name}</span><span class="tb-item-code">${s.code||''}</span></div>
       <div class="tb-item-actions">
-        <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openSubjectModal('${s.id}')">✏️</button>
-        <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();deleteSubject('${s.id}','${s.name.replace(/'/g,'')}')">🗑</button>
+        <button class="btn btn-sm btn-outline" aria-label="編輯科目" title="編輯科目" onclick="event.stopPropagation();openSubjectModal('${s.id}')">${I.edit16}</button>
+        <button class="btn btn-sm btn-danger" aria-label="刪除科目" title="刪除科目" onclick="event.stopPropagation();deleteSubject('${s.id}','${s.name.replace(/'/g,'')}')">${I.trash16}</button>
       </div>
     </div>`).join('');
 }
@@ -191,7 +202,7 @@ window.selectSubject = async (id) => {
   _selSubject = id; _selBook = null; _selBookObj = null; _chapters = [];
   document.getElementById('addBookBtn').disabled = false;
   document.getElementById('addChapterBtn').disabled = true;
-  document.getElementById('addChapterBtn').textContent = '＋ 新增';
+  document.getElementById('addChapterLabel').textContent = '新增';
   loadSubjects();
   document.getElementById('bookList').innerHTML = '<div class="empty-state" style="padding:24px 12px"><p>載入中...</p></div>';
   document.getElementById('chapterList').innerHTML = '<div class="empty-state" style="padding:24px 12px"><div class="empty-icon" style="font-size:1.5rem">←</div><p>請先選擇冊別</p></div>';
@@ -231,8 +242,8 @@ function renderBookList() {
     return `<div class="tb-item ${_selBook===b.id?'tb-item-active':''}" onclick="selectBook('${b.id}')">
       <div class="tb-item-main"><span class="tb-item-name">${b.name}</span><span class="tb-item-code">${b.code||''} <span style="color:var(--text-light)">${tags}</span></span></div>
       <div class="tb-item-actions">
-        <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openBookModal('${b.id}')">✏️</button>
-        <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();deleteBook('${b.id}','${b.name.replace(/'/g,'')}')">🗑</button>
+        <button class="btn btn-sm btn-outline" aria-label="編輯冊別" title="編輯冊別" onclick="event.stopPropagation();openBookModal('${b.id}')">${I.edit16}</button>
+        <button class="btn btn-sm btn-danger" aria-label="刪除冊別" title="刪除冊別" onclick="event.stopPropagation();deleteBook('${b.id}','${b.name.replace(/'/g,'')}')">${I.trash16}</button>
       </div>
     </div>`;
   }).join('');
@@ -242,7 +253,7 @@ window.selectBook = async (id) => {
   _selBook = id; _selBookObj = _books.find(b=>b.id===id)||null;
   const l = lvl();
   document.getElementById('addChapterBtn').disabled = false;
-  document.getElementById('addChapterBtn').textContent = `＋ 新增${l.l1}`;
+  document.getElementById('addChapterLabel').textContent = `新增${l.l1}`;
   renderBookList();
   document.getElementById('chapterList').innerHTML = '<div class="empty-state" style="padding:24px 12px"><p>載入中...</p></div>';
   _chapters = await DataService.getChapterDefs(_selSubject, id);
@@ -281,7 +292,7 @@ window.deleteBook = async (id, name) => {
   if (!confirm(`確定要刪除冊別「${name}」及其所有章節設定？`)) return;
   try {
     await DataService.deleteBook(_selSubject, id);
-    if (_selBook===id) { _selBook=null; _selBookObj=null; _chapters=[]; document.getElementById('addChapterBtn').textContent='＋ 新增'; document.getElementById('chapterList').innerHTML='<div class="empty-state" style="padding:24px 12px"><div class="empty-icon" style="font-size:1.5rem">←</div><p>請先選擇冊別</p></div>'; }
+    if (_selBook===id) { _selBook=null; _selBookObj=null; _chapters=[]; document.getElementById('addChapterLabel').textContent='新增'; document.getElementById('chapterList').innerHTML='<div class="empty-state" style="padding:24px 12px"><div class="empty-icon" style="font-size:1.5rem">←</div><p>請先選擇冊別</p></div>'; }
     _books = await DataService.getBooks(_selSubject); renderBookList(); UI.toast('已刪除','success');
   } catch(e) { UI.toast('刪除失敗：'+e.message,'danger'); }
 };
@@ -290,14 +301,14 @@ window.deleteBook = async (id, name) => {
 function renderChapterList() {
   const el = document.getElementById('chapterList');
   const l  = lvl();
-  if (!_chapters.length) { el.innerHTML = `<div class="empty-state" style="padding:24px 12px"><p>尚無資料，請點「＋ 新增${l.l1}」</p></div>`; return; }
+  if (!_chapters.length) { el.innerHTML = `<div class="empty-state" style="padding:24px 12px"><p>尚無資料，請點「新增${l.l1}」</p></div>`; return; }
   el.innerHTML = _chapters.map(c => `
     <div class="chapter-row">
       <div class="chapter-head">
         <span class="chapter-title">${c.title}</span>
         <div style="display:flex;gap:4px">
-          <button class="btn btn-ghost btn-sm" onclick="openChapterModal('${c.id}')">✏️</button>
-          <button class="btn btn-ghost btn-sm" onclick="deleteChapter('${c.id}','${c.title.replace(/'/g,'')}')">🗑</button>
+          <button class="btn btn-sm btn-outline" aria-label="編輯章節" title="編輯章節" onclick="openChapterModal('${c.id}')">${I.edit16}</button>
+          <button class="btn btn-sm btn-danger" aria-label="刪除章節" title="刪除章節" onclick="deleteChapter('${c.id}','${c.title.replace(/'/g,'')}')">${I.trash16}</button>
         </div>
       </div>
       ${l.l2 ? (c.sections||[]).map(s => `

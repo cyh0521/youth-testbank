@@ -4,25 +4,39 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>題目匯入 — 幼獅題庫系統</title>
 <link rel="stylesheet" href="css/theme.css">
+<link rel="stylesheet" href="css/dashboard.css">
 <script>if(localStorage.getItem("sidebarCollapsed")==="1")document.documentElement.classList.add("sidebar-collapsed");</script>
 <style>
 /* ── 步驟 ── */
-.steps{display:flex;border-radius:var(--radius-lg);overflow:hidden;border:1px solid var(--border);margin-bottom:20px}
-.step{flex:1;padding:11px 14px;text-align:center;font-size:.86rem;background:var(--bg-base);color:var(--text-muted);border-right:1px solid var(--border);position:relative}
-.step:last-child{border-right:none}
-.step.active{background:var(--primary);color:white;font-weight:600}
-.step.done{background:#eafaf1;color:#1e8449}
-.step-num{display:block;font-size:1rem;font-weight:700;margin-bottom:1px}
+.steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:20px}
+.step{display:flex;align-items:center;gap:10px;min-width:0;padding:12px 16px;border-radius:var(--radius-lg);border:1px solid var(--border-light);background:#fff;color:var(--text-muted);font-size:.88rem;font-weight:500}
+.step.active{background:#edf3ff;border-color:#c8dafb;color:var(--primary);font-weight:700}
+.step.done{background:#edf8f3;border-color:#cce9dc;color:#267656}
+.step-num{display:inline-flex;align-items:center;justify-content:center;flex:none;width:28px;height:28px;border-radius:50%;background:var(--bg-base);font-size:.86rem;font-weight:700}
+.step.active .step-num{background:var(--primary);color:#fff}
+.step.done .step-num{background:#d8f0e3;color:#267656}
+.import-intro{display:grid;grid-template-columns:minmax(300px,.85fr) minmax(0,1.4fr);gap:18px;align-items:start}
+.import-card{padding:22px}
+.import-card .section-heading{margin-bottom:18px}
+.import-card .section-heading h2{font-size:1.3rem}
+.import-card .section-heading p{line-height:1.55}
+.import-fields{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.import-fields .form-group{min-width:0}
+.import-action{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.import-card .btn svg{display:block;flex:none}
+.import-card .btn{gap:6px}
 
 /* ── 上傳區 ── */
 .upload-zone{
   border:2px dashed var(--border);border-radius:var(--radius-lg);
-  padding:36px 24px;text-align:center;cursor:pointer;
-  transition:all .2s;background:var(--bg-base);
+  padding:42px 24px;text-align:center;cursor:pointer;
+  transition:all .2s;background:#f7faff;
 }
-.upload-zone:hover,.upload-zone.drag-over{border-color:var(--primary-light);background:#e8eef6}
-.upload-zone.has-files{border-color:var(--success);border-style:solid;background:#f0fff4}
-.upload-icon{font-size:2.6rem;margin-bottom:10px}
+.upload-zone:hover,.upload-zone.drag-over{border-color:var(--primary-light);background:#edf3ff}
+.upload-zone:focus-visible{outline:2px solid var(--primary);outline-offset:3px}
+.upload-zone.has-files{border-color:var(--success);border-style:solid;background:#f0fbf5}
+.upload-icon{display:flex;align-items:center;justify-content:center;width:58px;height:58px;margin:0 auto 12px;border-radius:16px;background:#e7efff;color:#3478f6}
+.upload-icon svg{width:28px;height:28px}
 .upload-title{font-size:1rem;font-weight:600;color:var(--primary);margin-bottom:3px}
 .upload-sub{font-size:.88rem;color:var(--text-muted)}
 
@@ -36,12 +50,14 @@
 .file-row.parsing{border-color:var(--primary-light);background:#f0f4ff}
 .file-row.done{border-color:var(--success);background:#f0fff4}
 .file-row.error{border-color:var(--danger);background:#fff5f5}
-.file-row .fr-icon{font-size:1.4rem;flex-shrink:0}
+.file-row .fr-icon{display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:9px;background:#e7efff;color:#3478f6;flex-shrink:0}
+.file-row.done .fr-icon{background:#ddf4e9;color:#267656}
+.file-row.error .fr-icon{background:#ffe5e8;color:#b64359}
 .file-row .fr-info{flex:1;min-width:0}
 .file-row .fr-name{font-weight:600;font-size:.88rem;color:var(--primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .file-row .fr-meta{font-size:.84rem;color:var(--text-muted);margin-top:1px}
 .file-row .fr-status{font-size:.86rem;font-weight:600;flex-shrink:0;white-space:nowrap}
-.file-row .fr-remove{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:.9rem;padding:2px 4px;flex-shrink:0}
+.file-row .fr-remove{display:flex;align-items:center;justify-content:center;background:none;border:1px solid var(--border);border-radius:var(--radius);color:var(--text-muted);cursor:pointer;padding:5px;flex-shrink:0}
 .file-row .fr-remove:hover{color:var(--danger)}
 
 /* ── 解析統計 ── */
@@ -65,6 +81,12 @@
 .import-log .log-err{color:#ec7063}
 .import-log .log-info{color:#a8c7e8}
 .import-log .log-warn{color:#f0ad4e}
+.import-complete-icon{display:flex;align-items:center;justify-content:center;width:72px;height:72px;margin:0 auto 16px;border-radius:20px;background:#ddf4e9;color:#267656}
+.import-complete-icon svg{width:36px;height:36px}
+.preview-wrap{overflow:auto}
+.preview-table{min-width:760px}
+@media(max-width:1000px){.import-intro{grid-template-columns:1fr}.steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.import-card{padding:18px}.import-fields,.steps{grid-template-columns:1fr}.step{padding:9px 12px}}
 </style>
 </head>
 <body>
@@ -81,18 +103,17 @@
 
       <!-- 步驟 -->
       <div class="steps" id="stepsBar">
-        <div class="step active" id="step1"><span class="step-num">①</span>選擇科目</div>
-        <div class="step" id="step2"><span class="step-num">②</span>上傳檔案</div>
-        <div class="step" id="step3"><span class="step-num">③</span>預覽確認</div>
-        <div class="step" id="step4"><span class="step-num">④</span>匯入完成</div>
+        <div class="step active" id="step1"><span class="step-num">1</span>選擇科目</div>
+        <div class="step" id="step2"><span class="step-num">2</span>上傳檔案</div>
+        <div class="step" id="step3"><span class="step-num">3</span>預覽確認</div>
+        <div class="step" id="step4"><span class="step-num">4</span>匯入完成</div>
       </div>
 
       <!-- Step 1：科目 -->
-      <div id="panelStep1">
-        <div class="card mb-4">
-          <div class="card-header"><h2>① 選擇科目與冊次</h2></div>
-          <div class="card-body">
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:520px">
+      <div id="panelStep1" class="import-intro">
+        <section class="card import-card">
+          <div class="section-heading"><div><h2>選擇科目與冊次</h2><p>匯入的題目會歸入所選冊別</p></div></div>
+            <div class="import-fields">
               <div class="form-group">
                 <label class="form-label">科目 <span style="color:var(--danger)">*</span></label>
                 <select class="form-control" id="subjectSel" onchange="onSubjectChange()">
@@ -106,14 +127,12 @@
                 </select>
               </div>
             </div>
-            <button class="btn btn-primary" onclick="goStep2()">下一步 →</button>
-          </div>
-        </div>
+            <button class="btn btn-primary" onclick="goStep2()">下一步 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button>
+        </section>
 
         <!-- 格式說明 -->
-        <div class="card">
-          <div class="card-header"><h2>📄 入題檔格式說明</h2></div>
-          <div class="card-body">
+        <section class="card import-card">
+          <div class="section-heading"><div><h2>入題檔格式說明</h2><p>上傳前確認 Word 表格欄位</p></div></div>
             <p style="font-size:.9rem;color:var(--text-secondary);margin-bottom:12px">
               支援直接上傳 <strong>.docx</strong>（Word 文件），可<strong>一次選取多個檔案</strong>同時匯入。<br>
               匯入後每題自動分配 <strong>5 位數題目編號</strong>（00001 起）。
@@ -138,25 +157,25 @@
                 </tbody>
               </table>
             </div>
-          </div>
-        </div>
+        </section>
       </div>
 
       <!-- Step 2：上傳 -->
       <div id="panelStep2" style="display:none">
-        <div class="card mb-4">
-          <div class="card-header">
-            <h2>② 上傳入題檔</h2>
-            <button class="btn btn-ghost btn-sm" onclick="backStep1()">← 重選科目</button>
+        <section class="card import-card">
+          <div class="section-heading">
+            <div><h2>上傳入題檔</h2><p>支援一次選取多個 Word 檔案</p></div>
+            <button class="btn btn-ghost btn-sm" onclick="backStep1()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5m6 6-6-6 6-6"/></svg>重選科目</button>
           </div>
-          <div class="card-body">
             <div id="selectedSubjectInfo" style="background:#e8eef6;border-radius:var(--radius);padding:10px 14px;font-size:.9rem;margin-bottom:16px;color:var(--primary)"></div>
 
             <!-- 上傳區 -->
             <div class="upload-zone" id="uploadZone"
+                 role="button" tabindex="0" aria-label="選擇 Word 檔案上傳"
                  onclick="document.getElementById('fileInput').click()"
+                 onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();document.getElementById('fileInput').click()}"
                  ondrop="onDrop(event)" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)">
-              <div class="upload-icon">📂</div>
+              <div class="upload-icon" id="uploadIcon"></div>
               <div class="upload-title">點擊或拖放 Word 檔案到這裡</div>
               <div class="upload-sub">支援 .docx 格式，可一次選取多個檔案，每檔上限 20MB</div>
               <input type="file" id="fileInput" accept=".docx" multiple style="display:none" onchange="onFileSelect(event)">
@@ -165,22 +184,20 @@
             <!-- 已選檔案列表 -->
             <div class="file-list" id="fileList"></div>
 
-            <div style="margin-top:14px;display:flex;gap:10px;align-items:center">
-              <button class="btn btn-primary" id="parseBtn" onclick="parseAllFiles()" disabled>解析所有檔案 →</button>
+            <div class="import-action" style="margin-top:14px">
+              <button class="btn btn-primary" id="parseBtn" onclick="parseAllFiles()" disabled><span id="parseBtnIcon"></span><span id="parseBtnLabel">解析所有檔案</span></button>
               <span style="font-size:.88rem;color:var(--text-muted)" id="fileCountLabel"></span>
             </div>
-          </div>
-        </div>
+        </section>
       </div>
 
       <!-- Step 3：預覽 -->
       <div id="panelStep3" style="display:none">
-        <div class="card mb-4">
-          <div class="card-header">
-            <h2>③ 預覽解析結果</h2>
-            <button class="btn btn-ghost btn-sm" onclick="backStep2()">← 重新上傳</button>
+        <section class="card import-card">
+          <div class="section-heading">
+            <div><h2>預覽解析結果</h2><p>確認題目與答案後再匯入</p></div>
+            <button class="btn btn-ghost btn-sm" onclick="backStep2()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5m6 6-6-6 6-6"/></svg>重新上傳</button>
           </div>
-          <div class="card-body">
             <div class="parse-summary" id="parseSummary"></div>
             <div id="parseWarnings" style="margin-bottom:10px"></div>
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px">
@@ -197,26 +214,23 @@
             </div>
             <div style="display:flex;gap:4px;margin-bottom:14px" id="previewPagBtns2"></div>
             <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-              <button class="btn btn-primary" id="importBtn" onclick="doImport()">✅ 確認匯入</button>
+              <button class="btn btn-primary" id="importBtn" onclick="doImport()"><span id="importBtnIcon"></span><span id="importBtnLabel">確認匯入</span></button>
               <span style="font-size:.88rem;color:var(--text-muted)" id="importNote2"></span>
             </div>
-          </div>
-        </div>
+        </section>
       </div>
 
       <!-- Step 4：完成 -->
       <div id="panelStep4" style="display:none">
-        <div class="card">
-          <div class="card-body" style="text-align:center;padding:48px 24px">
-            <div style="font-size:3rem;margin-bottom:14px">✅</div>
+        <div class="card import-card" style="text-align:center;padding:48px 24px">
+            <div class="import-complete-icon" id="completeIcon"></div>
             <h2 style="margin-bottom:8px;color:var(--success)">匯入完成！</h2>
             <div id="importResult" style="font-size:.9rem;color:var(--text-secondary);margin-bottom:20px"></div>
             <div class="import-log" id="importLog"></div>
             <div style="margin-top:20px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
               <button class="btn btn-outline" onclick="resetImport()">繼續匯入</button>
-              <button class="btn btn-primary" onclick="nav('questions')">前往題目維護 →</button>
+              <button class="btn btn-primary" onclick="nav('questions')">前往題目維護 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button>
             </div>
-          </div>
         </div>
       </div>
 
@@ -231,6 +245,11 @@ import { guardPage } from './js/auth-guard.js';
 window._activeNav = 'import';
 const user = await guardPage(['admin','manager']);
 if (!user) throw new Error('not auth');
+const I = window.ICONS;
+document.getElementById('uploadIcon').innerHTML = I.upload;
+document.getElementById('parseBtnIcon').innerHTML = I.search16;
+document.getElementById('importBtnIcon').innerHTML = I.check16;
+document.getElementById('completeIcon').innerHTML = I.check;
 
 // ── 初始化科目下拉（從課本管理系統讀取）─────────
 const subjectSel = document.getElementById('subjectSel');
@@ -304,7 +323,7 @@ function renderFileList() {
 
   if (!count) { el.innerHTML = ''; return; }
   el.innerHTML = selectedFiles.map((f, idx) => {
-    const icons = { pending:'📄', parsing:'⏳', done:'✅', error:'❌' };
+    const icons = { pending:I.test16, parsing:I.refresh16, done:I.check16, error:I.close16 };
     const statusText = { pending:'待解析', parsing:'解析中…', done:`解析完成（${f.questions.length} 題）`, error: f.errorMsg||'解析失敗' };
     const statusColor = { pending:'color:var(--text-muted)', parsing:'color:var(--primary-light)', done:'color:var(--success)', error:'color:var(--danger)' };
     return `<div class="file-row ${f.status}" id="frow-${idx}">
@@ -315,7 +334,7 @@ function renderFileList() {
       </div>
       <span class="fr-status" style="${statusColor[f.status]}">${statusText[f.status]}</span>
       ${f.status==='pending'||f.status==='error'
-        ? `<button class="fr-remove" onclick="removeFile(${idx})" title="移除">✕</button>`
+        ? `<button class="fr-remove" onclick="removeFile(${idx})" title="移除" aria-label="移除檔案">${I.close16}</button>`
         : ''}
     </div>`;
   }).join('');
@@ -331,7 +350,7 @@ window.parseAllFiles = async () => {
   if (!selectedFiles.length) return;
   const sc = subjectSel.value, bc = document.getElementById('bookSel').value;
   const btn = document.getElementById('parseBtn');
-  btn.disabled = true; btn.textContent = '解析中…';
+  btn.disabled = true; document.getElementById('parseBtnLabel').textContent = '解析中…';
 
   // 逐一解析
   for (let i = 0; i < selectedFiles.length; i++) {
@@ -365,7 +384,7 @@ window.parseAllFiles = async () => {
     renderFileList();
   }
 
-  btn.disabled = false; btn.textContent = '解析所有檔案 →';
+  btn.disabled = false; document.getElementById('parseBtnLabel').textContent = '解析所有檔案';
 
   // 合併所有成功解析的題目
   parsedAll = selectedFiles.flatMap(f => f.status === 'done' ? f.questions : []);
@@ -440,7 +459,7 @@ function buildPreview(qs, sc, bc) {
   const noAnswer = qs.filter(q => !q.answer).length;
   if (noAnswer) warnings.push(`${noAnswer} 題缺少答案`);
   document.getElementById('parseWarnings').innerHTML = warnings.map(w =>
-    `<div style="background:#fff8e1;border:1px solid #ffe082;border-radius:var(--radius);padding:7px 12px;font-size:.88rem;color:#7c5000;margin-bottom:6px">⚠ ${w}</div>`
+    `<div style="display:flex;align-items:center;gap:7px;background:#fff8e1;border:1px solid #ffe082;border-radius:var(--radius);padding:7px 12px;font-size:.88rem;color:#7c5000;margin-bottom:6px">${I.info16} ${w}</div>`
   ).join('');
 
   renderPreviewPage();
@@ -515,7 +534,7 @@ window.goPreviewPage = (p) => {
 window.doImport = async () => {
   if (!parsedAll.length) return;
   const btn = document.getElementById('importBtn');
-  btn.disabled = true; btn.textContent = '匯入中…';
+  btn.disabled = true; document.getElementById('importBtnLabel').textContent = '匯入中…';
 
   const validQs = parsedAll.filter(q => q.text);
   const log = [];
