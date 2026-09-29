@@ -67,9 +67,10 @@
 .profile-actions{display:flex;gap:10px;flex-wrap:wrap}
 .profile-actions .btn{width:148px;justify-content:center}
 .catalog-subject{border:1px solid var(--border);border-radius:10px;margin-bottom:12px;overflow:hidden}
-.catalog-subject-header{display:flex;align-items:center;gap:9px;padding:12px 14px;background:var(--bg-base);font-weight:700}
-.catalog-books{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:9px;padding:12px 14px}
-.catalog-books label{display:flex;align-items:center;gap:7px;font-size:.9rem}
+.catalog-subject-header{display:flex;align-items:center;gap:9px;padding:12px 14px;background:var(--bg-base);font-size:.9rem;font-weight:700}
+.catalog-books{display:flex;flex-wrap:wrap;gap:9px 18px;padding:12px 14px;overflow-x:auto}
+.catalog-books label{display:inline-flex;align-items:center;gap:7px;flex:none;font-size:.9rem;white-space:nowrap}
+.catalog-subject input[type=checkbox]{width:16px;height:16px;flex:none}
 .catalog-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:14px 0}
 .catalog-section[hidden]{display:none}
 #catalogSubnav{flex-wrap:wrap}
@@ -775,7 +776,7 @@ async function buildCatalogPanel() {
       const selected = visible === null || Object.prototype.hasOwnProperty.call(visible, subject.code);
       return `<div class="catalog-subject" data-subject="${UI.escapeHtml(subject.code)}">
         <label class="catalog-subject-header"><input type="checkbox" class="catalog-subject-check" ${selected ? 'checked' : ''}>${UI.escapeHtml(subject.name || subject.code)}</label>
-        <div class="catalog-books">${books.length ? books.map(book => `<label><input type="checkbox" class="catalog-book-check" value="${UI.escapeHtml(book.code)}" ${visible === null || (Array.isArray(visible[subject.code]) && visible[subject.code].includes(book.code)) ? 'checked' : ''}>${UI.escapeHtml(book.name || book.code)}</label>`).join('') : '<span style="color:var(--text-muted);font-size:.88rem">目前沒有冊別</span>'}</div>
+        <div class="catalog-books">${books.length ? books.map(book => `<label title="${UI.escapeHtml(book.name || book.code)}"><input type="checkbox" class="catalog-book-check" value="${UI.escapeHtml(book.code)}" ${visible === null || (Array.isArray(visible[subject.code]) && visible[subject.code].includes(book.code)) ? 'checked' : ''}>${UI.escapeHtml(book.name || book.code)}</label>`).join('') : '<span style="color:var(--text-muted);font-size:.88rem">目前沒有冊別</span>'}</div>
       </div>`;
     }).join('') || '<p>目前沒有可選擇的科目。</p>';
     choices.setAttribute('aria-busy', 'false');
