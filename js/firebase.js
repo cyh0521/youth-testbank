@@ -15,7 +15,7 @@ import {
   runTransaction, increment
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 import {
-  getAuth, signInWithEmailAndPassword, signOut,
+  getAuth, signInWithEmailAndPassword, signOut, deleteUser as deleteAuthUser,
   createUserWithEmailAndPassword, onAuthStateChanged,
   setPersistence, browserSessionPersistence,
   EmailAuthProvider, reauthenticateWithCredential, updatePassword
@@ -125,7 +125,8 @@ window.DataService = {
 
   getCurrentUser() { return DataService._currentUser; },
   isLoggedIn()     { return !!DataService._currentUser; },
-  isAdmin()        { return DataService._currentUser?.role === 'admin'; },
+  isAdmin()        { return ['admin', 'manager'].includes(DataService._currentUser?.role); },
+  isPrimaryAdmin() { return DataService._currentUser?.role === 'admin'; },
   isTeacher()      { return DataService._currentUser?.role === 'teacher'; },
 
   // ── 帳號：登入 ────────────────────────────────
@@ -160,21 +161,34 @@ window.DataService = {
   // ── 帳號：由管理員建立工作人員 ────────────────
   async register({ email, password, displayName, role, school, _adminCreate }) {
     if (!_adminCreate || !DataService.isAdmin()) return { ok: false, msg: '權限不足' };
-    if (!['admin', 'teacher'].includes(role)) return { ok: false, msg: '不支援的帳號身份' };
+    if (!['manager', 'teacher'].includes(role) || (role === 'manager' && !DataService.isPrimaryAdmin())) return { ok: false, msg: '權限不足' };
+    let createdUser = null;
     try {
       // 使用獨立 Auth instance 建立帳號，避免管理員目前的登入狀態被切換。
       const cred = await createUserWithEmailAndPassword(accountCreationAuth, email, password);
+      createdUser = cred.user;
       const userData = {
         email, displayName, role,
         school: school || null,
         createdAt: serverTimestamp()
       };
       await setDoc(doc(db, 'users', cred.user.uid), userData);
-      await signOut(accountCreationAuth);
+      await signOut(accountCreationAuth).catch(err => console.warn('新帳號建立後登出失敗', err));
       return { ok: true, user: { uid: cred.user.uid, ...userData } };
     } catch(e) {
+      if (createdUser) {
+        try {
+          await deleteAuthUser(createdUser);
+        } catch(cleanupError) {
+          console.error('無法清理未完成的 Firebase Auth 帳號', cleanupError);
+          return { ok: false, msg: `帳號資料儲存失敗，且無法自動清理已建立的登入帳號（UID：${createdUser.uid}）。請在 Firebase Console 檢查後處理。原始錯誤：${e.message}` };
+        } finally {
+          await signOut(accountCreationAuth).catch(() => {});
+        }
+        return { ok: false, msg: `帳號資料儲存失敗，已清理剛建立的登入帳號；請稍後再試。原始錯誤：${e.message}` };
+      }
       const msg = {
-        'auth/email-already-in-use': '此電子信箱已被使用',
+        'auth/email-already-in-use': '此電子信箱已存在於 Firebase Authentication（可能尚無帳號管理資料），請至 Firebase Console 確認',
         'auth/weak-password':        '密碼強度不足（至少6字元）',
         'auth/invalid-email':        '電子信箱格式錯誤',
       }[e.code] || e.message;

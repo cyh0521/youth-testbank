@@ -69,7 +69,7 @@
   function mount(role, active = activePage()) {
     const el = document.getElementById('sidebar');
     if (!el) return;
-    const navRole = role === 'admin' ? 'admin' : 'teacher';
+    const navRole = role === 'admin' || role === 'manager' ? 'admin' : 'teacher';
     if (el.dataset.navRole !== navRole) {
       const I = window.ICONS || {};
       const item = (page, icon, label, href = `${page}.html`) => `<a class="nav-item" href="${href}" data-page="${page}" title="${label}"><span class="icon">${icon || ''}</span><span class="nav-label">${label}</span></a>`;

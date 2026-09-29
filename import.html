@@ -229,7 +229,7 @@
 <script type="module">
 import { guardPage } from './js/auth-guard.js';
 window._activeNav = 'import';
-const user = await guardPage(['admin']);
+const user = await guardPage(['admin','manager']);
 if (!user) throw new Error('not auth');
 
 // ── 初始化科目下拉（從課本管理系統讀取）─────────

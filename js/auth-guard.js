@@ -9,7 +9,7 @@ export async function guardPage(allowedRoles) {
     window.location.replace('index.html');
     return null;
   }
-  if (!['admin', 'teacher'].includes(user.role)) {
+  if (!['admin', 'manager', 'teacher'].includes(user.role)) {
     window.AppShell.clear();
     await DataService.logout();
     return null;

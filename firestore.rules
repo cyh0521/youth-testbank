@@ -11,8 +11,9 @@ service cloud.firestore {
     function role() {
       return userDoc().role;
     }
-    function isAdmin()   { return isSignedIn() && role() == 'admin'; }
-    function isTeacher() { return isSignedIn() && (role() == 'teacher' || role() == 'admin'); }
+    function isPrimaryAdmin() { return isSignedIn() && role() == 'admin'; }
+    function isAdmin() { return isSignedIn() && (role() == 'admin' || role() == 'manager'); }
+    function isTeacher() { return isSignedIn() && (role() == 'teacher' || role() == 'admin' || role() == 'manager'); }
 
     // ── users ─────────────────────────────────────────────────
     match /users/{uid} {
@@ -20,11 +21,21 @@ service cloud.firestore {
       allow read:   if isSignedIn() && request.auth.uid == uid;
       // 管理員可以讀取所有使用者
       allow read:   if isAdmin();
-      // 只有管理員可以建立/修改/刪除使用者
-      allow write:  if isAdmin();
-      // 使用者可以修改自己的資料（但不能改變角色）
-      allow update: if isSignedIn() && request.auth.uid == uid
+      // 主要管理員可管理一般管理員與教師；一般管理員只能管理教師。
+      // 任何人都不能從網站建立、刪除或變更主要管理員角色。
+      allow create: if isAdmin() && request.resource.data.role == 'teacher'
+                    || isPrimaryAdmin() && request.resource.data.role == 'manager';
+      allow update: if isPrimaryAdmin() && request.auth.uid != uid
+                    && resource.data.role != 'admin'
+                    && request.resource.data.role in ['manager', 'teacher']
+                    || isAdmin() && request.auth.uid != uid
+                    && resource.data.role == 'teacher'
+                    && request.resource.data.role == 'teacher'
+                    || isSignedIn() && request.auth.uid == uid
                     && request.resource.data.role == resource.data.role;
+      allow delete: if request.auth.uid != uid && (
+                    isPrimaryAdmin() && resource.data.role in ['manager', 'teacher']
+                    || isAdmin() && resource.data.role == 'teacher');
     }
 
     // ── questions ─────────────────────────────────────────────

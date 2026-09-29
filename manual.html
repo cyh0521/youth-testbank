@@ -213,7 +213,7 @@
 import { guardPage } from './js/auth-guard.js';
 import { showExamPreview, showHeaderSettings, newExamHeader, loadAppearance } from './js/exam-preview.js';
 window._activeNav = 'manual';
-const user = await guardPage(['admin','teacher']);
+const user = await guardPage(['admin','manager','teacher']);
 if (!user) throw new Error('not auth');
 
 // ── 初始化 ────────────────────────────────────────

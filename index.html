@@ -103,15 +103,15 @@ body{min-height:100vh;background:#eef2f1;overflow-x:hidden}
         教師帳號請聯繫幼獅業務同仁協助申請。
       </div>
       <div style="text-align:center;margin-top:12px;font-size:.78rem;color:var(--text-muted)">
-        第一次使用？<a onclick="showPanel('init')" style="color:var(--primary);cursor:pointer">初始化管理員</a>
+        第一次使用？<a onclick="showPanel('init')" style="color:var(--primary);cursor:pointer">初始化主要管理員</a>
       </div>
     </div>
 
-    <!-- ── 初始化管理員 ── -->
+    <!-- ── 初始化主要管理員 ── -->
     <div class="panel" id="panel-init">
       <div class="msg err" id="initErr"></div>
       <div style="background:#fef9e7;border:1px solid #ffe082;border-radius:var(--radius);padding:9px 13px;font-size:.8rem;color:#7c5000;margin-bottom:14px">
-        ⚠ 僅供第一次建立系統管理員帳號使用。
+        ⚠ 僅供第一次建立系統主要管理員帳號使用。
       </div>
       <div class="form-group">
         <label class="form-label">管理員驗證碼 <span class="req">*</span></label>
@@ -133,7 +133,7 @@ body{min-height:100vh;background:#eef2f1;overflow-x:hidden}
         <label class="form-label">確認密碼 <span class="req">*</span></label>
         <input class="form-control" type="password" id="initPw2">
       </div>
-      <button class="big-btn primary" id="initBtn" onclick="doInitAdmin()">建立管理員帳號</button>
+      <button class="big-btn primary" id="initBtn" onclick="doInitAdmin()">建立主要管理員帳號</button>
       <div style="text-align:center;margin-top:12px;font-size:.82rem;color:var(--text-secondary)">
         <a onclick="showPanel('login')" style="color:var(--primary);cursor:pointer;font-weight:600">返回登入</a>
       </div>
@@ -225,7 +225,7 @@ window.doLogin = async () => {
       return showMsg('loginErr','找不到使用者資料，請聯絡管理員');
     }
     const role = snap.data().role;
-    if (!['admin','teacher'].includes(role)) {
+    if (!['admin','manager','teacher'].includes(role)) {
       await signOut(auth);
       btn.disabled=false; btn.textContent='登　入';
       return showMsg('loginErr','此系統僅供管理員與教師使用','warn');
@@ -268,15 +268,15 @@ window.doInitAdmin = async () => {
       email, displayName:name, role:'admin', school:null, createdAt:serverTimestamp()
     });
     await signOut(auth);
-    btn.disabled=false; btn.textContent='建立管理員帳號';
+    btn.disabled=false; btn.textContent='建立主要管理員帳號';
     ['initCode','initEmail','initName','initPw','initPw2'].forEach(id=>{
       const el=document.getElementById(id); if(el) el.value='';
     });
     showPanel('login');
     document.getElementById('loginEmail').value = email;
-    showMsg('loginOk',`✅ 管理員帳號「${name}」建立成功！請輸入密碼登入。`,'ok');
+    showMsg('loginOk',`✅ 主要管理員帳號「${name}」建立成功！請輸入密碼登入。`,'ok');
   } catch(e) {
-    btn.disabled=false; btn.textContent='建立管理員帳號';
+    btn.disabled=false; btn.textContent='建立主要管理員帳號';
     const m={
       'auth/email-already-in-use':'此信箱已被使用',
       'auth/invalid-email':'電子信箱格式錯誤',

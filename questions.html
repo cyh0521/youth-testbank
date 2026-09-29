@@ -276,7 +276,7 @@
 import { guardPage } from './js/auth-guard.js';
 import { confirmDeletion } from './js/confirm-exam-deletion.js';
 window._activeNav = 'questions';
-const user = await guardPage(['admin']);
+const user = await guardPage(['admin','manager']);
 if (!user) throw new Error('not auth');
 const canEdit = DataService.isAdmin();
 

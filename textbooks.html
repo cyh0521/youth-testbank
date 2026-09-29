@@ -156,7 +156,7 @@
 <script type="module">
 import { guardPage } from './js/auth-guard.js';
 window._activeNav = 'textbooks';
-const user = await guardPage(['admin']);
+const user = await guardPage(['admin','manager']);
 if (!user) throw new Error('not auth');
 
 let _subjects = [], _selSubject = null;
