@@ -239,7 +239,7 @@ function ensureHeaderModal() {
       <button class="modal-close" onclick="document.getElementById('hdModal').classList.add('hidden')">✕</button>
     </div>
     <div class="modal-body" style="padding:16px 20px;overflow-y:auto">
-      <p style="font-size:.84rem;color:var(--text-muted);margin-bottom:14px">
+      <p style="font-size:.9rem;color:var(--text-muted);margin-bottom:14px">
         於此設定試卷上方表頭資訊。空白欄位的範例不會輸出；設定會套用到預覽、列印、Word。
       </p>
       <div class="grid-2">
@@ -471,17 +471,17 @@ function ensurePreviewModal() {
 .ep-toolbar{
   display:flex;align-items:center;gap:14px;flex-wrap:wrap;
   padding:10px 16px;background:#f5f3ee;border:1px solid #e0dcd2;
-  border-radius:6px;margin-bottom:14px;font-size:.82rem;
+  border-radius:6px;margin-bottom:14px;font-size:.88rem;
 }
 .ep-toolbar .group{display:flex;align-items:center;gap:6px}
 .ep-toolbar .group label{color:var(--text-secondary);white-space:nowrap}
-.ep-toolbar select,.ep-toolbar input[type=range]{font-size:.82rem}
-.ep-toolbar .val{font-family:var(--font-mono);font-size:.78rem;color:var(--text-muted);min-width:36px;text-align:right}
+.ep-toolbar select,.ep-toolbar input[type=range]{font-size:.88rem}
+.ep-toolbar .val{font-family:var(--font-mono);font-size:.86rem;color:var(--text-muted);min-width:36px;text-align:right}
 .ep-toolbar .info-pill{
-  margin-left:auto;font-size:.76rem;color:var(--text-muted);
+  margin-left:auto;font-size:.85rem;color:var(--text-muted);
 }
 .ep-preview-options{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:0 0 10px}
-.ep-preview-options label{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;background:#fff;border:1px solid #b9cadc;border-radius:5px;color:#244566;font-size:.84rem;font-weight:700;cursor:pointer;transition:background .15s,border-color .15s,box-shadow .15s}
+.ep-preview-options label{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;background:#fff;border:1px solid #b9cadc;border-radius:5px;color:#244566;font-size:.9rem;font-weight:700;cursor:pointer;transition:background .15s,border-color .15s,box-shadow .15s}
 .ep-preview-options label:hover{border-color:#3974c7;background:#f7fbff}
 .ep-preview-options label:has(input:checked){background:#dcecff;border-color:#3974c7;box-shadow:inset 0 0 0 1px #3974c7}
 .ep-preview-options label:has(input:focus-visible){outline:2px solid #3974c7;outline-offset:2px}

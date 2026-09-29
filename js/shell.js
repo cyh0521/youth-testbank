@@ -128,7 +128,7 @@
     document.documentElement.classList.remove('auth-ready');
   }
 
-  window.AppShell = { mount, confirmUser, clear };
+  window.AppShell = { mount, confirmUser, clear, confirmLogout };
   mount(read('sessionStorage', ROLE_KEY));
   // 靜態版面先顯示，資料操作等真實登入驗證後才啟用。
   document.addEventListener('DOMContentLoaded', () => {

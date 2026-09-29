@@ -12,7 +12,7 @@
 
 /* 左側設定面板 */
 .config-card .card-body{padding:14px}
-.section-title{font-size:.78rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 8px;display:flex;align-items:center;gap:6px}
+.section-title{font-size:.86rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 8px;display:flex;align-items:center;gap:6px}
 .section-title:first-child{margin-top:0}
 /* 章節樹覆寫：本頁需要更高（chapter-tree 通用樣式在 theme.css） */
 .chapter-tree{max-height:260px}
@@ -24,55 +24,55 @@
 .q-card.selected{background:#e8f4fd}
 .q-card .q-check{width:16px;height:16px;flex-shrink:0;margin-top:2px;cursor:pointer;accent-color:var(--primary-light)}
 .q-card .q-info{flex:1;min-width:0}
-.q-card .q-title{font-size:.84rem;line-height:1.5;margin-bottom:3px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.q-card .q-title{font-size:.9rem;line-height:1.5;margin-bottom:3px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .q-card .q-meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .q-card .q-act{flex-shrink:0}
 .bank-list{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;max-height:600px;overflow-y:auto;background:white}
-.bank-header{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--bg-base);border-bottom:1px solid var(--border);font-size:.82rem;color:var(--text-secondary)}
+.bank-header{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--bg-base);border-bottom:1px solid var(--border);font-size:.88rem;color:var(--text-secondary)}
 
 /* 右側已選 */
 
 .selected-list{max-height:520px;overflow-y:auto;padding:12px}
-.sel-item{display:flex;align-items:flex-start;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border-light);font-size:.82rem}
+.sel-item{display:flex;align-items:flex-start;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border-light);font-size:.88rem}
 .sel-item:last-child{border-bottom:none}
-.sel-item .si-num{color:var(--text-muted);font-size:.74rem;width:22px;flex-shrink:0;text-align:right;padding-top:2px}
+.sel-item .si-num{color:var(--text-muted);font-size:.84rem;width:22px;flex-shrink:0;text-align:right;padding-top:2px}
 .sel-item .si-text{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.5}
 .sel-item{position:relative}
-.sel-tooltip{display:none;position:absolute;left:30px;top:100%;z-index:200;background:white;border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-md);padding:10px 12px;font-size:.82rem;line-height:1.6;width:320px;max-width:90vw;color:var(--text-primary)}
+.sel-tooltip{display:none;position:absolute;left:30px;top:100%;z-index:200;background:white;border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-md);padding:10px 12px;font-size:.88rem;line-height:1.6;width:320px;max-width:90vw;color:var(--text-primary)}
 .sel-item:hover .sel-tooltip{display:block}
 .sel-tooltip .tt-text{margin-bottom:4px}
-.sel-tooltip .tt-opts{color:var(--text-secondary);font-size:.78rem;margin-bottom:4px}
-.sel-tooltip .tt-ans{color:var(--success);font-weight:600;font-size:.78rem}
+.sel-tooltip .tt-opts{color:var(--text-secondary);font-size:.86rem;margin-bottom:4px}
+.sel-tooltip .tt-ans{color:var(--success);font-weight:600;font-size:.86rem}
 .sel-item .si-remove{flex-shrink:0;background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:.9rem;padding:0 3px;line-height:1}
 .sel-item .si-remove:hover{color:var(--danger)}
-.drag-handle{cursor:grab;color:var(--text-muted);font-size:.8rem;flex-shrink:0;padding-top:2px}
+.drag-handle{cursor:grab;color:var(--text-muted);font-size:.88rem;flex-shrink:0;padding-top:2px}
 .drag-handle:active{cursor:grabbing}
 .sel-item.dragging{opacity:.4;background:#f0f4ff}
 .sel-item.drag-over{border-top:2px solid var(--primary-light)}
-.score-cfg{display:flex;align-items:center;gap:6px;padding:10px 12px;background:var(--bg-base);border-top:1px solid var(--border-light);font-size:.82rem;flex-wrap:wrap}
+.score-cfg{display:flex;align-items:center;gap:6px;padding:10px 12px;background:var(--bg-base);border-top:1px solid var(--border-light);font-size:.88rem;flex-wrap:wrap}
 .score-cfg .sc-row{display:flex;align-items:center;gap:4px;white-space:nowrap}
-.sc-inp{width:48px;font-size:.8rem;padding:3px 5px;text-align:center}
+.sc-inp{width:48px;font-size:.88rem;padding:3px 5px;text-align:center}
 .total-score-bar{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;font-size:.86rem;font-weight:600;color:var(--primary);border-top:1px solid var(--border-light)}
 
 /* 分頁 */
 .pag-wrap{display:flex;align-items:center;gap:4px;padding:10px 12px;flex-wrap:wrap}
-.pag-btn{border:1px solid var(--border);background:white;padding:3px 9px;border-radius:var(--radius);font-size:.78rem;cursor:pointer;font-family:var(--font-sans)}
+.pag-btn{border:1px solid var(--border);background:white;padding:3px 9px;border-radius:var(--radius);font-size:.86rem;cursor:pointer;font-family:var(--font-sans)}
 .pag-btn:hover:not(:disabled){background:var(--bg-base)}
 .pag-btn.active{background:var(--primary);color:white;border-color:var(--primary)}
 .pag-btn:disabled{opacity:.4;cursor:not-allowed}
 
 /* 題目庫結果樣式（同電腦選題） */
 .result-section{margin-bottom:12px}.result-section:last-child{margin-bottom:0}
-.result-section-title{display:flex;align-items:center;justify-content:space-between;padding:7px 12px;background:var(--bg-header);color:white;border-radius:var(--radius) var(--radius) 0 0;font-size:.82rem;font-weight:600}
+.result-section-title{display:flex;align-items:center;justify-content:space-between;padding:7px 12px;background:var(--bg-header);color:white;border-radius:var(--radius) var(--radius) 0 0;font-size:.88rem;font-weight:600}
 .result-list{border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius) var(--radius);overflow:hidden}
-.result-q{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-bottom:1px solid var(--border-light);font-size:.84rem;background:white;cursor:pointer;transition:background .1s}
+.result-q{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-bottom:1px solid var(--border-light);font-size:.9rem;background:white;cursor:pointer;transition:background .1s}
 .result-q:last-child{border-bottom:none}
 .result-q:hover{background:#f0f8ff}
 .result-q.selected{background:#e8f4fd}
-.result-q .q-num{color:var(--text-muted);font-size:.76rem;width:26px;flex-shrink:0;padding-top:2px;text-align:right}
+.result-q .q-num{color:var(--text-muted);font-size:.85rem;width:26px;flex-shrink:0;padding-top:2px;text-align:right}
 .result-q .q-body{flex:1;min-width:0}
 .result-q .q-text{line-height:1.6;margin-bottom:3px}
-.result-q .q-ans{font-size:.76rem;color:var(--success);font-weight:600}
+.result-q .q-ans{font-size:.85rem;color:var(--success);font-weight:600}
 .result-q .q-check-col{flex-shrink:0;display:flex;align-items:flex-start;padding-top:2px}
 .result-q .q-check-col input{width:16px;height:16px;cursor:pointer;accent-color:var(--primary-light)}
 
@@ -113,9 +113,9 @@
                 </select>
               </div>
 
-              <div class="section-title">📖 章節範圍<button class="btn btn-ghost btn-sm" onclick="clearAllChapters()" style="font-size:.72rem;padding:1px 6px;margin-left:auto;font-weight:400;text-transform:none;letter-spacing:0">全部清除</button></div>
+              <div class="section-title">📖 章節範圍<button class="btn btn-ghost btn-sm" onclick="clearAllChapters()" style="font-size:.84rem;padding:1px 6px;margin-left:auto;font-weight:400;text-transform:none;letter-spacing:0">全部清除</button></div>
               <div class="chapter-tree" id="chapterTree">
-                <div style="padding:20px;text-align:center;color:var(--text-muted);font-size:.8rem">請先選擇科目與冊次</div>
+                <div style="padding:20px;text-align:center;color:var(--text-muted);font-size:.88rem">請先選擇科目與冊次</div>
               </div>
 
               <div class="section-title">🔍 題型與難易度</div>
@@ -142,9 +142,9 @@
         <!-- 中：題目庫 -->
         <div class="card">
           <div class="card-header">
-            <h2>📚 題目庫<strong style="font-size:.82rem;font-weight:400;color:var(--text-secondary);margin-left:6px" id="bankCount"></strong></h2>
+            <h2>📚 題目庫<strong style="font-size:.88rem;font-weight:400;color:var(--text-secondary);margin-left:6px" id="bankCount"></strong></h2>
             <div style="display:flex;align-items:center;gap:8px">
-              <label style="font-size:.82rem;display:flex;align-items:center;gap:4px;font-weight:400;color:var(--text-secondary)">
+              <label style="font-size:.88rem;display:flex;align-items:center;gap:4px;font-weight:400;color:var(--text-secondary)">
                 <input type="checkbox" id="selectPageAll" onchange="selectPage(this.checked)"> 全選
               </label>
             </div>
@@ -163,10 +163,10 @@
           <div class="card">
             <div class="card-header">
               <h2>📋 已選題目</h2>
-              <span style="font-size:.82rem;color:var(--text-secondary)" id="selCountLabel">0 題</span>
+              <span style="font-size:.88rem;color:var(--text-secondary)" id="selCountLabel">0 題</span>
             </div>
             <div id="selList" class="selected-list">
-              <div style="text-align:center;padding:32px;color:var(--text-muted);font-size:.84rem">點擊題目「＋」加入</div>
+              <div style="text-align:center;padding:32px;color:var(--text-muted);font-size:.9rem">點擊題目「＋」加入</div>
             </div>
             <div class="score-cfg" id="scoreCfg" style="display:none"></div>
             <div class="total-score-bar" id="totalScoreBar" style="display:none">
@@ -251,7 +251,7 @@ window.onSubjectChange = () => {
     bk.disabled = true;
   }
   document.getElementById('chapterTree').innerHTML =
-    '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:.8rem">請先選擇冊次</div>';
+    '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:.88rem">請先選擇冊次</div>';
   filtered = []; renderBank();
 };
 
@@ -259,7 +259,7 @@ window.loadChapters = async () => {
   const sc = cSubject.value, bc = document.getElementById('cBook').value;
   if (!sc || !bc) return;
   const tree = document.getElementById('chapterTree');
-  tree.innerHTML = '<div style="padding:12px;text-align:center;color:var(--text-muted);font-size:.8rem">載入中…</div>';
+  tree.innerHTML = '<div style="padding:12px;text-align:center;color:var(--text-muted);font-size:.88rem">載入中…</div>';
 
   // 載入題目
   try {
@@ -308,7 +308,7 @@ window.loadChapters = async () => {
   ]);
 
   if (!allChNums.size) {
-    tree.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:.8rem">此科目/冊次無章節資料</div>';
+    tree.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:.88rem">此科目/冊次無章節資料</div>';
     filtered = []; renderBank(); return;
   }
 
@@ -435,7 +435,7 @@ function renderBank() {
     return;
   }
   if (!total) {
-    bankList.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);font-size:.85rem">無符合條件的題目</div>';
+    bankList.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);font-size:.9rem">無符合條件的題目</div>';
     return;
   }
 
@@ -453,7 +453,7 @@ function renderBank() {
     html += `<div class="result-section">
       <div class="result-section-title">
         ${tLabel}（${qs.length} 題）
-        <label style="font-size:.76rem;font-weight:400;display:flex;align-items:center;gap:4px;cursor:pointer">
+        <label style="font-size:.85rem;font-weight:400;display:flex;align-items:center;gap:4px;cursor:pointer">
           <input type="checkbox" onchange="selectGroup('${tCode}',this.checked)"
             ${qs.every(q=>selectedIds.has(q.id))?'checked':''} style="cursor:pointer"> 全選本組
         </label>
@@ -462,7 +462,7 @@ function renderBank() {
         ${qs.map(q => {
           const inSel = selectedIds.has(q.id);
           const optHTML = q.type==='T2'&&q.options?.length
-            ? `<div style="font-size:.78rem;color:var(--text-secondary);margin-top:3px">${q.options.map((o,i)=>`（${'ＡＢＣＤＥ'[i]}）${o}`).join('　')}</div>` : '';
+            ? `<div style="font-size:.86rem;color:var(--text-secondary);margin-top:3px">${q.options.map((o,i)=>`（${'ＡＢＣＤＥ'[i]}）${o}`).join('　')}</div>` : '';
           return `<div class="result-q ${inSel?'selected':''}" id="qcard-${q.id}" onclick="toggleQ('${q.id}',${!inSel})">
             <div class="q-check-col"><input type="checkbox" ${inSel?'checked':''} onclick="event.stopPropagation()" onchange="toggleQ('${q.id}',this.checked)"></div>
             <span class="q-num">${qNum++}.</span>
@@ -527,7 +527,7 @@ function renderSelected() {
   ['saveBtn','shuffleBtn','previewBtn'].forEach(id => document.getElementById(id).disabled = count===0);
   const list = document.getElementById('selList');
   if (!count) {
-    list.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-muted);font-size:.84rem">點擊題目「＋」加入</div>';
+    list.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-muted);font-size:.9rem">點擊題目「＋」加入</div>';
     document.getElementById('scoreCfg').style.display = 'none';
     document.getElementById('totalScoreBar').style.display = 'none';
     return;
@@ -550,7 +550,7 @@ function renderSelected() {
       <div class="result-list">
         ${items.map(({q, id, idx}) => {
           const optHTML = q.type==='T2'&&q.options?.length
-            ? `<div style="font-size:.78rem;color:var(--text-secondary);margin-top:3px">${q.options.map((o,i)=>`（${'ＡＢＣＤＥ'[i]}）${o}`).join('　')}</div>` : '';
+            ? `<div style="font-size:.86rem;color:var(--text-secondary);margin-top:3px">${q.options.map((o,i)=>`（${'ＡＢＣＤＥ'[i]}）${o}`).join('　')}</div>` : '';
           const tailHTML = q.tail ? `${q.tail}` : '';
           return `<div class="result-q" data-id="${id}"
             ondragover="dragOver(event,'${id}')" ondrop="dropOn(event,'${id}')" ondragend="dragEnd()">
@@ -563,7 +563,7 @@ function renderSelected() {
             </div>
             <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
               ${UI.diffBadge(q.difficulty)}
-              <button class="si-remove" onclick="toggleQ('${id}',false)" style="font-size:.75rem;padding:2px 6px;border:1px solid var(--border);border-radius:3px;background:white;cursor:pointer;color:var(--text-muted)">移除</button>
+              <button class="si-remove" onclick="toggleQ('${id}',false)" style="font-size:.84rem;padding:2px 6px;border:1px solid var(--border);border-radius:3px;background:white;cursor:pointer;color:var(--text-muted)">移除</button>
             </div>
           </div>`;
         }).join('')}

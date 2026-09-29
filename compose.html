@@ -11,35 +11,35 @@
 
 /* 設定面板 */
 .config-card .card-body{padding:16px}
-.section-title{font-size:.78rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 8px;display:flex;align-items:center;gap:6px}
+.section-title{font-size:.86rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 8px;display:flex;align-items:center;gap:6px}
 .section-title:first-child{margin-top:0}
 .type-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:8px;border-radius:var(--radius);background:var(--bg-base);border:1px solid var(--border-light)}
-.type-row .form-control{width:72px;font-size:.82rem;padding:4px 6px;text-align:center}
-.type-row .type-label{flex:1;font-size:.84rem;font-weight:500}
-.type-row .type-pool{font-size:.74rem;color:var(--text-muted);white-space:nowrap}
+.type-row .form-control{width:72px;font-size:.88rem;padding:4px 6px;text-align:center}
+.type-row .type-label{flex:1;font-size:.9rem;font-weight:500}
+.type-row .type-pool{font-size:.84rem;color:var(--text-muted);white-space:nowrap}
 .chapter-tree{max-height:220px}
 
 /* 預覽區 */
 .preview-header{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
 .preview-stats{display:flex;gap:8px;flex-wrap:wrap}
-.preview-stat{display:inline-flex;align-items:center;gap:4px;background:var(--bg-base);border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:.78rem;color:var(--text-secondary)}
+.preview-stat{display:inline-flex;align-items:center;gap:4px;background:var(--bg-base);border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:.86rem;color:var(--text-secondary)}
 .preview-stat strong{color:var(--primary);font-size:.88rem}
 .result-section{margin-bottom:16px}
-.result-section-title{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--bg-header);color:white;border-radius:var(--radius) var(--radius) 0 0;font-size:.84rem;font-weight:600}
+.result-section-title{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--bg-header);color:white;border-radius:var(--radius) var(--radius) 0 0;font-size:.9rem;font-weight:600}
 .result-list{border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius) var(--radius);overflow:hidden}
-.result-q{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-bottom:1px solid var(--border-light);font-size:.84rem;background:white}
+.result-q{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-bottom:1px solid var(--border-light);font-size:.9rem;background:white}
 .result-q:last-child{border-bottom:none}
 .result-q:hover{background:#faf8f5}
-.result-q .q-num{color:var(--text-muted);font-size:.76rem;width:26px;flex-shrink:0;padding-top:2px;text-align:right}
+.result-q .q-num{color:var(--text-muted);font-size:.85rem;width:26px;flex-shrink:0;padding-top:2px;text-align:right}
 .result-q .q-body{flex:1;min-width:0}
 .result-q .q-text{line-height:1.6;margin-bottom:3px}
-.result-q .q-ans{font-size:.76rem;color:var(--success);font-weight:600}
+.result-q .q-ans{font-size:.85rem;color:var(--success);font-weight:600}
 .result-q .q-diff{flex-shrink:0}
-.regenerate-btn{background:none;border:none;color:rgba(255,255,255,.7);font-size:.8rem;cursor:pointer;padding:2px 6px;border-radius:3px}
+.regenerate-btn{background:none;border:none;color:rgba(255,255,255,.7);font-size:.88rem;cursor:pointer;padding:2px 6px;border-radius:3px}
 .regenerate-btn:hover{background:rgba(255,255,255,.15);color:white}
 .empty-config{text-align:center;padding:60px 24px;color:var(--text-muted)}
 .empty-config .ec-icon{font-size:3rem;opacity:.3;margin-bottom:12px}
-.score-input{width:56px;font-size:.8rem;padding:3px 6px;text-align:center}
+.score-input{width:56px;font-size:.88rem;padding:3px 6px;text-align:center}
 .exam-save-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:14px 16px;background:#e8eef6;border-radius:var(--radius-lg);border:1px solid var(--border);margin-top:16px}
 .exam-save-bar .form-control{flex:1;min-width:200px}
 </style>
@@ -76,9 +76,9 @@
                 </select>
               </div>
 
-              <div class="section-title">📖 章節範圍<button class="btn btn-ghost btn-sm" onclick="clearAllChapters()" style="font-size:.72rem;padding:1px 6px;margin-left:auto;font-weight:400;text-transform:none;letter-spacing:0">全部清除</button></div>
+              <div class="section-title">📖 章節範圍<button class="btn btn-ghost btn-sm" onclick="clearAllChapters()" style="font-size:.84rem;padding:1px 6px;margin-left:auto;font-weight:400;text-transform:none;letter-spacing:0">全部清除</button></div>
               <div class="chapter-tree" id="chapterTree">
-                <div style="padding:20px;text-align:center;color:var(--text-muted);font-size:.8rem">請先選擇科目與冊次</div>
+                <div style="padding:20px;text-align:center;color:var(--text-muted);font-size:.88rem">請先選擇科目與冊次</div>
               </div>
 
               <div class="section-title">📝 題型與題數</div>
@@ -96,7 +96,7 @@
               </div>
 
               <div class="section-title">📊 計分設定</div>
-              <div id="scoreRows" style="font-size:.82rem;color:var(--text-secondary)">設定題型後自動顯示</div>
+              <div id="scoreRows" style="font-size:.88rem;color:var(--text-secondary)">設定題型後自動顯示</div>
 
               <div style="margin-top:16px">
                 <button class="btn btn-primary w-full" onclick="doGenerate()" id="generateBtn">⊕ 電腦自動選題</button>
@@ -172,9 +172,9 @@ const TYPE_CONFIGS = [
 document.getElementById('typeRows').innerHTML = TYPE_CONFIGS.map(t => `
   <div class="type-row" id="typerow-${t.code}" style="display:none">
     <span class="type-label">${t.label}</span>
-    <span class="type-pool" id="pool-${t.code}" style="color:var(--text-muted);font-size:.78rem;margin-right:4px"></span>
+    <span class="type-pool" id="pool-${t.code}" style="color:var(--text-muted);font-size:.86rem;margin-right:4px"></span>
     <input class="form-control score-input" type="number" id="cnt-${t.code}" value="0" min="0" max="99" oninput="updateScoreRows()">
-    <span style="font-size:.78rem;color:var(--text-muted)">題</span>
+    <span style="font-size:.86rem;color:var(--text-muted)">題</span>
   </div>
 `).join('');
 
@@ -196,7 +196,7 @@ window.onSubjectChange = () => {
     bk.disabled = true;
     bk.innerHTML = '<option value="">請先選科目</option>';
   }
-  document.getElementById('chapterTree').innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:.8rem">請選擇冊次</div>';
+  document.getElementById('chapterTree').innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:.88rem">請選擇冊次</div>';
   TYPE_CONFIGS.forEach(t => document.getElementById('pool-'+t.code).textContent = '');
 };
 
@@ -204,13 +204,13 @@ window.loadChapters = async () => {
   const sc = cSubject.value, bc = document.getElementById('cBook').value;
   if (!sc || !bc) return;
   const tree = document.getElementById('chapterTree');
-  tree.innerHTML = '<div style="padding:12px;text-align:center;color:var(--text-muted);font-size:.8rem">載入中…</div>';
+  tree.innerHTML = '<div style="padding:12px;text-align:center;color:var(--text-muted);font-size:.88rem">載入中…</div>';
 
   let qs = [];
   try {
     qs = await DataService.getQuestions({ subjectCode: sc, bookCode: bc });
   } catch(e) {
-    tree.innerHTML = `<div style="padding:12px;color:var(--danger);font-size:.8rem">載入失敗：${e.message}</div>`;
+    tree.innerHTML = `<div style="padding:12px;color:var(--danger);font-size:.88rem">載入失敗：${e.message}</div>`;
     return;
   }
   // 統計每章每節的題目數量
@@ -243,7 +243,7 @@ window.loadChapters = async () => {
     ...Object.keys(countMap)
   ]);
   if (!allChNums.size) {
-    tree.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:.8rem">此科目/冊次無題目</div>';
+    tree.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:.88rem">此科目/冊次無題目</div>';
     return;
   }
 
@@ -435,7 +435,7 @@ window.updateScoreRows = () => {
 
   if (!typeCounts.length) {
     document.getElementById('scoreRows').innerHTML =
-      '<span style="color:var(--text-muted);font-size:.82rem">請設定各題型題數</span>';
+      '<span style="color:var(--text-muted);font-size:.88rem">請設定各題型題數</span>';
     return;
   }
 
@@ -481,8 +481,8 @@ window.updateScoreRows = () => {
     return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
       <span style="flex:1">${t.label} × ${t.cnt} 題</span>
       <input class="form-control" type="number" id="score-${t.code}" value="${score}" min="0.5" max="99" step="0.5"
-        style="width:58px;font-size:.8rem;padding:3px 6px;text-align:center" oninput="recalcTotal()">
-      <span style="font-size:.78rem;color:var(--text-muted)">分/題</span>
+        style="width:58px;font-size:.88rem;padding:3px 6px;text-align:center" oninput="recalcTotal()">
+      <span style="font-size:.86rem;color:var(--text-muted)">分/題</span>
     </div>`;
   });
 
@@ -491,7 +491,7 @@ window.updateScoreRows = () => {
     rows.join('') +
     `<div style="margin-top:8px;font-weight:700;color:var(--primary);font-size:.9rem;border-top:1px solid var(--border);padding-top:8px" id="scoreTotalRow">
       總計：<span id="scoreTotal">${displayTotal}</span> 分
-      ${displayTotal > 100 ? '<span style="color:var(--danger);font-size:.8rem;margin-left:6px">⚠ 超過100分</span>' : ''}
+      ${displayTotal > 100 ? '<span style="color:var(--danger);font-size:.88rem;margin-left:6px">⚠ 超過100分</span>' : ''}
     </div>`;
 };
 
@@ -507,7 +507,7 @@ window.recalcTotal = () => {
   if (row) {
     const warn = row.querySelector('span[style*="danger"]');
     if (total > 100) {
-      if (!warn) row.innerHTML += '<span style="color:var(--danger);font-size:.8rem;margin-left:6px">⚠ 超過100分</span>';
+      if (!warn) row.innerHTML += '<span style="color:var(--danger);font-size:.88rem;margin-left:6px">⚠ 超過100分</span>';
     } else {
       if (warn) warn.remove();
     }
@@ -582,7 +582,7 @@ function renderPreview(grouped) {
             <span class="q-num">${qNum++}.</span>
             <div class="q-body">
               <div class="q-text">${q.type==='T5' ? UI.matchingQuestionHtml(q.text) : q.text||'—'}</div>
-              ${q.type==='T2'&&q.options?.length ? `<div style="font-size:.78rem;color:var(--text-secondary);margin-top:3px">${q.options.map((o,i)=>`（${'ＡＢＣＤＥ'[i]}）${o}`).join('　')}</div>` : ''}
+              ${q.type==='T2'&&q.options?.length ? `<div style="font-size:.86rem;color:var(--text-secondary);margin-top:3px">${q.options.map((o,i)=>`（${'ＡＢＣＤＥ'[i]}）${o}`).join('　')}</div>` : ''}
               <div class="q-ans">答：${q.answer||'—'}</div>
             </div>
             <div class="q-diff">${UI.diffBadge(q.difficulty)}</div>

@@ -39,7 +39,7 @@
 .question-table .q-col-actions{width:170px}
 .question-table .q-number{font-family:var(--font-mono);font-variant-numeric:tabular-nums;color:var(--text-secondary);font-size:.9rem}
 .question-table .q-answer{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--primary)}
-.question-table .exam-date,.question-table .badge,.question-table .q-actions .btn{font-size:.82rem}
+.question-table .exam-date,.question-table .badge,.question-table .q-actions .btn{font-size:.88rem}
 .question-table .q-actions{display:flex;align-items:center;gap:8px;white-space:nowrap}
 .question-table .q-actions .btn{gap:4px;padding:4px 8px}
 .question-table .q-actions svg{display:block}
@@ -52,9 +52,9 @@
 #qModal .edit-grid .form-group{margin:0;min-width:0}
 #qModal .edit-section-heading{grid-column:1/-1;margin:4px 0 0;padding-bottom:8px;border-bottom:1px solid var(--border-light);color:var(--primary);font-size:.92rem;font-weight:700}
 #qModal .edit-section-heading:first-child{margin-top:0}
-#qModal .edit-grid .form-label{font-size:.82rem}
+#qModal .edit-grid .form-label{font-size:.88rem}
 #qModal .edit-grid .form-control{font-size:.9rem}
-#qModal .modal-footer .btn{height:36px;min-width:88px;justify-content:center;font-size:.85rem;padding:0 14px}
+#qModal .modal-footer .btn{height:36px;min-width:88px;justify-content:center;font-size:.9rem;padding:0 14px}
 #qModal .modal-footer .btn svg{width:16px;height:16px}
 @media(max-width:600px){#qModal .modal-body{padding:18px}#qModal .modal-footer{gap:8px;padding:12px 18px}#qModal .modal-footer .btn{min-width:0}}
 .q-text{width:100%;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.9rem;line-height:1.5}
@@ -63,7 +63,7 @@
 .view-toggle{display:inline-flex;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;background:white}
 .view-toggle button{
   background:none;border:none;padding:5px 10px;cursor:pointer;
-  font-size:.78rem;color:var(--text-secondary);
+  font-size:.86rem;color:var(--text-secondary);
   display:inline-flex;align-items:center;gap:5px;
   transition:background .12s,color .12s;
 }
@@ -91,9 +91,9 @@
 .q-card-body{min-width:0}
 .q-card-meta{
   display:flex;gap:6px;align-items:center;flex-wrap:wrap;
-  margin-bottom:8px;font-size:.82rem;
+  margin-bottom:8px;font-size:.88rem;
 }
-.q-card-meta .badge,.q-card-actions .btn{font-size:.82rem}
+.q-card-meta .badge,.q-card-actions .btn{font-size:.88rem}
 .q-card-meta .qnum{
   font-family:var(--font-mono);letter-spacing:.04em;
   color:var(--text-secondary);margin-left:auto;
@@ -106,12 +106,12 @@
 }
 .q-card-opts{
   display:grid;grid-template-columns:1fr 1fr;gap:2px 14px;
-  font-size:.82rem;color:var(--text-secondary);
+  font-size:.88rem;color:var(--text-secondary);
   margin-bottom:8px;line-height:1.6;
 }
 .q-card-opts .opt.correct{color:var(--success);font-weight:600}
 .q-card-answer{
-  font-size:.8rem;padding-top:8px;border-top:1px dashed var(--border-light);
+  font-size:.88rem;padding-top:8px;border-top:1px dashed var(--border-light);
   display:flex;align-items:center;gap:8px;
 }
 .q-card-answer .ans-label{color:var(--text-muted)}
@@ -225,8 +225,8 @@
         <div class="question-pagination">
           <div class="pagination" id="pagination"></div>
           <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
-            <span style="font-size:.8rem;color:var(--text-muted)">每頁</span>
-            <select class="form-control" id="pageSizeSel" style="width:70px;font-size:.8rem;padding:4px 6px" onchange="onPageSizeChange()">
+            <span style="font-size:.88rem;color:var(--text-muted)">每頁</span>
+            <select class="form-control" id="pageSizeSel" style="width:70px;font-size:.88rem;padding:4px 6px" onchange="onPageSizeChange()">
               <option value="20">20</option>
               <option value="50" selected>50</option>
               <option value="100">100</option>
@@ -243,8 +243,8 @@
         <div class="question-pagination">
           <div class="pagination" id="paginationCard"></div>
           <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
-            <span style="font-size:.8rem;color:var(--text-muted)">每頁</span>
-            <select class="form-control" id="pageSizeSelCard" style="width:70px;font-size:.8rem;padding:4px 6px" onchange="onPageSizeChange(true)">
+            <span style="font-size:.88rem;color:var(--text-muted)">每頁</span>
+            <select class="form-control" id="pageSizeSelCard" style="width:70px;font-size:.88rem;padding:4px 6px" onchange="onPageSizeChange(true)">
               <option value="10">10</option>
               <option value="20" selected>20</option>
               <option value="50">50</option>
@@ -407,7 +407,7 @@ async function loadAll() {
     `<tr><td colspan="8" style="text-align:center;padding:48px 24px;color:var(--text-muted)">
       <div style="font-size:2rem;margin-bottom:10px;opacity:.3">🔍</div>
       <div style="font-size:.9rem">請先選擇科目與冊次後按「搜尋」</div>
-      <div style="font-size:.78rem;margin-top:6px">可依科目、冊次、章節、題型或關鍵字篩選</div>
+      <div style="font-size:.86rem;margin-top:6px">可依科目、冊次、章節、題型或關鍵字篩選</div>
     </td></tr>`;
 }
 
@@ -577,11 +577,11 @@ function renderCardMode(pageItems) {
         </div>
         <div class="q-card-text">${escapeHtml(q.text||'—')}</div>
         ${optsHtml}
-        ${q.tail?`<div style="font-size:.84rem;color:var(--text-secondary);margin-bottom:8px">${escapeHtml(q.tail)}</div>`:''}
+        ${q.tail?`<div style="font-size:.9rem;color:var(--text-secondary);margin-bottom:8px">${escapeHtml(q.tail)}</div>`:''}
         <div class="q-card-answer">
           <span class="ans-label">答案</span>
           <span class="ans-val">${escapeHtml(q.answer||'—')}</span>
-          ${q.source?`<span style="margin-left:auto;font-size:.74rem;color:var(--text-muted)">出處：${escapeHtml(q.source)}</span>`:''}
+          ${q.source?`<span style="margin-left:auto;font-size:.84rem;color:var(--text-muted)">出處：${escapeHtml(q.source)}</span>`:''}
         </div>
       </div>
       <div class="q-card-actions">

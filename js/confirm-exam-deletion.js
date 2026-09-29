@@ -10,7 +10,7 @@ export function confirmDeletion({ title, message, actionLabel }) {
     overlay.setAttribute('aria-describedby', 'deleteExamDialogMessage');
     overlay.innerHTML = `<div class="modal" style="max-width:440px">
       <div class="modal-header"><h3 id="deleteExamDialogTitle"></h3><button class="modal-close" type="button" data-choice="cancel" aria-label="關閉">✕</button></div>
-      <div class="modal-body"><p id="deleteExamDialogMessage"></p><p style="margin-top:10px;color:var(--danger);font-size:.82rem">刪除後無法復原。</p></div>
+      <div class="modal-body"><p id="deleteExamDialogMessage"></p><p style="margin-top:10px;color:var(--danger);font-size:.88rem">刪除後無法復原。</p></div>
       <div class="modal-footer"><button class="btn btn-ghost" type="button" data-choice="cancel">取消</button><button class="btn btn-danger" type="button" data-choice="delete"></button></div>
     </div>`;
     overlay.querySelector('#deleteExamDialogTitle').textContent = title;

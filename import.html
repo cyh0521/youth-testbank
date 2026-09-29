@@ -8,7 +8,7 @@
 <style>
 /* ── 步驟 ── */
 .steps{display:flex;border-radius:var(--radius-lg);overflow:hidden;border:1px solid var(--border);margin-bottom:20px}
-.step{flex:1;padding:11px 14px;text-align:center;font-size:.78rem;background:var(--bg-base);color:var(--text-muted);border-right:1px solid var(--border);position:relative}
+.step{flex:1;padding:11px 14px;text-align:center;font-size:.86rem;background:var(--bg-base);color:var(--text-muted);border-right:1px solid var(--border);position:relative}
 .step:last-child{border-right:none}
 .step.active{background:var(--primary);color:white;font-weight:600}
 .step.done{background:#eafaf1;color:#1e8449}
@@ -24,7 +24,7 @@
 .upload-zone.has-files{border-color:var(--success);border-style:solid;background:#f0fff4}
 .upload-icon{font-size:2.6rem;margin-bottom:10px}
 .upload-title{font-size:1rem;font-weight:600;color:var(--primary);margin-bottom:3px}
-.upload-sub{font-size:.82rem;color:var(--text-muted)}
+.upload-sub{font-size:.88rem;color:var(--text-muted)}
 
 /* ── 檔案列表 ── */
 .file-list{margin-top:12px;display:flex;flex-direction:column;gap:6px}
@@ -39,8 +39,8 @@
 .file-row .fr-icon{font-size:1.4rem;flex-shrink:0}
 .file-row .fr-info{flex:1;min-width:0}
 .file-row .fr-name{font-weight:600;font-size:.88rem;color:var(--primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.file-row .fr-meta{font-size:.74rem;color:var(--text-muted);margin-top:1px}
-.file-row .fr-status{font-size:.78rem;font-weight:600;flex-shrink:0;white-space:nowrap}
+.file-row .fr-meta{font-size:.84rem;color:var(--text-muted);margin-top:1px}
+.file-row .fr-status{font-size:.86rem;font-weight:600;flex-shrink:0;white-space:nowrap}
 .file-row .fr-remove{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:.9rem;padding:2px 4px;flex-shrink:0}
 .file-row .fr-remove:hover{color:var(--danger)}
 
@@ -48,19 +48,19 @@
 .parse-summary{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
 .parse-stat{display:flex;flex-direction:column;align-items:center;padding:10px 18px;background:white;border:1px solid var(--border);border-radius:var(--radius-lg);min-width:80px}
 .parse-stat-num{font-size:1.5rem;font-weight:700;color:var(--primary);font-family:var(--font-mono)}
-.parse-stat-label{font-size:.72rem;color:var(--text-muted);margin-top:2px}
+.parse-stat-label{font-size:.84rem;color:var(--text-muted);margin-top:2px}
 
 /* ── 預覽表格 ── */
 .preview-wrap{max-height:400px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius);margin-bottom:14px}
-.preview-table{width:100%;border-collapse:collapse;font-size:.8rem}
-.preview-table th{position:sticky;top:0;background:var(--bg-base);padding:7px 10px;border-bottom:2px solid var(--border);text-align:left;font-weight:600;font-size:.75rem;color:var(--text-secondary);white-space:nowrap;z-index:1}
+.preview-table{width:100%;border-collapse:collapse;font-size:.88rem}
+.preview-table th{position:sticky;top:0;background:var(--bg-base);padding:7px 10px;border-bottom:2px solid var(--border);text-align:left;font-weight:600;font-size:.84rem;color:var(--text-secondary);white-space:nowrap;z-index:1}
 .preview-table td{padding:7px 10px;border-bottom:1px solid var(--border-light);vertical-align:top;max-width:280px}
 .preview-table tr:hover td{background:#faf8f5}
 .q-text-cell{max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.src-tag{display:inline-block;background:#e8eef6;color:var(--primary);font-size:.68rem;padding:1px 5px;border-radius:3px;font-weight:600}
+.src-tag{display:inline-block;background:#e8eef6;color:var(--primary);font-size:.78rem;padding:1px 5px;border-radius:3px;font-weight:600}
 
 /* ── 進度 ── */
-.import-log{background:#1a2a3a;color:#a8c7e8;font-family:var(--font-mono);font-size:.76rem;padding:12px 14px;border-radius:var(--radius);max-height:150px;overflow-y:auto;margin-top:10px}
+.import-log{background:#1a2a3a;color:#a8c7e8;font-family:var(--font-mono);font-size:.85rem;padding:12px 14px;border-radius:var(--radius);max-height:150px;overflow-y:auto;margin-top:10px}
 .import-log .log-ok{color:#5dade2}
 .import-log .log-err{color:#ec7063}
 .import-log .log-info{color:#a8c7e8}
@@ -114,12 +114,12 @@
         <div class="card">
           <div class="card-header"><h2>📄 入題檔格式說明</h2></div>
           <div class="card-body">
-            <p style="font-size:.84rem;color:var(--text-secondary);margin-bottom:12px">
+            <p style="font-size:.9rem;color:var(--text-secondary);margin-bottom:12px">
               支援直接上傳 <strong>.docx</strong>（Word 文件），可<strong>一次選取多個檔案</strong>同時匯入。<br>
               匯入後每題自動分配 <strong>5 位數題目編號</strong>（00001 起）。
             </p>
             <div class="table-wrapper">
-              <table class="data-table" style="font-size:.8rem">
+              <table class="data-table" style="font-size:.88rem">
                 <thead><tr><th>欄位</th><th>說明</th><th>範例</th><th>必填</th></tr></thead>
                 <tbody>
                   <tr><td><code>難易</code></td><td>◎較難 / 空白普通 / △簡易</td><td>◎</td><td>否</td></tr>
@@ -150,7 +150,7 @@
             <button class="btn btn-ghost btn-sm" onclick="backStep1()">← 重選科目</button>
           </div>
           <div class="card-body">
-            <div id="selectedSubjectInfo" style="background:#e8eef6;border-radius:var(--radius);padding:10px 14px;font-size:.84rem;margin-bottom:16px;color:var(--primary)"></div>
+            <div id="selectedSubjectInfo" style="background:#e8eef6;border-radius:var(--radius);padding:10px 14px;font-size:.9rem;margin-bottom:16px;color:var(--primary)"></div>
 
             <!-- 上傳區 -->
             <div class="upload-zone" id="uploadZone"
@@ -167,7 +167,7 @@
 
             <div style="margin-top:14px;display:flex;gap:10px;align-items:center">
               <button class="btn btn-primary" id="parseBtn" onclick="parseAllFiles()" disabled>解析所有檔案 →</button>
-              <span style="font-size:.8rem;color:var(--text-muted)" id="fileCountLabel"></span>
+              <span style="font-size:.88rem;color:var(--text-muted)" id="fileCountLabel"></span>
             </div>
           </div>
         </div>
@@ -184,7 +184,7 @@
             <div class="parse-summary" id="parseSummary"></div>
             <div id="parseWarnings" style="margin-bottom:10px"></div>
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px">
-              <div id="previewPagInfo" style="font-size:.82rem;color:var(--text-secondary)"></div>
+              <div id="previewPagInfo" style="font-size:.88rem;color:var(--text-secondary)"></div>
               <div style="display:flex;gap:4px" id="previewPagBtns"></div>
             </div>
             <div class="preview-wrap">
@@ -198,7 +198,7 @@
             <div style="display:flex;gap:4px;margin-bottom:14px" id="previewPagBtns2"></div>
             <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
               <button class="btn btn-primary" id="importBtn" onclick="doImport()">✅ 確認匯入</button>
-              <span style="font-size:.8rem;color:var(--text-muted)" id="importNote2"></span>
+              <span style="font-size:.88rem;color:var(--text-muted)" id="importNote2"></span>
             </div>
           </div>
         </div>
@@ -440,7 +440,7 @@ function buildPreview(qs, sc, bc) {
   const noAnswer = qs.filter(q => !q.answer).length;
   if (noAnswer) warnings.push(`${noAnswer} 題缺少答案`);
   document.getElementById('parseWarnings').innerHTML = warnings.map(w =>
-    `<div style="background:#fff8e1;border:1px solid #ffe082;border-radius:var(--radius);padding:7px 12px;font-size:.8rem;color:#7c5000;margin-bottom:6px">⚠ ${w}</div>`
+    `<div style="background:#fff8e1;border:1px solid #ffe082;border-radius:var(--radius);padding:7px 12px;font-size:.88rem;color:#7c5000;margin-bottom:6px">⚠ ${w}</div>`
   ).join('');
 
   renderPreviewPage();
@@ -467,14 +467,14 @@ function renderPreviewPage() {
     const globalIdx = start + i + 1;
     const short = q._srcFile ? q._srcFile.replace(/\.docx$/i,'').slice(0,18) : '—';
     return `<tr>
-      <td style="color:var(--text-muted);font-size:.72rem">${globalIdx}</td>
+      <td style="color:var(--text-muted);font-size:.84rem">${globalIdx}</td>
       <td><span class="src-tag" title="${q._srcFile||''}">${short}</span></td>
       <td>${UI.typeBadge(q.type)}</td>
       <td>${q.chapterNum||'—'}</td>
       <td>${q.sectionNum||'—'}</td>
       <td>${UI.diffBadge(q.difficulty)}</td>
       <td class="q-text-cell" style="${q.type==='T5' ? 'white-space:normal' : ''}" title="${(q.text||'').replace(/"/g,'&quot;')}">${q.type==='T5' ? UI.matchingQuestionHtml(q.text) : q.text||'<span style="color:var(--danger)">缺少題目</span>'}</td>
-      <td style="font-size:.76rem;color:var(--primary);max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${q.answer||'—'}</td>
+      <td style="font-size:.85rem;color:var(--primary);max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${q.answer||'—'}</td>
     </tr>`;
   }).join('');
 }
@@ -482,7 +482,7 @@ function renderPreviewPage() {
 function buildPagHTML(cur, total) {
   if (total <= 1) return '';
   let h = `<button class="btn btn-ghost btn-sm" onclick="goPreviewPage(${cur-1})" ${cur===1?'disabled':''}
-    style="padding:3px 8px;font-size:.78rem">‹ 上頁</button>`;
+    style="padding:3px 8px;font-size:.86rem">‹ 上頁</button>`;
   // 顯示最多 7 個頁碼
   const range = [];
   if (total <= 7) {
@@ -495,13 +495,13 @@ function buildPagHTML(cur, total) {
     range.push(total);
   }
   range.forEach(p => {
-    if (p==='…') h += `<span style="padding:0 4px;color:var(--text-muted);font-size:.8rem">…</span>`;
+    if (p==='…') h += `<span style="padding:0 4px;color:var(--text-muted);font-size:.88rem">…</span>`;
     else h += `<button class="btn btn-sm" onclick="goPreviewPage(${p})"
-      style="padding:3px 8px;font-size:.78rem;${p===cur?'background:var(--primary);color:white;border-color:var(--primary)':''}">${p}</button>`;
+      style="padding:3px 8px;font-size:.86rem;${p===cur?'background:var(--primary);color:white;border-color:var(--primary)':''}">${p}</button>`;
   });
   h += `<button class="btn btn-ghost btn-sm" onclick="goPreviewPage(${cur+1})" ${cur===total?'disabled':''}
-    style="padding:3px 8px;font-size:.78rem">下頁 ›</button>`;
-  h += `<span style="font-size:.76rem;color:var(--text-muted);margin-left:6px;align-self:center">${cur}/${total} 頁</span>`;
+    style="padding:3px 8px;font-size:.86rem">下頁 ›</button>`;
+  h += `<span style="font-size:.85rem;color:var(--text-muted);margin-left:6px;align-self:center">${cur}/${total} 頁</span>`;
   return h;
 }
 

@@ -72,7 +72,7 @@
         <div class="filter-row">
           <input class="form-control" id="searchInput" placeholder="🔍 搜尋試卷名稱…" oninput="filterExams()" style="max-width:220px">
           <select class="form-control" id="bookFilter" aria-label="篩選冊別" onchange="filterExams()"><option value="">全部冊別</option></select>
-          <span style="font-size:.82rem;color:var(--text-muted);margin-left:auto" id="examCount"></span>
+          <span style="font-size:.88rem;color:var(--text-muted);margin-left:auto" id="examCount"></span>
         </div>
         <div class="table-wrapper"><table class="data-table recent-table"><colgroup><col class="recent-col-title"><col class="recent-col-subject"><col class="recent-col-count"><col class="recent-col-date"><col class="recent-col-actions"></colgroup><thead><tr><th data-sort-field="title"><button class="exam-sort-heading" type="button" onclick="setExamSort('title')">試卷名稱<span class="exam-sort-indicator" aria-hidden="true"></span></button></th><th data-sort-field="subject"><button class="exam-sort-heading" type="button" onclick="setExamSort('subject')">科目（冊別）<span class="exam-sort-indicator" aria-hidden="true"></span></button></th><th data-sort-field="questionCount"><button class="exam-sort-heading" type="button" onclick="setExamSort('questionCount')">題數<span class="exam-sort-indicator" aria-hidden="true"></span></button></th><th data-sort-field="createdAt"><button class="exam-sort-heading" type="button" onclick="setExamSort('createdAt')">建立時間<span class="exam-sort-indicator" aria-hidden="true"></span></button></th><th>操作</th></tr></thead><tbody id="examList"><tr><td colspan="5" class="dash-empty">載入中…</td></tr></tbody></table></div>
       </section>
@@ -124,7 +124,7 @@
   <div class="modal" style="max-width:460px;width:96%">
     <div class="modal-header"><h3 id="editTypeOrderTitle">題型排序</h3><button class="modal-close" type="button" onclick="closeEditTypeOrder()" aria-label="關閉">✕</button></div>
     <div class="modal-body">
-      <p style="font-size:.82rem;color:var(--text-secondary);margin-bottom:12px">拖曳題型以調整試卷中的顯示順序。</p>
+      <p style="font-size:.88rem;color:var(--text-secondary);margin-bottom:12px">拖曳題型以調整試卷中的顯示順序。</p>
       <div id="editTypeOrderList" class="edit-type-order-list"></div>
     </div>
     <div class="modal-footer"><button class="btn btn-ghost" type="button" onclick="closeEditTypeOrder()">取消</button><button class="btn btn-primary" type="button" onclick="applyEditTypeOrder()">套用順序</button></div>

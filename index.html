@@ -20,25 +20,25 @@ body{min-height:100vh;background:#eef2f1;overflow-x:hidden}
 .hero-watermark{position:absolute;z-index:-1;width:min(55vw,650px);right:-15%;bottom:7%;opacity:.055;transform:rotate(-8deg);pointer-events:none;animation:mark-drift 14s ease-in-out infinite alternate}
 .hero-copy{max-width:680px;position:relative;padding:40px 0;margin:auto 0}
 .hero h1{font-family:var(--font-serif);font-size:clamp(2.8rem,4.7vw,5.15rem);font-weight:800;line-height:1.23;letter-spacing:.06em;text-wrap:balance;color:#fff}
-.eyebrow{display:flex;align-items:center;gap:16px;color:#e8d3a3;font-size:.72rem;font-weight:700;letter-spacing:.24em;margin-top:28px}
+.eyebrow{display:flex;align-items:center;gap:16px;color:#e8d3a3;font-size:.84rem;font-weight:700;letter-spacing:.24em;margin-top:28px}
 .eyebrow::before{content:'';width:42px;height:1px;background:currentColor}
 .hero-copy p{font-size:clamp(1rem,1.35vw,1.2rem);color:#d0e2dd;line-height:1.9;margin-top:17px;letter-spacing:.08em}
-.hero-foot{font-size:.72rem;color:#a8c1bd;letter-spacing:.12em}
+.hero-foot{font-size:.84rem;color:#a8c1bd;letter-spacing:.12em}
 .login-side{display:flex;align-items:center;justify-content:center;padding:48px 5vw;background:radial-gradient(circle at 95% 5%,#fff 0%,transparent 43%),#f4f6f4}
 .wrap{width:100%;max-width:430px}
-.form-heading{margin-bottom:32px}.form-heading .overline{font-size:.72rem;font-weight:800;color:#a07a39;letter-spacing:.23em}.form-heading h2{font-size:2rem;letter-spacing:.05em;color:#183b43;margin-top:8px}.form-heading p{font-size:.88rem;color:#738386;margin-top:8px}
+.form-heading{margin-bottom:32px}.form-heading .overline{font-size:.84rem;font-weight:800;color:#a07a39;letter-spacing:.23em}.form-heading h2{font-size:2rem;letter-spacing:.05em;color:#183b43;margin-top:8px}.form-heading p{font-size:.88rem;color:#738386;margin-top:8px}
 .card{background:#fff;border:1px solid #e3e9e6;border-radius:22px;box-shadow:0 25px 75px rgba(24,59,67,.09);overflow:hidden}
 /* panels */
 .panel{display:none;padding:32px}.panel.active{display:block}
 /* msg */
-.msg{border-radius:var(--radius);padding:9px 13px;font-size:.83rem;margin-bottom:12px;display:none;border:1px solid}
+.msg{border-radius:var(--radius);padding:9px 13px;font-size:.9rem;margin-bottom:12px;display:none;border:1px solid}
 .msg.show{display:block}
 .msg.err{background:#fef0ef;color:#c0392b;border-color:#f5c6c2}
 .msg.ok{background:#f0faf4;color:#1a5c33;border-color:#a8d5b5}
 .msg.warn{background:#fef9e7;color:#7c5000;border-color:#ffe082}
 /* form */
 .form-group{margin-bottom:20px}
-.form-label{display:block;font-size:.81rem;font-weight:700;color:#39555a;margin-bottom:8px}
+.form-label{display:block;font-size:.88rem;font-weight:700;color:#39555a;margin-bottom:8px}
 .req{color:var(--danger);margin-left:2px}
 .form-control{width:100%;padding:13px 15px;border:1px solid #dce5e2;border-radius:11px;font-size:.9rem;font-family:var(--font-sans);color:var(--text-primary);background:#fbfcfb;transition:border-color .15s,box-shadow .15s}
 .form-control:focus{outline:none;border-color:var(--primary-light);box-shadow:0 0 0 3px rgba(44,95,138,.12)}
@@ -48,18 +48,18 @@ body{min-height:100vh;background:#eef2f1;overflow-x:hidden}
 .big-btn.accent{background:var(--accent);color:white}
 .big-btn.accent:hover:not(:disabled){background:var(--accent-light);transform:translateY(-1px)}
 .big-btn:disabled{opacity:.6;cursor:not-allowed;transform:none!important}
-.hint{background:#f5f8f6;border-radius:10px;padding:12px 14px;font-size:.76rem;color:#667b7b;line-height:1.8;margin-top:24px}
+.hint{background:#f5f8f6;border-radius:10px;padding:12px 14px;font-size:.85rem;color:#667b7b;line-height:1.8;margin-top:24px}
 .hint strong{color:#315d5b;display:block;margin-bottom:2px}
-.divider{display:flex;align-items:center;gap:10px;margin:14px 0;font-size:.78rem;color:var(--text-muted)}
+.divider{display:flex;align-items:center;gap:10px;margin:14px 0;font-size:.86rem;color:var(--text-muted)}
 .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
 @keyframes spin{to{transform:rotate(360deg)}}
 .spin{width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:white;border-radius:50%;animation:spin .6s linear infinite}
-#fbStatus{text-align:center;font-size:.75rem;margin-top:10px;color:var(--text-secondary)}
+#fbStatus{text-align:center;font-size:.84rem;margin-top:10px;color:var(--text-secondary)}
 #fbStatus.err{color:#ff8a80}
 @keyframes float{from{transform:translate(0,0) scale(1)}to{transform:translate(-28px,22px) scale(1.06)}}
 @keyframes mark-drift{from{transform:translateY(0) rotate(-8deg)}to{transform:translateY(-24px) rotate(-5deg)}}
 @media(max-width:800px){.page{grid-template-columns:1fr}.hero{min-height:300px;padding:28px 32px}.hero-copy{padding:35px 0 20px}.hero h1{font-size:clamp(2rem,6vw,3rem)}.hero-copy p{margin-top:10px}.hero-foot{display:none}.login-side{padding:42px 20px 60px}.form-heading{margin-bottom:22px}}
-@media(max-width:480px){.hero{min-height:255px;padding:22px}.brand{gap:6px;margin-bottom:19px}.brand-mark{width:29px}.brand-name{font-size:.96rem}.hero-watermark{width:75vw;right:-25%}.hero-copy{padding:25px 0 12px}.hero h1{font-size:2rem}.eyebrow{font-size:.62rem;margin-top:17px}.hero-copy p{font-size:.9rem;margin-top:9px}.login-side{padding:30px 16px 48px}.panel{padding:24px}.form-heading h2{font-size:1.7rem}}
+@media(max-width:480px){.hero{min-height:255px;padding:22px}.brand{gap:6px;margin-bottom:19px}.brand-mark{width:29px}.brand-name{font-size:.96rem}.hero-watermark{width:75vw;right:-25%}.hero-copy{padding:25px 0 12px}.hero h1{font-size:2rem}.eyebrow{font-size:.76rem;margin-top:17px}.hero-copy p{font-size:.9rem;margin-top:9px}.login-side{padding:30px 16px 48px}.panel{padding:24px}.form-heading h2{font-size:1.7rem}}
 @media(prefers-reduced-motion:reduce){.hero::before,.hero-watermark{animation:none}.big-btn{transition:none}}
 </style>
 </head>
@@ -102,7 +102,7 @@ body{min-height:100vh;background:#eef2f1;overflow-x:hidden}
         <strong>說明</strong>
         教師帳號請聯繫幼獅業務同仁協助申請。
       </div>
-      <div style="text-align:center;margin-top:12px;font-size:.78rem;color:var(--text-muted)">
+      <div style="text-align:center;margin-top:12px;font-size:.86rem;color:var(--text-muted)">
         第一次使用？<a onclick="showPanel('init')" style="color:var(--primary);cursor:pointer">初始化主要管理員</a>
       </div>
     </div>
@@ -110,7 +110,7 @@ body{min-height:100vh;background:#eef2f1;overflow-x:hidden}
     <!-- ── 初始化主要管理員 ── -->
     <div class="panel" id="panel-init">
       <div class="msg err" id="initErr"></div>
-      <div style="background:#fef9e7;border:1px solid #ffe082;border-radius:var(--radius);padding:9px 13px;font-size:.8rem;color:#7c5000;margin-bottom:14px">
+      <div style="background:#fef9e7;border:1px solid #ffe082;border-radius:var(--radius);padding:9px 13px;font-size:.88rem;color:#7c5000;margin-bottom:14px">
         ⚠ 僅供第一次建立系統主要管理員帳號使用。
       </div>
       <div class="form-group">
@@ -134,7 +134,7 @@ body{min-height:100vh;background:#eef2f1;overflow-x:hidden}
         <input class="form-control" type="password" id="initPw2">
       </div>
       <button class="big-btn primary" id="initBtn" onclick="doInitAdmin()">建立主要管理員帳號</button>
-      <div style="text-align:center;margin-top:12px;font-size:.82rem;color:var(--text-secondary)">
+      <div style="text-align:center;margin-top:12px;font-size:.88rem;color:var(--text-secondary)">
         <a onclick="showPanel('login')" style="color:var(--primary);cursor:pointer;font-weight:600">返回登入</a>
       </div>
     </div>

@@ -18,7 +18,16 @@
   <main class="main" inert>
     <div class="topbar">
       <span class="topbar-title">首頁總覽</span>
-      <div class="topbar-actions"><span class="text-sm text-muted" id="welcomeText"></span><a class="toolbar-account" href="settings.html" aria-label="我的帳號" id="toolbarAccount"></a></div>
+      <div class="topbar-actions">
+        <span class="text-sm text-muted" id="welcomeText"></span>
+        <div class="toolbar-account">
+          <button class="toolbar-account-toggle" type="button" id="toolbarAccount" aria-label="開啟帳號選單" aria-expanded="false" aria-controls="accountMenu"></button>
+          <div class="account-menu" id="accountMenu" hidden>
+            <a href="settings.html" id="accountProfile">個人資訊</a>
+            <button type="button" id="accountLogout">登出</button>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="page-content" id="content" aria-busy="true">
       <div class="dashboard-overview"><div class="skeleton dash-skel-section"></div><div class="skeleton dash-skel-section"></div></div>
@@ -52,6 +61,39 @@ let savedOverviewSelection = (() => {
 const greetingName = (user.displayName || user.email?.split('@')[0] || '').trim().replace(/\s*老師$/, '');
 document.getElementById('welcomeText').textContent = `歡迎回來，${greetingName ? `${greetingName} 老師` : '老師'}`;
 document.getElementById('toolbarAccount').innerHTML = Avatar.markup(user.avatar, user.displayName || user.email, 'user-avatar--toolbar');
+document.getElementById('accountProfile').innerHTML = `${I.user16}<span>個人資訊</span>`;
+document.getElementById('accountLogout').innerHTML = `${I.logout16}<span>登出</span>`;
+const accountToggle = document.getElementById('toolbarAccount');
+const accountMenu = document.getElementById('accountMenu');
+function closeAccountMenu(returnFocus = false) {
+  accountMenu.hidden = true;
+  accountToggle.setAttribute('aria-expanded', 'false');
+  accountToggle.setAttribute('aria-label', '開啟帳號選單');
+  if (returnFocus) accountToggle.focus();
+}
+accountToggle.addEventListener('click', () => {
+  const opening = accountMenu.hidden;
+  accountMenu.hidden = !opening;
+  accountToggle.setAttribute('aria-expanded', String(opening));
+  accountToggle.setAttribute('aria-label', opening ? '關閉帳號選單' : '開啟帳號選單');
+  if (opening) document.getElementById('accountProfile').focus();
+});
+document.getElementById('accountLogout').addEventListener('click', () => {
+  closeAccountMenu();
+  window.AppShell.confirmLogout();
+});
+document.addEventListener('pointerdown', event => {
+  if (!event.target.closest('.toolbar-account')) closeAccountMenu();
+});
+document.addEventListener('focusin', event => {
+  if (!accountMenu.hidden && !event.target.closest('.toolbar-account')) closeAccountMenu();
+});
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape' && !accountMenu.hidden) {
+    event.preventDefault();
+    closeAccountMenu(true);
+  }
+});
 
 const subjectName = code => dashboardSubjects[code] || code || '未分類';
 const examBookName = exam => {
@@ -115,11 +157,9 @@ async function handleRecentExamAction(event) {
 function renderExamRows() {
   if (!examsLoaded) {
     document.getElementById('recentExamRows').innerHTML = '<tr><td colspan="5" class="dash-empty">試卷清單暫時無法載入，請重新載入頁面。</td></tr>';
-    document.getElementById('examResultCount').textContent = '';
     return;
   }
   const filtered = [...dashboardExams].sort((a,b) => examTime(b.createdAt) - examTime(a.createdAt));
-  document.getElementById('examResultCount').textContent = `共 ${filtered.length} 份${filtered.length > 10 ? '，顯示前 10 份' : ''}`;
   document.getElementById('recentExamRows').innerHTML = filtered.slice(0,10).map(e => `
     <tr>
       <td><span class="exam-name${e.description ? ' has-description' : ''}">${I.test20}<strong title="${esc(e.title || '（未命名）')}">${esc(e.title || '（未命名）')}</strong>${e.description ? `<span class="exam-description" title="${esc(e.description)}">${esc(e.description)}</span>` : ''}</span></td>
@@ -302,7 +342,6 @@ async function renderStaff() {
     <section class="card recent-section" aria-labelledby="recentHeading">
       <div class="section-heading"><div><h2 id="recentHeading">最近試卷</h2><p>查看最近建立的 10 份試卷，快速預覽、列印與管理；若要查看完整試卷清單，請移至「<a class="recent-management-link" href="exams.html">試卷管理</a>」。</p></div></div>
       <div class="table-wrapper"><table class="data-table recent-table"><colgroup><col class="recent-col-title"><col class="recent-col-subject"><col class="recent-col-count"><col class="recent-col-date"><col class="recent-col-actions"></colgroup><thead><tr><th>試卷名稱</th><th>科目（冊別）</th><th>題數</th><th>建立時間</th><th>操作</th></tr></thead><tbody id="recentExamRows"></tbody></table></div>
-      <p class="exam-result-count" id="examResultCount" aria-live="polite"></p>
     </section>`;
   if (initialSubjectCode) await updateOverview();
   else renderOverviewChart({}, 0);
