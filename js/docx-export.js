@@ -2,6 +2,7 @@
 const mmToTwips = mm => Math.round(Number(mm) * 1440 / 25.4);
 const pxToTwips = px => Math.round(Number(px) * 15);
 const HEADER_LINE_HEIGHT = 1.6;
+const QUESTION_PARAGRAPH_BREAK = Symbol('questionParagraphBreak');
 
 function wordFont(fontId) {
   if (fontId === 'serif') return 'Noto Serif TC';
@@ -14,6 +15,7 @@ async function nodeRuns(node, docx, base) {
   if (node.nodeType === 3) return node.textContent ? [new docx.TextRun({ text:node.textContent, ...base })] : [];
   if (node.nodeType !== 1) return [];
   const tag = node.tagName.toLowerCase();
+  if (node.classList?.contains('question-paragraph-break')) return [QUESTION_PARAGRAPH_BREAK];
   if (tag === 'br') return [new docx.TextRun({ break:1 })];
   if (tag === 'img') {
     try {
@@ -42,6 +44,15 @@ async function runsFromNodes(nodes, docx, base) {
   const runs = [];
   for (const node of nodes) runs.push(...await nodeRuns(node, docx, base));
   return runs;
+}
+
+function splitQuestionParagraphs(runs) {
+  const parts = [[]];
+  for (const run of runs) {
+    if (run === QUESTION_PARAGRAPH_BREAK) parts.push([]);
+    else parts.at(-1).push(run);
+  }
+  return parts;
 }
 
 export async function createDocxBlob({ docx, content, title, appearance, margins, paperSize, columns }) {
@@ -82,16 +93,20 @@ export async function createDocxBlob({ docx, content, title, appearance, margins
     if (!item.classList.contains('ep-q') && !item.classList.contains('ep-word-question')) continue;
     if (item.classList.contains('ep-word-question')) {
       const indent = pxToTwips(parseFloat(item.style.marginLeft) || appearance.fontSize * 4.8);
-      questions.push(paragraph(await runsFromNodes(item.childNodes, docx, baseRun), {
-        alignment:docx.AlignmentType.JUSTIFIED,
-        indent:{ left:indent, hanging:indent },
-      }));
+      const parts = splitQuestionParagraphs(await runsFromNodes(item.childNodes, docx, baseRun));
+      parts.forEach((runs, index) => questions.push(paragraph(runs, {
+        alignment:docx.AlignmentType.LEFT,
+        indent:index ? { left:indent } : { left:indent, hanging:indent },
+        spacing:{ ...spacing, before:index ? pxToTwips(appearance.fontSize * .45) : 0, after:index === parts.length - 1 ? pxToTwips(8) : 0 },
+      })));
       continue;
     }
     const inlineNodes = [...item.childNodes].filter(node => node.nodeType !== 1 || node.tagName !== 'DIV');
-    questions.push(paragraph(await runsFromNodes(inlineNodes, docx, baseRun), {
-      alignment:docx.AlignmentType.JUSTIFIED,
-    }));
+    const parts = splitQuestionParagraphs(await runsFromNodes(inlineNodes, docx, baseRun));
+    parts.forEach((runs, index) => questions.push(paragraph(runs, {
+      alignment:docx.AlignmentType.LEFT,
+      spacing:{ ...spacing, before:index ? pxToTwips(appearance.fontSize * .45) : 0, after:index === parts.length - 1 ? pxToTwips(8) : 0 },
+    })));
     for (const child of item.children) {
       if (child.tagName === 'DIV') questions.push(paragraph(await runsFromNodes(child.childNodes, docx, baseRun), {
         indent:{ left:pxToTwips(appearance.fontSize * 1.5) },

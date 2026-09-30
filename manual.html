@@ -467,7 +467,7 @@ function renderBank() {
             <div class="q-check-col"><input type="checkbox" ${inSel?'checked':''} onclick="event.stopPropagation()" onchange="toggleQ('${q.id}',this.checked)"></div>
             <span class="q-num">${qNum++}.</span>
             <div class="q-body">
-              <div class="q-text">${q.type==='T5' ? UI.matchingQuestionHtml(q.text) : q.text||'—'}</div>
+              <div class="q-text">${q.type==='T5' ? UI.matchingQuestionHtml(q.text) : UI.questionHtml(q.text||'—')}</div>
               ${optHTML}
               <div class="q-ans">答：${q.answer||'—'}</div>
             </div>
@@ -557,7 +557,7 @@ function renderSelected() {
             <span class="drag-handle" style="padding-top:3px;cursor:grab" draggable="true" ondragstart="dragStart(event,'${id}')" title="拖曳排序">⠿</span>
             <span class="q-num">${idx+1}.</span>
             <div class="q-body">
-              <div class="q-text">${q.type==='T5' ? UI.matchingQuestionHtml(q.text) : q.text||'—'}${tailHTML}</div>
+              <div class="q-text">${q.type==='T5' ? UI.matchingQuestionHtml(q.text) : UI.questionHtml(q.text||'—')}${tailHTML}</div>
               ${optHTML}
               <div class="q-ans">答：${q.answer||'—'}</div>
             </div>

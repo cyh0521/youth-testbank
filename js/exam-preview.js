@@ -494,19 +494,21 @@ function ensurePreviewModal() {
 .ep-exam-header .ep-header-row + .ep-header-row{margin-top:6px}
 .ep-exam-header .title-row{font-size:1.05em;font-weight:700;column-gap:.5em}
 .ep-section-head{font-weight:700;margin:14px 0 8px}
-.ep-q{margin-bottom:8px;line-height:inherit;text-align:justify;text-justify:inter-ideograph}
+.ep-q{margin-bottom:8px;line-height:inherit;text-align:left}
 .ep-q .q-no{font-weight:700}
 .ep-answer-table{width:100%;border:0;border-collapse:collapse;table-layout:auto;font:inherit;line-height:inherit}
 .ep-answer-table td{border:0;padding:0;vertical-align:top;font:inherit;line-height:inherit}
 .ep-answer-table .ep-answer-prefix{width:1%;white-space:nowrap}
-.ep-answer-table td:not(.ep-answer-prefix){text-align:justify;text-justify:inter-ideograph}
+.ep-answer-table td:not(.ep-answer-prefix){text-align:left}
 .ep-q p,.ep-answer-table p{margin:0;line-height:inherit}
 .ep-answer-blank{color:#888;margin-top:4px}
 .ep-essay-blank{min-height:2lh;margin-top:4px}
+.ep-labeled-answer{display:grid;grid-template-columns:max-content minmax(0,1fr);align-items:start}
+.ep-labeled-answer .ep-answer-value{min-width:0;white-space:pre-wrap;overflow-wrap:anywhere}
 #epBody .ep-answer-blank{color:#555}
 #epBody .ep-answer-slot{display:inline-flex;align-items:center;width:4em;white-space:nowrap;color:#000}
 #epBody .ep-answer-slot .ep-answer-value{display:inline-block;width:2em;text-align:center}
-#epBody .ep-answer-value{color:#b4232c;font-weight:700}
+#epBody .ep-answer-value,#epBody .ep-labeled-answer .ep-answer-label{color:#b4232c;font-weight:400}
 #epBody .ep-q-source{color:#27734c;white-space:nowrap}
 #epBody .ep-q-analysis{display:flex;margin:2px 0 0;color:#245fa5;font-size:.9em;text-align:left}
 #epBody .ep-analysis-label{flex:none}
@@ -742,14 +744,17 @@ export function printExam(examData, questions, paperKey = 'A4', columns = 1) {
       .ep-exam-header .ep-header-row + .ep-header-row { margin-top:6px; }
       .ep-exam-header .title-row { font-size: 1.05em; font-weight: 700; column-gap: .5em; }
       .ep-section-head { font-weight: 700; margin: 14px 0 8px; }
-      .ep-q { margin-bottom: 8px; break-inside: avoid; line-height: inherit; text-align: justify; text-justify: inter-ideograph; }
+      .ep-q { margin-bottom: 8px; break-inside: avoid; line-height: inherit; text-align: left; }
+      .question-paragraph-break { display:block; height:0; margin-top:.45em; }
       .ep-answer-table { width: 100%; border: 0; border-collapse: collapse; table-layout: auto; font: inherit; line-height: inherit; }
       .ep-answer-table td { border: 0; padding: 0; vertical-align: top; font: inherit; line-height: inherit; }
       .ep-answer-table .ep-answer-prefix { width: 1%; white-space: nowrap; }
-      .ep-answer-table td:not(.ep-answer-prefix) { text-align: justify; text-justify: inter-ideograph; }
+      .ep-answer-table td:not(.ep-answer-prefix) { text-align: left; }
       .ep-q p, .ep-answer-table p { margin: 0; line-height: inherit; }
       .ep-answer-blank { color: #555; margin-top: 4px; }
       .ep-essay-blank { min-height: 2lh; margin-top: 4px; }
+      .ep-labeled-answer { display: grid; grid-template-columns: max-content minmax(0,1fr); align-items: start; }
+      .ep-labeled-answer .ep-answer-value { min-width: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
       .ep-two-columns .ep-question-columns { column-count: 2; column-gap: 10mm; }
       .ep-two-columns .ep-section-head { break-after: avoid; }
     </style></head><body>${printPaper.outerHTML}</body></html>`);
@@ -868,22 +873,23 @@ function renderQPreview(q, num, type, previewOptions) {
   const sourceTag = previewOptions?.source && source ? `<span class="ep-q-source">${source.startsWith('【') ? escapeText(source) : `【${escapeText(source)}】`}</span>` : '';
   let body = '';
   if (type === 'T1') {
-    body = `<table class="ep-answer-table" role="presentation"><tr><td class="ep-answer-prefix">${answerSlot}${num}.</td><td>${q.text||''}${sourceTag}</td></tr></table>`;
+    body = `<table class="ep-answer-table" role="presentation"><tr><td class="ep-answer-prefix">${answerSlot}${num}.</td><td>${UI.questionHtml(q.text)}${sourceTag}</td></tr></table>`;
   } else if (type === 'T2' || type === 'T3') {
     const opts = q.options?.length
       ? ` ${q.options.map((o,i)=>`(${String.fromCharCode(65+i)})${o}`).join(' ')}` : '';
     const tail = q.tail?.trim() || '';
-    body = `<table class="ep-answer-table" role="presentation"><tr><td class="ep-answer-prefix">${answerSlot}${num}.</td><td>${q.text||''}${opts}${tail ? `${tail === '。' ? '' : ' '}${tail}` : ''}${sourceTag}</td></tr></table>`;
+    body = `<table class="ep-answer-table" role="presentation"><tr><td class="ep-answer-prefix">${answerSlot}${num}.</td><td>${UI.questionHtml(q.text)}${opts}${tail ? `${tail === '。' ? '' : ' '}${tail}` : ''}${sourceTag}</td></tr></table>`;
   } else if (type === 'T4' || type === 'T5' || type === 'T6') {
     const questionText = type === 'T5' ? UI.matchingQuestionHtml(q.text)
-      : escapeText(q.text).replace(/\r\n?|\n/g, '<br>');
+      : UI.questionHtml(q.text);
+    const labeledAnswer = `<span class="ep-answer-label">【答案】</span><span class="ep-answer-value">${escapeText(answer)}</span>`;
     const answerArea = type === 'T6'
-      ? `<div class="ep-essay-blank">${previewOptions?.answers && answer ? `<span class="ep-answer-value" style="white-space:pre-wrap">${escapeText(answer)}</span>` : ''}</div>`
+      ? `<div class="ep-essay-blank${previewOptions?.answers && answer ? ' ep-labeled-answer' : ''}">${previewOptions?.answers && answer ? labeledAnswer : ''}</div>`
       : previewOptions?.answers && answer
-        ? `<div class="ep-answer-blank">【答案】<span class="ep-answer-value">${escapeText(answer)}</span></div>` : '';
+        ? `<div class="ep-answer-blank ep-labeled-answer">${labeledAnswer}</div>` : '';
     body = `<table class="ep-answer-table ep-indented-question" role="presentation"><tr><td class="ep-answer-prefix">${num}.</td><td>${questionText}${sourceTag}${answerArea}</td></tr></table>`;
   } else {
-    body = `${num}.${q.text||''}${sourceTag}`;
+    body = `${num}.${UI.questionHtml(q.text)}${sourceTag}`;
     if (previewOptions?.answers && answer) body += `<div class="ep-answer-blank">【答案】<span class="ep-answer-value">${escapeText(answer)}</span></div>`;
   }
   if (previewOptions?.analysis && q.analysis) body += `<div class="ep-q-analysis"><span class="ep-analysis-label">【解析】</span><span class="ep-analysis-text">${escapeText(q.analysis)}</span></div>`;

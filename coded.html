@@ -296,7 +296,7 @@ window.onQnumInput = async () => {
     <div style="display:flex;align-items:flex-start;gap:8px">
       <span style="font-family:var(--font-mono);font-weight:700;color:var(--primary);flex-shrink:0">${padded}</span>
       <div>
-        <div style="line-height:1.5;margin-bottom:4px">${q.text||'—'}</div>
+        <div style="line-height:1.5;margin-bottom:4px">${UI.questionHtml(q.text||'—')}</div>
         <div style="display:flex;gap:6px">${UI.typeBadge(q.type)}${UI.diffBadge(q.difficulty)}<span style="font-size:.84rem;color:var(--text-muted)">第${parseInt(q.chapterNum)||'?'}章</span></div>
       </div>
     </div>`;

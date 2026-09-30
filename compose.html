@@ -581,7 +581,7 @@ function renderPreview(grouped) {
           <div class="result-q">
             <span class="q-num">${qNum++}.</span>
             <div class="q-body">
-              <div class="q-text">${q.type==='T5' ? UI.matchingQuestionHtml(q.text) : q.text||'—'}</div>
+              <div class="q-text">${q.type==='T5' ? UI.matchingQuestionHtml(q.text) : UI.questionHtml(q.text||'—')}</div>
               ${q.type==='T2'&&q.options?.length ? `<div style="font-size:.86rem;color:var(--text-secondary);margin-top:3px">${q.options.map((o,i)=>`（${'ＡＢＣＤＥ'[i]}）${o}`).join('　')}</div>` : ''}
               <div class="q-ans">答：${q.answer||'—'}</div>
             </div>

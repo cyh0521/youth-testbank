@@ -91,17 +91,28 @@ const UI = {
       .replaceAll("'", '&#39;');
   },
 
+  questionText(value) {
+    // 兼容先前以空白行保存的段落；新資料用 U+2029 區分段落與段內換行。
+    return String(value ?? '').replace(/\r\n?/g, '\n').replace(/\n\n/g, '\u2029');
+  },
+
+  questionHtml(value) {
+    return this.questionText(value).split('\u2029')
+      .map(part => this.escapeHtml(part).replace(/\n/g, '<br>'))
+      .join('<span class="question-paragraph-break" aria-hidden="true"></span>');
+  },
+
   matchingQuestionHtml(value) {
-    let text = String(value ?? '').replace(/\r\n?/g, '\n');
+    let text = this.questionText(value);
     // 只為完全失去換行的舊資料補排版；有換行的匯入內容依原檔呈現。
-    if (!text.includes('\n')) {
+    if (!/[\n\u2029]/.test(text)) {
       if (/[AＡ][.．、]/.test(text) && /[BＢ][.．、]/.test(text)) {
         text = text.replace(/([^\n])(?=[AＡ][.．、])/, '$1\n');
       }
       text = text.replace(/([^\n])(?=[（(][\s　]*[）)][\s　]*[（(]\d+[）)])/g, '$1\n');
     }
     // pre-wrap 讓連續半形空格在瀏覽器中如實顯示，DOM 文字仍保留原本空格供 DOCX 輸出。
-    return `<span style="white-space:pre-wrap">${this.escapeHtml(text).replace(/\n/g, '<br>')}</span>`;
+    return `<span style="white-space:pre-wrap">${this.questionHtml(text)}</span>`;
   },
 
   /** 通知 toast — 使用 css/theme.css 內定義的 .toast 樣式 */

@@ -36,7 +36,11 @@
 @media(max-width:440px){.account-info-grid{grid-template-columns:1fr}}
 .settings-page .accounts-card .data-table tbody tr:nth-child(even){background:#fbfcfe}
 .settings-page .accounts-card .data-table tbody tr:hover{background:#edf3ff}
+.settings-page .accounts-card .data-table .btn{line-height:1;justify-content:center}
+.settings-page .accounts-card .data-table .btn svg{display:block}
 .settings-page #spanel-profile .card{max-width:560px}
+.settings-page .exam-margins-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+@media(max-width:440px){.settings-page .exam-margins-grid{grid-template-columns:1fr}}
 @media(max-width:600px){.settings-page .card-header{align-items:flex-start;flex-direction:column}.settings-page .accounts-card .user-count{margin-left:0}}
 
 .role-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:.84rem;font-weight:600}
@@ -731,7 +735,7 @@ async function buildCatalogPanel() {
   <section class="card catalog-section" data-section="appearance">
     <div class="card-header"><h2>表頭欄位位置</h2></div>
     <div class="card-body card-body-with-description">
-      <p style="font-size:.9rem;color:var(--text-secondary);margin:0 0 14px">拖曳欄位標籤調整順序，也可移到上、下兩行之間。</p>
+      <p style="font-size:.9rem;color:var(--text-secondary);margin:0 0 14px">拖曳欄位標籤可更改排序，上、下兩行之間可移動。</p>
       <div id="headerLayoutFields"></div>
       <div class="catalog-actions"><button class="btn btn-primary" type="button" id="headerLayoutSave">儲存變更</button><button class="btn btn-outline" type="button" id="headerLayoutReset">恢復預設</button><span id="headerLayoutStatus" role="status" aria-live="polite"></span></div>
     </div>
@@ -739,10 +743,10 @@ async function buildCatalogPanel() {
   <section class="card catalog-section" data-section="appearance" style="margin-top:16px">
     <div class="card-header"><h2>字體與行距</h2></div>
     <div class="card-body card-body-with-description">
-      <p style="font-size:.9rem;color:var(--text-secondary);margin:0 0 14px">此處設定新建試卷的預設字型、大小與行距。個別試卷可在預覽視窗調整，且不會改動此處的預設值。</p>
-      <div class="grid-2">
+      <p style="font-size:.9rem;color:var(--text-secondary);margin:0 0 14px">設定新試卷的預設字型、大小與行距。個別試卷可在預覽視窗調整，不會改動此處的預設值。</p>
+      <div class="grid-3">
         <div class="form-group"><label class="form-label" for="defaultExamFont">預設字型</label><select class="form-control" id="defaultExamFont"></select></div>
-        <div class="form-group"><label class="form-label" for="defaultExamFontSize">字體大小（px）</label><input class="form-control" id="defaultExamFontSize" type="number" min="11" max="20" step="1" required></div>
+        <div class="form-group"><label class="form-label" for="defaultExamFontSize">字體大小（px）</label><select class="form-control" id="defaultExamFontSize" required></select></div>
         <div class="form-group"><label class="form-label" for="defaultExamLineHeight">行距</label><input class="form-control" id="defaultExamLineHeight" type="number" min="1.0" max="2.4" step="0.05" required></div>
       </div>
       <div class="catalog-actions"><button class="btn btn-primary" type="button" id="appearanceSave">儲存變更</button><button class="btn btn-outline" type="button" id="appearanceReset">恢復預設</button><span id="appearanceStatus" role="status" aria-live="polite"></span></div>
@@ -751,8 +755,8 @@ async function buildCatalogPanel() {
   <section class="card catalog-section" data-section="appearance" style="margin-top:16px">
     <div class="card-header"><h2>試卷邊距</h2></div>
     <div class="card-body card-body-with-description">
-      <p style="font-size:.9rem;color:var(--text-secondary);margin:0 0 14px">Word 與 PDF 共用此設定，單位為 mm，可設定 5 至 50。設定會隨帳號在不同裝置同步。</p>
-      <div class="grid-2">
+      <p style="font-size:.9rem;color:var(--text-secondary);margin:0 0 14px">單位為 mm，可設定 5 至 50。設定會隨帳號在不同裝置同步。</p>
+      <div class="exam-margins-grid">
         <div class="form-group"><label class="form-label" for="examMargin-top">上邊距（mm）</label><input class="form-control" id="examMargin-top" type="number" min="5" max="50" step="1" required></div>
         <div class="form-group"><label class="form-label" for="examMargin-bottom">下邊距（mm）</label><input class="form-control" id="examMargin-bottom" type="number" min="5" max="50" step="1" required></div>
         <div class="form-group"><label class="form-label" for="examMargin-left">左邊距（mm）</label><input class="form-control" id="examMargin-left" type="number" min="5" max="50" step="1" required></div>
@@ -828,10 +832,13 @@ function buildAppearanceSettings() {
   const size = document.getElementById('defaultExamFontSize');
   const line = document.getElementById('defaultExamLineHeight');
   font.innerHTML = FONT_OPTIONS.map(option => `<option value="${option.id}">${option.label}</option>`).join('');
-  size.min = FONT_SIZE_RANGE.min;
-  size.max = FONT_SIZE_RANGE.max;
+  size.innerHTML = Array.from({length:FONT_SIZE_RANGE.max-FONT_SIZE_RANGE.min+1}, (_, index) => {
+    const value = FONT_SIZE_RANGE.min + index;
+    return `<option value="${value}">${value}</option>`;
+  }).join('');
   line.min = LINE_HEIGHT_RANGE.min;
   line.max = LINE_HEIGHT_RANGE.max;
+  line.step = LINE_HEIGHT_RANGE.step;
   const fill = values => { font.value = values.font; size.value = values.fontSize; line.value = values.lineHeight; };
   fill(loadAppearance());
   const status = document.getElementById('appearanceStatus');

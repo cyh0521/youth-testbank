@@ -59,6 +59,9 @@
 #qModal .edit-section-heading:first-child{margin-top:0}
 #qModal .edit-grid .form-label{font-size:.88rem}
 #qModal .edit-grid .form-control{font-size:.9rem}
+.question-break-hint{margin-top:5px;color:var(--text-muted);font-size:.84rem}
+.question-editor{min-height:132px;max-height:340px;overflow-y:auto;white-space:pre-wrap;line-height:1.6}
+.question-editor > :is(div,p):not(:first-child){margin-top:.45em}
 #qModal .modal-footer .btn{height:36px;min-width:88px;justify-content:center;font-size:.9rem;padding:0 14px}
 #qModal .modal-footer .btn svg{width:16px;height:16px}
 @media(max-width:600px){#qModal .modal-body{padding:18px}#qModal .modal-footer{gap:8px;padding:12px 18px}#qModal .modal-footer .btn{min-width:0}}
@@ -578,7 +581,7 @@ function renderCardMode(pageItems) {
           ${chap?`<span class="chapter">章節 ${chap}</span>`:''}
           <span class="qnum">#${q.qnum||'—'}</span>
         </div>
-        <div class="q-card-text">${escapeHtml(q.text||'—')}</div>
+        <div class="q-card-text">${UI.questionHtml(q.text||'—')}</div>
         ${optsHtml}
         ${q.tail?`<div style="font-size:.9rem;color:var(--text-secondary);margin-bottom:8px">${escapeHtml(q.tail)}</div>`:''}
         <div class="q-card-answer">
@@ -697,6 +700,30 @@ function optionFields(q) {
     </div>`).join('');
 }
 
+function questionEditorHtml(value) {
+  return UI.questionText(value).split('\u2029').map(paragraph =>
+    `<div>${UI.escapeHtml(paragraph).replace(/\n/g, '<br>') || '<br>'}</div>`
+  ).join('');
+}
+
+function questionEditorText(editor) {
+  const inlineText = node => {
+    if (node.nodeType === Node.TEXT_NODE) return node.nodeValue;
+    if (node.nodeType !== Node.ELEMENT_NODE) return '';
+    if (node.tagName === 'BR') return '\n';
+    return [...node.childNodes].map(inlineText).join('');
+  };
+  return [...editor.childNodes].map(node => {
+    if (node.nodeType === Node.ELEMENT_NODE && /^(DIV|P)$/.test(node.tagName)) {
+      const text = inlineText(node);
+      const breaks = [...node.childNodes].filter(child => child.nodeName === 'BR');
+      if (breaks.length === 1 && node.textContent === '') return '';
+      return breaks.length >= 2 && node.lastChild?.nodeName === 'BR' ? text.slice(0, -1) : text;
+    }
+    return inlineText(node);
+  }).join('\u2029').trim();
+}
+
 window.openEdit = id => {
   const q = allQuestions.find(x=>x.id===id); if(!q) return;
   document.getElementById('qModalTitle').textContent = `編輯題目 — ${q.qnum||''}`;
@@ -725,7 +752,8 @@ window.openEdit = id => {
       </div>
       <h4 class="edit-section-heading">題目內容</h4>
       <div class="edit-full form-group"><label class="form-label">題目 <span class="required">*</span></label>
-        <textarea class="form-control" id="eq-text" rows="4">${q.text||''}</textarea>
+        <div class="form-control question-editor" id="eq-text" contenteditable="true" role="textbox" aria-label="題目" aria-multiline="true">${questionEditorHtml(q.text||'')}</div>
+        <div class="question-break-hint">Enter：換段（增加段距）　Shift+Enter：段內換行</div>
       </div>
       ${optionFields(q)}
       <h4 class="edit-section-heading">答案與解析</h4>
@@ -750,7 +778,7 @@ window.openEdit = id => {
 window.saveEdit = async () => {
   const id = document.getElementById('qModal').dataset.editId;
   const q  = allQuestions.find(x=>x.id===id); if(!q) return;
-  const text = document.getElementById('eq-text').value.trim();
+  const text = questionEditorText(document.getElementById('eq-text'));
   const answer = document.getElementById('eq-answer').value.trim();
   if (!text || !answer) { UI.toast('題目與答案為必填','warning'); return; }
 
