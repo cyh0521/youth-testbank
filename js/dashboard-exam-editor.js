@@ -75,6 +75,20 @@ function renderEditHeaderSample() {
   sample.style.fontFamily = fontStackById(editDraftExam.appearance.font);
   sample.innerHTML = buildHeaderHtml(editDraftExam.header);
 }
+document.addEventListener('exam-header-saved', event => {
+  const { id, header, source } = event.detail;
+  const exam = allExams.find(item => item.id === id);
+  if (exam) exam.header = { ...header };
+  if (editExamId !== id || !editDraftExam || source === editDraftExam) return;
+  editDraftExam.header = { ...header };
+  if (!document.getElementById('editHeaderPanel').classList.contains('hidden')) {
+    renderEditHeaderSample();
+    mountInlineHeaderEditor(document.getElementById('editHeaderFields'), editDraftExam, renderEditHeaderSample, () => {
+      document.getElementById('editHeaderPanel').classList.add('hidden');
+      document.getElementById('editHeaderToggle').setAttribute('aria-expanded', 'false');
+    });
+  }
+});
 window.toggleEditHeader = () => {
   const panel = document.getElementById('editHeaderPanel');
   const expanded = !panel.classList.toggle('hidden');
@@ -307,4 +321,3 @@ window.closeEdit = () => {
   document.getElementById('editModal').classList.add('hidden');
   editDraftExam = null;
 };
-

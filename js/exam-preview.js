@@ -442,6 +442,9 @@ export function mountInlineHeaderEditor(container, examData, onChange, onCancel)
       if (examData.id) await DataService.saveExam({ id:examData.id, header:examData.header });
       savedHeader = { ...examData.header };
       examData.onHeaderSaved?.();
+      if (examData.id) document.dispatchEvent(new CustomEvent('exam-header-saved', {
+        detail:{ id:examData.id, header:{ ...examData.header }, source:examData }
+      }));
       container.querySelector('[data-header-status]').textContent = examData.id ? '已儲存至此試卷' : '已套用至目前草稿';
       onCancel?.();
     } catch (error) { container.querySelector('[data-header-status]').textContent = `儲存失敗：${error.message}`; }
@@ -462,7 +465,8 @@ function ensurePreviewModal() {
 <style>
 /* 預覽視窗大小 */
 .ep-preview-modal{max-width:900px;width:96%;max-height:94vh;display:flex;flex-direction:column}
-#epModal.is-fullscreen{padding:0}
+#epModal.is-fullscreen{left:var(--sidebar-width);padding:0}
+.sidebar-collapsed #epModal.is-fullscreen{left:var(--sidebar-collapsed-width)}
 #epModal.is-fullscreen .ep-preview-modal{width:100%;max-width:none;height:100vh;height:100dvh;max-height:100vh;max-height:100dvh;border:0;border-radius:0}
 #epModal .ep-fullscreen-icon-restore{display:none}
 #epModal.is-fullscreen .ep-fullscreen-icon-expand{display:none}
@@ -805,7 +809,7 @@ export function buildHeaderHtml(h) {
     })
     .map(field => {
       const value = escapeHeader(headerValues[field.id]);
-      return `<span>${row === 1 || ['class','name','seat'].includes(field.id) ? `<strong>${value}</strong>` : value}</span>`;
+      return `<span><strong>${value}</strong></span>`;
     }).join(''));
 
   return `<div class="ep-exam-header">
