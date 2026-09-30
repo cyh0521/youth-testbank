@@ -6,6 +6,7 @@
 (() => {
   const ROLE_KEY = 'youth.shellRole';
   const COLLAPSED_KEY = 'sidebarCollapsed';
+  const AVATAR_URL = new URL('avatar.js', document.currentScript.src).href;
   const read = (storage, key) => { try { return window[storage].getItem(key); } catch { return null; } };
   const write = (storage, key, value) => { try { window[storage].setItem(key, value); } catch { /* Storage may be unavailable. */ } };
   const activePage = () => {
@@ -18,6 +19,42 @@
     const saved = read('localStorage', COLLAPSED_KEY);
     return saved === null ? matchMedia('(max-width: 760px)').matches : saved === '1';
   };
+
+  function enhanceTopbar() {
+    const topbar = document.querySelector('.topbar');
+    const title = topbar?.querySelector('.topbar-title');
+    if (!title || topbar.querySelector('.topbar-heading')) return;
+
+    const descriptions = {
+      dashboard: '查看題庫與試卷的最新狀態',
+      textbooks: '管理科目、冊別與課本章節',
+      import: '依步驟上傳並確認題目資料',
+      questions: '搜尋、檢視與編輯題庫內容',
+      compose: '設定條件，從題庫自動組卷',
+      manual: '依科目與範圍挑選題目',
+      coded: '輸入題目編號，快速建立試卷',
+      booklet: '準備題本與列印內容',
+      exams: '查找與管理已建立的試卷',
+      settings: '管理個人資訊與系統偏好',
+      'account-admin': '管理系統使用者與帳號權限'
+    };
+    const heading = document.createElement('div');
+    heading.className = 'topbar-heading';
+    const h1 = document.createElement('h1');
+    h1.className = title.className;
+    if (title.id) h1.id = title.id;
+    h1.textContent = title.textContent;
+    heading.appendChild(h1);
+    const description = descriptions[activePage()];
+    if (description) {
+      const subtitle = document.createElement('p');
+      subtitle.className = 'topbar-subtitle';
+      subtitle.textContent = description;
+      heading.appendChild(subtitle);
+    }
+    title.replaceWith(heading);
+    topbar.querySelector('.topbar-breadcrumb')?.remove();
+  }
 
   function applyCollapsed(collapsed, remember = false) {
     document.documentElement.classList.toggle('sidebar-collapsed', collapsed);
@@ -66,6 +103,67 @@
     overlay.querySelector('[data-choice="cancel"]').focus();
   }
 
+  function closeAccountMenu(returnFocus = false) {
+    const menu = document.getElementById('accountMenu');
+    const toggle = document.getElementById('toolbarAccount');
+    if (!menu || !toggle || menu.hidden) return;
+    menu.hidden = true;
+    toggle.setAttribute('aria-expanded', 'false');
+    toggle.setAttribute('aria-label', '開啟帳號選單');
+    if (returnFocus) toggle.focus();
+  }
+
+  async function refreshAccount(user) {
+    const topbar = document.querySelector('.topbar');
+    if (!topbar || !user) return;
+    if (!window.Avatar) await import(AVATAR_URL);
+    if (!document.documentElement.classList.contains('auth-ready')) return;
+
+    let actions = topbar.querySelector('.topbar-actions');
+    if (!actions) {
+      actions = document.createElement('div');
+      actions.className = 'topbar-actions';
+      topbar.appendChild(actions);
+    }
+    let account = actions.querySelector('.toolbar-account');
+    if (!account) {
+      account = document.createElement('div');
+      account.className = 'toolbar-account';
+      account.innerHTML = `<button class="toolbar-account-toggle" type="button" id="toolbarAccount" aria-label="開啟帳號選單" aria-expanded="false" aria-controls="accountMenu"></button>
+        <div class="account-menu" id="accountMenu" hidden>
+          <a href="settings.html" id="accountProfile">${window.ICONS?.user16 || ''}<span>個人資訊</span></a>
+          <button type="button" id="accountLogout">${window.ICONS?.logout16 || ''}<span>登出</span></button>
+        </div>`;
+      actions.appendChild(account);
+      const toggle = account.querySelector('#toolbarAccount');
+      const menu = account.querySelector('#accountMenu');
+      toggle.addEventListener('click', () => {
+        const opening = menu.hidden;
+        menu.hidden = !opening;
+        toggle.setAttribute('aria-expanded', String(opening));
+        toggle.setAttribute('aria-label', opening ? '關閉帳號選單' : '開啟帳號選單');
+        if (opening) account.querySelector('#accountProfile').focus();
+      });
+      account.querySelector('#accountLogout').addEventListener('click', () => {
+        closeAccountMenu();
+        confirmLogout();
+      });
+      document.addEventListener('pointerdown', event => {
+        if (!account.contains(event.target)) closeAccountMenu();
+      });
+      document.addEventListener('focusin', event => {
+        if (!account.contains(event.target)) closeAccountMenu();
+      });
+      document.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && !menu.hidden) {
+          event.preventDefault();
+          closeAccountMenu(true);
+        }
+      });
+    }
+    account.querySelector('#toolbarAccount').innerHTML = window.Avatar.markup(user.avatar, user.displayName || user.email, 'user-avatar--toolbar');
+  }
+
   function mount(role, active = activePage()) {
     const el = document.getElementById('sidebar');
     if (!el) return;
@@ -80,6 +178,7 @@
           <button class="sidebar-brand-toggle" id="sidebarToggle" type="button" aria-controls="sidebarNav">
             <span class="sidebar-brand-main"><span class="sidebar-brand-mark">${brandIcon}</span><strong class="sidebar-brand-name">幼獅文化</strong></span>
             <span class="sidebar-brand-subtitle">線上命題系統</span>
+            <span class="sidebar-brand-hint" aria-hidden="true"><span class="sidebar-hint-collapse">‹</span><span class="sidebar-hint-expand">›</span></span>
           </button>
         </div>
         <nav class="sidebar-nav" id="sidebarNav" aria-label="主要導覽">
@@ -121,6 +220,7 @@
     if (main) main.inert = false;
     const logout = document.getElementById('logoutBtn');
     if (logout) logout.disabled = false;
+    refreshAccount(user);
   }
 
   function clear() {
@@ -128,10 +228,11 @@
     document.documentElement.classList.remove('auth-ready');
   }
 
-  window.AppShell = { mount, confirmUser, clear, confirmLogout };
+  window.AppShell = { mount, confirmUser, clear, confirmLogout, refreshAccount };
   mount(read('sessionStorage', ROLE_KEY));
   // 靜態版面先顯示，資料操作等真實登入驗證後才啟用。
   document.addEventListener('DOMContentLoaded', () => {
+    enhanceTopbar();
     const main = document.querySelector('.main');
     if (main) main.inert = !document.documentElement.classList.contains('auth-ready');
   });

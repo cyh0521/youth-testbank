@@ -693,6 +693,7 @@ window.saveProfile = async () => {
   btn.disabled=true; btn.textContent='儲存中…';
   try {
     await DataService.updateProfile(u.uid, { displayName:name, school:school||null });
+    window.AppShell.refreshAccount(DataService.getCurrentUser());
     UI.toast('個人資料已更新','success');
     document.getElementById('profileModal').classList.add('hidden');
     buildProfilePanel(); // 重新渲染顯示最新資料
@@ -708,6 +709,7 @@ window.saveAvatar = async () => {
   btn.disabled = true; btn.textContent = '儲存中…';
   try {
     await DataService.updateProfile(DataService.getCurrentUser().uid, { avatar:selectedAvatar });
+    window.AppShell.refreshAccount(DataService.getCurrentUser());
     UI.toast('頭像已更新', 'success');
     document.getElementById('avatarModal').classList.add('hidden');
     buildProfilePanel();

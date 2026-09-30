@@ -93,8 +93,9 @@ input, select, textarea { font-family: var(--font-sans); }
   padding: 20px 16px 20px 17px;
   min-height: 110px;
 }
-/* 整個品牌區塊可收合側欄；收合後只保留白獅。 */
+/* 整個品牌區塊可切換側欄，以方向箭頭提示。 */
 .sidebar-brand-toggle {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -113,6 +114,9 @@ input, select, textarea { font-family: var(--font-sans); }
 .sidebar-brand-mark img { width:36px; height:26px; display:block; object-fit:contain; }
 .sidebar-brand-name { font-size:1.14rem; font-weight:700; line-height:1.2; letter-spacing:.055em; white-space:nowrap; }
 .sidebar-brand-subtitle { display:flex; align-items:center; justify-content:center; width:100%; height:30px; box-sizing:border-box; border-radius:3px; background:#fff; color:var(--bg-sidebar); font-size:.88rem; font-weight:700; line-height:1; letter-spacing:.16em; padding-left:.16em; white-space:nowrap; }
+.sidebar-brand-hint { position:absolute; top:10px; right:0; display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; color:rgba(225,238,251,.58); font-size:1rem; line-height:1; pointer-events:none; transition:color .15s ease, transform .15s ease; }
+.sidebar-hint-expand { display:none; }
+.sidebar-brand-toggle:hover .sidebar-brand-hint { color:#fff; transform:translateX(-2px); }
 .sidebar-brand-toggle:focus-visible { outline:2px solid #fff; outline-offset:4px; border-radius:3px; }
 
 .sidebar-user {
@@ -216,6 +220,10 @@ input, select, textarea { font-family: var(--font-sans); }
 .sidebar-collapsed .sidebar-brand-main { justify-content:center; min-height:0; height:100%; }
 .sidebar-collapsed .sidebar-brand-name,
 .sidebar-collapsed .sidebar-brand-subtitle { display:none; }
+.sidebar-collapsed .sidebar-brand-hint { top:10px; right:-16px; width:14px; height:18px; font-size:.85rem; }
+.sidebar-collapsed .sidebar-hint-collapse { display:none; }
+.sidebar-collapsed .sidebar-hint-expand { display:inline; }
+.sidebar-collapsed .sidebar-brand-toggle:hover .sidebar-brand-hint { transform:translateX(2px); }
 /* User 區：保持 padding，只把資訊隱藏 */
 .sidebar-collapsed .sidebar-user {
   justify-content: center;
@@ -933,10 +941,14 @@ body:has(.layout) {
   top: 0; left: 0;
   height: 100vh;
   border-radius: 0;
-  background: linear-gradient(155deg, rgba(74,91,107,.94), rgba(38,52,66,.97));
+  background-color: #253648;
+  background-image:
+    radial-gradient(ellipse 230px 310px at 5% 4%, rgba(119,173,232,.22), transparent 75%),
+    radial-gradient(ellipse 200px 300px at 105% 88%, rgba(65,126,193,.13), transparent 78%),
+    linear-gradient(165deg, #41566a 0%, #2d4053 50%, #233345 100%);
   backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px);
   border: 0;
-  box-shadow: inset -1px 0 rgba(255,255,255,.07);
+  box-shadow: inset -1px 0 rgba(255,255,255,.1), 4px 0 18px rgba(24,39,57,.08);
 }
 .sidebar-top { flex-direction: row; align-items: center; flex-shrink: 0; }
 .sidebar-nav { padding: 0 10px 14px; flex: 1 0 auto; }
@@ -961,9 +973,22 @@ body:has(.layout) {
 .user-avatar--toolbar { width: 30px; height: 30px; font-size: .88rem; }
 .user-avatar--choice { width: 52px; height: 52px; font-size: 1.3rem; }
 .main { min-width: 0; min-height: 100vh; }
-.topbar { min-height: 60px; height: auto; padding: 13px 28px; border-radius: 0; background: rgba(248,249,252,.88); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); box-shadow: none; }
-.topbar-title { font-size: .94rem; color: var(--text-secondary); white-space: nowrap; }
+.topbar { min-height: 60px; height: auto; padding: 10px 28px; border-radius: 0; background: rgba(248,249,252,.88); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); box-shadow: none; }
+.topbar-heading { min-width: 0; display: flex; align-items: baseline; flex-wrap: wrap; column-gap: 10px; row-gap: 2px; }
+.topbar-title { font-size: 1.35rem; line-height: 1.35; font-weight: 700; color: var(--text-primary); letter-spacing: .01em; }
+.topbar-subtitle { font-size: .85rem; line-height: 1.4; color: var(--text-secondary); }
+.topbar-subtitle::before { content: '︱'; margin-right: 6px; color: var(--text-light); }
 .topbar-actions { flex-wrap: wrap; justify-content: flex-end; }
+.toolbar-account { position: relative; display: inline-flex; align-items: center; padding-left: 18px; margin-left: 8px; border-left: 1px solid var(--border); color: var(--text-primary); font-size: .9rem; }
+.toolbar-account-toggle { display: inline-flex; align-items: center; justify-content: center; padding: 3px; border: 0; border-radius: 50%; background: transparent; }
+.toolbar-account-toggle:hover, .toolbar-account-toggle[aria-expanded="true"] { background: #e9eef7; }
+.toolbar-account-toggle:focus-visible, .account-menu :focus-visible { outline: 2px solid var(--primary-light); outline-offset: 2px; }
+.toolbar-account .user-avatar { box-shadow: 0 0 0 1px #dce2eb; }
+.account-menu { position: absolute; z-index: 100; top: calc(100% + 12px); right: 0; min-width: 168px; padding: 6px; border: 1px solid var(--border); border-radius: 11px; background: #fff; box-shadow: var(--shadow-lg); }
+.account-menu[hidden] { display: none; }
+.account-menu a, .account-menu button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 12px; border: 0; border-radius: 7px; background: transparent; color: var(--text-primary); text-align: left; font: inherit; font-size: .9rem; white-space: nowrap; }
+.account-menu a:hover, .account-menu button:hover { background: #edf3ff; color: var(--primary-light); }
+.account-menu svg { flex: none; }
 .page-content { padding: 28px; min-width: 0; }
 .card { background: rgba(255,255,255,.94); }
 .card-header h2 { color: var(--text-primary); }
@@ -992,8 +1017,10 @@ input[type=checkbox], input[type=radio] { accent-color: #3478f6; }
   .layout { border: 0; }
   .main { margin-left: var(--sidebar-collapsed-width); }
   .sidebar { box-shadow: 6px 0 24px rgba(25,37,55,.18); }
-  .topbar { padding: 12px 16px; flex-wrap: wrap; gap: 8px; }
+  .topbar { padding: 10px 16px; flex-wrap: wrap; gap: 8px; }
+  .topbar-title { font-size: 1.2rem; }
   .topbar-actions { gap: 6px; }
+  .toolbar-account { padding-left: 0; border: 0; }
   .page-content { padding: 18px 14px; }
   .grid-2, .grid-3, .grid-4, .edit-grid { grid-template-columns: 1fr; }
   .filter-actions { margin-left: 0; flex-wrap: wrap; }

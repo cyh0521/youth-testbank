@@ -11,7 +11,6 @@
 <body>
 <script src="js/icons.js"></script>
 <script src="js/core.js"></script>
-<script src="js/avatar.js"></script>
 <div class="layout">
   <aside class="sidebar" id="sidebar"></aside>
   <script src="js/shell.js"></script>
@@ -20,13 +19,6 @@
       <span class="topbar-title">首頁總覽</span>
       <div class="topbar-actions">
         <span class="text-sm text-muted" id="welcomeText"></span>
-        <div class="toolbar-account">
-          <button class="toolbar-account-toggle" type="button" id="toolbarAccount" aria-label="開啟帳號選單" aria-expanded="false" aria-controls="accountMenu"></button>
-          <div class="account-menu" id="accountMenu" hidden>
-            <a href="settings.html" id="accountProfile">個人資訊</a>
-            <button type="button" id="accountLogout">登出</button>
-          </div>
-        </div>
       </div>
     </div>
     <div class="page-content" id="content" aria-busy="true">
@@ -60,40 +52,6 @@ let savedOverviewSelection = (() => {
 
 const greetingName = (user.displayName || user.email?.split('@')[0] || '').trim().replace(/\s*老師$/, '');
 document.getElementById('welcomeText').textContent = `歡迎回來，${greetingName ? `${greetingName} 老師` : '老師'}`;
-document.getElementById('toolbarAccount').innerHTML = Avatar.markup(user.avatar, user.displayName || user.email, 'user-avatar--toolbar');
-document.getElementById('accountProfile').innerHTML = `${I.user16}<span>個人資訊</span>`;
-document.getElementById('accountLogout').innerHTML = `${I.logout16}<span>登出</span>`;
-const accountToggle = document.getElementById('toolbarAccount');
-const accountMenu = document.getElementById('accountMenu');
-function closeAccountMenu(returnFocus = false) {
-  accountMenu.hidden = true;
-  accountToggle.setAttribute('aria-expanded', 'false');
-  accountToggle.setAttribute('aria-label', '開啟帳號選單');
-  if (returnFocus) accountToggle.focus();
-}
-accountToggle.addEventListener('click', () => {
-  const opening = accountMenu.hidden;
-  accountMenu.hidden = !opening;
-  accountToggle.setAttribute('aria-expanded', String(opening));
-  accountToggle.setAttribute('aria-label', opening ? '關閉帳號選單' : '開啟帳號選單');
-  if (opening) document.getElementById('accountProfile').focus();
-});
-document.getElementById('accountLogout').addEventListener('click', () => {
-  closeAccountMenu();
-  window.AppShell.confirmLogout();
-});
-document.addEventListener('pointerdown', event => {
-  if (!event.target.closest('.toolbar-account')) closeAccountMenu();
-});
-document.addEventListener('focusin', event => {
-  if (!accountMenu.hidden && !event.target.closest('.toolbar-account')) closeAccountMenu();
-});
-document.addEventListener('keydown', event => {
-  if (event.key === 'Escape' && !accountMenu.hidden) {
-    event.preventDefault();
-    closeAccountMenu(true);
-  }
-});
 
 const subjectName = code => dashboardSubjects[code] || code || '未分類';
 const examBookName = exam => {
