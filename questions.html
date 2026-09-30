@@ -64,6 +64,16 @@
 .question-editor > :is(div,p):not(:first-child){margin-top:.45em}
 #qModal .modal-footer .btn{height:36px;min-width:88px;justify-content:center;font-size:.9rem;padding:0 14px}
 #qModal .modal-footer .btn svg{width:16px;height:16px}
+#eq-location{width:100%;justify-content:flex-start;text-align:left;white-space:normal;line-height:1.5}
+#chapterPickerModal{z-index:1100}
+#chapterPickerModal .modal{display:flex;flex-direction:column;max-height:90vh;overflow:hidden}
+#chapterPickerModal .modal-body{overflow-y:auto;min-height:0}
+.chapter-picker-list{display:grid;gap:3px}
+.chapter-picker-item{display:block;width:100%;padding:9px 12px;border:0;border-radius:6px;background:transparent;color:var(--text-primary);text-align:left;font:inherit;font-size:.9rem;line-height:1.5;cursor:pointer}
+.chapter-picker-item:hover,.chapter-picker-item:focus-visible{background:#edf3ff}
+.chapter-picker-item.selected{background:#e4eeff;color:var(--primary);font-weight:600}
+.chapter-picker-level-2{padding-left:30px}
+.chapter-picker-level-3{padding-left:50px;color:var(--text-secondary)}
 @media(max-width:600px){#qModal .modal-body{padding:18px}#qModal .modal-footer{gap:8px;padding:12px 18px}#qModal .modal-footer .btn{min-width:0}}
 .q-text{width:100%;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.9rem;line-height:1.5}
 
@@ -275,6 +285,14 @@
     <div class="modal-footer" id="qModalFooter">
       <button class="btn btn-ghost" onclick="closeQModal()">關閉</button>
     </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="chapterPickerModal" role="dialog" aria-modal="true" aria-labelledby="chapterPickerTitle">
+  <div class="modal modal-lg">
+    <div class="modal-header"><h3 id="chapterPickerTitle">選擇章節</h3><button class="modal-close" type="button" onclick="closeChapterPicker()" aria-label="關閉">✕</button></div>
+    <div class="modal-body"><div id="chapterPickerList" class="chapter-picker-list"></div></div>
+    <div class="modal-footer"><button class="btn btn-ghost" type="button" onclick="closeChapterPicker()">取消</button></div>
   </div>
 </div>
 
@@ -724,8 +742,121 @@ function questionEditorText(editor) {
   }).join('\u2029').trim();
 }
 
-window.openEdit = id => {
+let editChapters = [];
+let editBook = null;
+let editLocation = {chapterNum:0, sectionNum:0, subsectionNum:0};
+function locationLabel(location) {
+  if (!location.chapterNum) return '選擇章節';
+  const chapter = editChapters.find(c => Number(c.chapterNum) === location.chapterNum);
+  const section = (chapter?.sections || []).find(s => Number(s.sectionNum) === location.sectionNum);
+  const subsection = (section?.subsections || []).find(s => Number(s.num) === location.subsectionNum);
+  return [chapter?.title || `${editBook?.l1 || '章'} ${location.chapterNum}`,
+    section && (section.title || `${editBook?.l2 || '節'} ${location.sectionNum}`),
+    subsection && (subsection.title || `${editBook?.l3 || '小節'} ${location.subsectionNum}`)].filter(Boolean).join(' ／ ');
+}
+function updateEditLocationLabel() {
+  document.getElementById('eq-location').textContent = locationLabel(editLocation);
+}
+function appendChapterPickerItem(container, level, location, label) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = `chapter-picker-item chapter-picker-level-${level}`;
+  button.textContent = label;
+  button.dataset.chapter = location.chapterNum;
+  button.dataset.section = location.sectionNum;
+  button.dataset.subsection = location.subsectionNum;
+  if (location.chapterNum === editLocation.chapterNum && location.sectionNum === editLocation.sectionNum && location.subsectionNum === editLocation.subsectionNum) {
+    button.classList.add('selected');
+    button.setAttribute('aria-current', 'true');
+  }
+  container.appendChild(button);
+}
+window.openChapterPicker = () => {
+  const list = document.getElementById('chapterPickerList');
+  list.replaceChildren();
+  editChapters.forEach(chapter => {
+    const chapterNum = Number(chapter.chapterNum);
+    appendChapterPickerItem(list, 1, {chapterNum, sectionNum:0, subsectionNum:0}, chapter.title || `${editBook?.l1 || '章'} ${chapterNum}`);
+    (chapter.sections || []).forEach(section => {
+      const sectionNum = Number(section.sectionNum);
+      appendChapterPickerItem(list, 2, {chapterNum, sectionNum, subsectionNum:0}, section.title || `${editBook?.l2 || '節'} ${sectionNum}`);
+      (section.subsections || []).forEach(subsection => {
+        const subsectionNum = Number(subsection.num);
+        appendChapterPickerItem(list, 3, {chapterNum, sectionNum, subsectionNum}, subsection.title || `${editBook?.l3 || '小節'} ${subsectionNum}`);
+      });
+    });
+  });
+  if (!list.children.length) list.textContent = '此冊別尚無章節設定';
+  document.getElementById('chapterPickerModal').classList.remove('hidden');
+  (list.querySelector('.selected') || list.querySelector('button') || document.querySelector('#chapterPickerModal .modal-close')).focus();
+};
+window.closeChapterPicker = () => {
+  document.getElementById('chapterPickerModal').classList.add('hidden');
+  document.getElementById('eq-location')?.focus();
+};
+document.getElementById('chapterPickerList').addEventListener('click', event => {
+  const button = event.target.closest('.chapter-picker-item');
+  if (!button) return;
+  editLocation = {chapterNum:Number(button.dataset.chapter), sectionNum:Number(button.dataset.section), subsectionNum:Number(button.dataset.subsection)};
+  updateEditLocationLabel();
+  closeChapterPicker();
+});
+document.getElementById('chapterPickerModal').addEventListener('keydown', event => {
+  if (event.key === 'Escape') { event.preventDefault(); closeChapterPicker(); }
+  if (event.key === 'Tab') {
+    const buttons = [...document.querySelectorAll('#chapterPickerModal button')];
+    const first = buttons[0], last = buttons.at(-1);
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+  }
+});
+document.getElementById('chapterPickerModal').addEventListener('click', event => {
+  if (event.target.id === 'chapterPickerModal') closeChapterPicker();
+});
+
+window.openEdit = async id => {
   const q = allQuestions.find(x=>x.id===id); if(!q) return;
+  const subject = _tbCache?.subjectByCode?.[q.subjectCode];
+  editBook = (subject ? (_tbCache?.booksBySubject?.[subject.id] || []).find(b => b.code === q.bookCode) : null)
+    || {l1:'章', l2:q.sectionNum ? '節' : '', l3:q.subsectionNum ? '小節' : ''};
+  if (q.sectionNum && !editBook.l2) editBook = {...editBook, l2:'節'};
+  if (q.subsectionNum && !editBook.l3) editBook = {...editBook, l3:'小節'};
+  try {
+    editChapters = editBook.id && subject
+      ? await DataService.getChapterDefs(subject.id, editBook.id) : [];
+  } catch (e) { UI.toast('章節載入失敗：' + e.message, 'danger'); return; }
+  if (!editChapters.length) {
+    const chapterNums = [...new Set(allQuestions.map(item => item.chapterNum).filter(Boolean))].sort((a,b) => Number(a)-Number(b));
+    editChapters = chapterNums.map(chapterNum => {
+      const related = allQuestions.filter(item => String(item.chapterNum) === String(chapterNum));
+      const sectionNums = [...new Set(related.map(item => item.sectionNum).filter(Boolean))].sort((a,b) => Number(a)-Number(b));
+      return {chapterNum, title:`${editBook.l1 || '章'} ${chapterNum}`, sections:sectionNums.map(sectionNum => ({
+        sectionNum, title:`${editBook.l2 || '節'} ${sectionNum}`,
+        subsections:[...new Set(related.filter(item => String(item.sectionNum) === String(sectionNum)).map(item => item.subsectionNum).filter(Boolean))]
+          .sort((a,b) => Number(a)-Number(b)).map(num => ({num, title:`${editBook.l3 || '小節'} ${num}`}))
+      }))};
+    });
+  }
+  const locationChapters = [...editChapters];
+  if (q.chapterNum && !locationChapters.some(c => String(c.chapterNum) === String(q.chapterNum))) {
+    locationChapters.push({chapterNum:q.chapterNum, title:`${editBook?.l1 || '章'} ${q.chapterNum}（原位置）`, sections:[]});
+  }
+  editChapters = locationChapters;
+  const originalChapter = editChapters.find(c => Number(c.chapterNum) === Number(q.chapterNum));
+  if (originalChapter && q.sectionNum) {
+    originalChapter.sections ||= [];
+    if (!originalChapter.sections.some(s => Number(s.sectionNum) === Number(q.sectionNum))) {
+      originalChapter.sections.push({sectionNum:q.sectionNum, title:`${editBook.l2 || '節'} ${q.sectionNum}（原位置）`, subsections:[]});
+    }
+    const originalSection = originalChapter.sections.find(s => Number(s.sectionNum) === Number(q.sectionNum));
+    if (originalSection && q.subsectionNum) {
+      originalSection.subsections ||= [];
+      if (!originalSection.subsections.some(s => Number(s.num) === Number(q.subsectionNum))) {
+        originalSection.subsections.push({num:q.subsectionNum, title:`${editBook.l3 || '小節'} ${q.subsectionNum}（原位置）`});
+      }
+    }
+  }
+  editLocation = {chapterNum:Number(q.chapterNum) || 0, sectionNum:Number(q.sectionNum) || 0, subsectionNum:Number(q.subsectionNum) || 0};
   document.getElementById('qModalTitle').textContent = `編輯題目 — ${q.qnum||''}`;
   document.getElementById('qModal').dataset.editId = id;
 
@@ -750,6 +881,10 @@ window.openEdit = id => {
       <div class="form-group"><label class="form-label">答案數</label>
         <input class="form-control" id="eq-anscount" type="number" min="1" value="${q.answerCount||1}">
       </div>
+      <h4 class="edit-section-heading">章節位置</h4>
+      <div class="edit-full form-group"><label class="form-label" for="eq-location">選擇章節 <span class="required">*</span></label>
+        <button class="btn btn-outline" type="button" id="eq-location" onclick="openChapterPicker()"></button>
+      </div>
       <h4 class="edit-section-heading">題目內容</h4>
       <div class="edit-full form-group"><label class="form-label">題目 <span class="required">*</span></label>
         <div class="form-control question-editor" id="eq-text" contenteditable="true" role="textbox" aria-label="題目" aria-multiline="true">${questionEditorHtml(q.text||'')}</div>
@@ -768,6 +903,8 @@ window.openEdit = id => {
       </div>
     </div>`;
 
+  updateEditLocationLabel();
+
   document.getElementById('qModalFooter').innerHTML = `
     <button class="btn btn-ghost" onclick="closeQModal()">取消</button>
     ${canEdit?`<button class="btn btn-danger" onclick="closeQModal();deleteOne('${q.id}')">${ICONS.trash16}刪除</button>`:''}
@@ -781,6 +918,8 @@ window.saveEdit = async () => {
   const text = questionEditorText(document.getElementById('eq-text'));
   const answer = document.getElementById('eq-answer').value.trim();
   if (!text || !answer) { UI.toast('題目與答案為必填','warning'); return; }
+  const {chapterNum, sectionNum, subsectionNum} = editLocation;
+  if (!chapterNum) { UI.toast(`請選擇${editBook?.l1 || '章'}`, 'warning'); return; }
 
   const updates = {
     type:        document.getElementById('eq-type').value,
@@ -790,7 +929,14 @@ window.saveEdit = async () => {
     text, answer,
     tail:        document.getElementById('eq-tail')?.value.trim()||'',
     analysis:    document.getElementById('eq-analysis').value.trim(),
+    chapterNum, sectionNum, subsectionNum,
   };
+  if (chapterNum !== Number(q.chapterNum) || sectionNum !== Number(q.sectionNum || 0) || subsectionNum !== Number(q.subsectionNum || 0)) {
+    const part = number => String(number).padStart(2, '0');
+    const suffix = q.subjectCode === 'B1' ? part(chapterNum) + part(sectionNum) + part(subsectionNum)
+      : q.subjectCode === 'C1' ? part(chapterNum) + part(sectionNum) : part(chapterNum);
+    updates.catalogCode = `${q.subjectCode}-${q.bookCode}-${suffix}`;
+  }
   if (updates.type === 'T2') {
     updates.options = [0,1,2,3,4]
       .map(i => (document.getElementById('eq-opt-'+i)?.value||'').trim())
@@ -807,7 +953,10 @@ window.saveEdit = async () => {
   } catch(e) { UI.toast('儲存失敗：'+e.message,'danger'); }
 };
 
-window.closeQModal = () => document.getElementById('qModal').classList.add('hidden');
+window.closeQModal = () => {
+  document.getElementById('chapterPickerModal').classList.add('hidden');
+  document.getElementById('qModal').classList.add('hidden');
+};
 
 loadAll();
 </script>
