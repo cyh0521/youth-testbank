@@ -43,9 +43,9 @@
 .edit-q-item:last-child{border-bottom:none}
 .edit-q-item:hover{background:#faf8f5}
 .eq-num{color:var(--text-muted);font-size:.9rem;width:22px;flex-shrink:0;text-align:right}
-.eq-qnum{font-family:var(--font-mono);font-size:.9rem;background:#e8eef6;color:var(--primary);padding:1px 5px;border-radius:3px;flex-shrink:0}
+.eq-qnum{font-family:var(--font-mono);font-size:.9rem;background:#e8eef6;color:var(--primary);padding:1px 5px;border-radius:var(--radius);flex-shrink:0}
 .eq-text{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.edit-q-item .badge{font-size:.9rem}
+.edit-q-item .badge{font-size:.9rem;border-radius:var(--radius)}
 .eq-remove{background:none;border:none;color:var(--text-muted);cursor:pointer;padding:0 3px;font-size:.9rem;flex-shrink:0}
 .eq-remove:hover{color:var(--danger)}
 .drag-handle{cursor:grab;color:var(--text-muted);font-size:.9rem;flex-shrink:0}
@@ -492,7 +492,7 @@ function renderEditQList(typeScores = getCurrentEditScores()) {
           ? q.options.map((option, index) => `(${String.fromCharCode(65 + index)}) ${option}`)
           : []),
         q.tail || ''
-      ].filter(Boolean).join('　');
+      ].filter(Boolean).join(q.type === 'T2' || q.type === 'T3' ? ' ' : '　');
       return `<div class="edit-q-item eq-item" draggable="true" data-id="${id}"
       ondragstart="eqDragStart(event,'${id}')" ondragover="eqDragOver(event,'${id}')"
       ondrop="eqDrop(event,'${id}')" ondragend="eqDragEnd()">

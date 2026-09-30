@@ -11,9 +11,9 @@
 .filter-bar{flex-wrap:nowrap;overflow-x:auto}
 .filter-bar .filter-group,.filter-bar .filter-actions{flex-shrink:0}
 .filter-bar .filter-actions{margin-left:0}
-.filter-bar #fChapter,.filter-bar #fSection{width:150px;max-width:150px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.filter-bar #fChapter option,.filter-bar #fSection option{padding-right:16px}
-.filter-bar .keyword-filter{width:180px;flex:0 0 180px}
+.filter-bar #fChapter,.filter-bar #fSection,.filter-bar #fSubsection{width:150px;max-width:150px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.filter-bar #fChapter option,.filter-bar #fSection option,.filter-bar #fSubsection option{padding-right:16px}
+.filter-bar .keyword-filter{width:120px;flex:0 0 120px}
 .filter-bar .keyword-filter .form-control{width:100%;min-width:0}
 .filter-bar .form-control,.filter-bar .filter-actions .btn{height:32px}
 .filter-bar .filter-actions .btn{padding:0 12px;align-items:center;justify-content:center;line-height:1}
@@ -45,10 +45,13 @@
 .question-table .q-number{font-family:var(--font-mono);font-variant-numeric:tabular-nums;color:var(--text-secondary);font-size:.9rem}
 .question-table .q-answer{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--primary)}
 .question-table .exam-date,.question-table .badge,.question-table .q-actions .btn{font-size:.88rem}
+.question-table .badge,.q-card-meta .badge{border-radius:var(--radius)}
 .question-table .q-actions{display:flex;align-items:center;gap:8px;white-space:nowrap}
 .question-table .q-actions .btn{gap:4px;padding:4px 8px}
 .question-table .q-actions svg{display:block}
 .question-section .question-pagination{padding:14px 0 0;display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+.q-search-empty-icon{display:flex;justify-content:center;margin-bottom:10px;color:var(--text-muted);opacity:.45}
+.q-search-empty-icon svg{width:32px;height:32px}
 .question-section #tableView,.question-section #cardView{box-shadow:none;border:0;border-radius:0;background:transparent}
 #qModal .modal{display:flex;flex-direction:column;max-height:90vh;overflow:hidden}
 #qModal .modal-header,#qModal .modal-footer{flex:none;position:relative}
@@ -178,7 +181,13 @@
         </div>
         <div class="filter-group" id="fSectionGroup" style="display:none">
           <span class="filter-label" id="fSectionLabel">節</span>
-          <select class="form-control" id="fSection" style="min-width:130px" onchange="updateTypeOptions()">
+          <select class="form-control" id="fSection" style="min-width:130px" onchange="onSectionFilter()">
+            <option value="">全部</option>
+          </select>
+        </div>
+        <div class="filter-group" id="fSubsectionGroup" style="display:none">
+          <span class="filter-label" id="fSubsectionLabel">小節</span>
+          <select class="form-control" id="fSubsection" style="min-width:130px" onchange="updateTypeOptions()">
             <option value="">全部</option>
           </select>
         </div>
@@ -323,10 +332,12 @@ function updateTypeOptions() {
   const bc = document.getElementById('fBook').value;
   const ch = document.getElementById('fChapter').value;
   const sec = document.getElementById('fSection').value;
+  const sub = document.getElementById('fSubsection').value;
   const available = new Set(allQuestions.filter(q =>
     q.subjectCode === sc && q.bookCode === bc &&
     (!ch || Number(q.chapterNum) === Number(ch)) &&
-    (!sec || Number(q.sectionNum) === Number(sec))
+    (!sec || Number(q.sectionNum) === Number(sec)) &&
+    (!sub || Number(q.subsectionNum) === Number(sub))
   ).map(q => q.type));
   const previous = fType.value;
   fType.innerHTML = '<option value="">全部題型</option>';
@@ -344,6 +355,18 @@ function addChapterOption(select, value, label) {
   select.add(option);
 }
 
+function chaptersFromQuestions(questions, book) {
+  const chapterNums = [...new Set(questions.map(q => q.chapterNum).filter(Boolean))].sort((a,b) => Number(a)-Number(b));
+  return chapterNums.map(chapterNum => {
+    const inChapter = questions.filter(q => Number(q.chapterNum) === Number(chapterNum));
+    const sectionNums = [...new Set(inChapter.map(q => q.sectionNum).filter(Boolean))].sort((a,b) => Number(a)-Number(b));
+    return {chapterNum, title:`${book.l1 || '章'} ${chapterNum}`, sections:sectionNums.map(sectionNum => {
+      const subsectionNums = [...new Set(inChapter.filter(q => Number(q.sectionNum) === Number(sectionNum)).map(q => q.subsectionNum).filter(Boolean))].sort((a,b) => Number(a)-Number(b));
+      return {sectionNum, title:`${book.l2 || '節'} ${sectionNum}`, subsections:subsectionNums.map(num => ({num, title:`${book.l3 || '小節'} ${num}`}))};
+    })};
+  });
+}
+
 window.onSubjectFilter = () => {
   allQuestions = [];
   const sc = fSubject.value;
@@ -357,6 +380,8 @@ window.onSubjectFilter = () => {
   document.getElementById('fChapter').innerHTML = '<option value="">全部</option>';
   document.getElementById('fSection').innerHTML = '<option value="">全部</option>';
   document.getElementById('fSectionGroup').style.display = 'none';
+  document.getElementById('fSubsection').innerHTML = '<option value="">全部</option>';
+  document.getElementById('fSubsectionGroup').style.display = 'none';
   updateTypeOptions();
 };
 
@@ -369,6 +394,8 @@ window.onBookFilter = async () => {
   fc.innerHTML = '<option value="">全部</option>';
   document.getElementById('fSection').innerHTML = '<option value="">全部</option>';
   document.getElementById('fSectionGroup').style.display = 'none';
+  document.getElementById('fSubsection').innerHTML = '<option value="">全部</option>';
+  document.getElementById('fSubsectionGroup').style.display = 'none';
   updateTypeOptions();
   if (!sc || !bc) return;
   const subj = _tbCache?.subjectByCode?.[sc];
@@ -388,9 +415,18 @@ window.onBookFilter = async () => {
     const questions = await DataService.getQuestions({ subjectCode: sc, bookCode: bc });
     if (fSubject.value !== sc || document.getElementById('fBook').value !== bc) return;
     allQuestions = questions;
-    if (!subj || !bookObj) {
-      const chaps = new Set(questions.map(q => q.chapterNum).filter(Boolean));
-      [...chaps].sort((a,b)=>Number(a)-Number(b)).forEach(ch => addChapterOption(fc, ch, `第 ${Number(ch)} 章`));
+    if (!window._currentChapters?.length) {
+      const fallbackBook = {
+        ...bookObj,
+        l1:bookObj?.l1 || '章',
+        l2:bookObj?.l2 || (questions.some(q => q.sectionNum) ? '節' : ''),
+        l3:bookObj?.l3 || (questions.some(q => q.subsectionNum) ? '小節' : ''),
+      };
+      window._currentBookObj = fallbackBook;
+      window._currentChapters = chaptersFromQuestions(questions, fallbackBook);
+      fc.innerHTML = '<option value="">全部</option>';
+      document.getElementById('fChapterLabel').textContent = fallbackBook.l1 || '章';
+      window._currentChapters.forEach(c => addChapterOption(fc, c.chapterNum, c.title));
     }
     updateTypeOptions();
   } catch (e) {
@@ -404,6 +440,8 @@ window.onChapterFilter = () => {
   const sl = document.getElementById('fSectionLabel');
   const sf = document.getElementById('fSection');
   sf.innerHTML = '<option value="">全部</option>';
+  document.getElementById('fSubsection').innerHTML = '<option value="">全部</option>';
+  document.getElementById('fSubsectionGroup').style.display = 'none';
   if (!ch || !window._currentChapters) { sg.style.display = 'none'; updateTypeOptions(); return; }
   const chapterObj = window._currentChapters.find(c => String(c.chapterNum) === String(ch));
   const l2 = window._currentBookObj?.l2 || '';
@@ -411,6 +449,22 @@ window.onChapterFilter = () => {
   sl.textContent = l2;
   chapterObj.sections.forEach(s => addChapterOption(sf, s.sectionNum, s.title || l2 + s.sectionNum));
   sg.style.display = '';
+  updateTypeOptions();
+};
+
+window.onSectionFilter = () => {
+  const ch = document.getElementById('fChapter').value;
+  const sec = document.getElementById('fSection').value;
+  const group = document.getElementById('fSubsectionGroup');
+  const select = document.getElementById('fSubsection');
+  select.innerHTML = '<option value="">全部</option>';
+  const chapter = window._currentChapters?.find(c => String(c.chapterNum) === String(ch));
+  const section = (chapter?.sections || []).find(s => String(s.sectionNum) === String(sec));
+  const l3 = window._currentBookObj?.l3 || '';
+  if (!l3 || !section || !(section.subsections || []).length) { group.style.display = 'none'; updateTypeOptions(); return; }
+  document.getElementById('fSubsectionLabel').textContent = l3;
+  section.subsections.forEach(s => addChapterOption(select, s.num, s.title || l3 + s.num));
+  group.style.display = '';
   updateTypeOptions();
 };
 
@@ -429,7 +483,7 @@ async function loadAll() {
   document.getElementById('resultCount').textContent = '';
   document.getElementById('qTbody').innerHTML =
     `<tr><td colspan="8" style="text-align:center;padding:48px 24px;color:var(--text-muted)">
-      <div style="font-size:2rem;margin-bottom:10px;opacity:.3">🔍</div>
+      <div class="q-search-empty-icon" aria-hidden="true">${ICONS.search}</div>
       <div style="font-size:.9rem">尚未搜尋題目</div>
     </td></tr>`;
   document.getElementById('qCardGrid').innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted)">尚未搜尋題目</div>';
@@ -450,6 +504,7 @@ window.doSearch = async () => {
   }
   const ch  = document.getElementById('fChapter').value;
   const sec = document.getElementById('fSection').value;
+  const sub = document.getElementById('fSubsection').value;
   const tp  = document.getElementById('fType').value;
   const kw  = document.getElementById('fKeyword').value.trim().toLowerCase();
   filtered = allQuestions.filter(q => {
@@ -461,6 +516,7 @@ window.doSearch = async () => {
       (!bc || q.bookCode===bc) &&
       (!ch || Number(q.chapterNum)===Number(ch)) &&
       (!sec || Number(q.sectionNum)===Number(sec)) &&
+      (!sub || Number(q.subsectionNum)===Number(sub)) &&
       (!tp || q.type===tp) &&
            (!kw || (q.text||'').toLowerCase().includes(kw) ||
                (q.answer||'').toLowerCase().includes(kw) ||
@@ -542,7 +598,7 @@ function renderTableMode(pageItems) {
         ? q.options.map((option, index) => `(${String.fromCharCode(65 + index)}) ${option}`)
         : []),
       q.tail || ''
-    ].filter(Boolean).join('　');
+    ].filter(Boolean).join(q.type === 'T2' || q.type === 'T3' ? ' ' : '　');
     return `<tr>
       <td><input type="checkbox" class="q-cb" data-id="${q.id}" ${selected.has(q.id)?'checked':''} onclick="onCbClick(event,'${q.id}')" title="按住 Shift 可選取範圍"></td>
       <td><span class="q-number">${escapeHtml(q.qnum||'—')}</span></td>
@@ -826,16 +882,7 @@ window.openEdit = async id => {
       ? await DataService.getChapterDefs(subject.id, editBook.id) : [];
   } catch (e) { UI.toast('章節載入失敗：' + e.message, 'danger'); return; }
   if (!editChapters.length) {
-    const chapterNums = [...new Set(allQuestions.map(item => item.chapterNum).filter(Boolean))].sort((a,b) => Number(a)-Number(b));
-    editChapters = chapterNums.map(chapterNum => {
-      const related = allQuestions.filter(item => String(item.chapterNum) === String(chapterNum));
-      const sectionNums = [...new Set(related.map(item => item.sectionNum).filter(Boolean))].sort((a,b) => Number(a)-Number(b));
-      return {chapterNum, title:`${editBook.l1 || '章'} ${chapterNum}`, sections:sectionNums.map(sectionNum => ({
-        sectionNum, title:`${editBook.l2 || '節'} ${sectionNum}`,
-        subsections:[...new Set(related.filter(item => String(item.sectionNum) === String(sectionNum)).map(item => item.subsectionNum).filter(Boolean))]
-          .sort((a,b) => Number(a)-Number(b)).map(num => ({num, title:`${editBook.l3 || '小節'} ${num}`}))
-      }))};
-    });
+    editChapters = chaptersFromQuestions(allQuestions, editBook);
   }
   const locationChapters = [...editChapters];
   if (q.chapterNum && !locationChapters.some(c => String(c.chapterNum) === String(q.chapterNum))) {
