@@ -979,7 +979,7 @@ body:has(.layout) {
 .topbar-subtitle { font-size: .85rem; line-height: 1.4; color: var(--text-secondary); }
 .topbar-subtitle::before { content: '︱'; margin-right: 6px; color: var(--text-light); }
 .topbar-actions { flex-wrap: wrap; justify-content: flex-end; }
-.toolbar-account { position: relative; display: inline-flex; align-items: center; padding-left: 18px; margin-left: 8px; border-left: 1px solid var(--border); color: var(--text-primary); font-size: .9rem; }
+.toolbar-account { position: relative; display: inline-flex; align-items: center; color: var(--text-primary); font-size: .9rem; }
 .toolbar-account-toggle { display: inline-flex; align-items: center; justify-content: center; padding: 3px; border: 0; border-radius: 50%; background: transparent; }
 .toolbar-account-toggle:hover, .toolbar-account-toggle[aria-expanded="true"] { background: #e9eef7; }
 .toolbar-account-toggle:focus-visible, .account-menu :focus-visible { outline: 2px solid var(--primary-light); outline-offset: 2px; }
@@ -988,6 +988,10 @@ body:has(.layout) {
 .account-menu[hidden] { display: none; }
 .account-menu a, .account-menu button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 12px; border: 0; border-radius: 7px; background: transparent; color: var(--text-primary); text-align: left; font: inherit; font-size: .9rem; white-space: nowrap; }
 .account-menu a:hover, .account-menu button:hover { background: #edf3ff; color: var(--primary-light); }
+.account-menu .account-role { margin-left: auto; padding: 4px 9px; border-radius: 8px; font-size: .76rem; font-weight: 600; line-height: 1.2; }
+.account-menu .account-role--teacher { background: #e8eef6; color: var(--primary); }
+.account-menu .account-role--manager { background: #fff0d6; color: #92620f; }
+.account-menu .account-role--admin { background: #fde8e8; color: #c0392b; }
 .account-menu svg { flex: none; }
 .page-content { padding: 28px; min-width: 0; }
 .card { background: rgba(255,255,255,.94); }

@@ -70,6 +70,7 @@
 .profile-school svg{flex:none}
 .profile-actions{display:flex;gap:10px;flex-wrap:wrap}
 .profile-actions .btn{width:148px;justify-content:center}
+#pmNickname:focus::placeholder{color:transparent}
 .catalog-subject{border:1px solid var(--border);border-radius:10px;margin-bottom:12px;overflow:hidden}
 .catalog-subject-header{display:flex;align-items:center;gap:9px;padding:12px 14px;background:var(--bg-base);font-size:.9rem;font-weight:700}
 .catalog-books{display:flex;flex-wrap:wrap;gap:9px 18px;padding:12px 14px;overflow-x:auto}
@@ -108,6 +109,9 @@
 .field-hint{font-size:.84rem;color:var(--text-muted);margin-top:3px}
 .required{color:var(--danger)}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.profile-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:14px}
+.profile-fields .form-group{min-width:0}
+@media(max-width:600px){.profile-fields{grid-template-columns:1fr}}
 .modal .err-box{background:#fef0ef;color:var(--danger);border:1px solid #f5c6c2;border-radius:var(--radius);padding:8px 12px;font-size:.88rem;margin-bottom:12px;display:none}
 
 </style>
@@ -219,18 +223,25 @@
     </div>
     <div class="modal-body">
       <div class="err-box" id="pmErr"></div>
-      <div class="form-group">
-        <label class="form-label">電子信箱（不可變更）</label>
-        <input class="form-control" id="pmEmail" disabled style="background:var(--bg-base);color:var(--text-muted)">
+      <div class="profile-fields">
+        <div class="form-group" id="pmEmailGroup">
+          <label class="form-label">電子信箱（登入帳號）</label>
+          <input class="form-control" id="pmEmail" disabled style="background:var(--bg-base);color:var(--text-muted)">
+        </div>
+        <div class="form-group" id="pmSchoolGroup" style="display:none">
+          <label class="form-label" for="pmSchool">服務學校 <span id="pmSchoolReq" class="required"></span></label>
+          <input class="form-control" id="pmSchool" placeholder="請輸入服務學校全名">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="pmName">姓名<span id="pmNameReq" class="required"> *</span></label>
+          <input class="form-control" id="pmName">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="pmNickname">暱稱（選填）</label>
+          <input class="form-control" id="pmNickname" maxlength="30" placeholder="未填時使用姓名顯示">
+        </div>
       </div>
-      <div class="form-group">
-        <label class="form-label">姓名 <span class="required">*</span></label>
-        <input class="form-control" id="pmName">
-      </div>
-      <div class="form-group" id="pmSchoolGroup" style="display:none">
-        <label class="form-label">服務學校 <span id="pmSchoolReq" class="required"></span></label>
-        <input class="form-control" id="pmSchool" placeholder="請輸入服務學校全名">
-      </div>
+      <p id="pmTeacherNote" class="field-hint" hidden>變更電子信箱、姓名請洽業務人員為您服務</p>
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="document.getElementById('profileModal').classList.add('hidden')">取消</button>
@@ -589,6 +600,7 @@ function buildProfilePanel() {
           <div>
             <div class="profile-name-row"><span style="font-size:1.05rem;font-weight:700">${UI.escapeHtml(u.displayName||'（未設定）')}</span>${roleTag(u.role)}</div>
             <div style="color:var(--text-muted);font-size:.9rem;margin-bottom:6px">${UI.escapeHtml(u.email||'')}</div>
+            ${u.nickname?.trim()?`<div style="font-size:.82rem;color:var(--text-secondary)">暱稱：${UI.escapeHtml(u.nickname.trim())}</div>`:''}
             ${showSchool&&u.school?`<div class="profile-school">${ICONS.schoolBuilding16}<span>${UI.escapeHtml(u.school)}</span></div>`:''}
           </div>
         </div>
@@ -637,11 +649,20 @@ function openProfileModal() {
   const u = DataService.getCurrentUser();
   document.getElementById('pmEmail').value  = u.email||'';
   document.getElementById('pmName').value   = u.displayName||'';
+  document.getElementById('pmNickname').value = u.nickname||'';
   document.getElementById('pmSchool').value = u.school||'';
+  const teacher = u.role === 'teacher';
+  const nameInput = document.getElementById('pmName');
+  nameInput.disabled = teacher;
+  nameInput.style.background = teacher ? 'var(--bg-base)' : '';
+  nameInput.style.color = teacher ? 'var(--text-muted)' : '';
+  document.getElementById('pmNameReq').textContent = teacher ? '' : '*';
+  document.getElementById('pmTeacherNote').hidden = !teacher;
   document.getElementById('pmErr').style.display = 'none';
   const sg = document.getElementById('pmSchoolGroup');
-  sg.style.display = u.role==='teacher' ? 'block':'none';
-  document.getElementById('pmSchoolReq').textContent = u.role==='teacher'?'*':'';
+  sg.style.display = teacher ? 'block':'none';
+  document.getElementById('pmEmailGroup').style.gridColumn = teacher ? '' : '1 / -1';
+  document.getElementById('pmSchoolReq').textContent = teacher ? '*' : '';
   document.getElementById('profileModal').classList.remove('hidden');
 }
 
@@ -684,15 +705,17 @@ window.saveProfile = async () => {
   const errEl = document.getElementById('pmErr');
   errEl.style.display='none';
   const name   = document.getElementById('pmName').value.trim();
+  const nickname = document.getElementById('pmNickname').value.trim();
   const school = document.getElementById('pmSchool').value.trim();
   const u      = DataService.getCurrentUser();
   const showErr = m => { errEl.textContent=m; errEl.style.display='block'; };
-  if (!name) return showErr('姓名不能為空');
-  if (u.role==='teacher' && !school) return showErr('教師必須填寫服務學校');
+  if (u.role !== 'teacher' && !name) return showErr('姓名不能為空');
+  if (u.role === 'teacher' && !school) return showErr('教師必須填寫服務學校');
   const btn = document.getElementById('pmSaveBtn');
   btn.disabled=true; btn.textContent='儲存中…';
   try {
-    await DataService.updateProfile(u.uid, { displayName:name, school:school||null });
+    const changes = u.role === 'teacher' ? { nickname, school } : { displayName:name, nickname, school:school||null };
+    await DataService.updateProfile(u.uid, changes);
     window.AppShell.refreshAccount(DataService.getCurrentUser());
     UI.toast('個人資料已更新','success');
     document.getElementById('profileModal').classList.add('hidden');

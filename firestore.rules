@@ -32,7 +32,9 @@ service cloud.firestore {
                     && resource.data.role == 'teacher'
                     && request.resource.data.role == 'teacher'
                     || isSignedIn() && request.auth.uid == uid
-                    && request.resource.data.role == resource.data.role;
+                    && request.resource.data.role == resource.data.role
+                    && (resource.data.role != 'teacher'
+                      || request.resource.data.get('displayName', null) == resource.data.get('displayName', null));
       allow delete: if request.auth.uid != uid && (
                     isPrimaryAdmin() && resource.data.role in ['manager', 'teacher']
                     || isAdmin() && resource.data.role == 'teacher');

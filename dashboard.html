@@ -50,9 +50,6 @@ let savedOverviewSelection = (() => {
   catch { return {}; }
 })();
 
-const greetingName = (user.displayName || user.email?.split('@')[0] || '').trim().replace(/\s*老師$/, '');
-document.getElementById('welcomeText').textContent = `歡迎回來，${greetingName ? `${greetingName} 老師` : '老師'}`;
-
 const subjectName = code => dashboardSubjects[code] || code || '未分類';
 const examBookName = exam => {
   const books = bookCache.get(exam.subjectCode);

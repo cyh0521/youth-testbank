@@ -5,8 +5,10 @@
  */
 (() => {
   const ROLE_KEY = 'youth.shellRole';
+  const ACCOUNT_KEY = 'youth.shellAccount';
   const COLLAPSED_KEY = 'sidebarCollapsed';
   const AVATAR_URL = new URL('avatar.js', document.currentScript.src).href;
+  const avatarReady = window.Avatar ? Promise.resolve() : import(AVATAR_URL);
   const read = (storage, key) => { try { return window[storage].getItem(key); } catch { return null; } };
   const write = (storage, key, value) => { try { window[storage].setItem(key, value); } catch { /* Storage may be unavailable. */ } };
   const activePage = () => {
@@ -113,11 +115,32 @@
     if (returnFocus) toggle.focus();
   }
 
-  async function refreshAccount(user) {
+  function accountSnapshot(user) {
+    return {
+      uid: user.uid,
+      role: user.role,
+      displayName: user.displayName || '',
+      nickname: user.nickname || '',
+      email: user.email || '',
+      avatar: user.avatar || ''
+    };
+  }
+
+  function cachedAccount() {
+    try {
+      const user = JSON.parse(read('sessionStorage', ACCOUNT_KEY));
+      if (!user || typeof user.uid !== 'string' || !['admin', 'manager', 'teacher'].includes(user.role) ||
+          typeof user.displayName !== 'string' || typeof user.email !== 'string' ||
+          (user.nickname != null && typeof user.nickname !== 'string') ||
+          typeof user.avatar !== 'string' || user.avatar.length > 240000 ||
+          user.role !== read('sessionStorage', ROLE_KEY)) return null;
+      return user;
+    } catch { return null; }
+  }
+
+  function renderAccount(user) {
     const topbar = document.querySelector('.topbar');
     if (!topbar || !user) return;
-    if (!window.Avatar) await import(AVATAR_URL);
-    if (!document.documentElement.classList.contains('auth-ready')) return;
 
     let actions = topbar.querySelector('.topbar-actions');
     if (!actions) {
@@ -125,13 +148,23 @@
       actions.className = 'topbar-actions';
       topbar.appendChild(actions);
     }
+    let greeting = actions.querySelector('#welcomeText');
+    if (!greeting) {
+      greeting = document.createElement('span');
+      greeting.id = 'welcomeText';
+      greeting.className = 'text-sm text-muted';
+      actions.prepend(greeting);
+    }
+    const name = (user.nickname?.trim() || user.displayName || user.email?.split('@')[0] || '').trim().replace(/\s*老師$/, '');
+    const title = user.role === 'teacher' ? `${name ? `${name} ` : ''}老師` : name;
+    greeting.textContent = activePage() === 'dashboard' ? `歡迎回來，${title}` : title;
     let account = actions.querySelector('.toolbar-account');
     if (!account) {
       account = document.createElement('div');
       account.className = 'toolbar-account';
       account.innerHTML = `<button class="toolbar-account-toggle" type="button" id="toolbarAccount" aria-label="開啟帳號選單" aria-expanded="false" aria-controls="accountMenu"></button>
         <div class="account-menu" id="accountMenu" hidden>
-          <a href="settings.html" id="accountProfile">${window.ICONS?.user16 || ''}<span>個人資訊</span></a>
+          <a href="settings.html" id="accountProfile">${window.ICONS?.user16 || ''}<span>個人資訊</span><span class="account-role" id="accountRole"></span></a>
           <button type="button" id="accountLogout">${window.ICONS?.logout16 || ''}<span>登出</span></button>
         </div>`;
       actions.appendChild(account);
@@ -161,7 +194,21 @@
         }
       });
     }
-    account.querySelector('#toolbarAccount').innerHTML = window.Avatar.markup(user.avatar, user.displayName || user.email, 'user-avatar--toolbar');
+    const roleBadge = account.querySelector('#accountRole');
+    roleBadge.textContent = { admin: '主要管理員', manager: '管理員', teacher: '教師' }[user.role] || '';
+    roleBadge.className = `account-role account-role--${user.role}`;
+    const toggle = account.querySelector('#toolbarAccount');
+    if (toggle._avatarValue !== user.avatar) {
+      toggle.innerHTML = window.Avatar.markup(user.avatar, user.displayName || user.email, 'user-avatar--toolbar');
+      toggle._avatarValue = user.avatar;
+    }
+  }
+
+  async function refreshAccount(user) {
+    if (!user || !document.documentElement.classList.contains('auth-ready')) return;
+    write('sessionStorage', ACCOUNT_KEY, JSON.stringify(accountSnapshot(user)));
+    await avatarReady;
+    if (document.documentElement.classList.contains('auth-ready')) renderAccount(user);
   }
 
   function mount(role, active = activePage()) {
@@ -224,7 +271,10 @@
   }
 
   function clear() {
-    try { sessionStorage.removeItem(ROLE_KEY); } catch { /* No cached shell. */ }
+    try {
+      sessionStorage.removeItem(ROLE_KEY);
+      sessionStorage.removeItem(ACCOUNT_KEY);
+    } catch { /* No cached shell. */ }
     document.documentElement.classList.remove('auth-ready');
   }
 
@@ -235,5 +285,9 @@
     enhanceTopbar();
     const main = document.querySelector('.main');
     if (main) main.inert = !document.documentElement.classList.contains('auth-ready');
+    const cached = cachedAccount();
+    if (cached) avatarReady.then(() => {
+      if (!document.documentElement.classList.contains('auth-ready')) renderAccount(cached);
+    }).catch(() => {});
   });
 })();
