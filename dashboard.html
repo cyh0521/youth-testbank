@@ -122,8 +122,8 @@ function renderExamRows() {
       <td class="nowrap">${Number(e.questionCount) || 0} 題</td>
       <td class="exam-date">${esc(dateLabel(e.createdAt))}</td>
       <td><div class="recent-exam-actions" data-exam-id="${esc(e.id)}">
-        <button class="btn btn-sm btn-outline" data-exam-action="preview">${recentEyeIcon}預覽</button>
-        ${canEditExams ? `<button class="btn btn-sm btn-outline" data-exam-action="edit">${I.edit16}編輯</button>` : ''}
+        <button class="btn btn-sm btn-ghost" data-exam-action="preview">${recentEyeIcon}預覽</button>
+        ${canEditExams ? `<button class="btn btn-sm btn-ghost" data-exam-action="edit">${I.edit16}編輯</button>` : ''}
         <button class="btn btn-sm btn-ghost" data-exam-action="print">${I.printer16}列印</button>
         <button class="btn btn-sm btn-primary" data-exam-action="word">${I.download16}下載</button>
         ${canEditExams ? `<button class="btn btn-sm btn-danger" data-exam-action="delete">${I.trash16}刪除</button>` : ''}

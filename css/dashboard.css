@@ -5,20 +5,21 @@
 .overview-heading h2, .section-heading h2 { font-size: 1.35rem; letter-spacing: .01em; font-weight: 700; }
 .overview-heading p, .section-heading p { color: var(--text-light); font-size: .9rem; margin-top: 2px; }
 .create-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 18px; }
-.create-action { display: flex; align-items: center; gap: 14px; padding: 21px 16px; border: 1px solid transparent; border-radius: 11px; transition: transform .18s, box-shadow .18s; min-width: 0; }
-.create-action:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(35,65,112,.09); }
+.create-action { display: flex; align-items: center; gap: 14px; padding: 21px 16px; border: 1px solid transparent; border-radius: 11px; transition: background-color .15s ease, border-color .15s ease; min-width: 0; }
+.create-action:hover:not(:disabled) { background-color: #e7f0ff; }
 .create-action strong { display: block; color: var(--text-primary); font-size: 1.05rem; margin-bottom: 5px; }
 .create-action small { display: block; color: #78869d; font-size: .84rem; line-height: 1.7; }
-.auto-action { background: linear-gradient(115deg, #edf4ff, #f3f7ff); color: #3478f6; }
-.manual-action { background: linear-gradient(115deg, #fff0ef, #fff6f5); color: #f57868; }
-.coded-action { background: linear-gradient(115deg, #edf8f3, #f3fbf7); color: #329775; }
+.auto-action { background: #edf4ff; color: #3478f6; }
+.manual-action { background: #fff0ef; color: #d66a5d; }
+.coded-action { background: #edf8f3; color: #329775; }
 .coded-action:hover { color: #258362; border-color: #cce9dc; }
-.print-action { background: linear-gradient(115deg, #f3f0fb, #f8f6fc); color: #9b8dbc; text-align: left; cursor: not-allowed; }
-.print-action:disabled:hover { transform: none; box-shadow: none; }
+.print-action { background: #f3f0fb; color: #9b8dbc; text-align: left; cursor: not-allowed; }
+.print-action:disabled:hover { background: #f3f0fb; border-color: transparent; }
 .print-action strong { color: #6f6980; }
 .coming-soon { display: inline-block; font-size: .76rem; font-weight: 500; color: #8a7da5; background: #eae5f3; border-radius: 5px; padding: 2px 5px; vertical-align: middle; white-space: nowrap; }
-.auto-action:hover { color: #3478f6; border-color: #d5e3fd; }
-.manual-action:hover { color: #f57868; border-color: #f5d9d3; }
+.auto-action:hover { color: #246cec; border-color: #bcd4fa; }
+.manual-action:hover { color: #c9564b; border-color: #f0c4bd; background: #ffe7e3; }
+.coded-action:hover { background: #e1f4eb; }
 .create-icon { display: flex; flex-shrink: 0; }
 .create-icon svg { width: 39px; height: 39px; stroke-width: 1.6; }
 .action-arrow { margin-left: auto; font-size: 1.8rem; font-weight: 300; }
@@ -51,7 +52,7 @@
 .exam-name strong { font-size: .95rem; font-weight: 550; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .exam-description { font-size: .82rem; }
 .exam-date { color: var(--text-light); font-size: .88rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
-.recent-table td.exam-date { padding-left: 10px; padding-right: 10px; }
+.recent-table th:nth-child(4), .recent-table td.exam-date { padding-left: 10px; padding-right: 10px; }
 .exam-manage { display: inline-flex; align-items: center; gap: 6px; color: #4a6184; white-space: nowrap; font-size: .85rem; }
 .exam-manage:hover { color: #2570ec; }
 .nowrap { white-space: nowrap; }
@@ -82,8 +83,8 @@
 .recent-exam-actions { display: flex; gap: 8px; align-items: center; justify-content: flex-start; flex-wrap: nowrap; }
 .recent-exam-actions .btn { flex: 0 0 auto; gap: 4px; padding: 4px 8px; white-space: nowrap; font-size: .88rem; line-height: 1; }
 .recent-exam-actions svg { display: block; flex: none; }
-.recent-exam-actions .btn-primary { background: #246cec; transition: background-color .15s, border-color .15s, box-shadow .15s; }
-.recent-exam-actions .btn-primary:hover { background: #155ee0; }
+.recent-exam-actions .btn-primary { background: #246cec; transition: background-color .15s ease, border-color .15s ease; }
+.recent-exam-actions .btn-primary:hover { background: #195dd3; }
 
 .recent-management-link { color: #2570ec; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
 .recent-management-link:hover { color: #174fae; }

@@ -59,7 +59,7 @@
 .avatar-options{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
 .avatar-choice{display:flex;align-items:center;justify-content:center;min-width:0;padding:9px 3px;border:1px solid var(--border);border-radius:10px;background:white;color:var(--text-secondary)}
 .avatar-choice:hover{background:#f5f8ff;border-color:#b8cdee}
-.avatar-choice[aria-pressed="true"]{border-color:#3478f6;background:#edf4ff;box-shadow:0 0 0 2px rgba(52,120,246,.15)}
+.avatar-choice[aria-pressed="true"]{border-color:#3478f6;background:#edf4ff}
 .avatar-upload{display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap}
 .avatar-upload small{color:var(--text-muted);font-size:.84rem}
 .avatar-file-input{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden}
@@ -409,8 +409,8 @@ window.filterUsers = () => {
       <td>${UI.escapeHtml(u.school||'—')}</td>
       <td style="color:var(--text-muted)">${fmtDate(u.createdAt)}</td>
       <td><div style="display:flex;gap:5px">
-        <button class="btn btn-sm btn-outline" type="button" onclick="openAccountInfo('${u.id||u.uid}')">${ICONS.info16}資訊</button>
-        ${(isPrimaryAdmin || u.role==='teacher' || u.uid===self.uid) ? `<button class="btn btn-sm btn-outline" onclick="openUserModal('${u.id||u.uid}')">${ICONS.edit16}編輯</button>` : ''}
+        <button class="btn btn-sm btn-ghost" type="button" onclick="openAccountInfo('${u.id||u.uid}')">${ICONS.info16}資訊</button>
+        ${(isPrimaryAdmin || u.role==='teacher' || u.uid===self.uid) ? `<button class="btn btn-sm btn-ghost" onclick="openUserModal('${u.id||u.uid}')">${ICONS.edit16}編輯</button>` : ''}
         ${u.uid!==self.uid && u.role!=='admin' && (isPrimaryAdmin || u.role==='teacher')?`<button class="btn btn-sm btn-danger" onclick="doDelete('${u.id||u.uid}')">${ICONS.trash16}刪除</button>`:''}
       </div></td>
     </tr>`).join('');
