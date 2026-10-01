@@ -327,7 +327,7 @@ window.openEdit = async (id) => {
   const e = allExams.find(x => x.id===id); if (!e) return;
   await loadExamQuestions(e);
   editExamId = id;
-  editDraftExam = { id, header:{ ...(e.header ?? loadHeader()) }, appearance:{ ...(e.appearance ?? loadAppearance()) },
+  editDraftExam = { id, scoreUnits:e.scoreUnits, header:{ ...(e.header ?? loadHeader()) }, appearance:{ ...(e.appearance ?? loadAppearance()) },
     onHeaderSaved:() => { e.header = { ...editDraftExam.header }; },
     onAppearanceSaved:() => { e.appearance = { ...editDraftExam.appearance }; } };
   editQOrder = [...(e.questionIds||[])];
@@ -470,7 +470,10 @@ window.normalizeEditScore = (input, type) => {
 
 function updateEditTotal() {
   const scores = getCurrentEditScores();
-  const total = editQOrder.reduce((sum, id) => sum + (scores[editQMap[id]?.type] || 0), 0);
+  const total = editQOrder.reduce((sum, id) => {
+    const q = editQMap[id];
+    return sum + (scores[q?.type] || 0) * (q?.type === 'T4' && editDraftExam?.scoreUnits?.T4 === 'blank' ? Math.max(1, parseInt(q.answerCount, 10) || 1) : 1);
+  }, 0);
   document.getElementById('editQCount').textContent = `${editQOrder.length} 題 / 共 ${total} 分`;
 }
 
@@ -484,7 +487,9 @@ function renderEditQList(typeScores = getCurrentEditScores()) {
   container.innerHTML = orderedEditTypes().map((type, sectionIndex) => {
     const ids = editQOrder.filter(id => editQMap[id]?.type === type);
     const score = editScoreValue(typeScores[type], type);
-    return `<div class="edit-q-section"><span>${EDIT_ROMANS[sectionIndex] || sectionIndex + 1}、${EDIT_TYPE_LABELS[type] || type}（${ids.length} 題）</span><label class="edit-q-score">每題 <input class="form-control" type="number" id="escore-${type}" value="${score}" min="0.5" max="99.5" step="0.5" oninput="updateEditTotal()" onchange="normalizeEditScore(this,'${type}')"> 分</label></div>` + ids.map((id, idx) => {
+    const byBlank = type === 'T4' && editDraftExam?.scoreUnits?.T4 === 'blank';
+    const countLabel = byBlank ? `${ids.length} 題，共 ${ids.reduce((sum, id) => sum + Math.max(1, parseInt(editQMap[id]?.answerCount, 10) || 1), 0)} 格` : `${ids.length} 題`;
+    return `<div class="edit-q-section"><span>${EDIT_ROMANS[sectionIndex] || sectionIndex + 1}、${EDIT_TYPE_LABELS[type] || type}（${countLabel}）</span><label class="edit-q-score">每${byBlank ? '格' : '題'} <input class="form-control" type="number" id="escore-${type}" value="${score}" min="0.5" max="99.5" step="0.5" oninput="updateEditTotal()" onchange="normalizeEditScore(this,'${type}')"> 分</label></div>` + ids.map((id, idx) => {
       const q = editQMap[id];
       const questionLine = [
         q.text || '—',
@@ -585,7 +590,7 @@ window.saveEdit = async () => {
   let totalScore = 0;
   editQOrder.forEach(id => {
     const q = editQMap[id]; if (!q) return;
-    totalScore += typeScores[q.type] || 2;
+    totalScore += (typeScores[q.type] || 2) * (q.type === 'T4' && editDraftExam?.scoreUnits?.T4 === 'blank' ? Math.max(1, parseInt(q.answerCount, 10) || 1) : 1);
   });
   try {
     await DataService.saveExam({
@@ -593,6 +598,7 @@ window.saveEdit = async () => {
       title,
       description: document.getElementById('editExamDescription').value.trim(),
       typeScores,
+      scoreUnits: editDraftExam.scoreUnits,
       typeOrder: orderedEditTypes(),
       header:        editDraftExam.header,
       appearance:    editDraftExam.appearance,

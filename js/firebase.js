@@ -508,14 +508,13 @@ window.DataService = {
     const pool = await DataService.getQuestions({ ...opts, type });
     const cfg = COMPOSE_DIFFICULTY[diffLevel] || COMPOSE_DIFFICULTY.medium;
     if (!cfg.weights) return [...pool].sort(() => Math.random() - .5).slice(0, count);
-    const buckets = { '◎': [], '': [], '△': [] };
+    const buckets = { '◎': [], '△': [] };
     pool.forEach(q => { const d = q.difficulty||''; if (d in buckets) buckets[d].push(q); });
     Object.values(buckets).forEach(b => b.sort(() => Math.random() - .5));
     const result = []; const w = cfg.weights;
-    ['◎','','△'].forEach(d => {
-      const want = Math.round(w[d] * count);
-      result.push(...buckets[d].slice(0, Math.min(want, buckets[d].length)));
-    });
+    const hardCount = Math.round(w['◎'] * count);
+    result.push(...buckets['◎'].slice(0, hardCount));
+    result.push(...buckets['△'].slice(0, count - hardCount));
     if (result.length < count) {
       const used = new Set(result.map(q => q.id));
       const rest = pool.filter(q => !used.has(q.id)).sort(() => Math.random() - .5);

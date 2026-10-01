@@ -13,9 +13,9 @@ const QUESTION_TYPES = {
 };
 
 const COMPOSE_DIFFICULTY = {
-  hard:   { label:'偏難',     weights:{ '◎':0.6,  '':0.3,  '△':0.1 } },
-  medium: { label:'適中',     weights:{ '◎':0.34, '':0.33, '△':0.33 } },
-  easy:   { label:'偏易',     weights:{ '◎':0.1,  '':0.3,  '△':0.6 } },
+  hard:   { label:'偏難',     weights:{ '◎':0.7, '△':0.3 } },
+  medium: { label:'適中',     weights:{ '◎':0.5, '△':0.5 } },
+  easy:   { label:'偏易',     weights:{ '◎':0.3, '△':0.7 } },
   any:    { label:'不限難易', weights:null }
 };
 

@@ -9,9 +9,14 @@
 <style>
 .compose-layout{display:block}
 .compose-panel[hidden]{display:none}
-.scope-layout{display:grid;grid-template-columns:minmax(240px,.7fr) minmax(0,1.7fr);gap:16px}
+.scope-layout{display:grid;grid-template-columns:minmax(240px,.7fr) minmax(0,1.7fr);gap:16px;align-items:start}
 .scope-layout .card{min-width:0}
-.scope-tree{height:clamp(340px,60vh,640px);overflow:auto;padding:12px;background:#fff}
+.scope-layout .card-header{min-height:60px;padding:10px 20px;gap:12px}
+.scope-layout .card-header h2{font-size:1.2rem;font-weight:700;letter-spacing:.01em}
+.scope-title{display:flex;align-items:baseline;gap:8px;min-width:0;flex-wrap:wrap}
+.scope-available{font-size:.88rem;font-weight:400;color:var(--text-secondary);white-space:nowrap}
+.scope-header-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.scope-tree{height:auto;max-height:none;overflow:visible;padding:12px;background:#fff}
 .scope-empty{padding:32px 16px;text-align:center;color:var(--text-muted)}
 .subject-node{margin-bottom:4px}
 .subject-node summary{cursor:pointer;padding:7px 8px;color:var(--primary);font-weight:600;border-radius:4px}
@@ -21,24 +26,59 @@
 .book-node input{accent-color:#385b8a}
 .wizard-actions{display:flex;justify-content:flex-end;gap:10px;padding:16px 0}
 .card>.wizard-actions{padding:16px;border-top:1px solid var(--border-light)}
-#chapterTree.scope-tree{max-height:none}
+#chapterTree.scope-tree{max-height:none;border:0;border-radius:0}
 #chapterTree .chapter-item{border-bottom:0;padding-top:8px;padding-bottom:8px;font-size:1rem;line-height:1.6}
 #chapterTree .chapter-item .ch-count{font-size:.94rem}
 #chapterTree .chapter-children{margin-left:18px;border-left:1px dotted #b5c3d3}
 #chapterTree .chapter-item.section,#chapterTree .chapter-item.subsection{padding-left:12px}
 #chapterTree .chapter-item:has(input:checked){background:#eaf1f8}
+#chapterTree .chapter-item{user-select:none}
 #chapterTree .expand-btn{color:#385b8a}
-@media(max-width:760px){.scope-layout{grid-template-columns:1fr}.scope-tree{height:340px}#subjectTree{height:auto;max-height:280px}.wizard-actions{flex-wrap:wrap}}
+@media(max-width:1100px){.scope-layout{grid-template-columns:1fr}}
+@media(max-width:760px){.wizard-actions{flex-wrap:wrap}}
 
 /* 設定面板 */
 .config-card .card-body{padding:16px}
 .section-title{font-size:.86rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 8px;display:flex;align-items:center;gap:6px}
 .section-title:first-child{margin-top:0}
-.type-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:8px;border-radius:var(--radius);background:var(--bg-base);border:1px solid var(--border-light)}
-.type-row .form-control{width:72px;font-size:.88rem;padding:4px 6px;text-align:center}
-.type-row .type-label{flex:1;font-size:.9rem;font-weight:500}
-.type-row .type-pool{font-size:.84rem;color:var(--text-muted);white-space:nowrap}
+.type-row,.score-config-row{display:flex;align-items:center;gap:10px;padding:9px 11px;margin-bottom:8px;border:1px solid var(--border-light);border-radius:9px;background:#fff;font-size:.9rem}
+.type-row .type-label,.score-config-row .score-label{flex:1;min-width:0}
+.type-row .type-label{display:flex;align-items:baseline;gap:8px;font-weight:500}
+.type-row .type-pool{font-size:.82rem;color:var(--text-muted);font-weight:400;white-space:nowrap}
+.type-row .row-unit,.score-config-row .row-unit{color:var(--text-secondary);font-size:.86rem;white-space:nowrap}
 .chapter-tree{max-height:220px}
+.type-layout{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);align-items:start}
+.type-left-column{display:flex;flex-direction:column;gap:16px;min-width:0}
+.type-layout .scope-title{flex-wrap:nowrap}
+.type-layout .scope-title h2{white-space:nowrap}
+.type-card-body{padding:18px 20px;background:#fff}
+.difficulty-card .card-body{padding:18px 20px}
+.difficulty-card .form-group{margin-bottom:0}
+.type-title-note{font-size:.84rem;color:var(--text-secondary);font-weight:400;white-space:nowrap}
+.type-card-body .type-row:last-child,.type-card-body .score-config-row:last-child{margin-bottom:0}
+.type-row{flex-wrap:wrap}
+.type-row.invalid{border-color:var(--danger);background:#fff3f1}
+.type-error{display:none;width:100%;padding-left:4px;color:var(--danger);font-size:.82rem;line-height:1.4}
+.type-row.invalid .type-error{display:block}
+.type-count-suggestion{padding:3px 0;border:0;background:none;font-size:1rem;font-weight:700;white-space:nowrap;cursor:pointer}
+.type-count-suggestion.is-add{color:#bc3832}
+.type-count-suggestion.is-remove{color:#18764d}
+.type-count-suggestion[hidden]{display:none}
+.score-count-note{display:block;margin-top:5px;font-size:.82rem;font-weight:400}
+.number-stepper{display:flex;align-items:stretch;width:90px;flex:none;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;background:#fff}
+.number-stepper:focus-within{border-color:var(--primary-light);box-shadow:0 0 0 2px #3478f622}
+.number-stepper .form-control{width:100%;min-width:0;padding:3px 6px;font-size:.88rem;border:0;border-radius:0;box-shadow:none;text-align:center;appearance:textfield;-moz-appearance:textfield}
+.number-stepper .form-control::-webkit-inner-spin-button,.number-stepper .form-control::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.number-stepper-buttons{display:flex;flex-direction:column;flex:none;width:23px;border-left:1px solid var(--border)}
+.number-stepper-buttons button{display:grid;place-items:center;flex:1;min-height:15px;padding:0;border:0;background:#f6f8fb;color:#536681;font-size:9px;line-height:1}
+.number-stepper-buttons button+button{border-top:1px solid var(--border)}
+.number-stepper-buttons button:hover{background:#e8eef6;color:var(--primary)}
+.difficulty-note{margin-top:8px;color:var(--text-muted);font-size:.79rem;line-height:1.5}
+.score-total{margin-top:14px;padding:13px 14px;border-radius:9px;background:#e1f3e9;color:#176d49;font-weight:700}
+.integer-score-option{display:flex;align-items:center;gap:8px;width:fit-content;margin-top:12px;font-size:.88rem;color:var(--text-secondary);cursor:pointer}
+.integer-score-option[hidden]{display:none}
+.integer-score-option input{accent-color:var(--primary);width:16px;height:16px}
+@media(max-width:1220px){.type-layout{grid-template-columns:1fr}}
 
 /* 預覽區 */
 .preview-header{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
@@ -78,38 +118,37 @@
     </div>
     <div class="page-content">
 
-<section class="import-progress" aria-label="電腦選題流程" style="--process-step-count:5;--process-initial-width:20%"><div class="steps" role="list">
+<section class="import-progress" aria-label="電腦選題流程" style="--process-step-count:4;--process-initial-width:25%"><div class="steps" role="list">
 <div class="step active" id="composeStep1" role="listitem" aria-current="step"><span class="step-num">1</span><span class="step-copy"><strong>出題範圍</strong></span></div>
-<div class="step" id="composeStep2" role="listitem"><span class="step-num">2</span><span class="step-copy"><strong>題型配置</strong></span></div>
-<div class="step" id="composeStep3" role="listitem"><span class="step-num">3</span><span class="step-copy"><strong>計分設定</strong></span></div>
-<div class="step" id="composeStep4" role="listitem"><span class="step-num">4</span><span class="step-copy"><strong>選題結果</strong></span></div>
-<div class="step" id="composeStep5" role="listitem"><span class="step-num">5</span><span class="step-copy"><strong>試卷設定</strong></span></div>
-</div><div class="import-progress-track" id="composeProgressTrack" role="progressbar" aria-label="電腦選題進度" aria-valuemin="0" aria-valuemax="5" aria-valuenow="1" aria-valuetext="第 1 步，共 5 步"><div class="import-progress-fill" id="composeProgressFill"></div></div></section>
+<div class="step" id="composeStep2" role="listitem"><span class="step-num">2</span><span class="step-copy"><strong>題型與配分</strong></span></div>
+<div class="step" id="composeStep3" role="listitem"><span class="step-num">3</span><span class="step-copy"><strong>選題結果</strong></span></div>
+<div class="step" id="composeStep4" role="listitem"><span class="step-num">4</span><span class="step-copy"><strong>試卷設定</strong></span></div>
+</div><div class="import-progress-track" id="composeProgressTrack" role="progressbar" aria-label="電腦選題進度" aria-valuemin="0" aria-valuemax="4" aria-valuenow="1" aria-valuetext="第 1 步，共 4 步"><div class="import-progress-fill" id="composeProgressFill"></div></div></section>
 
       <div class="compose-layout">
         <section id="composePanel1" class="compose-panel">
           <div class="scope-layout">
             <section class="card"><div class="card-header"><h2>選擇命題科目</h2></div><div class="scope-tree" id="subjectTree"></div></section>
-            <section class="card"><div class="card-header"><h2>選擇命題章節</h2><button class="btn btn-ghost btn-sm" onclick="clearAllChapters()">全部清除</button></div><div class="chapter-tree scope-tree" id="chapterTree"><div class="scope-empty">請先選擇左側的科目與冊次</div></div></section>
+            <section class="card"><div class="card-header"><div class="scope-title"><h2>選擇命題章節</h2><span class="scope-available" id="scopeAvailable">︱可選題數 0 題</span></div><div class="scope-header-actions"><button class="btn btn-ghost btn-sm" onclick="clearAllChapters()">全部清除</button><button class="btn btn-primary btn-sm" onclick="goComposeStep(2)">下一步：題型與題數</button></div></div><div class="chapter-tree scope-tree" id="chapterTree"><div class="scope-empty">請先選擇左側的科目與冊次</div></div></section>
           </div>
           <div hidden><select id="cSubject" onchange="onSubjectChange()"><option value="">請選擇科目</option></select><select id="cBook" disabled onchange="loadChapters()"><option value="">請先選科目</option></select></div>
-          <div class="wizard-actions"><button class="btn btn-primary" onclick="goComposeStep(2)">下一步：題型配置 →</button></div>
         </section>
-        <section id="composePanel2" class="compose-panel card" hidden>
-          <div class="card-header"><h2>題型配置</h2></div><div class="card-body"><div id="typeRows"></div><div class="form-group"><label class="form-label" for="cDifficulty">難易度設定</label><select class="form-control" id="cDifficulty"><option value="medium" selected>適中</option><option value="easy">偏易</option><option value="hard">偏難</option></select></div></div>
-          <div class="wizard-actions"><button class="btn btn-ghost" onclick="goComposeStep(1)">← 上一步</button><button class="btn btn-primary" onclick="goComposeStep(3)">下一步：計分設定 →</button></div>
+        <section id="composePanel2" class="compose-panel" hidden>
+          <div class="scope-layout type-layout">
+            <div class="type-left-column">
+              <section class="card"><div class="card-header"><div class="scope-title"><h2>題型與題數</h2><span class="type-title-note">︱調整各題型題數</span></div></div><div class="type-card-body"><div id="typeRows"></div></div></section>
+              <section class="card difficulty-card"><div class="card-header"><div class="scope-title"><h2>試卷難易度</h2><span class="type-title-note">︱調整難易題配置比例</span></div></div><div class="card-body"><div class="form-group"><label class="sr-only" for="cDifficulty">試卷難易度</label><select class="form-control" id="cDifficulty"><option value="medium" selected>適中｜較難題 50% ≈ 簡易題 50%</option><option value="easy">偏易｜簡易題 70% &gt; 較難題 30%</option><option value="hard">偏難｜較難題 70% &gt; 簡易題 30%</option></select><p class="difficulty-note">難易題比例僅供參考。題目數量不足時，會依可用題目調整比例。</p></div></div></section>
+            </div>
+            <section class="card"><div class="card-header"><div class="scope-title"><h2>每題配分</h2><span class="type-title-note">︱自動配分或手動調整</span></div><div class="scope-header-actions"><button class="btn btn-ghost btn-sm" onclick="goComposeStep(1)">上一步</button><button class="btn btn-primary btn-sm" onclick="doGenerate()" id="generateBtn">下一步：選題結果</button></div></div><div class="type-card-body"><div id="scoreRows">請先設定題型與題數</div><label class="integer-score-option" id="integerScoreOption" hidden><input type="checkbox" id="integerScores" onchange="toggleIntegerScores()">以整數配分</label></div></section>
+          </div>
         </section>
         <section id="composePanel3" class="compose-panel card" hidden>
-          <div class="card-header"><h2>計分設定</h2></div><div class="card-body"><div id="scoreRows">設定題型後自動顯示</div></div>
-          <div class="wizard-actions"><button class="btn btn-ghost" onclick="goComposeStep(2)">← 上一步</button><button class="btn btn-primary" onclick="doGenerate()" id="generateBtn">⊕ 電腦自動選題</button></div>
+          <div class="card-header"><h2>選題結果</h2><div id="previewStats" class="preview-stats"></div></div><div class="card-body" id="previewArea"></div>
+          <div class="wizard-actions"><button class="btn btn-ghost" onclick="goComposeStep(2)">← 上一步</button><button class="btn btn-primary" onclick="goComposeStep(4)">下一步：試卷設定 →</button></div>
         </section>
         <section id="composePanel4" class="compose-panel card" hidden>
-          <div class="card-header"><h2>選題結果</h2><div id="previewStats" class="preview-stats"></div></div><div class="card-body" id="previewArea"></div>
-          <div class="wizard-actions"><button class="btn btn-ghost" onclick="goComposeStep(3)">← 上一步</button><button class="btn btn-primary" onclick="goComposeStep(5)">下一步：試卷設定 →</button></div>
-        </section>
-        <section id="composePanel5" class="compose-panel card" hidden>
           <div class="card-header"><h2>試卷設定</h2></div><div class="card-body"><label class="form-label" for="quickExamTitle">試卷名稱</label><input class="form-control" id="quickExamTitle" placeholder="試卷名稱（必填才能儲存）"><div class="exam-save-bar"><button class="btn btn-outline" onclick="openHeaderSettings()">✎ 試卷表頭</button><button class="btn btn-outline" onclick="previewExam()">◉ 預覽試卷</button><button class="btn btn-primary" onclick="openSaveModal()">💾 儲存為試卷</button></div></div>
-          <div class="wizard-actions"><button class="btn btn-ghost" onclick="goComposeStep(4)">← 上一步</button></div>
+          <div class="wizard-actions"><button class="btn btn-ghost" onclick="goComposeStep(3)">← 上一步</button></div>
         </section>
       </div>
 
@@ -142,17 +181,19 @@
 <script type="module">
 import { guardPage } from './js/auth-guard.js';
 import { showExamPreview, showHeaderSettings, newExamHeader, loadAppearance } from './js/exam-preview.js';
+import { allocateTypeScores, suggestTypeCountChange } from './js/score-allocation.js';
+import { blankCount, selectFillQuestions, reachableBlankCounts } from './js/blank-selection.js';
 window._activeNav = 'compose';
 const user = await guardPage(['admin','manager','teacher']);
 if (!user) throw new Error('not auth');
 
 function setComposeStep(n) {
-  for (let i = 1; i <= 5; i++) document.getElementById('composePanel' + i).hidden = i !== n;
-  document.getElementById('composeProgressFill').style.width = `${n * 20}%`;
+  for (let i = 1; i <= 4; i++) document.getElementById('composePanel' + i).hidden = i !== n;
+  document.getElementById('composeProgressFill').style.width = `${n * 25}%`;
   const progress = document.getElementById('composeProgressTrack');
   progress.setAttribute('aria-valuenow', String(n));
-  progress.setAttribute('aria-valuetext', `第 ${n} 步，共 5 步`);
-  for (let i = 1; i <= 5; i++) {
+  progress.setAttribute('aria-valuetext', `第 ${n} 步，共 4 步`);
+  for (let i = 1; i <= 4; i++) {
     const step = document.getElementById('composeStep' + i);
     step.classList.toggle('active', i === n);
     step.classList.toggle('done', i < n);
@@ -163,8 +204,7 @@ function setComposeStep(n) {
 
 window.goComposeStep = n => {
   if (n > 1 && !document.querySelector('.chap-cb:checked')) { UI.toast('請勾選至少一個章節', 'warning'); return; }
-  if (n >= 3 && !TYPE_CONFIGS.some(t => Number(document.getElementById('cnt-' + t.code).value) > 0)) { UI.toast('請至少設定一種題型的題數', 'warning'); return; }
-  if (n >= 4 && !generatedQuestions.length) { UI.toast('請先選題', 'warning'); return; }
+  if (n >= 3 && !generatedQuestions.length) { UI.toast('請先選題', 'warning'); return; }
   setComposeStep(n);
 };
 
@@ -184,14 +224,27 @@ const TYPE_CONFIGS = [
 ];
 document.getElementById('typeRows').innerHTML = TYPE_CONFIGS.map(t => `
   <div class="type-row" id="typerow-${t.code}" style="display:none">
-    <span class="type-label">${t.label}</span>
-    <span class="type-pool" id="pool-${t.code}" style="color:var(--text-muted);font-size:.86rem;margin-right:4px"></span>
-    <input class="form-control score-input" type="number" id="cnt-${t.code}" value="0" min="0" max="99" oninput="updateScoreRows()">
-    <span style="font-size:.86rem;color:var(--text-muted)">題</span>
+    <span class="type-label">${t.label}<span class="type-pool" id="pool-${t.code}"></span></span>
+    <button type="button" class="type-count-suggestion" id="count-suggestion-${t.code}" hidden></button>
+    <div class="number-stepper"><input class="form-control score-input" type="number" id="cnt-${t.code}" value="0" min="0" max="99" step="1" aria-label="${t.label}${t.code === 'T4' ? '格數' : '題數'}" oninput="updateScoreRows()"><div class="number-stepper-buttons"><button type="button" tabindex="-1" aria-label="增加${t.label}${t.code === 'T4' ? '格數' : '題數'}" onclick="adjustComposeNumber('cnt-${t.code}',1)">▲</button><button type="button" tabindex="-1" aria-label="減少${t.label}${t.code === 'T4' ? '格數' : '題數'}" onclick="adjustComposeNumber('cnt-${t.code}',-1)">▼</button></div></div>
+    <span class="row-unit">${t.code === 'T4' ? '格' : '題'}</span>
+    <span class="type-error" id="cnt-error-${t.code}" role="alert"></span>
   </div>
 `).join('');
 
 const escapeTreeText = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+window.adjustComposeNumber = (id, direction) => {
+  const input = document.getElementById(id);
+  const step = Number(input.step) || 1;
+  const min = Number(input.min) || 0;
+  const configuredMax = Number(input.max) || Infinity;
+  const max = id.startsWith('cnt-') ? Math.min(configuredMax, Number(input.dataset.poolCount) || 0) : configuredMax;
+  const current = Number(input.value);
+  const base = Number.isFinite(current) ? (id.startsWith('cnt-') || step === 1 ? (direction > 0 ? Math.floor(current) : Math.ceil(current)) : current) : min;
+  input.value = Math.min(max, Math.max(min, Math.round((base + direction * step) * 10) / 10));
+  input.dispatchEvent(new Event('input', { bubbles:true }));
+  input.focus();
+};
 document.getElementById('subjectTree').innerHTML = (_tbCache?.subjects || []).map(subject => {
   const books = _tbCache.booksBySubject[subject.id] || [];
   return `<details class="subject-node"><summary>${escapeTreeText(subject.name)}</summary>${books.length ? books.map(book => `<label class="book-node"><input type="radio" name="scopeBook" data-subject="${escapeTreeText(subject.code)}" value="${escapeTreeText(book.code)}"><span>${escapeTreeText(book.name)}</span></label>`).join('') : '<div class="scope-empty">尚無冊次</div>'}</details>`;
@@ -211,13 +264,62 @@ document.getElementById('subjectTree').addEventListener('change', async event =>
 let chapterData = {};
 let generatedQuestions = [];
 let draftPreviewData = null;
+let lastChapterAnchor = null;
+const chapterTree = document.getElementById('chapterTree');
+chapterTree.addEventListener('click', event => {
+  const row = event.target.closest('.chapter-item');
+  if (!row || event.target.closest('.expand-btn')) return;
+  const label = event.target.closest('label');
+  const directInput = event.target.matches('.chap-cb');
+  const cb = directInput ? event.target : label?.control || row.querySelector(':scope > .chap-cb');
+  if (!cb || !chapterTree.contains(cb)) return;
+  if (!directInput && !label) {
+    if (event.shiftKey) {
+      const anchor = lastChapterAnchor;
+      lastChapterAnchor = cb;
+      selectChapterRange(anchor, cb);
+    } else cb.click();
+    return;
+  }
+  if (!event.shiftKey) {
+    if (directInput) lastChapterAnchor = cb;
+    return;
+  }
+  event.preventDefault();
+  const anchor = lastChapterAnchor;
+  lastChapterAnchor = cb;
+  // 讓核取方塊的瀏覽器預設點擊狀態先結束，再一次套用整段範圍。
+  setTimeout(() => selectChapterRange(anchor, cb), 0);
+}, true);
+
+function selectChapterRange(anchor, target) {
+  const visible = [...chapterTree.querySelectorAll('.chap-cb')].filter(cb => cb.getClientRects().length);
+  const start = visible.indexOf(anchor), end = visible.indexOf(target);
+  if (end < 0) return;
+  const range = start < 0 ? [target] : visible.slice(Math.min(start,end), Math.max(start,end)+1);
+  const sameLevel = start < 0 || (anchor.classList.contains('chapter-cb') === target.classList.contains('chapter-cb') && anchor.classList.contains('sec-cb') === target.classList.contains('sec-cb'));
+  const selected = sameLevel
+    ? range.filter(cb => cb.classList.contains('chapter-cb') === target.classList.contains('chapter-cb') && cb.classList.contains('sec-cb') === target.classList.contains('sec-cb'))
+    : range.filter(cb => !cb.closest('.chapter-item').nextElementSibling?.classList.contains('chapter-children'));
+  if (!selected.includes(target)) selected.push(target);
+  for (const cb of selected) {
+    cb.checked = true;
+    cb.indeterminate = false;
+    if (cb.classList.contains('chapter-cb')) chapterTree.querySelectorAll(`.chap-cb[data-ch="${cb.dataset.ch}"]:not(.chapter-cb)`).forEach(child => { child.checked = true; child.indeterminate = false; });
+    else if (cb.classList.contains('sec-cb')) chapterTree.querySelectorAll(`.chap-cb[data-ch="${cb.dataset.ch}"][data-sec="${cb.dataset.sec}"][data-sub]`).forEach(child => { child.checked = true; child.indeterminate = false; });
+  }
+  chapterTree.querySelectorAll('.sec-cb').forEach(cb => syncParentCb(cb.dataset.ch, cb.dataset.sec));
+  updateTypePoolsFromSelection();
+}
 window.openHeaderSettings = () => {
-  setComposeStep(5);
+  setComposeStep(4);
   draftPreviewData ??= { header:newExamHeader(), appearance:loadAppearance() };
   showHeaderSettings(draftPreviewData);
 };
 
 window.onSubjectChange = () => {
+  lastChapterAnchor = null;
+  Object.keys(scoreOverrides).forEach(code => delete scoreOverrides[code]);
   const sc = cSubject.value;
   const bk = document.getElementById('cBook');
   if (sc) {
@@ -228,6 +330,7 @@ window.onSubjectChange = () => {
     bk.innerHTML = '<option value="">請先選科目</option>';
   }
   document.getElementById('chapterTree').innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:.88rem">請選擇冊次</div>';
+  document.getElementById('scopeAvailable').textContent = '︱可選題數 0 題';
   window._allBookQs = [];
   TYPE_CONFIGS.forEach(t => document.getElementById('cnt-'+t.code).value = 0);
   updateTypePools([]);
@@ -239,6 +342,7 @@ window.loadChapters = async () => {
   if (!sc || !bc) return;
   const tree = document.getElementById('chapterTree');
   tree.innerHTML = '<div style="padding:12px;text-align:center;color:var(--text-muted);font-size:.88rem">載入中…</div>';
+  document.getElementById('scopeAvailable').textContent = '︱可選題數 0 題';
 
   const isCurrentBook = () => cSubject.value === sc && document.getElementById('cBook').value === bc;
   let qs = [];
@@ -253,10 +357,14 @@ window.loadChapters = async () => {
   const countMap = {};
   qs.forEach(q => {
     const ch = q.chapterNum; if (!ch) return;
-    if (!countMap[ch]) countMap[ch] = { count: 0, sections: {} };
+    if (!countMap[ch]) countMap[ch] = { count: 0, sections: {}, subsections: {} };
     countMap[ch].count++;
     if (q.sectionNum) {
       countMap[ch].sections[q.sectionNum] = (countMap[ch].sections[q.sectionNum]||0) + 1;
+      if (q.subsectionNum) {
+        const key = `${q.sectionNum}-${q.subsectionNum}`;
+        countMap[ch].subsections[key] = (countMap[ch].subsections[key]||0) + 1;
+      }
     }
   });
   chapterData = countMap;
@@ -307,7 +415,7 @@ window.loadChapters = async () => {
   });
 
   tree.innerHTML = [...allChNums].sort((a,b)=>parseInt(a)-parseInt(b)).map(ch => {
-    const info = countMap[ch] || { count: 0, sections: {} };
+    const info = countMap[ch] || { count: 0, sections: {}, subsections: {} };
     const allSecs = new Set([
       ...Object.keys((secTitles[ch]||{})),
       ...Object.keys(info.sections)
@@ -322,22 +430,23 @@ window.loadChapters = async () => {
           <span style="width:16px;flex-shrink:0;display:inline-block"></span>
           <input type="checkbox" class="chap-cb" data-ch="${ch}" data-sec="${sec}" data-sub="${ss.num}">
           <span>${escapeTreeText(ss.title || (l3+ss.num))}</span>
-          <span class="ch-count"></span>
+          <span class="ch-count">${info.subsections[`${sec}-${ss.num}`] || 0} 題</span>
         </div>`).join('') : '';
       return `<div class="chapter-item section">
         ${hasSubChildren ? `<button class="expand-btn" onclick="toggleChildren(this)" aria-label="收合章節" aria-expanded="true">▼</button>` : '<span style="width:16px;flex-shrink:0"></span>'}
         <input type="checkbox" class="chap-cb sec-cb" data-ch="${ch}" data-sec="${sec}" onchange="onSecCbChange(this)">
         <span>${escapeTreeText(secTitles[ch]?.[sec] || (l2+parseInt(sec)))}</span>
-        <span class="ch-count">${cnt} 題</span>
+        ${hasSubChildren ? '' : `<span class="ch-count">${cnt} 題</span>`}
       </div>${hasSubChildren ? `<div class="chapter-children open">${subsHTML}</div>` : ''}`;
     }).join('') : '';
     return `<div class="chapter-item">
         ${hasChildren ? `<button class="expand-btn" onclick="toggleChildren(this)" aria-label="收合章節" aria-expanded="true">▼</button>` : '<span style="width:16px;flex-shrink:0"></span>'}
         <input type="checkbox" class="chap-cb chapter-cb" data-ch="${ch}" onchange="onChapterCbChange(this)">
         <span>${escapeTreeText(chTitles[ch] || (l1+parseInt(ch)))}</span>
-        <span class="ch-count">${info.count} 題</span>
+        ${hasChildren ? '' : `<span class="ch-count">${info.count} 題</span>`}
       </div>${hasChildren ? `<div class="chapter-children open">${secHTML}</div>` : secHTML}`;
   }).join('');
+  lastChapterAnchor = null;
   tree.querySelectorAll('.chap-cb').forEach((cb, index) => {
     cb.id = 'scopeChapter' + index;
     const text = cb.nextElementSibling;
@@ -413,24 +522,58 @@ document.addEventListener('change', e => {
 
 window.clearAllChapters = () => {
   document.querySelectorAll('.chap-cb').forEach(c => { c.checked = false; c.indeterminate = false; });
+  lastChapterAnchor = null;
   updateTypePoolsFromSelection();
 };
 
+let fillPool = [];
 function updateTypePools(qs) {
+  document.getElementById('scopeAvailable').textContent = `︱可選題數 ${qs.length} 題`;
+  fillPool = qs.filter(q => q.type === 'T4');
   TYPE_CONFIGS.forEach(t => {
     const c = qs.filter(q => q.type === t.code).length;
+    const available = t.code === 'T4' ? fillPool.reduce((sum, q) => sum + blankCount(q), 0) : c;
     const row = document.getElementById('typerow-'+t.code);
     if (row) row.style.display = c ? '' : 'none';
     if (!c) document.getElementById('cnt-' + t.code).value = 0;
+    document.getElementById('cnt-' + t.code).dataset.poolCount = String(available);
     const pool = document.getElementById('pool-'+t.code);
-    if (pool) pool.textContent = c ? `共 ${c} 題` : '';
+    if (pool) pool.textContent = c ? (t.code === 'T4' ? `共 ${c} 題、${available} 格` : `共 ${c} 題`) : '';
   });
+  validateTypeCounts();
+}
+
+function validateTypeCounts(focusFirst = false) {
+  let firstInvalid = null;
+  TYPE_CONFIGS.forEach(t => {
+    const input = document.getElementById('cnt-' + t.code);
+    const row = document.getElementById('typerow-' + t.code);
+    const available = Number(input.dataset.poolCount) || 0;
+    const count = Number(input.value);
+    let message = '';
+    const unit = t.code === 'T4' ? '格' : '題';
+    if (available && (input.value === '' || !Number.isInteger(count) || count < 0 || count > 99)) message = `請填寫 0～99 的整數${unit}數`;
+    else if (count > available) message = `此題型最多可選 ${available} ${unit}，請重新填寫`;
+    else if (t.code === 'T4' && count > 0 && !reachableBlankCounts(fillPool, Math.min(99, count))[count]) {
+      const possible = reachableBlankCounts(fillPool).flatMap((yes, n) => yes && n > 0 ? [n] : []);
+      message = `無法以整題湊出 ${count} 格；可選格數：${possible.join('、')}`;
+    }
+    row.classList.toggle('invalid', Boolean(message));
+    input.setAttribute('aria-invalid', String(Boolean(message)));
+    document.getElementById('cnt-error-' + t.code).textContent = message;
+    if (message && !firstInvalid) firstInvalid = input;
+  });
+  if (focusFirst && firstInvalid) {
+    firstInvalid.focus();
+    UI.toast(firstInvalid.closest('.type-row').querySelector('.type-error').textContent, 'warning');
+  }
+  return !firstInvalid;
 }
 
 function updateTypePoolsFromSelection() {
   generatedQuestions = [];
   const allQs = window._allBookQs || [];
-  if (!allQs.length) return;
+  if (!allQs.length) { updateTypePools([]); updateScoreRows(); return; }
   const checkedCbs = [...document.querySelectorAll('.chap-cb:checked')];
   if (!checkedCbs.length) {
     // 未勾選任何章節 → 隱藏所有題型
@@ -478,11 +621,12 @@ window.previewExam = () => {
   const typeScores = {};
   TYPE_CONFIGS.forEach(t => {
     const el = document.getElementById('score-'+t.code);
-    if (el) typeScores[t.code] = parseInt(el.value)||t.defaultScore;
+    if (el) typeScores[t.code] = parseFloat(el.value)||t.defaultScore;
   });
   draftPreviewData = {
     title,
     typeScores,
+    scoreUnits: { T4:'blank' },
     subjectCode: cSubject.value,
     bookCode: document.getElementById('cBook').value,
     header: draftPreviewData?.header ?? newExamHeader(),
@@ -491,75 +635,99 @@ window.previewExam = () => {
   showExamPreview(draftPreviewData, generatedQuestions);
 };
 
+const scoreOverrides = {};
+const scoreWeights = { T1:1, T2:1, T3:2, T4:1, T5:3, T6:5 };
+function updateCountSuggestions(total) {
+  TYPE_CONFIGS.forEach(t => {
+    const button = document.getElementById('count-suggestion-' + t.code);
+    button.hidden = true;
+    button.onclick = null;
+  });
+  document.getElementById('scoreCountNote')?.remove();
+  if (Math.abs(total - 100) < 0.001 || !validateTypeCounts()) return;
+  const reachable = reachableBlankCounts(fillPool);
+  const types = TYPE_CONFIGS.map(t => ({
+    ...t, cnt:Number(document.getElementById('cnt-' + t.code).value),
+    available:Number(document.getElementById('cnt-' + t.code).dataset.poolCount) || 0,
+    allowedCounts:t.code === 'T4' ? reachable : undefined,
+  }));
+  const step = document.getElementById('integerScores').checked ? 1 : 0.5;
+  const suggestion = suggestTypeCountChange(types, scoreWeights, step, scoreOverrides);
+  if (!suggestion) return;
+  const type = TYPE_CONFIGS.find(t => t.code === suggestion.code);
+  const unit = suggestion.code === 'T4' ? '格' : '題';
+  const button = document.getElementById('count-suggestion-' + suggestion.code);
+  button.textContent = `${suggestion.delta > 0 ? '+' : ''}${suggestion.delta}`;
+  button.classList.toggle('is-add', suggestion.delta > 0);
+  button.classList.toggle('is-remove', suggestion.delta < 0);
+  button.title = `建議${type.label}調整為 ${suggestion.count} ${unit}，重新自動配分後為 100 分`;
+  button.setAttribute('aria-label', button.title);
+  button.hidden = false;
+  button.onclick = () => {
+    document.getElementById('cnt-' + suggestion.code).value = suggestion.count;
+    generatedQuestions = [];
+    updateScoreRows();
+  };
+  document.getElementById('scoreTotalRow')?.insertAdjacentHTML('beforeend', '<span class="score-count-note" id="scoreCountNote">可參考左側的建議題數達到滿分100</span>');
+}
+window.toggleIntegerScores = () => {
+  Object.keys(scoreOverrides).forEach(code => delete scoreOverrides[code]);
+  updateScoreRows();
+};
+window.normalizeComposeScore = input => {
+  const step = Number(input.step);
+  const value = Number(input.value);
+  input.value = Math.min(100, Math.max(step, Math.round((Number.isFinite(value) ? value : step) / step) * step));
+  recalcTotal(input);
+};
 window.updateScoreRows = () => {
+  validateTypeCounts();
   const typeCounts = TYPE_CONFIGS.map(t => ({
     ...t,
     cnt: parseInt(document.getElementById('cnt-'+t.code).value)||0
   })).filter(t => t.cnt > 0);
 
+  document.getElementById('integerScoreOption').hidden = !typeCounts.length;
+
   if (!typeCounts.length) {
     document.getElementById('scoreRows').innerHTML =
       '<span style="color:var(--text-muted);font-size:.88rem">請設定各題型題數</span>';
+    updateCountSuggestions(0);
     return;
   }
 
-  // 依題型權重計算接近100分的配分
-  // 權重：是非=1, 單選=1, 複選=2, 填空=1, 配合=2, 問答=5
-  const weights = { T1:1, T2:1, T3:2, T4:1, T5:2, T6:5 };
-  const weightSum = typeCounts.reduce((s,t) => s + t.cnt*(weights[t.code]||1), 0);
+  const scoreStep = document.getElementById('integerScores').checked ? 1 : 0.5;
+  // 優先湊足 100 分並盡量採用整數配分，再依題型權重選擇組合。
+  // 填空題以格為計分單位；配合、問答採較高權重。
+  const suggestedScores = allocateTypeScores(typeCounts, scoreWeights, 100, scoreStep);
 
-  // 計算每題原始分（保留兩位小數）
-  const rawScores = {};
-  typeCounts.forEach(t => {
-    rawScores[t.code] = (weights[t.code]||1) * 100 / weightSum;
-  });
-
-  // 將每個分數精確到 0.5（無條件捨去），讓總分不超過100
-  const floorScores = {};
-  typeCounts.forEach(t => {
-    floorScores[t.code] = Math.floor(rawScores[t.code] * 2) / 2;
-  });
-
-  // 計算捨去後的差距，用剩餘 0.5 補回最大差距的題型
-  let total0 = typeCounts.reduce((s,t) => s + t.cnt * floorScores[t.code], 0);
-  const gap = Math.round((100 - total0) * 2) / 2;  // 差幾個 0.5
-  if (gap > 0) {
-    // 依差距排序，依序補 0.5 給差距最大的題型（每題型最多補一次）
-    const sorted = [...typeCounts].sort((a,b) =>
-      (rawScores[b.code] - floorScores[b.code]) - (rawScores[a.code] - floorScores[a.code])
-    );
-    let remaining = gap;
-    for (const t of sorted) {
-      if (remaining <= 0) break;
-      const add = Math.min(0.5, remaining / t.cnt);  // 每題最多加 0.5
-      if (add >= 0.5) {
-        floorScores[t.code] += 0.5;
-        remaining -= t.cnt * 0.5;
-      }
-    }
-  }
-
-  const finalTotal = typeCounts.reduce((s,t) => s + t.cnt * floorScores[t.code], 0);
   const rows = typeCounts.map(t => {
-    const score = floorScores[t.code];
-    return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-      <span style="flex:1">${t.label} × ${t.cnt} 題</span>
-      <input class="form-control" type="number" id="score-${t.code}" value="${score}" min="0.5" max="99" step="0.5"
-        style="width:58px;font-size:.88rem;padding:3px 6px;text-align:center" oninput="recalcTotal()">
-      <span style="font-size:.86rem;color:var(--text-muted)">分/題</span>
+    const score = suggestedScores[t.code];
+    const fillQuestions = generatedQuestions.filter(q => q.type === 'T4');
+    const selectedBlanks = fillQuestions.reduce((sum, q) => sum + blankCount(q), 0);
+    const label = t.code === 'T4'
+      ? `${t.label} × ${fillQuestions.length && selectedBlanks === t.cnt ? `${fillQuestions.length} 題（共 ${t.cnt} 格）` : `${t.cnt} 格（選題後顯示題數）`}`
+      : `${t.label} × ${t.cnt} 題`;
+    const unit = t.code === 'T4' ? '格' : '題';
+    return `<div class="score-config-row">
+      <span class="score-label">${label}</span>
+      <div class="number-stepper"><input class="form-control" type="number" id="score-${t.code}" value="${scoreOverrides[t.code] ?? score}" min="${scoreStep}" max="100" step="${scoreStep}" aria-label="${t.label}每${unit}配分" oninput="recalcTotal(this)" onchange="normalizeComposeScore(this)"><div class="number-stepper-buttons"><button type="button" tabindex="-1" aria-label="增加${t.label}每${unit}配分" onclick="adjustComposeNumber('score-${t.code}',1)">▲</button><button type="button" tabindex="-1" aria-label="減少${t.label}每${unit}配分" onclick="adjustComposeNumber('score-${t.code}',-1)">▼</button></div></div>
+      <span class="row-unit">分/${unit}</span>
     </div>`;
   });
 
-  const displayTotal = Math.round(finalTotal * 10) / 10;
+  const displayTotal = Math.round(typeCounts.reduce((s,t) => s + t.cnt * (scoreOverrides[t.code] ?? suggestedScores[t.code]), 0) * 10) / 10;
   document.getElementById('scoreRows').innerHTML =
     rows.join('') +
-    `<div style="margin-top:8px;font-weight:700;color:var(--primary);font-size:.9rem;border-top:1px solid var(--border);padding-top:8px" id="scoreTotalRow">
+    `<div class="score-total" id="scoreTotalRow">
       總計：<span id="scoreTotal">${displayTotal}</span> 分
       ${displayTotal > 100 ? '<span style="color:var(--danger);font-size:.88rem;margin-left:6px">⚠ 超過100分</span>' : ''}
     </div>`;
+  updateCountSuggestions(displayTotal);
 };
 
-window.recalcTotal = () => {
+window.recalcTotal = input => {
+  if (input?.id?.startsWith('score-')) scoreOverrides[input.id.slice(6)] = parseFloat(input.value) || 0;
   const total = TYPE_CONFIGS.reduce((s,t) => {
     const cnt = parseInt(document.getElementById('cnt-'+t.code)?.value)||0;
     const score = parseFloat(document.getElementById('score-'+t.code)?.value)||0;
@@ -576,6 +744,7 @@ window.recalcTotal = () => {
       if (warn) warn.remove();
     }
   }
+  updateCountSuggestions(total);
 };
 
 // ── 自動選題 ──────────────────────────────────────
@@ -588,6 +757,7 @@ window.doGenerate = async () => {
   if (!bc) { UI.toast('請選擇冊次', 'warning'); return; }
 
   const typeCounts = TYPE_CONFIGS.map(t => ({...t, count: parseInt(document.getElementById('cnt-'+t.code).value)||0}));
+  if (!validateTypeCounts(true)) return;
   const total = typeCounts.reduce((s,t) => s+t.count, 0);
   if (!total) { UI.toast('請至少設定一種題型的題數', 'warning'); return; }
 
@@ -603,17 +773,30 @@ window.doGenerate = async () => {
     const allPicked = [];
     for (const t of typeCounts) {
       if (!t.count) continue;
-      const picked = await DataService.randomWithDifficulty({ subjectCode: sc, bookCode: bc, chapters: chapters.length ? chapters : undefined }, diff, t.count, t.code);
+      const picked = t.code === 'T4'
+        ? selectFillQuestions(await DataService.getQuestions({ subjectCode: sc, bookCode: bc, chapters: chapters.length ? chapters : undefined, type:'T4' }), t.count, ({ easy:.3, medium:.5, hard:.7 })[diff] ?? .5)
+        : await DataService.randomWithDifficulty({ subjectCode: sc, bookCode: bc, chapters: chapters.length ? chapters : undefined }, diff, t.count, t.code);
+      if (picked === null) {
+        UI.toast(`無法以整題湊出 ${t.count} 格填空題，請調整格數`, 'warning');
+        return;
+      }
+      if (t.code !== 'T4' && picked.length < t.count) {
+        document.getElementById('cnt-' + t.code).dataset.poolCount = String(picked.length);
+        validateTypeCounts(true);
+        return;
+      }
       allPicked.push({ ...t, items: picked });
     }
 
     generatedQuestions = allPicked.flatMap(t => t.items.map(q => ({...q, _typeLabel: t.label, _icon: t.icon})));
+    updateScoreRows();
     renderPreview(allPicked);
-    setComposeStep(generatedQuestions.length ? 4 : 3);
+    if (generatedQuestions.length) setComposeStep(3);
+    else UI.toast('此範圍沒有符合條件的題目，請調整題數', 'warning');
   } catch(e) {
     UI.toast('選題失敗：'+e.message, 'danger');
   } finally {
-    btn.disabled = false; btn.textContent = '⊕ 電腦自動選題';
+    btn.disabled = false; btn.textContent = '下一步：選題結果';
   }
 };
 
@@ -621,15 +804,15 @@ function renderPreview(grouped) {
   const total = grouped.reduce((s,t) => s+t.items.length, 0);
   const totalScore = grouped.reduce((s,t) => {
     const scoreEl = document.getElementById('score-'+t.code);
-    const score = scoreEl ? parseInt(scoreEl.value)||t.defaultScore : t.defaultScore;
-    return s + t.items.length * score;
+    const score = scoreEl ? parseFloat(scoreEl.value)||t.defaultScore : t.defaultScore;
+    return s + (t.code === 'T4' ? t.items.reduce((sum, q) => sum + blankCount(q), 0) : t.items.length) * score;
   }, 0);
 
   // stats
   document.getElementById('previewStats').innerHTML = `
     <div class="preview-stat"><strong>${total}</strong> 題</div>
     <div class="preview-stat">共 <strong>${totalScore}</strong> 分</div>
-    ${grouped.filter(t=>t.items.length).map(t=>`<div class="preview-stat"><strong>${t.items.length}</strong> ${t.label}</div>`).join('')}
+    ${grouped.filter(t=>t.items.length).map(t=>`<div class="preview-stat"><strong>${t.items.length}</strong> ${t.label}${t.code === 'T4' ? `（共 ${t.items.reduce((sum, q) => sum + blankCount(q), 0)} 格）` : ''}</div>`).join('')}
   `;
 
   let html = '';
@@ -638,7 +821,7 @@ function renderPreview(grouped) {
     if (!t.items.length) continue;
     html += `<div class="result-section">
       <div class="result-section-title">
-        ${t.label}（${t.items.length} 題）
+        ${t.label}（${t.items.length} 題${t.code === 'T4' ? `，共 ${t.items.reduce((sum, q) => sum + blankCount(q), 0)} 格` : ''}）
         <button class="regenerate-btn" onclick="regenerateType('${t.code}')">🔄 重選</button>
       </div>
       <div class="result-list">
@@ -673,10 +856,14 @@ async function regenerateType(typeCode) {
   const chapters = checkedCbs.map(c => c.dataset.sub ? `${c.dataset.ch}-${c.dataset.sec}-${c.dataset.sub}` : c.dataset.sec ? `${c.dataset.ch}-${c.dataset.sec}` : c.dataset.ch);
 
   try {
-    const newItems = await DataService.randomWithDifficulty({ subjectCode: sc, bookCode: bc, chapters: chapters.length ? chapters : undefined }, diff, cnt, typeCode);
+    const newItems = typeCode === 'T4'
+      ? selectFillQuestions(await DataService.getQuestions({ subjectCode: sc, bookCode: bc, chapters: chapters.length ? chapters : undefined, type:'T4' }), cnt, ({ easy:.3, medium:.5, hard:.7 })[diff] ?? .5)
+      : await DataService.randomWithDifficulty({ subjectCode: sc, bookCode: bc, chapters: chapters.length ? chapters : undefined }, diff, cnt, typeCode);
+    if (newItems === null) { UI.toast(`無法以整題湊出 ${cnt} 格填空題`, 'warning'); return; }
     // 替換 generatedQuestions 中對應題型的題目
     generatedQuestions = generatedQuestions.filter(q => q.type !== typeCode);
     generatedQuestions.push(...newItems);
+    updateScoreRows();
     UI.toast(`已重新選取 ${newItems.length} 題 ${QUESTION_TYPES[typeCode]}`, 'success');
     // 重組並渲染
     const TYPE_CONFIGS_local = TYPE_CONFIGS.map(t => ({
@@ -690,7 +877,7 @@ window.regenerateType = regenerateType;
 
 window.openSaveModal = async () => {
   if (!generatedQuestions.length) { UI.toast('請先選題', 'warning'); return; }
-  setComposeStep(5);
+  setComposeStep(4);
   const quickTitle = document.getElementById('quickExamTitle')?.value.trim();
   if (quickTitle) document.getElementById('examTitle').value = quickTitle;
   document.getElementById('saveModal').classList.remove('hidden');
@@ -714,12 +901,12 @@ window.doSaveExam = async () => {
   const typeScores = {};
   TYPE_CONFIGS.forEach(t => {
     const scoreEl = document.getElementById('score-'+t.code);
-    const score = scoreEl ? parseInt(scoreEl.value)||t.defaultScore : t.defaultScore;
+    const score = scoreEl ? parseFloat(scoreEl.value)||t.defaultScore : t.defaultScore;
     typeScores[t.code] = score;
   });
   generatedQuestions.forEach(q => {
     questionIds.push(q.id);
-    totalScore += typeScores[q.type] || 2;
+    totalScore += (typeScores[q.type] || 2) * (q.type === 'T4' ? blankCount(q) : 1);
   });
 
   const exam = {
@@ -731,6 +918,7 @@ window.doSaveExam = async () => {
     bookCode: bc,
     totalScore,
     typeScores,
+    scoreUnits: { T4:'blank' },
     questionIds,
     questionCount: questionIds.length,
     composeMode: 'auto',

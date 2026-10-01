@@ -829,8 +829,10 @@ function buildPaperHtml(examData, questions, previewOptions) {
   types.forEach((type, secIdx) => {
     const qs    = grouped[type];
     const score = typeScores[type] || 2;
-    const total = qs.length * score;
-    html += `<div class="ep-section-head">${ROMANS[secIdx]}、${TYPE_LABELS[type]}（每題 ${score} 分，共 ${total} 分）</div>`;
+    const byBlank = type === 'T4' && examData.scoreUnits?.T4 === 'blank';
+    const blanks = byBlank ? qs.reduce((sum, q) => sum + (Number.isInteger(Number(q.answerCount)) && Number(q.answerCount) > 0 ? Number(q.answerCount) : 1), 0) : 0;
+    const total = (byBlank ? blanks : qs.length) * score;
+    html += `<div class="ep-section-head">${ROMANS[secIdx]}、${TYPE_LABELS[type]}（${byBlank ? `${qs.length} 題，共 ${blanks} 格；每格` : '每題'} ${score} 分，共 ${total} 分）</div>`;
     qs.forEach((q, i) => { html += renderQPreview(q, i+1, type, previewOptions); });
   });
 
