@@ -8,13 +8,18 @@
 <script>if(localStorage.getItem("sidebarCollapsed")==="1")document.documentElement.classList.add("sidebar-collapsed");</script>
 <style>
 /* ── 步驟 ── */
-.steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:20px}
-.step{display:flex;align-items:center;gap:10px;min-width:0;padding:12px 16px;border-radius:var(--radius-lg);border:1px solid var(--border-light);background:#fff;color:var(--text-muted);font-size:.88rem;font-weight:500}
-.step.active{background:#edf3ff;border-color:#c8dafb;color:var(--primary);font-weight:700}
-.step.done{background:#edf8f3;border-color:#cce9dc;color:#267656}
-.step-num{display:inline-flex;align-items:center;justify-content:center;flex:none;width:28px;height:28px;border-radius:50%;background:var(--bg-base);font-size:.86rem;font-weight:700}
-.step.active .step-num{background:var(--primary);color:#fff}
-.step.done .step-num{background:#d8f0e3;color:#267656}
+.import-progress{margin-bottom:16px}
+.steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin-bottom:7px}
+.step{display:flex;align-items:center;justify-content:center;gap:8px;min-width:0;color:var(--text-muted)}
+.step-num{display:inline-flex;align-items:center;justify-content:center;flex:none;width:26px;height:26px;border-radius:50%;background:#e9eef4;color:#728197;font-size:1rem;font-weight:700;line-height:1}
+.step-copy{min-width:0}
+.step-copy strong{font-size:.88rem;font-weight:650;line-height:1.4;color:#738197;white-space:nowrap}
+.step.active .step-num{background:#385b8a;color:#fff}
+.step.active .step-copy strong{color:#385b8a}
+.step.done .step-num{background:#e2ebf4;color:#385b8a}
+.step.done .step-copy strong{color:#385b8a}
+.import-progress-track{height:8px;overflow:hidden;border-radius:999px;background:#dbe3ec}
+.import-progress-fill{height:100%;width:25%;border-radius:999px;background:#385b8a;transition:width .25s ease}
 .import-intro{display:grid;grid-template-columns:minmax(300px,.85fr) minmax(0,1.4fr);gap:18px;align-items:start}
 .import-card{padding:22px}
 .import-card .section-heading{margin-bottom:18px}
@@ -34,7 +39,6 @@
 }
 .upload-zone:hover,.upload-zone.drag-over{border-color:var(--primary-light);background:#edf3ff}
 .upload-zone:focus-visible{outline:2px solid var(--primary);outline-offset:3px}
-.upload-zone.has-files{border-color:var(--success);border-style:solid;background:#f0fbf5}
 .upload-icon{display:flex;align-items:center;justify-content:center;width:58px;height:58px;margin:0 auto 12px;border-radius:16px;background:#e7efff;color:#3478f6}
 .upload-icon svg{width:28px;height:28px}
 .upload-title{font-size:1rem;font-weight:600;color:var(--primary);margin-bottom:3px}
@@ -85,8 +89,9 @@
 .import-complete-icon svg{width:36px;height:36px}
 .preview-wrap{overflow:auto}
 .preview-table{min-width:760px}
-@media(max-width:1000px){.import-intro{grid-template-columns:1fr}.steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:600px){.import-card{padding:18px}.import-fields,.steps{grid-template-columns:1fr}.step{padding:9px 12px}}
+@media(max-width:1000px){.import-intro{grid-template-columns:1fr}}
+@media(max-width:760px){.steps{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:8px}.step{justify-content:flex-start;padding-left:12px}}
+@media(max-width:600px){.import-card{padding:18px}.import-fields{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -102,12 +107,15 @@
     <div class="page-content">
 
       <!-- 步驟 -->
-      <div class="steps" id="stepsBar">
-        <div class="step active" id="step1"><span class="step-num">1</span>選擇科目</div>
-        <div class="step" id="step2"><span class="step-num">2</span>上傳檔案</div>
-        <div class="step" id="step3"><span class="step-num">3</span>預覽確認</div>
-        <div class="step" id="step4"><span class="step-num">4</span>匯入完成</div>
-      </div>
+      <section class="import-progress" aria-label="題目匯入流程">
+        <div class="steps" id="stepsBar" role="list">
+          <div class="step active" id="step1" role="listitem" aria-current="step"><span class="step-num">1</span><span class="step-copy"><strong>選擇科目</strong></span></div>
+          <div class="step" id="step2" role="listitem"><span class="step-num">2</span><span class="step-copy"><strong>上傳檔案</strong></span></div>
+          <div class="step" id="step3" role="listitem"><span class="step-num">3</span><span class="step-copy"><strong>預覽確認</strong></span></div>
+          <div class="step" id="step4" role="listitem"><span class="step-num">4</span><span class="step-copy"><strong>匯入完成</strong></span></div>
+        </div>
+        <div class="import-progress-track" id="importProgressTrack" role="progressbar" aria-label="題目匯入進度" aria-valuemin="0" aria-valuemax="4" aria-valuenow="1" aria-valuetext="第 1 步，共 4 步"><div class="import-progress-fill" id="importProgressFill"></div></div>
+      </section>
 
       <!-- Step 1：科目 -->
       <div id="panelStep1" class="import-intro">
@@ -133,10 +141,6 @@
         <!-- 格式說明 -->
         <section class="card import-card">
           <div class="section-heading"><div><h2>入題檔格式說明</h2><p>上傳前確認 Word 表格欄位</p></div></div>
-            <p style="font-size:.9rem;color:var(--text-secondary);margin-bottom:12px">
-              支援直接上傳 <strong>.docx</strong>（Word 文件），可<strong>一次選取多個檔案</strong>同時匯入。<br>
-              匯入後每題自動分配 <strong>5 位數題目編號</strong>（00001 起）。
-            </p>
             <div class="table-wrapper">
               <table class="data-table" style="font-size:.88rem">
                 <thead><tr><th>欄位</th><th>說明</th><th>範例</th><th>必填</th></tr></thead>
@@ -270,11 +274,18 @@ window.onSubjectChange = () => {
 
 // ── Step 導航 ─────────────────────────────────────
 function setStep(n) {
+  const progress = document.getElementById('importProgressTrack');
+  progress.setAttribute('aria-valuenow', String(n));
+  progress.setAttribute('aria-valuetext', `第 ${n} 步，共 4 步`);
+  const fill = document.getElementById('importProgressFill');
+  fill.style.width = `${n * 25}%`;
   [1,2,3,4].forEach(i => {
     const s = document.getElementById('step'+i);
     s.classList.remove('active','done');
     if (i < n) s.classList.add('done');
     else if (i === n) s.classList.add('active');
+    if (i === n) s.setAttribute('aria-current', 'step');
+    else s.removeAttribute('aria-current');
     document.getElementById('panelStep'+i).style.display = i === n ? '' : 'none';
   });
 }
@@ -293,6 +304,7 @@ window.backStep2 = () => { setStep(2); };
 // ── 檔案管理 ──────────────────────────────────────
 let selectedFiles = [];  // { file, name, size, status:'pending'|'parsing'|'done'|'error', questions:[], errorMsg }
 let parsedAll = [];      // 所有檔案合併後的題目
+let isParsing = false;
 
 window.onDrop = e => {
   e.preventDefault();
@@ -304,6 +316,7 @@ window.onDragLeave = () => document.getElementById('uploadZone').classList.remov
 window.onFileSelect = e => { addFiles([...e.target.files]); e.target.value = ''; };
 
 function addFiles(files) {
+  if (isParsing) { UI.toast('檔案解析中，請稍後再新增', 'warning'); return; }
   const valid = files.filter(f => {
     if (!f.name.toLowerCase().endsWith('.docx')) { UI.toast(`${f.name} 不是 .docx 格式，已略過`, 'warning'); return false; }
     if (f.size > 20*1024*1024) { UI.toast(`${f.name} 超過 20MB，已略過`, 'warning'); return false; }
@@ -318,22 +331,22 @@ function renderFileList() {
   const el = document.getElementById('fileList');
   const count = selectedFiles.length;
   document.getElementById('fileCountLabel').textContent = count ? `已選 ${count} 個檔案` : '';
-  document.getElementById('parseBtn').disabled = count === 0;
-  document.getElementById('uploadZone').classList.toggle('has-files', count > 0);
+  document.getElementById('parseBtn').disabled = isParsing || count === 0;
 
   if (!count) { el.innerHTML = ''; return; }
   el.innerHTML = selectedFiles.map((f, idx) => {
+    const name = UI.escapeHtml(f.name);
     const icons = { pending:I.test16, parsing:I.refresh16, done:I.check16, error:I.close16 };
     const statusText = { pending:'待解析', parsing:'解析中…', done:`解析完成（${f.questions.length} 題）`, error: f.errorMsg||'解析失敗' };
     const statusColor = { pending:'color:var(--text-muted)', parsing:'color:var(--primary-light)', done:'color:var(--success)', error:'color:var(--danger)' };
     return `<div class="file-row ${f.status}" id="frow-${idx}">
       <span class="fr-icon">${icons[f.status]}</span>
       <div class="fr-info">
-        <div class="fr-name" title="${f.name}">${f.name}</div>
+        <div class="fr-name" title="${name}">${name}</div>
         <div class="fr-meta">${(f.size/1024).toFixed(1)} KB</div>
       </div>
-      <span class="fr-status" style="${statusColor[f.status]}">${statusText[f.status]}</span>
-      ${f.status==='pending'||f.status==='error'
+      <span class="fr-status" style="${statusColor[f.status]}">${UI.escapeHtml(statusText[f.status])}</span>
+      ${!isParsing && f.status !== 'parsing'
         ? `<button class="fr-remove" onclick="removeFile(${idx})" title="移除" aria-label="移除檔案">${I.close16}</button>`
         : ''}
     </div>`;
@@ -341,16 +354,19 @@ function renderFileList() {
 }
 
 window.removeFile = (idx) => {
+  if (isParsing || idx < 0 || idx >= selectedFiles.length) return;
   selectedFiles.splice(idx, 1);
+  parsedAll = selectedFiles.flatMap(f => f.status === 'done' ? f.questions : []);
   renderFileList();
 };
 
 // ── 解析所有檔案 ──────────────────────────────────
 window.parseAllFiles = async () => {
-  if (!selectedFiles.length) return;
+  if (isParsing || !selectedFiles.length) return;
   const sc = subjectSel.value, bc = document.getElementById('bookSel').value;
-  const btn = document.getElementById('parseBtn');
-  btn.disabled = true; document.getElementById('parseBtnLabel').textContent = '解析中…';
+  isParsing = true;
+  document.getElementById('parseBtnLabel').textContent = '解析中…';
+  renderFileList();
 
   // 逐一解析
   for (let i = 0; i < selectedFiles.length; i++) {
@@ -384,7 +400,9 @@ window.parseAllFiles = async () => {
     renderFileList();
   }
 
-  btn.disabled = false; document.getElementById('parseBtnLabel').textContent = '解析所有檔案';
+  isParsing = false;
+  document.getElementById('parseBtnLabel').textContent = '解析所有檔案';
+  renderFileList();
 
   // 合併所有成功解析的題目
   parsedAll = selectedFiles.flatMap(f => f.status === 'done' ? f.questions : []);
