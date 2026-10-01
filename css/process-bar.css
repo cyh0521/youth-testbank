@@ -1,0 +1,13 @@
+.import-progress{margin-bottom:16px}
+.steps{display:grid;grid-template-columns:repeat(var(--process-step-count,4),minmax(0,1fr));gap:4px;margin-bottom:7px}
+.step{display:flex;align-items:center;justify-content:center;gap:8px;min-width:0;color:var(--text-muted)}
+.step-num{display:inline-flex;align-items:center;justify-content:center;flex:none;width:26px;height:26px;border-radius:50%;background:#e9eef4;color:#728197;font-size:1rem;font-weight:700;line-height:1}
+.step-copy{min-width:0}
+.step-copy strong{font-size:.88rem;font-weight:650;line-height:1.4;color:#738197;white-space:nowrap}
+.step.active .step-num{background:#385b8a;color:#fff}
+.step.active .step-copy strong{color:#385b8a}
+.step.done .step-num{background:#e2ebf4;color:#385b8a}
+.step.done .step-copy strong{color:#385b8a}
+.import-progress-track{height:8px;overflow:hidden;border-radius:999px;background:#dbe3ec}
+.import-progress-fill{height:100%;width:var(--process-initial-width,25%);border-radius:999px;background:#385b8a;transition:width .25s ease}
+@media(max-width:760px){.steps{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:8px}.step{justify-content:flex-start;padding-left:12px}}

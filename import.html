@@ -4,22 +4,11 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>題目匯入 — 幼獅題庫系統</title>
 <link rel="stylesheet" href="css/theme.css">
+<link rel="stylesheet" href="css/process-bar.css">
 <link rel="stylesheet" href="css/dashboard.css">
 <script>if(localStorage.getItem("sidebarCollapsed")==="1")document.documentElement.classList.add("sidebar-collapsed");</script>
 <style>
 /* ── 步驟 ── */
-.import-progress{margin-bottom:16px}
-.steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin-bottom:7px}
-.step{display:flex;align-items:center;justify-content:center;gap:8px;min-width:0;color:var(--text-muted)}
-.step-num{display:inline-flex;align-items:center;justify-content:center;flex:none;width:26px;height:26px;border-radius:50%;background:#e9eef4;color:#728197;font-size:1rem;font-weight:700;line-height:1}
-.step-copy{min-width:0}
-.step-copy strong{font-size:.88rem;font-weight:650;line-height:1.4;color:#738197;white-space:nowrap}
-.step.active .step-num{background:#385b8a;color:#fff}
-.step.active .step-copy strong{color:#385b8a}
-.step.done .step-num{background:#e2ebf4;color:#385b8a}
-.step.done .step-copy strong{color:#385b8a}
-.import-progress-track{height:8px;overflow:hidden;border-radius:999px;background:#dbe3ec}
-.import-progress-fill{height:100%;width:25%;border-radius:999px;background:#385b8a;transition:width .25s ease}
 .import-intro{display:grid;grid-template-columns:minmax(300px,.85fr) minmax(0,1.4fr);gap:18px;align-items:start}
 .import-card{padding:22px}
 .import-card .section-heading{margin-bottom:18px}
@@ -90,7 +79,7 @@
 .preview-wrap{overflow:auto}
 .preview-table{min-width:760px}
 @media(max-width:1000px){.import-intro{grid-template-columns:1fr}}
-@media(max-width:760px){.steps{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:8px}.step{justify-content:flex-start;padding-left:12px}}
+
 @media(max-width:600px){.import-card{padding:18px}.import-fields{grid-template-columns:1fr}}
 </style>
 </head>

@@ -4,10 +4,31 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>電腦選題 — 幼獅題庫系統</title>
 <link rel="stylesheet" href="css/theme.css">
+<link rel="stylesheet" href="css/process-bar.css">
 <script>if(localStorage.getItem("sidebarCollapsed")==="1")document.documentElement.classList.add("sidebar-collapsed");</script>
 <style>
-.compose-layout{display:grid;grid-template-columns:340px 1fr;gap:16px;align-items:start}
-@media(max-width:900px){.compose-layout{grid-template-columns:1fr}}
+.compose-layout{display:block}
+.compose-panel[hidden]{display:none}
+.scope-layout{display:grid;grid-template-columns:minmax(240px,.7fr) minmax(0,1.7fr);gap:16px}
+.scope-layout .card{min-width:0}
+.scope-tree{height:clamp(340px,60vh,640px);overflow:auto;padding:12px;background:#fff}
+.scope-empty{padding:32px 16px;text-align:center;color:var(--text-muted)}
+.subject-node{margin-bottom:4px}
+.subject-node summary{cursor:pointer;padding:7px 8px;color:var(--primary);font-weight:600;border-radius:4px}
+.book-node{display:flex;align-items:center;gap:8px;padding:7px 10px 7px 28px;cursor:pointer;border-radius:4px}
+.book-node:has(input:checked){background:#e2ebf4;color:#385b8a}
+.book-node:hover,.subject-node summary:hover{background:#f5f8fc}
+.book-node input{accent-color:#385b8a}
+.wizard-actions{display:flex;justify-content:flex-end;gap:10px;padding:16px 0}
+.card>.wizard-actions{padding:16px;border-top:1px solid var(--border-light)}
+#chapterTree.scope-tree{max-height:none}
+#chapterTree .chapter-item{border-bottom:0;padding-top:8px;padding-bottom:8px;font-size:1rem;line-height:1.6}
+#chapterTree .chapter-item .ch-count{font-size:.94rem}
+#chapterTree .chapter-children{margin-left:18px;border-left:1px dotted #b5c3d3}
+#chapterTree .chapter-item.section,#chapterTree .chapter-item.subsection{padding-left:12px}
+#chapterTree .chapter-item:has(input:checked){background:#eaf1f8}
+#chapterTree .expand-btn{color:#385b8a}
+@media(max-width:760px){.scope-layout{grid-template-columns:1fr}.scope-tree{height:340px}#subjectTree{height:auto;max-height:280px}.wizard-actions{flex-wrap:wrap}}
 
 /* 設定面板 */
 .config-card .card-body{padding:16px}
@@ -57,69 +78,39 @@
     </div>
     <div class="page-content">
 
+<section class="import-progress" aria-label="電腦選題流程" style="--process-step-count:5;--process-initial-width:20%"><div class="steps" role="list">
+<div class="step active" id="composeStep1" role="listitem" aria-current="step"><span class="step-num">1</span><span class="step-copy"><strong>出題範圍</strong></span></div>
+<div class="step" id="composeStep2" role="listitem"><span class="step-num">2</span><span class="step-copy"><strong>題型配置</strong></span></div>
+<div class="step" id="composeStep3" role="listitem"><span class="step-num">3</span><span class="step-copy"><strong>計分設定</strong></span></div>
+<div class="step" id="composeStep4" role="listitem"><span class="step-num">4</span><span class="step-copy"><strong>選題結果</strong></span></div>
+<div class="step" id="composeStep5" role="listitem"><span class="step-num">5</span><span class="step-copy"><strong>試卷設定</strong></span></div>
+</div><div class="import-progress-track" id="composeProgressTrack" role="progressbar" aria-label="電腦選題進度" aria-valuemin="0" aria-valuemax="5" aria-valuenow="1" aria-valuetext="第 1 步，共 5 步"><div class="import-progress-fill" id="composeProgressFill"></div></div></section>
+
       <div class="compose-layout">
-        <!-- 左側：設定 -->
-        <div>
-          <div class="card config-card">
-            <div class="card-header"><h2>⚙️ 出題設定</h2></div>
-            <div class="card-body">
-
-              <div class="section-title">📚 科目與範圍</div>
-              <div class="form-group" style="margin-bottom:8px">
-                <select class="form-control" id="cSubject" onchange="onSubjectChange()">
-                  <option value="">請選擇科目</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <select class="form-control" id="cBook" disabled onchange="loadChapters()">
-                  <option value="">請先選科目</option>
-                </select>
-              </div>
-
-              <div class="section-title">📖 章節範圍<button class="btn btn-ghost btn-sm" onclick="clearAllChapters()" style="font-size:.84rem;padding:1px 6px;margin-left:auto;font-weight:400;text-transform:none;letter-spacing:0">全部清除</button></div>
-              <div class="chapter-tree" id="chapterTree">
-                <div style="padding:20px;text-align:center;color:var(--text-muted);font-size:.88rem">請先選擇科目與冊次</div>
-              </div>
-
-              <div class="section-title">📝 題型與題數</div>
-              <div id="typeRows">
-                <!-- 動態產生 -->
-              </div>
-
-              <div class="section-title">🎯 難易度設定</div>
-              <div class="form-group">
-                <select class="form-control" id="cDifficulty">
-                  <option value="medium" selected>適中</option>
-                  <option value="easy">偏易</option>
-                  <option value="hard">偏難</option>
-                </select>
-              </div>
-
-              <div class="section-title">📊 計分設定</div>
-              <div id="scoreRows" style="font-size:.88rem;color:var(--text-secondary)">設定題型後自動顯示</div>
-
-              <div style="margin-top:16px">
-                <button class="btn btn-primary w-full" onclick="doGenerate()" id="generateBtn">⊕ 電腦自動選題</button>
-              </div>
-            </div>
+        <section id="composePanel1" class="compose-panel">
+          <div class="scope-layout">
+            <section class="card"><div class="card-header"><h2>選擇命題科目</h2></div><div class="scope-tree" id="subjectTree"></div></section>
+            <section class="card"><div class="card-header"><h2>選擇命題章節</h2><button class="btn btn-ghost btn-sm" onclick="clearAllChapters()">全部清除</button></div><div class="chapter-tree scope-tree" id="chapterTree"><div class="scope-empty">請先選擇左側的科目與冊次</div></div></section>
           </div>
-        </div>
-
-        <!-- 右側：預覽 -->
-        <div>
-          <div class="card">
-            <div class="card-header">
-              <h2>📋 選題結果</h2>
-              <div id="previewStats" class="preview-stats"></div>
-            </div>
-            <div class="card-body" id="previewArea">
-              <div class="empty-config">
-                <div class="ec-icon">🎲</div>
-                <p>設定左側條件後<br>點擊「電腦自動選題」開始</p>
-              </div>
-            </div>
-          </div>
-        </div>
+          <div hidden><select id="cSubject" onchange="onSubjectChange()"><option value="">請選擇科目</option></select><select id="cBook" disabled onchange="loadChapters()"><option value="">請先選科目</option></select></div>
+          <div class="wizard-actions"><button class="btn btn-primary" onclick="goComposeStep(2)">下一步：題型配置 →</button></div>
+        </section>
+        <section id="composePanel2" class="compose-panel card" hidden>
+          <div class="card-header"><h2>題型配置</h2></div><div class="card-body"><div id="typeRows"></div><div class="form-group"><label class="form-label" for="cDifficulty">難易度設定</label><select class="form-control" id="cDifficulty"><option value="medium" selected>適中</option><option value="easy">偏易</option><option value="hard">偏難</option></select></div></div>
+          <div class="wizard-actions"><button class="btn btn-ghost" onclick="goComposeStep(1)">← 上一步</button><button class="btn btn-primary" onclick="goComposeStep(3)">下一步：計分設定 →</button></div>
+        </section>
+        <section id="composePanel3" class="compose-panel card" hidden>
+          <div class="card-header"><h2>計分設定</h2></div><div class="card-body"><div id="scoreRows">設定題型後自動顯示</div></div>
+          <div class="wizard-actions"><button class="btn btn-ghost" onclick="goComposeStep(2)">← 上一步</button><button class="btn btn-primary" onclick="doGenerate()" id="generateBtn">⊕ 電腦自動選題</button></div>
+        </section>
+        <section id="composePanel4" class="compose-panel card" hidden>
+          <div class="card-header"><h2>選題結果</h2><div id="previewStats" class="preview-stats"></div></div><div class="card-body" id="previewArea"></div>
+          <div class="wizard-actions"><button class="btn btn-ghost" onclick="goComposeStep(3)">← 上一步</button><button class="btn btn-primary" onclick="goComposeStep(5)">下一步：試卷設定 →</button></div>
+        </section>
+        <section id="composePanel5" class="compose-panel card" hidden>
+          <div class="card-header"><h2>試卷設定</h2></div><div class="card-body"><label class="form-label" for="quickExamTitle">試卷名稱</label><input class="form-control" id="quickExamTitle" placeholder="試卷名稱（必填才能儲存）"><div class="exam-save-bar"><button class="btn btn-outline" onclick="openHeaderSettings()">✎ 試卷表頭</button><button class="btn btn-outline" onclick="previewExam()">◉ 預覽試卷</button><button class="btn btn-primary" onclick="openSaveModal()">💾 儲存為試卷</button></div></div>
+          <div class="wizard-actions"><button class="btn btn-ghost" onclick="goComposeStep(4)">← 上一步</button></div>
+        </section>
       </div>
 
     </div>
@@ -155,6 +146,28 @@ window._activeNav = 'compose';
 const user = await guardPage(['admin','manager','teacher']);
 if (!user) throw new Error('not auth');
 
+function setComposeStep(n) {
+  for (let i = 1; i <= 5; i++) document.getElementById('composePanel' + i).hidden = i !== n;
+  document.getElementById('composeProgressFill').style.width = `${n * 20}%`;
+  const progress = document.getElementById('composeProgressTrack');
+  progress.setAttribute('aria-valuenow', String(n));
+  progress.setAttribute('aria-valuetext', `第 ${n} 步，共 5 步`);
+  for (let i = 1; i <= 5; i++) {
+    const step = document.getElementById('composeStep' + i);
+    step.classList.toggle('active', i === n);
+    step.classList.toggle('done', i < n);
+    if (i === n) step.setAttribute('aria-current', 'step');
+    else step.removeAttribute('aria-current');
+  }
+}
+
+window.goComposeStep = n => {
+  if (n > 1 && !document.querySelector('.chap-cb:checked')) { UI.toast('請勾選至少一個章節', 'warning'); return; }
+  if (n >= 3 && !TYPE_CONFIGS.some(t => Number(document.getElementById('cnt-' + t.code).value) > 0)) { UI.toast('請至少設定一種題型的題數', 'warning'); return; }
+  if (n >= 4 && !generatedQuestions.length) { UI.toast('請先選題', 'warning'); return; }
+  setComposeStep(n);
+};
+
 // ── 初始化 ────────────────────────────────────────
 const cSubject = document.getElementById('cSubject');
 await initTextbookCache();
@@ -178,10 +191,28 @@ document.getElementById('typeRows').innerHTML = TYPE_CONFIGS.map(t => `
   </div>
 `).join('');
 
+const escapeTreeText = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+document.getElementById('subjectTree').innerHTML = (_tbCache?.subjects || []).map(subject => {
+  const books = _tbCache.booksBySubject[subject.id] || [];
+  return `<details class="subject-node"><summary>${escapeTreeText(subject.name)}</summary>${books.length ? books.map(book => `<label class="book-node"><input type="radio" name="scopeBook" data-subject="${escapeTreeText(subject.code)}" value="${escapeTreeText(book.code)}"><span>${escapeTreeText(book.name)}</span></label>`).join('') : '<div class="scope-empty">尚無冊次</div>'}</details>`;
+}).join('') || '<div class="scope-empty">尚無科目</div>';
+document.getElementById('subjectTree').addEventListener('change', async event => {
+  const input = event.target;
+  if (input.name !== 'scopeBook') return;
+  cSubject.value = input.dataset.subject;
+  onSubjectChange();
+  document.getElementById('cBook').value = input.value;
+  generatedQuestions = [];
+  draftPreviewData = null;
+  document.getElementById('quickExamTitle').value = '';
+  await loadChapters();
+});
+
 let chapterData = {};
 let generatedQuestions = [];
 let draftPreviewData = null;
 window.openHeaderSettings = () => {
+  setComposeStep(5);
   draftPreviewData ??= { header:newExamHeader(), appearance:loadAppearance() };
   showHeaderSettings(draftPreviewData);
 };
@@ -197,7 +228,10 @@ window.onSubjectChange = () => {
     bk.innerHTML = '<option value="">請先選科目</option>';
   }
   document.getElementById('chapterTree').innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:.88rem">請選擇冊次</div>';
-  TYPE_CONFIGS.forEach(t => document.getElementById('pool-'+t.code).textContent = '');
+  window._allBookQs = [];
+  TYPE_CONFIGS.forEach(t => document.getElementById('cnt-'+t.code).value = 0);
+  updateTypePools([]);
+  updateScoreRows();
 };
 
 window.loadChapters = async () => {
@@ -206,13 +240,15 @@ window.loadChapters = async () => {
   const tree = document.getElementById('chapterTree');
   tree.innerHTML = '<div style="padding:12px;text-align:center;color:var(--text-muted);font-size:.88rem">載入中…</div>';
 
+  const isCurrentBook = () => cSubject.value === sc && document.getElementById('cBook').value === bc;
   let qs = [];
   try {
     qs = await DataService.getQuestions({ subjectCode: sc, bookCode: bc });
   } catch(e) {
-    tree.innerHTML = `<div style="padding:12px;color:var(--danger);font-size:.88rem">載入失敗：${e.message}</div>`;
+    if (isCurrentBook()) tree.innerHTML = `<div class="scope-empty">載入失敗：${escapeTreeText(e.message)}</div>`;
     return;
   }
+  if (!isCurrentBook()) return;
   // 統計每章每節的題目數量
   const countMap = {};
   qs.forEach(q => {
@@ -232,7 +268,13 @@ window.loadChapters = async () => {
   const bookObj = subj ? (_tbCache?.booksBySubject?.[subj.id]||[]).find(b=>b.code===bc) : null;
   let tbChapters = [];
   if (subj && bookObj) {
-    tbChapters = await DataService.getChapterDefs(subj.id, bookObj.id);
+    try {
+      tbChapters = await DataService.getChapterDefs(subj.id, bookObj.id);
+    } catch (e) {
+      if (isCurrentBook()) tree.innerHTML = '<div class="scope-empty">載入章節失敗：' + escapeTreeText(e.message) + '</div>';
+      return;
+    }
+    if (!isCurrentBook()) return;
   }
   const l1 = bookObj?.l1 || '章';
   const l2 = bookObj?.l2 || '節';
@@ -279,23 +321,31 @@ window.loadChapters = async () => {
         <div class="chapter-item subsection">
           <span style="width:16px;flex-shrink:0;display:inline-block"></span>
           <input type="checkbox" class="chap-cb" data-ch="${ch}" data-sec="${sec}" data-sub="${ss.num}">
-          <span>${ss.title || (l3+ss.num)}</span>
+          <span>${escapeTreeText(ss.title || (l3+ss.num))}</span>
           <span class="ch-count"></span>
         </div>`).join('') : '';
       return `<div class="chapter-item section">
-        ${hasSubChildren ? `<button class="expand-btn" onclick="toggleChildren(this)">▶</button>` : '<span style="width:16px;flex-shrink:0"></span>'}
+        ${hasSubChildren ? `<button class="expand-btn" onclick="toggleChildren(this)" aria-label="收合章節" aria-expanded="true">▼</button>` : '<span style="width:16px;flex-shrink:0"></span>'}
         <input type="checkbox" class="chap-cb sec-cb" data-ch="${ch}" data-sec="${sec}" onchange="onSecCbChange(this)">
-        <span>${secTitles[ch]?.[sec] || (l2+parseInt(sec))}</span>
+        <span>${escapeTreeText(secTitles[ch]?.[sec] || (l2+parseInt(sec)))}</span>
         <span class="ch-count">${cnt} 題</span>
-      </div>${hasSubChildren ? `<div class="chapter-children">${subsHTML}</div>` : ''}`;
+      </div>${hasSubChildren ? `<div class="chapter-children open">${subsHTML}</div>` : ''}`;
     }).join('') : '';
     return `<div class="chapter-item">
-        ${hasChildren ? `<button class="expand-btn" onclick="toggleChildren(this)">▶</button>` : '<span style="width:16px;flex-shrink:0"></span>'}
+        ${hasChildren ? `<button class="expand-btn" onclick="toggleChildren(this)" aria-label="收合章節" aria-expanded="true">▼</button>` : '<span style="width:16px;flex-shrink:0"></span>'}
         <input type="checkbox" class="chap-cb chapter-cb" data-ch="${ch}" onchange="onChapterCbChange(this)">
-        <span>${chTitles[ch] || (l1+parseInt(ch))}</span>
+        <span>${escapeTreeText(chTitles[ch] || (l1+parseInt(ch)))}</span>
         <span class="ch-count">${info.count} 題</span>
-      </div>${hasChildren ? `<div class="chapter-children">${secHTML}</div>` : secHTML}`;
+      </div>${hasChildren ? `<div class="chapter-children open">${secHTML}</div>` : secHTML}`;
   }).join('');
+  tree.querySelectorAll('.chap-cb').forEach((cb, index) => {
+    cb.id = 'scopeChapter' + index;
+    const text = cb.nextElementSibling;
+    const label = document.createElement('label');
+    label.htmlFor = cb.id;
+    label.textContent = text.textContent;
+    text.replaceWith(label);
+  });
 };
 
 window.toggleChildren = (btn) => {
@@ -304,6 +354,8 @@ window.toggleChildren = (btn) => {
   if (!children || !children.classList.contains('chapter-children')) return;
   const open = children.classList.toggle('open');
   btn.textContent = open ? '▼' : '▶';
+  btn.setAttribute('aria-expanded', String(open));
+  btn.setAttribute('aria-label', open ? '收合章節' : '展開章節');
 };
 
 // 向上同步：子項全勾→上層勾；子項未全勾→上層取消
@@ -314,21 +366,28 @@ function syncParentCb(ch, sec) {
     const subs = [...document.querySelectorAll(`.chap-cb[data-ch="${ch}"][data-sec="${sec}"][data-sub]`)];
     if (subs.length) {
       const secCb = document.querySelector(`.chap-cb.sec-cb[data-ch="${ch}"][data-sec="${sec}"]`);
-      if (secCb) secCb.checked = subs.every(s => s.checked);
+      if (secCb) {
+        secCb.checked = subs.every(s => s.checked);
+        secCb.indeterminate = !secCb.checked && subs.some(s => s.checked);
+      }
     }
   }
   // 同步章：若所有非 chapter-cb 的 chap-cb 全勾則章勾
   const allChildren = [...document.querySelectorAll(`.chap-cb[data-ch="${ch}"]:not(.chapter-cb)`)];
   if (allChildren.length) {
     const chapCb = document.querySelector(`.chap-cb.chapter-cb[data-ch="${ch}"]`);
-    if (chapCb) chapCb.checked = allChildren.every(s => s.checked);
+    if (chapCb) {
+      chapCb.checked = allChildren.every(s => s.checked);
+      chapCb.indeterminate = !chapCb.checked && allChildren.some(s => s.checked);
+    }
   }
 }
 
 window.onSecCbChange = (cb) => {
   const ch = cb.dataset.ch, sec = cb.dataset.sec, checked = cb.checked;
+  cb.indeterminate = false;
   // 下行：同步所有子節
-  document.querySelectorAll(`.chap-cb[data-ch="${ch}"][data-sec="${sec}"][data-sub]`).forEach(s => s.checked = checked);
+  document.querySelectorAll(`.chap-cb[data-ch="${ch}"][data-sec="${sec}"][data-sub]`).forEach(s => { s.checked = checked; s.indeterminate = false; });
   // 上行：同步章
   syncParentCb(ch, undefined);
   updateTypePoolsFromSelection();
@@ -337,6 +396,7 @@ window.onSecCbChange = (cb) => {
 window.onChapterCbChange = (cb) => {
   const ch = cb.dataset.ch;
   const checked = cb.checked;
+  cb.indeterminate = false;
   document.querySelectorAll(`.chap-cb[data-ch="${ch}"]:not(.chapter-cb)`).forEach(s => s.checked = checked);
   updateTypePoolsFromSelection();
 };
@@ -352,7 +412,7 @@ document.addEventListener('change', e => {
 });
 
 window.clearAllChapters = () => {
-  document.querySelectorAll('.chap-cb').forEach(c => c.checked = false);
+  document.querySelectorAll('.chap-cb').forEach(c => { c.checked = false; c.indeterminate = false; });
   updateTypePoolsFromSelection();
 };
 
@@ -361,18 +421,21 @@ function updateTypePools(qs) {
     const c = qs.filter(q => q.type === t.code).length;
     const row = document.getElementById('typerow-'+t.code);
     if (row) row.style.display = c ? '' : 'none';
+    if (!c) document.getElementById('cnt-' + t.code).value = 0;
     const pool = document.getElementById('pool-'+t.code);
     if (pool) pool.textContent = c ? `共 ${c} 題` : '';
   });
 }
 
 function updateTypePoolsFromSelection() {
+  generatedQuestions = [];
   const allQs = window._allBookQs || [];
   if (!allQs.length) return;
   const checkedCbs = [...document.querySelectorAll('.chap-cb:checked')];
   if (!checkedCbs.length) {
     // 未勾選任何章節 → 隱藏所有題型
     updateTypePools([]);
+    updateScoreRows();
     return;
   }
   const chapters = checkedCbs.map(c =>
@@ -388,6 +451,7 @@ function updateTypePoolsFromSelection() {
     return eq(q.chapterNum, p[0]) && eq(q.sectionNum, p[1]) && eq(q.subsectionNum, p[2]);
   }));
   updateTypePools(filtered);
+  updateScoreRows();
 }
 
 window.shuffleAll = () => {
@@ -545,6 +609,7 @@ window.doGenerate = async () => {
 
     generatedQuestions = allPicked.flatMap(t => t.items.map(q => ({...q, _typeLabel: t.label, _icon: t.icon})));
     renderPreview(allPicked);
+    setComposeStep(generatedQuestions.length ? 4 : 3);
   } catch(e) {
     UI.toast('選題失敗：'+e.message, 'danger');
   } finally {
@@ -592,13 +657,7 @@ function renderPreview(grouped) {
     </div>`;
   }
 
-  html += `<div class="exam-save-bar">
-    <input class="form-control" id="quickExamTitle" placeholder="試卷名稱（必填才能儲存）" style="min-width:200px">
-    <button class="btn btn-outline btn-sm" onclick="shuffleAll()" title="在各題型內亂數重排題目順序">↕ 亂數排序</button>
-    <button class="btn btn-outline btn-sm" onclick="openHeaderSettings()" title="設定試卷上方表頭資訊">✎ 試卷表頭</button>
-    <button class="btn btn-outline btn-sm" onclick="previewExam()">◉ 預覽試卷</button>
-    <button class="btn btn-primary" onclick="openSaveModal()">💾 儲存為試卷</button>
-  </div>`;
+  html += '<div class="exam-save-bar"><button class="btn btn-outline btn-sm" onclick="shuffleAll()">↕ 亂數排序</button></div>';
 
   document.getElementById('previewArea').innerHTML = html;
 }
@@ -631,6 +690,7 @@ window.regenerateType = regenerateType;
 
 window.openSaveModal = async () => {
   if (!generatedQuestions.length) { UI.toast('請先選題', 'warning'); return; }
+  setComposeStep(5);
   const quickTitle = document.getElementById('quickExamTitle')?.value.trim();
   if (quickTitle) document.getElementById('examTitle').value = quickTitle;
   document.getElementById('saveModal').classList.remove('hidden');
@@ -688,6 +748,7 @@ window.doSaveExam = async () => {
 };
 
 updateScoreRows();
+setComposeStep(1);
 </script>
 </body>
 </html>
