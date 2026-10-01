@@ -18,7 +18,7 @@ import {
   getAuth, signInWithEmailAndPassword, signOut, deleteUser as deleteAuthUser,
   createUserWithEmailAndPassword, onAuthStateChanged,
   setPersistence, browserSessionPersistence,
-  EmailAuthProvider, reauthenticateWithCredential, updatePassword
+  EmailAuthProvider, reauthenticateWithCredential, updatePassword, sendPasswordResetEmail
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 import {
   getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject
@@ -634,6 +634,22 @@ window.DataService = {
       if (examDoc.data().appearance != null) continue;
       await updateDoc(examDoc.ref, { appearance });
     }
+  },
+
+  async sendManagedPasswordReset(uid) {
+    const current = DataService._currentUser;
+    if (!auth.currentUser || auth.currentUser.uid !== current?.uid) throw new Error('請先登入');
+    if (!['admin', 'manager'].includes(current.role)) throw new Error('權限不足');
+    const snapshot = await getDoc(doc(db, 'users', uid));
+    if (!snapshot.exists()) throw new Error('找不到帳號');
+    const target = snapshot.data();
+    if (uid !== current.uid && (target.role === 'admin' || (current.role === 'manager' && target.role !== 'teacher'))) {
+      throw new Error('權限不足');
+    }
+    const email = (target.email || '').trim();
+    if (!email) throw new Error('此帳號未設定電子信箱');
+    await sendPasswordResetEmail(auth, email);
+    return email;
   },
 
   async changePassword(currentPassword, newPassword) {

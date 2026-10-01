@@ -80,12 +80,14 @@
 }
 
 .recent-exam-actions { display: flex; gap: 8px; align-items: center; justify-content: flex-start; flex-wrap: nowrap; }
-.recent-exam-actions .btn { flex: 0 0 auto; gap: 4px; padding: 4px 8px; white-space: nowrap; font-size: .88rem; }
+.recent-exam-actions .btn { flex: 0 0 auto; gap: 4px; padding: 4px 8px; white-space: nowrap; font-size: .88rem; line-height: 1; }
 .recent-exam-actions svg { display: block; flex: none; }
+.recent-exam-actions .btn-primary { background: #246cec; transition: background-color .15s, border-color .15s, box-shadow .15s; }
+.recent-exam-actions .btn-primary:hover { background: #155ee0; }
 
 .recent-management-link { color: #2570ec; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
 .recent-management-link:hover { color: #174fae; }
 
-.recent-table .subject-tag { max-width: 100%; white-space: normal; overflow-wrap: anywhere; display: inline-block; vertical-align: middle; font-size: .88rem; line-height: 1.45; }
+.recent-table .subject-tag { max-width: 100%; min-height: 26px; box-sizing: border-box; border: 1px solid transparent; padding: 4px 10px; white-space: normal; overflow-wrap: anywhere; display: inline-flex; align-items: center; vertical-align: middle; font-size: .88rem; line-height: 16px; }
 
 .exam-name.has-description strong { flex: 0 1 auto; max-width: 65%; }

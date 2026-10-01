@@ -106,7 +106,7 @@ npx serve .
 
 ```text
 youth-testbank/
-├─ index.html                 登入與第一次初始化管理員
+├─ index.html                 帳號登入
 ├─ dashboard.html             題庫及試卷總覽
 ├─ textbooks.html             科目、冊別、章節管理
 ├─ import-textbooks.html      初次建立或重建課本結構工具
@@ -145,7 +145,7 @@ youth-testbank/
 
 | 頁面 | 功能 | 管理員 | 教師 |
 |---|---|:---:|:---:|
-| `index.html` | 管理員／教師登入；第一次初始化管理員 | ✓ | ✓ |
+| `index.html` | 管理員／教師登入 | ✓ | ✓ |
 | `dashboard.html` | 題庫統計、最近試卷與快速入口 | ✓ | ✓ |
 | `textbooks.html` | 科目、冊別與章節管理 | ✓ | |
 | `import-textbooks.html` | 建立或重建課本資料 | ✓ | |
@@ -185,8 +185,7 @@ youth-testbank/
 3. 如需題目圖片，啟用 Firebase Storage。
 4. 確認 `index.html` 與 `js/firebase.js` 的 `firebaseConfig` 指向正確專案。
 5. 發布 `firestore.rules`。
-6. 開啟 `index.html`，選擇「初始化管理員」。
-7. 輸入目前程式設定的管理員驗證碼 `admin2024`，建立第一個管理員帳號。
+6. 第一個主要管理員由專案維護人員在 Firebase Console 建立 Authentication 帳號，並於 Firestore 的 `users/{uid}` 建立對應資料（`email`、`displayName`、`role: "admin"`）。網站不提供主要管理員初始化入口。
 
 主要管理員可在「帳號管理」中建立管理員或教師帳號；一般管理員只能建立教師帳號。教師帳號必須填寫服務學校。
 

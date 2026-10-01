@@ -66,8 +66,7 @@
 .profile-avatar-group{display:flex;flex-direction:column;align-items:center;gap:8px;flex:none}
 .profile-avatar-group .btn{white-space:nowrap}
 .profile-name-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:3px}
-.profile-school{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:.88rem}
-.profile-school svg{flex:none}
+.profile-detail{margin-top:6px;font-size:.82rem;color:var(--text-secondary)}
 .profile-actions{display:flex;gap:10px;flex-wrap:wrap}
 .profile-actions .btn{width:148px;justify-content:center}
 #pmNickname:focus::placeholder{color:transparent}
@@ -168,14 +167,13 @@
         <input class="form-control" id="umSchool" placeholder="請輸入服務學校全名">
         <div class="field-hint" id="umSchoolHint">教師必填</div>
       </div>
-      <div class="form-row">
+      <div class="form-row" id="umPasswordFields">
         <div class="form-group">
           <label class="form-label" id="umPwLabel">密碼 <span class="required">*</span></label>
           <div class="pw-toggle">
             <input class="form-control" type="password" id="umPw" placeholder="至少 6 字元">
             <button class="pw-eye" type="button" onclick="togglePw('umPw',this)">👁</button>
           </div>
-          <div class="field-hint hidden" id="umPwHint">留空則不更改密碼</div>
         </div>
         <div class="form-group">
           <label class="form-label">確認密碼</label>
@@ -184,6 +182,10 @@
             <button class="pw-eye" type="button" onclick="togglePw('umPw2',this)">👁</button>
           </div>
         </div>
+      </div>
+      <div class="form-group hidden" id="umPasswordResetGroup">
+        <button class="btn btn-secondary" type="button" id="umPasswordResetBtn" onclick="sendUserPasswordReset()">寄送密碼重設信</button>
+        <div class="field-hint" id="umPasswordResetHint" role="status">寄送至此帳號的電子信箱，由使用者自行設定新密碼。完成重設前，原密碼仍可使用。</div>
       </div>
     </div>
     <div class="modal-footer">
@@ -232,6 +234,10 @@
           <label class="form-label" for="pmSchool">服務學校 <span id="pmSchoolReq" class="required"></span></label>
           <input class="form-control" id="pmSchool" placeholder="請輸入服務學校全名">
         </div>
+        <div class="form-group" id="pmServiceUnitGroup" style="display:none">
+          <label class="form-label" for="pmServiceUnit">服務單位</label>
+          <input class="form-control" id="pmServiceUnit" placeholder="請輸入服務單位">
+        </div>
         <div class="form-group">
           <label class="form-label" for="pmName">姓名<span id="pmNameReq" class="required"> *</span></label>
           <input class="form-control" id="pmName">
@@ -241,7 +247,7 @@
           <input class="form-control" id="pmNickname" maxlength="30" placeholder="未填時使用姓名顯示">
         </div>
       </div>
-      <p id="pmTeacherNote" class="field-hint" hidden>變更電子信箱、姓名請洽業務人員為您服務</p>
+      <p id="pmTeacherNote" class="field-hint" hidden>變更電子信箱或姓名，請洽業務人員為您服務</p>
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="document.getElementById('profileModal').classList.add('hidden')">取消</button>
@@ -477,6 +483,9 @@ window.openUserModal = (uid) => {
     const el = document.getElementById(id); if(el) el.value = '';
   });
   document.getElementById('umErr').style.display = 'none';
+  document.getElementById('umPasswordFields').classList.toggle('hidden', !!uid);
+  document.getElementById('umPasswordResetGroup').classList.toggle('hidden', !uid);
+  document.getElementById('umPasswordResetHint').textContent = '寄送至此帳號的電子信箱，由使用者自行設定新密碼。完成重設前，原密碼仍可使用。';
 
   if (uid) {
     const u = allUsers.find(x => (x.id||x.uid)===uid);
@@ -491,8 +500,6 @@ window.openUserModal = (uid) => {
     document.getElementById('umEmail').disabled       = true;
     document.getElementById('umName').value           = u.displayName||'';
     document.getElementById('umSchool').value         = u.school||'';
-    document.getElementById('umPwLabel').innerHTML    = '新密碼（選填）';
-    document.getElementById('umPwHint').classList.remove('hidden');
   } else {
     document.getElementById('umTitle').textContent    = '新增帳號';
     document.getElementById('umUid').value            = '';
@@ -501,13 +508,37 @@ window.openUserModal = (uid) => {
     document.getElementById('umRole').disabled        = !isPrimaryAdmin;
     document.getElementById('umEmail').disabled       = false;
     document.getElementById('umPwLabel').innerHTML    = '密碼 <span class="required">*</span>';
-    document.getElementById('umPwHint').classList.add('hidden');
   }
   onUmRoleChange();
   document.getElementById('userModal').classList.remove('hidden');
 };
 
 window.closeUserModal = () => document.getElementById('userModal').classList.add('hidden');
+
+window.sendUserPasswordReset = async () => {
+  const uid = document.getElementById('umUid').value;
+  const btn = document.getElementById('umPasswordResetBtn');
+  if (!uid || btn.disabled) return;
+  const hint = document.getElementById('umPasswordResetHint');
+  btn.disabled = true;
+  btn.textContent = '寄送中…';
+  try {
+    const email = await DataService.sendManagedPasswordReset(uid);
+    if (document.getElementById('umUid').value === uid) hint.textContent = `密碼重設信已寄送至 ${email}，請使用者查看收件匣或垃圾郵件。`;
+    UI.toast('密碼重設信已寄送', 'success');
+  } catch (e) {
+    const messages = {
+      'auth/too-many-requests': '寄送次數過多，請稍後再試',
+      'auth/invalid-email': '此帳號的電子信箱格式不正確',
+      'auth/user-not-found': '找不到此登入帳號',
+      'auth/network-request-failed': '網路連線失敗，請稍後再試'
+    };
+    UI.toast(messages[e.code] || e.message || '寄送失敗，請稍後再試', 'danger');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '寄送密碼重設信';
+  }
+};
 
 window.onUmRoleChange = () => {
   const role = document.getElementById('umRole').value;
@@ -545,8 +576,7 @@ window.saveUser = async () => {
   try {
     if (isEdit) {
       await DataService.updateProfile(uid, { displayName:name, role, school:school||null });
-      if (pw) UI.toast('帳號已更新（密碼變更因 Firebase 安全限制需請使用者自行操作）','warning',6000);
-      else    UI.toast(`帳號「${name}」已更新`,'success');
+      UI.toast(`帳號「${name}」已更新`,'success');
     } else {
       const res = await DataService.register({
         email, password:pw, displayName:name, role,
@@ -600,8 +630,9 @@ function buildProfilePanel() {
           <div>
             <div class="profile-name-row"><span style="font-size:1.05rem;font-weight:700">${UI.escapeHtml(u.displayName||'（未設定）')}</span>${roleTag(u.role)}</div>
             <div style="color:var(--text-muted);font-size:.9rem;margin-bottom:6px">${UI.escapeHtml(u.email||'')}</div>
-            ${u.nickname?.trim()?`<div style="font-size:.82rem;color:var(--text-secondary)">暱稱：${UI.escapeHtml(u.nickname.trim())}</div>`:''}
-            ${showSchool&&u.school?`<div class="profile-school">${ICONS.schoolBuilding16}<span>${UI.escapeHtml(u.school)}</span></div>`:''}
+            ${u.nickname?.trim()?`<div class="profile-detail">暱稱︱${UI.escapeHtml(u.nickname.trim())}</div>`:''}
+            ${showSchool&&u.school?`<div class="profile-detail">學校︱${UI.escapeHtml(u.school)}</div>`:''}
+            ${!showSchool&&u.serviceUnit?`<div class="profile-detail">單位︱${UI.escapeHtml(u.serviceUnit)}</div>`:''}
           </div>
         </div>
         <div class="profile-actions">
@@ -651,6 +682,7 @@ function openProfileModal() {
   document.getElementById('pmName').value   = u.displayName||'';
   document.getElementById('pmNickname').value = u.nickname||'';
   document.getElementById('pmSchool').value = u.school||'';
+  document.getElementById('pmServiceUnit').value = u.serviceUnit||'';
   const teacher = u.role === 'teacher';
   const nameInput = document.getElementById('pmName');
   nameInput.disabled = teacher;
@@ -661,7 +693,8 @@ function openProfileModal() {
   document.getElementById('pmErr').style.display = 'none';
   const sg = document.getElementById('pmSchoolGroup');
   sg.style.display = teacher ? 'block':'none';
-  document.getElementById('pmEmailGroup').style.gridColumn = teacher ? '' : '1 / -1';
+  document.getElementById('pmServiceUnitGroup').style.display = teacher ? 'none' : 'block';
+  document.getElementById('pmEmailGroup').style.gridColumn = '';
   document.getElementById('pmSchoolReq').textContent = teacher ? '*' : '';
   document.getElementById('profileModal').classList.remove('hidden');
 }
@@ -707,6 +740,7 @@ window.saveProfile = async () => {
   const name   = document.getElementById('pmName').value.trim();
   const nickname = document.getElementById('pmNickname').value.trim();
   const school = document.getElementById('pmSchool').value.trim();
+  const serviceUnit = document.getElementById('pmServiceUnit').value.trim();
   const u      = DataService.getCurrentUser();
   const showErr = m => { errEl.textContent=m; errEl.style.display='block'; };
   if (u.role !== 'teacher' && !name) return showErr('姓名不能為空');
@@ -714,7 +748,7 @@ window.saveProfile = async () => {
   const btn = document.getElementById('pmSaveBtn');
   btn.disabled=true; btn.textContent='儲存中…';
   try {
-    const changes = u.role === 'teacher' ? { nickname, school } : { displayName:name, nickname, school:school||null };
+    const changes = u.role === 'teacher' ? { nickname, school } : { displayName:name, nickname, serviceUnit:serviceUnit||null };
     await DataService.updateProfile(u.uid, changes);
     window.AppShell.refreshAccount(DataService.getCurrentUser());
     UI.toast('個人資料已更新','success');

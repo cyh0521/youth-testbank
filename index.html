@@ -47,7 +47,7 @@ body{min-height:100vh;background:#eef2f1;overflow-x:hidden}
 .big-btn.primary:hover:not(:disabled){background:#163f42;transform:translateY(-2px);box-shadow:0 12px 24px rgba(29,85,87,.22)}
 .big-btn.accent{background:var(--accent);color:white}
 .big-btn.accent:hover:not(:disabled){background:var(--accent-light);transform:translateY(-1px)}
-.big-btn:disabled{opacity:.6;cursor:not-allowed;transform:none!important}
+.big-btn:disabled{opacity:.6;cursor:progress;transform:none!important}
 .hint{background:#f5f8f6;border-radius:10px;padding:12px 14px;font-size:.85rem;color:#667b7b;line-height:1.8;margin-top:24px}
 .hint strong{color:#315d5b;display:block;margin-bottom:2px}
 .divider{display:flex;align-items:center;gap:10px;margin:14px 0;font-size:.86rem;color:var(--text-muted)}
@@ -102,42 +102,8 @@ body{min-height:100vh;background:#eef2f1;overflow-x:hidden}
         <strong>說明</strong>
         教師帳號請聯繫幼獅業務同仁協助申請。
       </div>
-      <div style="text-align:center;margin-top:12px;font-size:.86rem;color:var(--text-muted)">
-        第一次使用？<a onclick="showPanel('init')" style="color:var(--primary);cursor:pointer">初始化主要管理員</a>
-      </div>
     </div>
 
-    <!-- ── 初始化主要管理員 ── -->
-    <div class="panel" id="panel-init">
-      <div class="msg err" id="initErr"></div>
-      <div style="background:#fef9e7;border:1px solid #ffe082;border-radius:var(--radius);padding:9px 13px;font-size:.88rem;color:#7c5000;margin-bottom:14px">
-        ⚠ 僅供第一次建立系統主要管理員帳號使用。
-      </div>
-      <div class="form-group">
-        <label class="form-label">管理員驗證碼 <span class="req">*</span></label>
-        <input class="form-control" type="password" id="initCode" placeholder="admin2024">
-      </div>
-      <div class="form-group">
-        <label class="form-label">電子信箱 <span class="req">*</span></label>
-        <input class="form-control" type="email" id="initEmail">
-      </div>
-      <div class="form-group">
-        <label class="form-label">姓名 <span class="req">*</span></label>
-        <input class="form-control" id="initName">
-      </div>
-      <div class="form-group">
-        <label class="form-label">密碼 <span class="req">*</span></label>
-        <input class="form-control" type="password" id="initPw" placeholder="至少 6 字元">
-      </div>
-      <div class="form-group">
-        <label class="form-label">確認密碼 <span class="req">*</span></label>
-        <input class="form-control" type="password" id="initPw2">
-      </div>
-      <button class="big-btn primary" id="initBtn" onclick="doInitAdmin()">建立主要管理員帳號</button>
-      <div style="text-align:center;margin-top:12px;font-size:.88rem;color:var(--text-secondary)">
-        <a onclick="showPanel('login')" style="color:var(--primary);cursor:pointer;font-weight:600">返回登入</a>
-      </div>
-    </div>
   </div>
   <div id="fbStatus">連線中…</div>
   </div>
@@ -146,10 +112,9 @@ body{min-height:100vh;background:#eef2f1;overflow-x:hidden}
 
 <script type="module">
 import { initializeApp }                          from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getFirestore, doc, getDoc, setDoc, updateDoc,
+import { getFirestore, doc, getDoc, updateDoc,
          increment, serverTimestamp }              from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 import { getAuth, signInWithEmailAndPassword,
-         createUserWithEmailAndPassword,
          signOut, onAuthStateChanged,
          setPersistence, browserSessionPersistence } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 
@@ -184,17 +149,6 @@ try {
   document.getElementById('fbStatus').textContent = '⚠ Firebase 連線失敗：'+e.message;
   document.getElementById('fbStatus').className = 'err';
 }
-
-// ── 登入／初始化面板 ──────────────────────────────
-window.showPanel = name => {
-  ['login','init'].forEach(n => {
-    document.getElementById('panel-'+n).classList.toggle('active', n===name);
-  });
-  ['loginErr','loginOk','initErr'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) { el.className = el.className.replace(' show',''); }
-  });
-};
 
 function showMsg(id, text, type='err') {
   const el = document.getElementById(id);
@@ -254,48 +208,6 @@ window.doLogin = async () => {
   }
 };
 
-// ── 初始化管理員 ─────────────────────────────────
-window.doInitAdmin = async () => {
-  hideMsg('initErr');
-  const code = document.getElementById('initCode').value.trim();
-  const email= document.getElementById('initEmail').value.trim();
-  const name = document.getElementById('initName').value.trim();
-  const pw   = document.getElementById('initPw').value;
-  const pw2  = document.getElementById('initPw2').value;
-  const btn  = document.getElementById('initBtn');
-
-  if (code!=='admin2024') return showMsg('initErr','驗證碼錯誤');
-  if (!email)             return showMsg('initErr','請輸入電子信箱');
-  if (!name)              return showMsg('initErr','請輸入姓名');
-  if (pw.length<6)        return showMsg('initErr','密碼至少 6 字元');
-  if (pw!==pw2)           return showMsg('initErr','兩次密碼不一致');
-
-  btn.disabled=true; btn.innerHTML='<div class="spin"></div> 建立中…';
-  try {
-    const cred = await createUserWithEmailAndPassword(auth, email, pw);
-    await setDoc(doc(db,'users',cred.user.uid),{
-      email, displayName:name, role:'admin', school:null,
-      loginCount:0, examCreatedCount:0, examCurrentCount:0,
-      metricsStartedAt:serverTimestamp(), createdAt:serverTimestamp()
-    });
-    await signOut(auth);
-    btn.disabled=false; btn.textContent='建立主要管理員帳號';
-    ['initCode','initEmail','initName','initPw','initPw2'].forEach(id=>{
-      const el=document.getElementById(id); if(el) el.value='';
-    });
-    showPanel('login');
-    document.getElementById('loginEmail').value = email;
-    showMsg('loginOk',`✅ 主要管理員帳號「${name}」建立成功！請輸入密碼登入。`,'ok');
-  } catch(e) {
-    btn.disabled=false; btn.textContent='建立主要管理員帳號';
-    const m={
-      'auth/email-already-in-use':'此信箱已被使用',
-      'auth/invalid-email':'電子信箱格式錯誤',
-      'auth/network-request-failed':'網路連線失敗',
-    };
-    showMsg('initErr', m[e.code]||('建立失敗：'+e.message));
-  }
-};
 </script>
 </body>
 </html>
