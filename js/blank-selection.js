@@ -7,6 +7,7 @@ export function blankCount(question) {
 export function selectFillQuestions(pool, target, hardRatio = 0.5) {
   if (target === 0) return [];
   if (!Number.isInteger(target) || target < 0) return null;
+  if (target > pool.reduce((sum, question) => sum + blankCount(question), 0)) return null;
   const shuffled = [...pool].sort(() => Math.random() - 0.5);
   const states = Array.from({ length: target + 1 }, () => new Map());
   states[0].set(0, []);
@@ -31,7 +32,7 @@ export function selectFillQuestions(pool, target, hardRatio = 0.5) {
   return best;
 }
 
-export function reachableBlankCounts(pool, limit = 99) {
+export function reachableBlankCounts(pool, limit = pool.reduce((sum, question) => sum + blankCount(question), 0)) {
   const reachable = Array(limit + 1).fill(false);
   reachable[0] = true;
   for (const question of pool) {

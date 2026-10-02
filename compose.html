@@ -118,8 +118,7 @@
 .result-q .q-meta .badge,.result-q .q-catalog-num,.result-q .q-source{padding:2px 8px;border-radius:6px;font-size:.82rem;line-height:1.5}
 .result-q .q-catalog-num{font-family:var(--font-mono);background:#e8eef6;color:var(--primary)}
 .result-q .q-source{max-width:100%;background:#f1edfa;color:#68518f;white-space:normal;overflow-wrap:anywhere}
-.result-q .q-text,.result-q .q-options,.result-q .q-tail{line-height:1.65;white-space:pre-wrap}
-.result-q .q-options{display:flex;flex-direction:column;gap:2px;margin-top:5px}
+.result-q .q-text,.result-q .q-tail{line-height:1.65;white-space:pre-wrap}
 .result-q .q-tail{margin-top:5px}
 .result-q .q-ans{display:flex;align-items:flex-start;gap:8px;margin-top:9px;padding:7px 10px;border-radius:6px;background:#eef7f2;color:#176d49;line-height:1.6}
 .result-q .answer-label{flex:none;font-size:.82rem;font-weight:700}
@@ -255,7 +254,7 @@ const TYPE_CONFIGS = [
 document.getElementById('typeRows').innerHTML = TYPE_CONFIGS.map(t => `
   <div class="type-row" id="typerow-${t.code}" style="display:none">
     <span class="type-label">${t.label}<span class="type-pool" id="pool-${t.code}"></span></span>
-    <div class="number-stepper"><input class="form-control score-input" type="number" id="cnt-${t.code}" value="0" min="0" max="99" step="1" aria-label="${t.label}${t.code === 'T4' ? '格數' : '題數'}" oninput="updateScoreRows()"><div class="number-stepper-buttons"><button type="button" tabindex="-1" aria-label="增加${t.label}${t.code === 'T4' ? '格數' : '題數'}" onclick="adjustComposeNumber('cnt-${t.code}',1)">▲</button><button type="button" tabindex="-1" aria-label="減少${t.label}${t.code === 'T4' ? '格數' : '題數'}" onclick="adjustComposeNumber('cnt-${t.code}',-1)">▼</button></div></div>
+    <div class="number-stepper"><input class="form-control score-input" type="number" id="cnt-${t.code}" value="0" min="0" step="1" aria-label="${t.label}${t.code === 'T4' ? '格數' : '題數'}" oninput="updateScoreRows()"><div class="number-stepper-buttons"><button type="button" tabindex="-1" aria-label="增加${t.label}${t.code === 'T4' ? '格數' : '題數'}" onclick="adjustComposeNumber('cnt-${t.code}',1)">▲</button><button type="button" tabindex="-1" aria-label="減少${t.label}${t.code === 'T4' ? '格數' : '題數'}" onclick="adjustComposeNumber('cnt-${t.code}',-1)">▼</button></div></div>
     <span class="row-unit">${t.code === 'T4' ? '格' : '題'}</span>
     <span class="type-error" id="cnt-error-${t.code}" role="alert"></span>
   </div>
@@ -585,9 +584,11 @@ window.clearAllChapters = () => {
 };
 
 let fillPool = [];
+let fillReachable = [true];
 function updateTypePools(qs) {
   document.getElementById('scopeAvailable').textContent = `︱可選題數 ${qs.length} 題`;
   fillPool = qs.filter(q => q.type === 'T4');
+  fillReachable = reachableBlankCounts(fillPool);
   TYPE_CONFIGS.forEach(t => {
     const c = qs.filter(q => q.type === t.code).length;
     const available = t.code === 'T4' ? fillPool.reduce((sum, q) => sum + blankCount(q), 0) : c;
@@ -595,6 +596,7 @@ function updateTypePools(qs) {
     if (row) row.style.display = c ? '' : 'none';
     if (!c) document.getElementById('cnt-' + t.code).value = 0;
     document.getElementById('cnt-' + t.code).dataset.poolCount = String(available);
+    document.getElementById('cnt-' + t.code).max = String(available);
     const pool = document.getElementById('pool-'+t.code);
     if (pool) pool.textContent = c ? (t.code === 'T4' ? `共 ${c} 題、${available} 格` : `共 ${c} 題`) : '';
   });
@@ -610,10 +612,11 @@ function validateTypeCounts(focusFirst = false) {
     const count = Number(input.value);
     let message = '';
     const unit = t.code === 'T4' ? '格' : '題';
-    if (available && (input.value === '' || !Number.isInteger(count) || count < 0 || count > 99)) message = `請填寫 0～99 的整數${unit}數`;
+    if (available && (input.value === '' || !Number.isSafeInteger(count) || count < 0)) message = `請填寫 0～${available} 的整數${unit}數`;
     else if (count > available) message = `此題型最多可選 ${available} ${unit}，請重新填寫`;
-    else if (t.code === 'T4' && count > 0 && !reachableBlankCounts(fillPool, Math.min(99, count))[count]) {
-      const possible = reachableBlankCounts(fillPool).flatMap((yes, n) => yes && n > 0 ? [n] : []);
+    else if (t.code === 'T4' && count > 0 && !fillReachable[count]) {
+      const possible = fillReachable.flatMap((yes, n) => yes && n > 0 ? [n] : [])
+        .sort((a, b) => Math.abs(a - count) - Math.abs(b - count)).slice(0, 6).sort((a, b) => a - b);
       message = `無法以整題湊出 ${count} 格；可選格數：${possible.join('、')}`;
     }
     row.classList.toggle('invalid', Boolean(message));
@@ -912,9 +915,8 @@ function renderPreview(grouped) {
             <span class="q-num">${qNum++}.</span>
             <div class="q-body">
               <div class="q-meta"><span class="q-catalog-num">${UI.escapeHtml(q.qnum || '—')}</span>${UI.typeBadge(q.type)}${UI.diffBadge(q.difficulty)}<span class="q-source">來源：${UI.escapeHtml(q.source || '未註明')}</span></div>
-              <div class="q-text">${q.type==='T5' ? UI.matchingQuestionHtml(q.text) : UI.questionHtml(q.text||'—')}</div>
-              ${(q.type === 'T2' || q.type === 'T3') && q.options?.length ? `<div class="q-options">${q.options.map((option, index) => `<div>（${String.fromCharCode(65 + index)}）${UI.questionHtml(option)}</div>`).join('')}</div>` : ''}
-              ${q.tail ? `<div class="q-tail">${UI.questionHtml(q.tail)}</div>` : ''}
+              <div class="q-text">${q.type === 'T5' ? UI.matchingQuestionHtml(q.text) : UI.questionHtml(q.text || '—')}${(q.type === 'T2' || q.type === 'T3') && q.options?.length ? ' ' + q.options.map((option, index) => '(' + String.fromCharCode(65 + index) + ')' + UI.questionHtml(option)).join(' ') : ''}${(q.type === 'T2' || q.type === 'T3') && q.tail ? (String(q.tail).trim() === '。' ? '' : ' ') + UI.questionHtml(q.tail) : ''}</div>
+              ${q.type !== 'T2' && q.type !== 'T3' && q.tail ? '<div class="q-tail">' + UI.questionHtml(q.tail) + '</div>' : ''}
               <div class="q-ans"><span class="answer-label">答案</span><span class="answer-text">${UI.questionHtml(q.answer || '—')}</span></div>
             </div>
           </div>
