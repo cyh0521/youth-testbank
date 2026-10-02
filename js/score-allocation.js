@@ -55,42 +55,6 @@ export function allocateTypeScores(typeCounts, weights, target = 100, step = 0.5
   return scores;
 }
 
-/** 找出一個最小幅度、題庫可提供且重新配分後恰好滿分的題數調整。 */
-export function suggestTypeCountChange(types, weights, step = 0.5, fixedScores = {}, target = 100) {
-  const gcd = (a, b) => b ? gcd(b, a % b) : a;
-  const limit = Math.round(target / step);
-  const active = types.filter(t => t.cnt > 0);
-  if (!active.length) return null;
-  for (let distance = 1; distance <= 99; distance++) {
-    const matches = [];
-    for (const type of types) {
-      for (const delta of [-distance, distance]) {
-        const count = type.cnt + delta;
-        if (count < 0 || count > Math.min(99, type.available) || (type.allowedCounts && !type.allowedCounts[count])) continue;
-        const counts = types.map(t => ({ code:t.code, cnt:t.code === type.code ? count : t.cnt })).filter(t => t.cnt > 0);
-        if (!counts.length || counts.reduce((sum, t) => sum + t.cnt, 0) > limit) continue;
-        const divisor = counts.reduce((value, t) => gcd(value, t.cnt), 0);
-        if (limit % divisor) continue;
-        const fixedTotal = counts.reduce((sum, t) => sum + (fixedScores[t.code] === undefined ? 0 : t.cnt * fixedScores[t.code]), 0);
-        const flexible = counts.filter(t => fixedScores[t.code] === undefined);
-        if (fixedTotal + flexible.reduce((sum, t) => sum + t.cnt * step, 0) > target) continue;
-        if (!flexible.length && Math.abs(fixedTotal - target) > 0.001) continue;
-        const automatic = allocateTypeScores(counts, weights, target, step);
-        const scores = Object.fromEntries(counts.map(t => [t.code, fixedScores[t.code] ?? automatic[t.code]]));
-        if (Math.abs(counts.reduce((sum, t) => sum + t.cnt * scores[t.code], 0) - target) > 0.001) continue;
-        const others = counts.filter(t => t.code !== 'T5' && t.code !== 'T6');
-        if (counts.filter(t => t.code === 'T5' || t.code === 'T6').some(t => others.some(other => scores[t.code] <= scores[other.code]))) continue;
-        matches.push({ code:type.code, delta, count, scores, fractional:counts.filter(t => !Number.isInteger(scores[t.code])).length, scoreGap:scores.T1 !== undefined && scores.T2 !== undefined ? Math.abs(scores.T1 - scores.T2) : 0, removesType:count === 0, addsType:type.cnt === 0 });
-      }
-    }
-    if (matches.length) {
-      matches.sort((a, b) => Number(a.removesType) - Number(b.removesType) || Number(a.addsType) - Number(b.addsType) || a.fractional - b.fractional || a.scoreGap - b.scoreGap);
-      return matches[0];
-    }
-  }
-  return null;
-}
-
 function findWeightedScores(typeCounts, currentScores, weights, target = 100, step = 0.5) {
   if (!typeCounts.length) return null;
   const limit = Math.floor(target / step);
