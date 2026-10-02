@@ -58,6 +58,7 @@ body {
 a { color: var(--primary-light); text-decoration: none; }
 a:hover { color: var(--accent); }
 button { cursor: pointer; font-family: var(--font-sans); }
+button:disabled { cursor: default; }
 input, select, textarea { font-family: var(--font-sans); }
 
 /* ── 捲軸 ── */
@@ -361,7 +362,7 @@ input, select, textarea { font-family: var(--font-sans); }
 .btn-warning:hover { background: #b54400; border-color: #b54400; }
 .btn-sm { padding: 4px 10px; font-size: .86rem; }
 .btn-lg { padding: 10px 24px; font-size: .95rem; }
-.btn:disabled { opacity: .5; cursor: not-allowed; transition: none; }
+.btn:disabled { opacity: .5; cursor: default; transition: none; }
 
 /* ── 表單 ── */
 .form-group { margin-bottom: 16px; }
@@ -530,7 +531,7 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
 }
 .page-btn:hover { border-color: var(--primary-light); color: var(--primary); }
 .page-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
-.page-btn:disabled { opacity: .4; cursor: not-allowed; }
+.page-btn:disabled { opacity: .4; cursor: default; }
 
 /* ── 統計卡片 ── */
 .stat-card {
@@ -811,7 +812,7 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
   color: white;
   border-color: var(--primary);
 }
-.page-btn:disabled { opacity: .4; cursor: not-allowed; }
+.page-btn:disabled { opacity: .4; cursor: default; }
 .page-info {
   font-size: .88rem;
   color: var(--text-muted);

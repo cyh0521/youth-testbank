@@ -513,6 +513,9 @@ function ensurePreviewModal() {
 #epBody .ep-answer-slot{display:inline-flex;align-items:center;width:4em;white-space:nowrap;color:#000}
 #epBody .ep-answer-slot .ep-answer-value{display:inline-block;width:2em;text-align:center}
 #epBody .ep-answer-value,#epBody .ep-labeled-answer .ep-answer-label{color:#b4232c;font-weight:400}
+#epBody .ep-q-difficulty{display:inline-block;padding:2px 6px;margin-right:6px;border-radius:5px;background:#edf1f6;color:#526780;font-size:.75em;font-weight:600;line-height:1.4;vertical-align:middle;white-space:nowrap}
+#epBody .ep-q-difficulty.is-hard{background:#fff0e5;color:#a34d17}
+#epBody .ep-q-difficulty.is-easy{background:#e3f3ec;color:#237553}
 #epBody .ep-q-source{color:#27734c;white-space:nowrap}
 #epBody .ep-q-analysis{display:flex;margin:2px 0 0;color:#245fa5;font-size:.9em;text-align:left}
 #epBody .ep-analysis-label{flex:none}
@@ -562,6 +565,7 @@ function ensurePreviewModal() {
         <label><input type="checkbox" id="epShowAnswers">解答</label>
         <label><input type="checkbox" id="epShowAnalysis">解析</label>
         <label><input type="checkbox" id="epShowSource">出處</label>
+        <label><input type="checkbox" id="epShowDifficulty">難易度</label>
       </div>
     </div>
     <div id="epBody" style="padding:0 20px 20px;overflow-y:auto;flex:1;overscroll-behavior:contain"></div>
@@ -630,7 +634,7 @@ function ensurePreviewModal() {
     onAppearChange();
     persistAppearance();
   };
-  ['epShowAnswers', 'epShowAnalysis', 'epShowSource'].forEach(id => {
+  ['epShowAnswers', 'epShowAnalysis', 'epShowSource', 'epShowDifficulty'].forEach(id => {
     document.getElementById(id).addEventListener('change', () => window._epRefresh?.());
   });
 }
@@ -649,6 +653,7 @@ function previewDisplay() {
     answers: document.getElementById('epShowAnswers')?.checked ?? false,
     analysis: document.getElementById('epShowAnalysis')?.checked ?? false,
     source: document.getElementById('epShowSource')?.checked ?? false,
+    difficulty: document.getElementById('epShowDifficulty')?.checked ?? false,
   };
 }
 
@@ -694,6 +699,7 @@ export function showExamPreview(examData, questions) {
   document.getElementById('epShowAnswers').checked = false;
   document.getElementById('epShowAnalysis').checked = false;
   document.getElementById('epShowSource').checked = false;
+  document.getElementById('epShowDifficulty').checked = false;
   window._epRefresh    = () => { renderPaper(examData, questions, previewDisplay()); applyAppearance(); };
   window._epDoPrint    = () => printWithPaperChoice(examData, questions);
   window._epDoExport   = () => downloadExam(examData, questions, 'Word');
@@ -877,14 +883,16 @@ function renderQPreview(q, num, type, previewOptions) {
   const answerSlot = `<span class="ep-answer-slot">（<span class="ep-answer-value">${answerValue}</span>）</span>`;
   const source = String(q.source ?? '').trim();
   const sourceTag = previewOptions?.source && source ? `<span class="ep-q-source">${source.startsWith('【') ? escapeText(source) : `【${escapeText(source)}】`}</span>` : '';
+  const difficultyLabel = q.difficulty === '◎' ? '較難' : q.difficulty === '△' ? '簡易' : '未標示';
+  const difficultyTag = previewOptions?.difficulty ? `<span class="ep-q-difficulty ${q.difficulty === '◎' ? 'is-hard' : q.difficulty === '△' ? 'is-easy' : ''}">${difficultyLabel}</span>` : '';
   let body = '';
   if (type === 'T1') {
-    body = `<table class="ep-answer-table" role="presentation"><tr><td class="ep-answer-prefix">${answerSlot}${num}.</td><td>${UI.questionHtml(q.text)}${sourceTag}</td></tr></table>`;
+    body = `<table class="ep-answer-table" role="presentation"><tr><td class="ep-answer-prefix">${difficultyTag}${answerSlot}${num}.</td><td>${UI.questionHtml(q.text)}${sourceTag}</td></tr></table>`;
   } else if (type === 'T2' || type === 'T3') {
     const opts = q.options?.length
       ? ` ${q.options.map((o,i)=>`(${String.fromCharCode(65+i)})${o}`).join(' ')}` : '';
     const tail = q.tail?.trim() || '';
-    body = `<table class="ep-answer-table" role="presentation"><tr><td class="ep-answer-prefix">${answerSlot}${num}.</td><td>${UI.questionHtml(q.text)}${opts}${tail ? `${tail === '。' ? '' : ' '}${tail}` : ''}${sourceTag}</td></tr></table>`;
+    body = `<table class="ep-answer-table" role="presentation"><tr><td class="ep-answer-prefix">${difficultyTag}${answerSlot}${num}.</td><td>${UI.questionHtml(q.text)}${opts}${tail ? `${tail === '。' ? '' : ' '}${tail}` : ''}${sourceTag}</td></tr></table>`;
   } else if (type === 'T4' || type === 'T5' || type === 'T6') {
     const questionText = type === 'T5' ? UI.matchingQuestionHtml(q.text)
       : UI.questionHtml(q.text);
@@ -893,12 +901,18 @@ function renderQPreview(q, num, type, previewOptions) {
       ? `<div class="ep-essay-blank${previewOptions?.answers && answer ? ' ep-labeled-answer' : ''}">${previewOptions?.answers && answer ? labeledAnswer : ''}</div>`
       : previewOptions?.answers && answer
         ? `<div class="ep-answer-blank ep-labeled-answer">${labeledAnswer}</div>` : '';
-    body = `<table class="ep-answer-table ep-indented-question" role="presentation"><tr><td class="ep-answer-prefix">${num}.</td><td>${questionText}${sourceTag}${answerArea}</td></tr></table>`;
+    body = `<table class="ep-answer-table ep-indented-question" role="presentation"><tr><td class="ep-answer-prefix">${difficultyTag}${num}.</td><td>${questionText}${sourceTag}${answerArea}</td></tr></table>`;
   } else {
-    body = `${num}.${UI.questionHtml(q.text)}${sourceTag}`;
+    body = `${difficultyTag}${num}.${UI.questionHtml(q.text)}${sourceTag}`;
     if (previewOptions?.answers && answer) body += `<div class="ep-answer-blank">【答案】<span class="ep-answer-value">${escapeText(answer)}</span></div>`;
   }
-  if (previewOptions?.analysis && q.analysis) body += `<div class="ep-q-analysis"><span class="ep-analysis-label">【解析】</span><span class="ep-analysis-text">${escapeText(q.analysis)}</span></div>`;
+  if (previewOptions?.analysis && q.analysis) {
+    const analysis = `<div class="ep-q-analysis"><span class="ep-analysis-label">【解析】</span><span class="ep-analysis-text">${escapeText(q.analysis)}</span></div>`;
+    const tableEnd = '</td></tr></table>';
+    body = body.endsWith(tableEnd)
+      ? body.slice(0, -tableEnd.length) + analysis + tableEnd
+      : body + analysis;
+  }
   return `<div class="ep-q">${body}</div>`;
 }
 

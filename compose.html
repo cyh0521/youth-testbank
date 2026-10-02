@@ -15,6 +15,9 @@
 .scope-layout .card-header h2{font-size:1.2rem;font-weight:700;letter-spacing:.01em}
 .scope-title{display:flex;align-items:baseline;gap:8px;min-width:0;flex-wrap:wrap}
 .scope-available{font-size:.88rem;font-weight:400;color:var(--text-secondary);white-space:nowrap}
+.btn-previous{background:#607a99;color:#fff;border-color:transparent}
+.btn-previous:hover{background:#4e6887;color:#fff}
+.btn-previous:focus-visible{outline:2px solid #7c9ec5;outline-offset:2px}
 .scope-header-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
 .scope-header-actions .btn,.score-tools-actions .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;line-height:1.4}
 .scope-header-actions .btn svg,.score-tools-actions .btn svg{display:block;flex:none;align-self:center}
@@ -83,9 +86,48 @@
 .score-tools[hidden]{display:none}
 .score-tools .integer-score-option{margin-top:0}
 .score-tools-actions{display:flex;gap:8px}
+.compose-action-tools{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:0}
+.compose-action-tools[hidden]{display:none}
+.scope-header-actions{flex-wrap:wrap}
 .score-tools-actions .btn-auto-score{background:#e0edff;color:#2458a6;border-color:transparent}
 .score-tools-actions .btn-auto-score:hover{background:#cbdfff;color:#174889}
 .score-tools-actions .btn-auto-score:focus-visible{outline:2px solid #3478f6;outline-offset:2px}
+#epModal.compose-inline-preview{position:static;inset:auto;padding:0;background:transparent;display:block;z-index:auto;overflow:visible;overscroll-behavior:auto;backdrop-filter:none;-webkit-backdrop-filter:none;animation:none}
+#epModal.compose-inline-preview .ep-preview-modal{width:100%;max-width:none;max-height:none;height:auto;border:0;box-shadow:none;border-radius:0;overflow:visible;overscroll-behavior:auto;animation:none}
+#epModal.compose-inline-preview #epBody{overflow:visible!important;overscroll-behavior:auto!important;flex:none!important}
+#epModal.compose-inline-preview .modal-close,#epModal.compose-inline-preview #epFullscreenToggle{display:none}
+#epModal.compose-inline-preview .modal-header{display:none}
+#composePanel5 .card-header{flex-wrap:wrap}
+#composePanel5 .scope-header-actions{flex-wrap:wrap}
+.compose-preview-tools{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin:0}
+.compose-preview-tools .btn svg{width:16px;height:16px;flex:none;transform:none;border:0;border-radius:0;background:transparent}
+.settings-layout{grid-template-columns:minmax(0,1fr)}
+.settings-layout .card-header{flex-wrap:wrap}
+.exam-score-chart{display:flex;height:12px;border-radius:6px;overflow:hidden;background:var(--bg-base);margin-bottom:16px}
+.exam-score-chart span{height:100%}
+.exam-summary-table-wrap{overflow-x:auto}
+.exam-summary-table{width:100%;border-collapse:separate;border-spacing:0;font-size:.88rem;white-space:nowrap}
+.exam-summary-table th{padding:9px 10px;text-align:left;background:var(--bg-base);color:var(--text-secondary);font-weight:500}
+.exam-summary-table thead th:first-child{border-radius:8px 0 0 8px}
+.exam-summary-table thead th:last-child{border-radius:0 8px 8px 0}
+.exam-summary-table tbody tr{cursor:grab}
+.exam-summary-table tbody tr:active{cursor:grabbing}
+.exam-summary-table tbody tr:last-child td{border-bottom:0}
+.exam-summary-table tr.is-dragging{opacity:.4}
+.exam-summary-table tr.drag-target{box-shadow:inset 0 3px #3478f6}
+.exam-type-drag{display:inline-block;color:var(--text-muted);margin-right:8px;font-size:1.1rem}
+.exam-summary-table td{height:45px;box-sizing:border-box;padding:10px;border-bottom:1px solid var(--border-light);line-height:24px}
+.exam-summary-table th:last-child,.exam-summary-table td:last-child{text-align:right}
+.exam-type-dot{display:inline-block;width:1em;height:1em;border-radius:3px;margin-right:6px;vertical-align:-.1em}
+.exam-summary-table small{display:inline;margin-left:8px;color:var(--text-muted);font-size:.79rem}
+.exam-summary-table tfoot td{height:45px;padding:10px;background:#e1f3e9;color:#176d49;border-radius:8px;font-size:1.15rem;font-weight:700;border-bottom:0;text-align:left;line-height:24px}
+.settings-header-sample{padding:14px;margin-bottom:16px;background:#f5f8fc;border:1px solid var(--border-light);border-radius:8px;overflow-x:auto;font-size:.88rem;line-height:1.6}
+.settings-header-sample .ep-header-row{display:flex;flex-wrap:wrap;gap:4px 16px}
+.settings-header-sample .ep-header-row span{white-space:pre-wrap}
+.settings-header-sample .ep-header-row+.ep-header-row{margin-top:6px}
+.settings-layout .ep-inline-header-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
+.settings-layout .ep-inline-header-lengths{grid-column:2;align-items:start}
+@media(max-width:680px){.settings-layout .ep-inline-header-fields{grid-template-columns:1fr}.settings-layout .ep-inline-header-lengths{grid-column:1}}
 @media(max-width:1220px){.type-layout{grid-template-columns:1fr}}
 
 /* 自動選題：延續範圍與配分圖卡，題型列表沿用試卷編輯格式。 */
@@ -144,18 +186,19 @@
     </div>
     <div class="page-content">
 
-<section class="import-progress" aria-label="電腦選題流程" style="--process-step-count:4;--process-initial-width:25%"><div class="steps" role="list">
+<section class="import-progress" aria-label="電腦選題流程" style="--process-step-count:5;--process-initial-width:20%"><div class="steps" role="list">
 <div class="step active" id="composeStep1" role="listitem" aria-current="step"><span class="step-num">1</span><span class="step-copy"><strong>出題範圍</strong></span></div>
 <div class="step" id="composeStep2" role="listitem"><span class="step-num">2</span><span class="step-copy"><strong>題型與配分</strong></span></div>
 <div class="step" id="composeStep3" role="listitem"><span class="step-num">3</span><span class="step-copy"><strong>自動選題</strong></span></div>
 <div class="step" id="composeStep4" role="listitem"><span class="step-num">4</span><span class="step-copy"><strong>試卷設定</strong></span></div>
-</div><div class="import-progress-track" id="composeProgressTrack" role="progressbar" aria-label="電腦選題進度" aria-valuemin="0" aria-valuemax="4" aria-valuenow="1" aria-valuetext="第 1 步，共 4 步"><div class="import-progress-fill" id="composeProgressFill"></div></div></section>
+<div class="step" id="composeStep5" role="listitem"><span class="step-num">5</span><span class="step-copy"><strong>預覽試卷</strong></span></div>
+</div><div class="import-progress-track" id="composeProgressTrack" role="progressbar" aria-label="電腦選題進度" aria-valuemin="0" aria-valuemax="5" aria-valuenow="1" aria-valuetext="第 1 步，共 5 步"><div class="import-progress-fill" id="composeProgressFill"></div></div></section>
 
       <div class="compose-layout">
         <section id="composePanel1" class="compose-panel">
           <div class="scope-layout">
             <section class="card"><div class="card-header"><h2>選擇命題科目</h2></div><div class="scope-tree" id="subjectTree"></div></section>
-            <section class="card"><div class="card-header"><div class="scope-title"><h2>選擇命題章節</h2><span class="scope-available" id="scopeAvailable">︱可選題數 0 題</span></div><div class="scope-header-actions"><button class="btn btn-ghost btn-sm" onclick="clearAllChapters()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 3 5 5a2 2 0 0 1 0 3L11 21H6l-4-4a2 2 0 0 1 0-3L13 3a2 2 0 0 1 3 0zM8 8l8 8M11 21h11"/></svg>取消選取</button><button class="btn btn-primary btn-sm" onclick="goComposeStep(2)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m13.5 6 6 6-6 6"/><path d="m6 6 6 6-6 6" stroke-opacity=".5"/></svg>下一步：題型與題數</button></div></div><div class="chapter-tree scope-tree" id="chapterTree"><div class="scope-empty">請先選擇左側的科目與冊次</div></div></section>
+            <section class="card"><div class="card-header"><div class="scope-title"><h2>選擇命題章節</h2><span class="scope-available" id="scopeAvailable">︱可選題數 0 題</span></div><div class="scope-header-actions"><div class="compose-action-tools" role="group" aria-label="範圍工具"><button class="btn btn-ghost btn-sm" onclick="clearAllChapters()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 3 5 5a2 2 0 0 1 0 3L11 21H6l-4-4a2 2 0 0 1 0-3L13 3a2 2 0 0 1 3 0zM8 8l8 8M11 21h11"/></svg>取消選取</button></div><button class="btn btn-primary btn-sm" onclick="goComposeStep(2)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m13.5 6 6 6-6 6"/><path d="m6 6 6 6-6 6" stroke-opacity=".5"/></svg>下一步：題型與題數</button></div></div><div class="chapter-tree scope-tree" id="chapterTree"><div class="scope-empty">請先選擇左側的科目與冊次</div></div></section>
           </div>
           <div hidden><select id="cSubject" onchange="onSubjectChange()"><option value="">請選擇科目</option></select><select id="cBook" disabled onchange="loadChapters()"><option value="">請先選科目</option></select></div>
         </section>
@@ -165,19 +208,22 @@
               <section class="card"><div class="card-header"><div class="scope-title"><h2>題型與題數</h2><span class="type-title-note">︱調整各題型題數</span></div></div><div class="type-card-body"><div id="typeRows"></div></div></section>
               <section class="card difficulty-card"><div class="card-header"><div class="scope-title"><h2>試卷難易度</h2><span class="type-title-note">︱調整難易題配置比例</span></div></div><div class="card-body"><div class="form-group"><label class="sr-only" for="cDifficulty">試卷難易度</label><select class="form-control" id="cDifficulty"><option value="medium" selected>適中｜較難題 50% ≈ 簡易題 50%</option><option value="easy">偏易｜簡易題 70% &gt; 較難題 30%</option><option value="hard">偏難｜較難題 70% &gt; 簡易題 30%</option></select><p class="difficulty-note">難易題比例僅供參考。題目數量不足時，會依可用題目調整比例。</p></div></div></section>
             </div>
-            <section class="card"><div class="card-header"><div class="scope-title"><h2>每題配分</h2><span class="type-title-note">︱自動配分或手動調整</span></div><div class="scope-header-actions"><button class="btn btn-ghost btn-sm" onclick="goComposeStep(1)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10.5 6-6 6 6 6"/><path d="m18 6-6 6 6 6" stroke-opacity=".5"/></svg>上一步</button><button class="btn btn-primary btn-sm" onclick="doGenerate()" id="generateBtn"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m13.5 6 6 6-6 6"/><path d="m6 6 6 6-6 6" stroke-opacity=".5"/></svg><span id="generateBtnLabel">下一步：自動選題</span></button></div></div><div class="type-card-body"><div id="scoreRows">請先設定題型與題數</div><div class="score-tools" id="scoreTools" hidden><label class="integer-score-option" id="integerScoreOption" hidden><input type="checkbox" id="integerScores" checked onchange="toggleIntegerScores()">以整數配分（未勾選時以 0.5 分為調整單位）</label><div class="score-tools-actions"><button type="button" class="btn btn-ghost btn-sm" onclick="clearComposeScores()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 3 5 5a2 2 0 0 1 0 3L11 21H6l-4-4a2 2 0 0 1 0-3L13 3a2 2 0 0 1 3 0zM8 8l8 8M11 21h11"/></svg>清除配分</button><button type="button" class="btn btn-auto-score btn-sm" onclick="autoAllocateScores()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3-1.9 5.8L4 10l5.8 1.9L12 18l1.9-5.8L20 10l-5.8-1.9zM5 18l-.7 1.4L3 20l1.3.6L5 22l.7-1.4L7 20l-1.3-.6zM19 16l-.7 1.4L17 18l1.3.6L19 20l.7-1.4L21 18l-1.3-.6z"/></svg>自動配分</button></div></div></div></section>
+            <section class="card"><div class="card-header"><div class="scope-title"><h2>每題配分</h2><span class="type-title-note">︱自動配分或手動調整</span></div><div class="scope-header-actions"><button class="btn btn-previous btn-sm" onclick="goComposeStep(1)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10.5 6-6 6 6 6"/><path d="m18 6-6 6 6 6" stroke-opacity=".5"/></svg>上一步</button><button class="btn btn-primary btn-sm" onclick="doGenerate()" id="generateBtn"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m13.5 6 6 6-6 6"/><path d="m6 6 6 6-6 6" stroke-opacity=".5"/></svg><span id="generateBtnLabel">下一步：自動選題</span></button></div></div><div class="type-card-body"><div id="scoreRows">請先設定題型與題數</div><div class="score-tools" id="scoreTools" hidden><label class="integer-score-option" id="integerScoreOption" hidden><input type="checkbox" id="integerScores" checked onchange="toggleIntegerScores()">以整數配分（未勾選時以 0.5 分為調整單位）</label><div class="score-tools-actions"><button type="button" class="btn btn-ghost btn-sm" onclick="clearComposeScores()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 3 5 5a2 2 0 0 1 0 3L11 21H6l-4-4a2 2 0 0 1 0-3L13 3a2 2 0 0 1 3 0zM8 8l8 8M11 21h11"/></svg>清除配分</button><button type="button" class="btn btn-auto-score btn-sm" onclick="autoAllocateScores()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3-1.9 5.8L4 10l5.8 1.9L12 18l1.9-5.8L20 10l-5.8-1.9zM5 18l-.7 1.4L3 20l1.3.6L5 22l.7-1.4L7 20l-1.3-.6zM19 16l-.7 1.4L17 18l1.3.6L19 20l.7-1.4L21 18l-1.3-.6z"/></svg>自動配分</button></div></div></div></section>
           </div>
         </section>
         <section id="composePanel3" class="compose-panel" hidden>
           <section class="card result-card">
-            <div class="card-header"><div class="scope-title"><h2>自動選題</h2><span class="type-title-note">︱檢視完整題目與答案</span></div><div class="scope-header-actions"><button type="button" class="btn btn-ghost btn-sm" onclick="shuffleAll()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m18 14 4 4-4 4M18 2l4 4-4 4M2 18h2.5a6 6 0 0 0 5.1-3l4.8-8a6 6 0 0 1 5.1-3H22M2 6h2.5a6 6 0 0 1 5.1 3l.5.8M14 17.2a6 6 0 0 0 5.5 2.8H22"/></svg>重新排序</button><button type="button" class="btn btn-ghost btn-sm" onclick="goComposeStep(2)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10.5 6-6 6 6 6"/><path d="m18 6-6 6 6 6" stroke-opacity=".5"/></svg>上一步</button><button type="button" class="btn btn-primary btn-sm" onclick="goComposeStep(4)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m13.5 6 6 6-6 6"/><path d="m6 6 6 6-6 6" stroke-opacity=".5"/></svg>下一步：試卷設定</button></div></div>
+            <div class="card-header"><div class="scope-title"><h2>自動選題</h2><span class="type-title-note">︱檢視完整題目與答案</span></div><div class="scope-header-actions"><button type="button" class="btn btn-previous btn-sm" onclick="goComposeStep(2)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10.5 6-6 6 6 6"/><path d="m18 6-6 6 6 6" stroke-opacity=".5"/></svg>上一步</button><button type="button" class="btn btn-primary btn-sm" onclick="goComposeStep(4)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m13.5 6 6 6-6 6"/><path d="m6 6 6 6-6 6" stroke-opacity=".5"/></svg>下一步：試卷設定</button></div></div>
             <div class="card-body"><div id="previewStats" class="preview-stats"></div><div id="previewArea"></div></div>
           </section>
         </section>
-        <section id="composePanel4" class="compose-panel card" hidden>
-          <div class="card-header"><h2>試卷設定</h2></div><div class="card-body"><label class="form-label" for="quickExamTitle">試卷名稱</label><input class="form-control" id="quickExamTitle" placeholder="試卷名稱（必填才能儲存）"><div class="exam-save-bar"><button class="btn btn-outline" onclick="openHeaderSettings()">✎ 試卷表頭</button><button class="btn btn-outline" onclick="previewExam()">◉ 預覽試卷</button><button class="btn btn-primary" onclick="openSaveModal()">💾 儲存為試卷</button></div></div>
-          <div class="wizard-actions"><button class="btn btn-ghost" onclick="goComposeStep(3)">← 上一步</button></div>
+        <section id="composePanel4" class="compose-panel" hidden>
+          <div class="scope-layout settings-layout">
+            <section class="card"><div class="card-header"><div class="scope-title"><h2>試卷檢視</h2><span class="type-title-note">︱確認題型、題數與配分</span></div><div class="scope-header-actions"><button type="button" class="btn btn-previous btn-sm" onclick="goComposeStep(3)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10.5 6-6 6 6 6"/><path d="m18 6-6 6 6 6" stroke-opacity=".5"/></svg>上一步</button><button type="button" class="btn btn-primary btn-sm" onclick="goComposeStep(5)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m13.5 6 6 6-6 6"/><path d="m6 6 6 6-6 6" stroke-opacity=".5"/></svg>下一步：預覽試卷</button></div></div><div class="type-card-body"><div id="examSummary"></div></div></section>
+            <section class="card"><div class="card-header"><div class="scope-title"><h2>試卷表頭</h2><span class="type-title-note">︱設定文字與欄位位置</span></div></div><div class="type-card-body"><div class="settings-header-sample" id="settingsHeaderSample" aria-label="試卷表頭預覽"></div><div id="settingsHeaderFields"></div></div></section>
+          </div>
         </section>
+        <section id="composePanel5" class="compose-panel" hidden><div class="scope-layout"><section class="card" style="grid-column:1/-1"><div class="card-header"><div class="scope-title"><h2>預覽試卷</h2><span class="type-title-note">︱確認試卷呈現</span></div><div class="scope-header-actions"><button type="button" class="btn btn-previous btn-sm" onclick="goComposeStep(4)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10.5 6-6 6 6 6"/><path d="m18 6-6 6 6 6" stroke-opacity=".5"/></svg>上一步</button></div></div><div id="composeExamPreview"></div></section></div></section>
       </div>
 
     </div>
@@ -208,7 +254,7 @@
 
 <script type="module">
 import { guardPage } from './js/auth-guard.js';
-import { showExamPreview, showHeaderSettings, newExamHeader, loadAppearance } from './js/exam-preview.js';
+import { showExamPreview, showHeaderSettings, newExamHeader, loadAppearance, mountInlineHeaderEditor, buildHeaderHtml, fontStackById } from './js/exam-preview.js';
 import { allocateTypeScores } from './js/score-allocation.js';
 import { blankCount, selectFillQuestions, reachableBlankCounts } from './js/blank-selection.js';
 import { confirmAction } from './js/confirm-exam-deletion.js';
@@ -217,18 +263,20 @@ const user = await guardPage(['admin','manager','teacher']);
 if (!user) throw new Error('not auth');
 
 function setComposeStep(n) {
-  for (let i = 1; i <= 4; i++) document.getElementById('composePanel' + i).hidden = i !== n;
-  document.getElementById('composeProgressFill').style.width = `${n * 25}%`;
+  for (let i = 1; i <= 5; i++) document.getElementById('composePanel' + i).hidden = i !== n;
+  document.getElementById('composeProgressFill').style.width = `${n * 20}%`;
   const progress = document.getElementById('composeProgressTrack');
   progress.setAttribute('aria-valuenow', String(n));
-  progress.setAttribute('aria-valuetext', `第 ${n} 步，共 4 步`);
-  for (let i = 1; i <= 4; i++) {
+  progress.setAttribute('aria-valuetext', `第 ${n} 步，共 5 步`);
+  for (let i = 1; i <= 5; i++) {
     const step = document.getElementById('composeStep' + i);
     step.classList.toggle('active', i === n);
     step.classList.toggle('done', i < n);
     if (i === n) step.setAttribute('aria-current', 'step');
     else step.removeAttribute('aria-current');
   }
+  if (n === 4) renderExamSettings();
+  if (n === 5) renderComposeExamPreview();
 }
 
 window.goComposeStep = n => {
@@ -305,12 +353,13 @@ document.getElementById('subjectTree').addEventListener('change', async event =>
   document.getElementById('cBook').value = input.value;
   generatedQuestions = [];
   draftPreviewData = null;
-  document.getElementById('quickExamTitle').value = '';
+  document.getElementById('examTitle').value = '';
   await loadChapters();
 });
 
 let chapterData = {};
 let generatedQuestions = [];
+let settingsTypeOrder = TYPE_CONFIGS.map(type => type.code);
 let draftPreviewData = null;
 let lastChapterAnchor = null;
 const chapterTree = document.getElementById('chapterTree');
@@ -364,6 +413,75 @@ window.openHeaderSettings = () => {
   draftPreviewData ??= { header:newExamHeader(), appearance:loadAppearance() };
   showHeaderSettings(draftPreviewData);
 };
+
+function renderSettingsHeaderSample() {
+  const sample = document.getElementById('settingsHeaderSample');
+  sample.style.fontFamily = fontStackById(draftPreviewData.appearance.font);
+  sample.innerHTML = buildHeaderHtml(draftPreviewData.header);
+}
+
+function renderExamSummary() {
+  const colors = { T1:'#4b84cf', T2:'#3ca6a1', T3:'#cb9d36', T4:'#9670bf', T5:'#da8260', T6:'#6d819e' };
+  const rows = settingsTypeOrder.map(code => TYPE_CONFIGS.find(type => type.code === code)).map(type => {
+    const questions = generatedQuestions.filter(q => q.type === type.code);
+    const units = type.code === 'T4' ? questions.reduce((sum, q) => sum + blankCount(q), 0) : questions.length;
+    const score = Number(document.getElementById('score-' + type.code)?.value) || type.defaultScore;
+    return { ...type, count:questions.length, units, score, total:Math.round(units * score * 10) / 10 };
+  }).filter(type => type.count > 0);
+  const total = Math.round(rows.reduce((sum, type) => sum + type.total, 0) * 10) / 10;
+  document.getElementById('examSummary').innerHTML = `
+    <div class="exam-score-chart" role="img" aria-label="各題型配分分布：${rows.map(type => `${type.label} ${type.total} 分`).join('、')}">${rows.map(type => `<span style="width:${total ? type.total / total * 100 : 0}%;background:${colors[type.code]}" title="${type.label}：${type.total} 分"></span>`).join('')}</div>
+    <div class="exam-summary-table-wrap"><table class="exam-summary-table"><thead><tr><th scope="col">題型</th><th scope="col">題數</th><th scope="col">配分</th><th scope="col">小計</th></tr></thead><tbody>${rows.map(type => `<tr draggable="true" data-type="${type.code}"><td><span class="exam-type-drag" aria-hidden="true">⠿</span><span class="exam-type-dot" style="background:${colors[type.code]}"></span>${type.label}</td><td>${type.count} 題${type.code === 'T4' ? `<small>共 ${type.units} 格</small>` : ''}</td><td>${type.score} 分／${type.code === 'T4' ? '格' : '題'}</td><td>${type.total} 分</td></tr>`).join('')}</tbody><tfoot><tr><td colspan="4">總分：${total} 分</td></tr></tfoot></table></div>`;
+  const table = document.querySelector('#examSummary tbody');
+  let draggedType = null;
+  table.addEventListener('dragstart', event => {
+    const row = event.target.closest('[data-type]');
+    if (!row) return;
+    draggedType = row.dataset.type;
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', draggedType);
+    row.classList.add('is-dragging');
+  });
+  table.addEventListener('dragover', event => {
+    const row = event.target.closest('[data-type]');
+    if (!draggedType || !row || row.dataset.type === draggedType) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+    table.querySelectorAll('.drag-target').forEach(item => item.classList.remove('drag-target'));
+    row.classList.add('drag-target');
+  });
+  table.addEventListener('drop', event => {
+    const row = event.target.closest('[data-type]');
+    if (!draggedType || !row || row.dataset.type === draggedType) return;
+    event.preventDefault();
+    const next = settingsTypeOrder.filter(code => code !== draggedType);
+    next.splice(next.indexOf(row.dataset.type), 0, draggedType);
+    settingsTypeOrder = next;
+    generatedQuestions = settingsTypeOrder.flatMap(code => generatedQuestions.filter(q => q.type === code));
+    if (draftPreviewData) draftPreviewData.typeOrder = [...settingsTypeOrder];
+    renderExamSummary();
+  });
+  table.addEventListener('dragend', () => {
+    draggedType = null;
+    table.querySelectorAll('.is-dragging,.drag-target').forEach(row => row.classList.remove('is-dragging','drag-target'));
+  });
+}
+
+function renderExamSettings() {
+  draftPreviewData ??= { header:newExamHeader(), appearance:loadAppearance() };
+  renderExamSummary();
+  renderSettingsHeaderSample();
+  draftPreviewData.onHeaderSaved = renderSettingsHeaderSample;
+  draftPreviewData.onPreviewClose = renderExamSettings;
+  const fields = document.getElementById('settingsHeaderFields');
+  mountInlineHeaderEditor(fields, draftPreviewData, renderSettingsHeaderSample, () => {
+    const status = fields.querySelector('[data-header-status]')?.textContent;
+    renderExamSettings();
+    const nextStatus = fields.querySelector('[data-header-status]');
+    if (nextStatus) nextStatus.textContent = status === '尚未儲存' ? '已取消變更' : status || '';
+  });
+  fields.querySelector('.ep-inline-header-actions')?.remove();
+}
 
 window.onSubjectChange = () => {
   lastChapterAnchor = null;
@@ -482,18 +600,18 @@ window.loadChapters = async () => {
           <span class="ch-count">${info.subsections[`${sec}-${ss.num}`] || 0} 題</span>
         </div>`).join('') : '';
       return `<div class="chapter-item section">
-        ${hasSubChildren ? `<button class="expand-btn" onclick="toggleChildren(this)" aria-label="收合章節" aria-expanded="true">▼</button>` : '<span style="width:16px;flex-shrink:0"></span>'}
+        ${hasSubChildren ? `<button class="expand-btn" onclick="toggleChildren(this)" aria-label="展開章節" aria-expanded="false">▶</button>` : '<span style="width:16px;flex-shrink:0"></span>'}
         <input type="checkbox" class="chap-cb sec-cb" data-ch="${ch}" data-sec="${sec}" onchange="onSecCbChange(this)">
         <span>${escapeTreeText(secTitles[ch]?.[sec] || (l2+parseInt(sec)))}</span>
         ${hasSubChildren ? '' : `<span class="ch-count">${cnt} 題</span>`}
-      </div>${hasSubChildren ? `<div class="chapter-children open">${subsHTML}</div>` : ''}`;
+      </div>${hasSubChildren ? `<div class="chapter-children">${subsHTML}</div>` : ''}`;
     }).join('') : '';
     return `<div class="chapter-item">
-        ${hasChildren ? `<button class="expand-btn" onclick="toggleChildren(this)" aria-label="收合章節" aria-expanded="true">▼</button>` : '<span style="width:16px;flex-shrink:0"></span>'}
+        ${hasChildren ? `<button class="expand-btn" onclick="toggleChildren(this)" aria-label="展開章節" aria-expanded="false">▶</button>` : '<span style="width:16px;flex-shrink:0"></span>'}
         <input type="checkbox" class="chap-cb chapter-cb" data-ch="${ch}" onchange="onChapterCbChange(this)">
         <span>${escapeTreeText(chTitles[ch] || (l1+parseInt(ch)))}</span>
         ${hasChildren ? '' : `<span class="ch-count">${info.count} 題</span>`}
-      </div>${hasChildren ? `<div class="chapter-children open">${secHTML}</div>` : secHTML}`;
+      </div>${hasChildren ? `<div class="chapter-children">${secHTML}</div>` : secHTML}`;
   }).join('');
   lastChapterAnchor = null;
   tree.querySelectorAll('.chap-cb').forEach((cb, index) => {
@@ -687,23 +805,60 @@ window.shuffleAll = () => {
 
 window.previewExam = () => {
   if (!generatedQuestions.length) { UI.toast('請先選題', 'warning'); return; }
-  const title = document.getElementById('quickExamTitle')?.value.trim() || '（未命名試卷）';
+  const title = document.getElementById('examTitle').value.trim() || '（未命名試卷）';
   const typeScores = {};
   TYPE_CONFIGS.forEach(t => {
     const el = document.getElementById('score-'+t.code);
     if (el) typeScores[t.code] = parseFloat(el.value)||t.defaultScore;
   });
-  draftPreviewData = {
+  draftPreviewData ??= { header:newExamHeader(), appearance:loadAppearance() };
+  Object.assign(draftPreviewData, {
     title,
     typeScores,
+    typeOrder: [...settingsTypeOrder],
     scoreUnits: { T4:'blank' },
     subjectCode: cSubject.value,
     bookCode: document.getElementById('cBook').value,
     header: draftPreviewData?.header ?? newExamHeader(),
     appearance: draftPreviewData?.appearance ?? loadAppearance(),
-  };
+  });
   showExamPreview(draftPreviewData, generatedQuestions);
 };
+
+function renderComposeExamPreview() {
+  previewExam();
+  const modal = document.getElementById('epModal');
+  document.getElementById('composeExamPreview').append(modal);
+  modal.classList.add('compose-inline-preview');
+  modal.removeAttribute('aria-modal');
+  const actions = document.querySelector('#composePanel5 .scope-header-actions');
+  let tools = actions.querySelector('.compose-preview-tools');
+  if (!tools) {
+    tools = document.createElement('div');
+    tools.className = 'compose-preview-tools';
+    tools.setAttribute('role', 'group');
+    tools.setAttribute('aria-label', '試卷預覽工具');
+    actions.append(tools);
+  }
+  modal.querySelectorAll('.modal-header button').forEach(button => {
+    if (!button.classList.contains('modal-close') && button.id !== 'epFullscreenToggle') tools.append(button);
+  });
+  const download = tools.querySelector('button[onclick="window._epDoExport()"]');
+  if (download) {
+    download.classList.remove('btn-ghost');
+    download.classList.add('btn-primary');
+  }
+  if (!tools.querySelector('[data-compose-save]')) {
+    const save = document.createElement('button');
+    save.type = 'button';
+    save.className = 'btn btn-primary btn-sm';
+    save.setAttribute('data-compose-save', '');
+    save.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2zM17 21v-8H7v8M7 3v5h8"/></svg>儲存';
+    save.onclick = () => openSaveModal();
+    tools.append(save);
+  }
+  window._epClose = () => goComposeStep(4);
+}
 
 const scoreOverrides = {};
 const scoreWeights = { T1:1, T2:1, T3:2, T4:1, T5:3, T6:5 };
@@ -960,9 +1115,6 @@ window.regenerateType = regenerateType;
 
 window.openSaveModal = async () => {
   if (!generatedQuestions.length) { UI.toast('請先選題', 'warning'); return; }
-  setComposeStep(4);
-  const quickTitle = document.getElementById('quickExamTitle')?.value.trim();
-  if (quickTitle) document.getElementById('examTitle').value = quickTitle;
   document.getElementById('saveModal').classList.remove('hidden');
 };
 
@@ -1001,6 +1153,7 @@ window.doSaveExam = async () => {
     bookCode: bc,
     totalScore,
     typeScores,
+    typeOrder: [...settingsTypeOrder],
     scoreUnits: { T4:'blank' },
     questionIds,
     questionCount: questionIds.length,
@@ -1009,7 +1162,6 @@ window.doSaveExam = async () => {
 
   try {
     await DataService.saveExam(exam);
-    draftPreviewData = null;
     UI.toast('試卷已儲存！', 'success');
     document.getElementById('saveModal').classList.add('hidden');
   } catch(e) {
