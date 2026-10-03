@@ -69,7 +69,7 @@ function loadDocxLibrary() {
   return docxLibraryPromise;
 }
 
-function choosePaperLayout(format) {
+function choosePaperLayout(format, chooseDestination = null) {
   let modal = document.getElementById('epPaperSizeModal');
   if (!modal) {
     document.body.insertAdjacentHTML('beforeend', `<div class="modal-overlay hidden" id="epPaperSizeModal" style="z-index:1300">
@@ -110,19 +110,36 @@ function choosePaperLayout(format) {
       confirm.disabled = true;
       const paperKey = modal.querySelector('input[name="epPaperSize"]:checked').value;
       const columns = Number(modal.querySelector('input[name="epPaperColumns"]:checked').value);
+      let fileHandle;
+      if (chooseDestination) {
+        try { fileHandle = await chooseDestination(); }
+        catch (error) {
+          if (error.name !== 'AbortError') UI.toast(`無法選擇存放位置：${error.message}`, 'danger');
+          confirm.disabled = false;
+          return;
+        }
+      }
       try { await DataService.updateExamPreferences({ paperLayout:{ paperKey, columns } }); }
       catch (error) { UI.toast(`列印與下載設定儲存失敗：${error.message}`, 'danger'); confirm.disabled = false; return; }
       confirm.disabled = false;
-      close({ paperKey, columns });
+      close({ paperKey, columns, fileHandle });
     };
   });
 }
 
 export async function downloadExam(examData, questions, format) {
   if (format !== 'Word') throw new Error('不支援的下載格式');
-  const layout = await choosePaperLayout(format);
+  if (!window.showSaveFilePicker) {
+    UI.toast('請使用支援另存新檔的 Chrome 或 Edge，並透過 HTTPS 或 localhost 開啟網站', 'warning');
+    return;
+  }
+  const layout = await choosePaperLayout(format, () => window.showSaveFilePicker({
+    id:'exam-downloads',
+    suggestedName:`${(examData.title || '試卷').replace(/[\\/:*?"<>|]/g, '_')}.docx`,
+    types:[{ description:'Word 文件', accept:{ 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':['.docx'] } }],
+  }));
   if (!layout) return;
-  await exportToWord(examData, questions, layout.paperKey, layout.columns);
+  await exportToWord(examData, questions, layout.paperKey, layout.columns, layout.fileHandle);
 }
 
 export async function printWithPaperChoice(examData, questions) {
@@ -920,7 +937,7 @@ function renderQPreview(q, num, type, previewOptions) {
 // ══════════════════════════════════════════════════════════
 //  輸出 Word（讀取相同的表頭與外觀偏好）
 // ══════════════════════════════════════════════════════════
-export async function exportToWord(examData, questions, paperKey = 'A4', columns = 1) {
+export async function exportToWord(examData, questions, paperKey = 'A4', columns = 1, fileHandle = null) {
   const a = examAppearance(examData);
   const margins = loadWordMargins();
   const size = PAPER_SIZES[paperKey] || PAPER_SIZES.A4;
@@ -956,6 +973,18 @@ export async function exportToWord(examData, questions, paperKey = 'A4', columns
   try {
     const docx = await loadDocxLibrary();
     const blob = await createDocxBlob({ docx, content:paper.firstElementChild, title, appearance:a, margins, paperSize:size, columns });
+    if (fileHandle) {
+      const writable = await fileHandle.createWritable();
+      try {
+        await writable.write(blob);
+        await writable.close();
+      } catch (error) {
+        await writable.abort().catch(() => {});
+        throw error;
+      }
+      UI.toast(`已儲存 ${fileHandle.name}`, 'success');
+      return;
+    }
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = `${title.replace(/[\\/:*?"<>|]/g, '_')}.docx`;

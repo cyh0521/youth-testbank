@@ -6,172 +6,7 @@
 <link rel="stylesheet" href="css/theme.css">
 <link rel="stylesheet" href="css/process-bar.css">
 <script>if(localStorage.getItem("sidebarCollapsed")==="1")document.documentElement.classList.add("sidebar-collapsed");</script>
-<style>
-.compose-layout{display:block}
-.compose-panel[hidden]{display:none}
-.scope-layout{display:grid;grid-template-columns:minmax(240px,.7fr) minmax(0,1.7fr);gap:16px;align-items:start}
-.scope-layout .card{min-width:0}
-.scope-layout .card-header{min-height:60px;padding:10px 20px;gap:12px}
-.scope-layout .card-header h2{font-size:1.2rem;font-weight:700;letter-spacing:.01em}
-.scope-title{display:flex;align-items:baseline;gap:8px;min-width:0;flex-wrap:wrap}
-.scope-available{font-size:.88rem;font-weight:400;color:var(--text-secondary);white-space:nowrap}
-.btn-previous{background:#607a99;color:#fff;border-color:transparent}
-.btn-previous:hover{background:#4e6887;color:#fff}
-.btn-previous:focus-visible{outline:2px solid #7c9ec5;outline-offset:2px}
-.scope-header-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
-.scope-header-actions .btn,.score-tools-actions .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;line-height:1.4}
-.scope-header-actions .btn svg,.score-tools-actions .btn svg{display:block;flex:none;align-self:center}
-.scope-header-actions .btn .step-icon{width:19px;height:19px;margin-right:-3px}
-.scope-tree{height:auto;max-height:none;overflow:visible;padding:12px;background:#fff}
-.scope-empty{padding:32px 16px;text-align:center;color:var(--text-muted)}
-.subject-node{margin-bottom:4px}
-.subject-node summary{cursor:pointer;padding:5px 8px;color:var(--primary);font-weight:600;border-radius:4px}
-.book-node{display:flex;align-items:center;gap:8px;padding:5px 10px 5px 28px;cursor:pointer;border-radius:4px}
-.book-node:has(input:checked){background:#e2ebf4;color:#385b8a}
-.book-node:hover,.subject-node summary:hover{background:#f5f8fc}
-.book-node input{accent-color:#385b8a}
-.subject-node.is-disabled summary,.book-node.is-disabled,#chapterTree .chapter-item.is-disabled{color:var(--text-muted);cursor:not-allowed;opacity:.55}
-.subject-node.is-disabled summary:hover,.book-node.is-disabled:hover{background:none}
-#chapterTree .chapter-item.is-disabled label{cursor:not-allowed}
-.wizard-actions{display:flex;justify-content:flex-end;gap:10px;padding:16px 0}
-.card>.wizard-actions{padding:16px;border-top:1px solid var(--border-light)}
-#chapterTree.scope-tree{max-height:none;border:0;border-radius:0}
-#chapterTree .chapter-item{border-bottom:0;padding-top:6px;padding-bottom:6px;font-size:1rem;line-height:1.5}
-#chapterTree .chapter-item .ch-count{font-size:.94rem}
-#chapterTree .chapter-children{margin-left:18px;border-left:1px dotted #b5c3d3}
-#chapterTree .chapter-item.section,#chapterTree .chapter-item.subsection{padding-left:12px}
-#chapterTree .chapter-item:has(input:checked){background:#eaf1f8}
-#chapterTree .chapter-item{user-select:none}
-#chapterTree .expand-btn{color:#385b8a}
-@media(max-width:1100px){.scope-layout{grid-template-columns:1fr}}
-@media(max-width:760px){.wizard-actions{flex-wrap:wrap}}
-
-/* 設定面板 */
-.config-card .card-body{padding:16px}
-.section-title{font-size:.86rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 8px;display:flex;align-items:center;gap:6px}
-.section-title:first-child{margin-top:0}
-.type-row,.score-config-row{display:flex;align-items:center;gap:10px;padding:9px 11px;margin-bottom:8px;border:1px solid var(--border-light);border-radius:9px;background:#fff;font-size:.9rem}
-.type-row .type-label,.score-config-row .score-label{flex:1;min-width:0}
-.type-row .type-label{display:flex;align-items:baseline;gap:8px;font-weight:500}
-.type-row .type-pool{font-size:.82rem;color:var(--text-muted);font-weight:400;white-space:nowrap}
-.type-row .row-unit,.score-config-row .row-unit{color:var(--text-secondary);font-size:.86rem;white-space:nowrap}
-.chapter-tree{max-height:220px}
-.type-layout{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);align-items:start}
-.type-left-column{display:flex;flex-direction:column;gap:16px;min-width:0}
-.type-layout .scope-title{flex-wrap:nowrap}
-.type-layout .scope-title h2{white-space:nowrap}
-.type-card-body{padding:18px 20px;background:#fff}
-.difficulty-card .card-body{padding:18px 20px}
-.difficulty-card .form-group{margin-bottom:0}
-.type-title-note{font-size:.84rem;color:var(--text-secondary);font-weight:400;white-space:nowrap}
-.type-card-body .type-row:last-child,.type-card-body .score-config-row:last-child{margin-bottom:0}
-.type-row{flex-wrap:wrap}
-.type-row.invalid{border-color:var(--danger);background:#fff3f1}
-.type-error{display:none;width:100%;padding-left:4px;color:var(--danger);font-size:.82rem;line-height:1.4}
-.type-row.invalid .type-error{display:block}
-.number-stepper{display:flex;align-items:stretch;width:90px;flex:none;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;background:#fff}
-.number-stepper:focus-within{border-color:var(--primary-light);box-shadow:0 0 0 2px #3478f622}
-.number-stepper .form-control{width:100%;min-width:0;padding:3px 6px;font-size:.88rem;border:0;border-radius:0;box-shadow:none;text-align:center;appearance:textfield;-moz-appearance:textfield}
-.number-stepper .form-control::-webkit-inner-spin-button,.number-stepper .form-control::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
-.number-stepper-buttons{display:flex;flex-direction:column;flex:none;width:23px;border-left:1px solid var(--border)}
-.number-stepper-buttons button{display:grid;place-items:center;flex:1;min-height:15px;padding:0;border:0;background:#f6f8fb;color:#536681;font-size:9px;line-height:1}
-.number-stepper-buttons button+button{border-top:1px solid var(--border)}
-.number-stepper-buttons button:hover{background:#e8eef6;color:var(--primary)}
-.difficulty-note{margin-top:8px;color:var(--text-muted);font-size:.79rem;line-height:1.5}
-.score-total{margin-top:14px;padding:13px 14px;border-radius:9px;background:#e1f3e9;color:#176d49;font-weight:700}
-.integer-score-option{display:flex;align-items:center;gap:8px;width:fit-content;margin-top:12px;font-size:.88rem;color:var(--text-secondary);cursor:pointer}
-.integer-score-option[hidden]{display:none}
-.integer-score-option input{accent-color:var(--primary);width:16px;height:16px}
-.score-tools{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:12px}
-.score-tools[hidden]{display:none}
-.score-tools .integer-score-option{margin-top:0}
-.score-tools-actions{display:flex;gap:8px}
-.compose-action-tools{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:0}
-.compose-action-tools[hidden]{display:none}
-.scope-header-actions{flex-wrap:wrap}
-.score-tools-actions .btn-auto-score{background:#e0edff;color:#2458a6;border-color:transparent}
-.score-tools-actions .btn-auto-score:hover{background:#cbdfff;color:#174889}
-.score-tools-actions .btn-auto-score:focus-visible{outline:2px solid #3478f6;outline-offset:2px}
-#epModal.compose-inline-preview{position:static;inset:auto;padding:0;background:transparent;display:block;z-index:auto;overflow:visible;overscroll-behavior:auto;backdrop-filter:none;-webkit-backdrop-filter:none;animation:none}
-#epModal.compose-inline-preview .ep-preview-modal{width:100%;max-width:none;max-height:none;height:auto;border:0;box-shadow:none;border-radius:0;overflow:visible;overscroll-behavior:auto;animation:none}
-#epModal.compose-inline-preview #epBody{overflow:visible!important;overscroll-behavior:auto!important;flex:none!important}
-#epModal.compose-inline-preview .modal-close,#epModal.compose-inline-preview #epFullscreenToggle{display:none}
-#epModal.compose-inline-preview .modal-header{display:none}
-#composePanel5 .card-header{flex-wrap:wrap}
-#composePanel5 .scope-header-actions{flex-wrap:wrap}
-.compose-preview-tools{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin:0}
-.compose-preview-tools .btn svg{width:16px;height:16px;flex:none;transform:none;border:0;border-radius:0;background:transparent}
-.settings-layout{grid-template-columns:minmax(0,1fr)}
-.settings-layout .card-header{flex-wrap:wrap}
-.exam-score-chart{display:flex;height:12px;border-radius:6px;overflow:hidden;background:var(--bg-base);margin-bottom:16px}
-.exam-score-chart span{height:100%}
-.exam-summary-table-wrap{overflow-x:auto}
-.exam-summary-table{width:100%;border-collapse:separate;border-spacing:0;font-size:.88rem;white-space:nowrap}
-.exam-summary-table th{padding:9px 10px;text-align:left;background:var(--bg-base);color:var(--text-secondary);font-weight:500}
-.exam-summary-table thead th:first-child{border-radius:8px 0 0 8px}
-.exam-summary-table thead th:last-child{border-radius:0 8px 8px 0}
-.exam-summary-table tbody tr{cursor:grab}
-.exam-summary-table tbody tr:active{cursor:grabbing}
-.exam-summary-table tbody tr:last-child td{border-bottom:0}
-.exam-summary-table tr.is-dragging{opacity:.4}
-.exam-summary-table tr.drag-target{box-shadow:inset 0 3px #3478f6}
-.exam-type-drag{display:inline-block;color:var(--text-muted);margin-right:8px;font-size:1.1rem}
-.exam-summary-table td{height:45px;box-sizing:border-box;padding:10px;border-bottom:1px solid var(--border-light);line-height:24px}
-.exam-summary-table th:last-child,.exam-summary-table td:last-child{text-align:right}
-.exam-type-dot{display:inline-block;width:1em;height:1em;border-radius:3px;margin-right:6px;vertical-align:-.1em}
-.exam-summary-table small{display:inline;margin-left:8px;color:var(--text-muted);font-size:.79rem}
-.exam-summary-table tfoot td{height:45px;padding:10px;background:#e1f3e9;color:#176d49;border-radius:8px;font-size:1.15rem;font-weight:700;border-bottom:0;text-align:left;line-height:24px}
-.settings-header-sample{padding:14px;margin-bottom:16px;background:#f5f8fc;border:1px solid var(--border-light);border-radius:8px;overflow-x:auto;font-size:.88rem;line-height:1.6}
-.settings-header-sample .ep-header-row{display:flex;flex-wrap:wrap;gap:4px 16px}
-.settings-header-sample .ep-header-row span{white-space:pre-wrap}
-.settings-header-sample .ep-header-row+.ep-header-row{margin-top:6px}
-.settings-layout .ep-inline-header-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
-.settings-layout .ep-inline-header-lengths{grid-column:2;align-items:start}
-@media(max-width:680px){.settings-layout .ep-inline-header-fields{grid-template-columns:1fr}.settings-layout .ep-inline-header-lengths{grid-column:1}}
-@media(max-width:1220px){.type-layout{grid-template-columns:1fr}}
-
-/* 自動選題：延續範圍與配分圖卡，題型列表沿用試卷編輯格式。 */
-.result-card .card-header{min-height:60px;padding:10px 20px;gap:12px;flex-wrap:wrap}
-.result-card .card-header h2{font-size:1.2rem;font-weight:700;letter-spacing:.01em}
-.result-card .card-body{padding:18px 20px}
-.preview-stats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
-.preview-stat{display:inline-flex;align-items:center;gap:5px;padding:6px 11px;border-radius:7px;background:#edf3fb;color:#385b8a;font-size:.88rem}
-.preview-stat strong{font-size:1rem}
-.preview-stat.score-stat{background:#e1f3e9;color:#176d49}
-.result-section{margin-bottom:14px;border:1px solid var(--border-light);border-radius:9px;overflow:hidden;background:#fff}
-.result-section:last-child{margin-bottom:0}
-.result-section-title{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:9px 12px;background:var(--bg-base);border-bottom:1px solid var(--border-light);font-size:.9rem;font-weight:700;color:var(--text-primary);cursor:pointer}
-.result-section.is-collapsed .result-section-title{border-bottom:0}
-.result-type-toggle{display:inline-flex;align-items:center;gap:8px;min-width:0;padding:0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
-.result-type-toggle svg{display:block;flex:none;transition:transform .15s ease}
-.result-type-toggle[aria-expanded="false"] svg{transform:rotate(-90deg)}
-.result-type-toggle:focus-visible{outline:2px solid var(--primary);outline-offset:4px;border-radius:4px}
-.result-list[hidden]{display:none}
-.result-section-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.result-section-score{font-size:.84rem;font-weight:400;color:var(--text-secondary)}
-.result-section-actions .btn{display:inline-flex;align-items:center;gap:6px}
-.result-section-actions svg{display:block;flex:none}
-.result-q{display:flex;align-items:flex-start;gap:10px;padding:12px;border-bottom:1px solid var(--border-light);font-size:.9rem;background:white}
-.result-q:last-child{border-bottom:none}
-.result-q:hover{background:#f8faff}
-.result-q .q-num{color:var(--text-muted);font-size:.9rem;width:26px;flex-shrink:0;text-align:right;line-height:1.6}
-.result-q .q-body{flex:1;min-width:0;overflow-wrap:anywhere}
-.result-q .q-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;line-height:1.6}
-.result-q .q-meta .badge,.result-q .q-catalog-num,.result-q .q-source{padding:2px 8px;border-radius:6px;font-size:.82rem;line-height:1.5}
-.result-q .q-catalog-num{font-family:var(--font-mono);background:#e8eef6;color:var(--primary)}
-.result-q .q-source{max-width:100%;background:#f1edfa;color:#68518f;white-space:normal;overflow-wrap:anywhere}
-.result-q .q-text,.result-q .q-tail{line-height:1.65;white-space:pre-wrap}
-.result-q .q-tail{margin-top:5px}
-.result-q .q-ans{display:flex;align-items:flex-start;gap:8px;margin-top:9px;padding:7px 10px;border-radius:6px;background:#eef7f2;color:#176d49;line-height:1.6}
-.result-q .answer-label{flex:none;font-size:.82rem;font-weight:700}
-.result-q .answer-text{min-width:0;white-space:pre-wrap;overflow-wrap:anywhere}
-@media(max-width:760px){.result-card .card-header,.result-card .card-body{padding-left:14px;padding-right:14px}.result-card .scope-header-actions{flex-wrap:wrap}.result-q{gap:7px;padding:10px}}
-.empty-config{text-align:center;padding:60px 24px;color:var(--text-muted)}
-.empty-config .ec-icon{font-size:3rem;opacity:.3;margin-bottom:12px}
-.score-input{width:56px;font-size:.88rem;padding:3px 6px;text-align:center}
-.exam-save-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:14px 16px;background:#e8eef6;border-radius:var(--radius-lg);border:1px solid var(--border);margin-top:16px}
-.exam-save-bar .form-control{flex:1;min-width:200px}
-</style>
+<link rel="stylesheet" href="css/exam-compose.css">
 </head>
 <body>
 <script src="js/icons.js"></script>
@@ -257,6 +92,7 @@ import { guardPage } from './js/auth-guard.js';
 import { showExamPreview, showHeaderSettings, newExamHeader, loadAppearance, mountInlineHeaderEditor, buildHeaderHtml, fontStackById } from './js/exam-preview.js';
 import { allocateTypeScores } from './js/score-allocation.js';
 import { blankCount, selectFillQuestions, reachableBlankCounts } from './js/blank-selection.js';
+import { filterComposePool, pickComposeQuestions } from './js/compose-selection.js';
 import { confirmAction } from './js/confirm-exam-deletion.js';
 window._activeNav = 'compose';
 const user = await guardPage(['admin','manager','teacher']);
@@ -321,30 +157,16 @@ window.adjustComposeNumber = (id, direction) => {
   input.dispatchEvent(new Event('input', { bubbles:true }));
   input.focus();
 };
-let scopeQuestions = [];
-window.loadScopeAvailability = async () => {
+function renderScopeCatalog() {
   const tree = document.getElementById('subjectTree');
-  tree.innerHTML = '<div class="scope-empty">載入題庫中…</div>';
-  try {
-    scopeQuestions = await DataService.getQuestions();
-    const subjectsWithQuestions = new Set(scopeQuestions.map(q => String(q.subjectCode)));
-    const booksWithQuestions = new Set(scopeQuestions.map(q => JSON.stringify([String(q.subjectCode), String(q.bookCode)])));
-    tree.innerHTML = (_tbCache?.subjects || []).map(subject => {
-      const available = subjectsWithQuestions.has(String(subject.code));
-      const books = _tbCache.booksBySubject[subject.id] || [];
-      return `<details class="subject-node${available ? '' : ' is-disabled'}"><summary${available ? '' : ' aria-disabled="true" tabindex="-1" title="尚無題目"'}>${escapeTreeText(subject.name)}</summary>${books.length ? books.map(book => {
-        const bookAvailable = booksWithQuestions.has(JSON.stringify([String(subject.code), String(book.code)]));
-        return `<label class="book-node${bookAvailable ? '' : ' is-disabled'}"${bookAvailable ? '' : ' title="尚無題目"'}><input type="radio" name="scopeBook" data-subject="${escapeTreeText(subject.code)}" value="${escapeTreeText(book.code)}"${bookAvailable ? '' : ' disabled'}><span>${escapeTreeText(book.name)}</span></label>`;
-      }).join('') : '<div class="scope-empty">尚無冊次</div>'}</details>`;
-    }).join('') || '<div class="scope-empty">尚無科目</div>';
-    [...cSubject.options].forEach(option => { if (option.value) option.disabled = !subjectsWithQuestions.has(String(option.value)); });
-  } catch (error) {
-    tree.innerHTML = `<div class="scope-empty">載入題庫失敗：${escapeTreeText(error.message)}<br><button type="button" class="btn btn-ghost btn-sm" onclick="loadScopeAvailability()">重新載入</button></div>`;
-  }
-};
-document.getElementById('subjectTree').addEventListener('click', event => {
-  if (event.target.closest('summary[aria-disabled="true"]')) event.preventDefault();
-});
+  tree.innerHTML = (_tbCache?.subjects || []).map(subject => {
+    const books = _tbCache.booksBySubject[subject.id] || [];
+    return `<details class="subject-node"><summary>${escapeTreeText(subject.name)}</summary>${books.length ? books.map(book =>
+      `<label class="book-node"><input type="radio" name="scopeBook" data-subject="${escapeTreeText(subject.code)}" value="${escapeTreeText(book.code)}"><span>${escapeTreeText(book.name)}</span></label>`
+    ).join('') : '<div class="scope-empty">尚無冊次</div>'}</details>`;
+  }).join('') || '<div class="scope-empty">尚無科目</div>';
+}
+let bookLoadRevision = 0;
 document.getElementById('subjectTree').addEventListener('change', async event => {
   const input = event.target;
   if (input.name !== 'scopeBook' || input.disabled) return;
@@ -484,13 +306,13 @@ function renderExamSettings() {
 }
 
 window.onSubjectChange = () => {
+  bookLoadRevision++;
   lastChapterAnchor = null;
   Object.keys(scoreOverrides).forEach(code => delete scoreOverrides[code]);
   const sc = cSubject.value;
   const bk = document.getElementById('cBook');
   if (sc) {
     bk.innerHTML = tbBookOptions(sc);
-    [...bk.options].forEach(option => { if (option.value) option.disabled = !scopeQuestions.some(q => String(q.subjectCode) === String(sc) && String(q.bookCode) === String(option.value)); });
     bk.disabled = false;
   } else {
     bk.disabled = true;
@@ -506,20 +328,25 @@ window.onSubjectChange = () => {
 
 window.loadChapters = async () => {
   const sc = cSubject.value, bc = document.getElementById('cBook').value;
+  const revision = ++bookLoadRevision;
+  window._allBookQs = [];
+  updateTypePools([]);
+  updateScoreRows();
   if (!sc || !bc) return;
   const tree = document.getElementById('chapterTree');
   tree.innerHTML = '<div style="padding:12px;text-align:center;color:var(--text-muted);font-size:.88rem">載入中…</div>';
   document.getElementById('scopeAvailable').textContent = '︱可選題數 0 題';
 
-  const isCurrentBook = () => cSubject.value === sc && document.getElementById('cBook').value === bc;
+  const isCurrentBook = () => revision === bookLoadRevision && cSubject.value === sc && document.getElementById('cBook').value === bc;
   let qs = [];
   try {
-    qs = scopeQuestions.filter(q => String(q.subjectCode) === String(sc) && String(q.bookCode) === String(bc));
+    qs = await DataService.getQuestions({ subjectCode:sc, bookCode:bc });
   } catch(e) {
     if (isCurrentBook()) tree.innerHTML = `<div class="scope-empty">載入失敗：${escapeTreeText(e.message)}</div>`;
     return;
   }
   if (!isCurrentBook()) return;
+  if (!qs.length) { tree.innerHTML = '<div class="scope-empty">此冊次尚無題目</div>'; return; }
   // 統計每章每節的題目數量
   const countMap = {};
   qs.forEach(q => {
@@ -765,13 +592,7 @@ function updateTypePoolsFromSelection() {
     c.dataset.sec  ? `${c.dataset.ch}-${c.dataset.sec}` :
     c.dataset.ch
   );
-  const filtered = allQs.filter(q => chapters.some(c => {
-    const p = c.split('-').map(Number);
-    const eq = (a,b) => Number(a)===Number(b);
-    if (p.length === 1) return eq(q.chapterNum, p[0]);
-    if (p.length === 2) return eq(q.chapterNum, p[0]) && eq(q.sectionNum, p[1]);
-    return eq(q.chapterNum, p[0]) && eq(q.sectionNum, p[1]) && eq(q.subsectionNum, p[2]);
-  }));
+  const filtered = filterComposePool(allQs, { subjectCode:cSubject.value, bookCode:document.getElementById('cBook').value, chapters });
   updateTypePools(filtered);
   updateScoreRows();
 }
@@ -991,8 +812,8 @@ window.doGenerate = async () => {
     for (const t of typeCounts) {
       if (!t.count) continue;
       const picked = t.code === 'T4'
-        ? selectFillQuestions(await DataService.getQuestions({ subjectCode: sc, bookCode: bc, chapters: chapters.length ? chapters : undefined, type:'T4' }), t.count, ({ easy:.3, medium:.5, hard:.7 })[diff] ?? .5)
-        : await DataService.randomWithDifficulty({ subjectCode: sc, bookCode: bc, chapters: chapters.length ? chapters : undefined }, diff, t.count, t.code);
+        ? selectFillQuestions(filterComposePool(window._allBookQs || [], { subjectCode:sc, bookCode:bc, chapters, type:'T4' }), t.count, ({ easy:.3, medium:.5, hard:.7 })[diff] ?? .5)
+        : pickComposeQuestions(filterComposePool(window._allBookQs || [], { subjectCode:sc, bookCode:bc, chapters, type:t.code }), COMPOSE_DIFFICULTY[diff] || COMPOSE_DIFFICULTY.medium, t.count);
       if (picked === null) {
         UI.toast(`無法以整題湊出 ${t.count} 格填空題，請調整格數`, 'warning');
         return;
@@ -1030,6 +851,8 @@ window.toggleResultType = (code, button) => {
   else collapsedResultTypes.delete(code);
 };
 document.getElementById('previewArea').addEventListener('click', event => {
+  const replace = event.target.closest('[data-replace-question]');
+  if (replace) { replaceResultQuestion(replace.dataset.replaceQuestion, replace); return; }
   const header = event.target.closest('.result-section-title');
   if (!header || event.target.closest('button')) return;
   header.querySelector('.result-type-toggle')?.click();
@@ -1069,7 +892,7 @@ function renderPreview(grouped) {
           <div class="result-q">
             <span class="q-num">${qNum++}.</span>
             <div class="q-body">
-              <div class="q-meta"><span class="q-catalog-num">${UI.escapeHtml(q.qnum || '—')}</span>${UI.typeBadge(q.type)}${UI.diffBadge(q.difficulty)}<span class="q-source">來源：${UI.escapeHtml(q.source || '未註明')}</span></div>
+              <div class="q-meta"><span class="q-catalog-num">${UI.escapeHtml(q.qnum || '—')}</span>${UI.typeBadge(q.type)}${UI.diffBadge(q.difficulty)}<span class="q-source">來源：${UI.escapeHtml(q.source || '未註明')}</span><button type="button" class="btn btn-ghost btn-sm replace-question" data-replace-question="${UI.escapeHtml(String(q.id))}" aria-label="更換第 ${qNum - 1} 題"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16m-4-4 4 4-4 4M20 17H4m4-4-4 4 4 4"/></svg>換題</button></div>
               <div class="q-text">${q.type === 'T5' ? UI.matchingQuestionHtml(q.text) : UI.questionHtml(q.text || '—')}${(q.type === 'T2' || q.type === 'T3') && q.options?.length ? ' ' + q.options.map((option, index) => '(' + String.fromCharCode(65 + index) + ')' + UI.questionHtml(option)).join(' ') : ''}${(q.type === 'T2' || q.type === 'T3') && q.tail ? (String(q.tail).trim() === '。' ? '' : ' ') + UI.questionHtml(q.tail) : ''}</div>
               ${q.type !== 'T2' && q.type !== 'T3' && q.tail ? '<div class="q-tail">' + UI.questionHtml(q.tail) + '</div>' : ''}
               <div class="q-ans"><span class="answer-label">答案</span><span class="answer-text">${UI.questionHtml(q.answer || '—')}</span></div>
@@ -1081,6 +904,32 @@ function renderPreview(grouped) {
   }
 
   document.getElementById('previewArea').innerHTML = html;
+}
+
+async function replaceResultQuestion(questionId, button) {
+  const original = generatedQuestions.find(q => String(q.id) === questionId);
+  if (!original || button.disabled) return;
+  button.disabled = true;
+  try {
+    const chapters = [...document.querySelectorAll('.chap-cb:checked')].map(c => c.dataset.sub ? `${c.dataset.ch}-${c.dataset.sec}-${c.dataset.sub}` : c.dataset.sec ? `${c.dataset.ch}-${c.dataset.sec}` : c.dataset.ch);
+    const pool = filterComposePool(window._allBookQs || [], { subjectCode:cSubject.value, bookCode:document.getElementById('cBook').value, chapters, type:original.type });
+    const index = generatedQuestions.indexOf(original);
+    if (index < 0) return;
+    const selectedIds = new Set(generatedQuestions.map(q => String(q.id)));
+    const candidates = pool.filter(q => q.type === original.type && !selectedIds.has(String(q.id)) && (original.type !== 'T4' || blankCount(q) === blankCount(original)));
+    if (!candidates.length) {
+      UI.toast(original.type === 'T4' ? '目前範圍沒有尚未選用且格數相同的填空題' : '目前範圍沒有尚未選用的同題型題目', 'warning');
+      return;
+    }
+    const replacement = candidates[Math.floor(Math.random() * candidates.length)];
+    generatedQuestions[index] = { ...replacement, _typeLabel:original._typeLabel, _icon:original._icon };
+    renderPreview(TYPE_CONFIGS.map(t => ({ ...t, items:generatedQuestions.filter(q => q.type === t.code) })).filter(t => t.items.length));
+    UI.toast('已更換題目', 'success');
+  } catch (error) {
+    UI.toast('更換失敗：' + error.message, 'danger');
+  } finally {
+    button.disabled = false;
+  }
 }
 
 async function regenerateType(typeCode) {
@@ -1095,8 +944,8 @@ async function regenerateType(typeCode) {
 
   try {
     const newItems = typeCode === 'T4'
-      ? selectFillQuestions(await DataService.getQuestions({ subjectCode: sc, bookCode: bc, chapters: chapters.length ? chapters : undefined, type:'T4' }), cnt, ({ easy:.3, medium:.5, hard:.7 })[diff] ?? .5)
-      : await DataService.randomWithDifficulty({ subjectCode: sc, bookCode: bc, chapters: chapters.length ? chapters : undefined }, diff, cnt, typeCode);
+      ? selectFillQuestions(filterComposePool(window._allBookQs || [], { subjectCode:sc, bookCode:bc, chapters, type:'T4' }), cnt, ({ easy:.3, medium:.5, hard:.7 })[diff] ?? .5)
+      : pickComposeQuestions(filterComposePool(window._allBookQs || [], { subjectCode:sc, bookCode:bc, chapters, type:typeCode }), COMPOSE_DIFFICULTY[diff] || COMPOSE_DIFFICULTY.medium, cnt);
     if (newItems === null) { UI.toast(`無法以整題湊出 ${cnt} 格填空題`, 'warning'); return; }
     // 替換 generatedQuestions 中對應題型的題目
     generatedQuestions = generatedQuestions.filter(q => q.type !== typeCode);
@@ -1172,7 +1021,7 @@ window.doSaveExam = async () => {
 
 updateScoreRows();
 setComposeStep(1);
-loadScopeAvailability();
+renderScopeCatalog();
 </script>
 </body>
 </html>

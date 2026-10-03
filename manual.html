@@ -4,81 +4,42 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>手動選題 — 幼獅題庫系統</title>
 <link rel="stylesheet" href="css/theme.css">
+<link rel="stylesheet" href="css/process-bar.css">
 <script>if(localStorage.getItem("sidebarCollapsed")==="1")document.documentElement.classList.add("sidebar-collapsed");</script>
+<link rel="stylesheet" href="css/exam-compose.css">
 <style>
-.manual-layout{display:grid;grid-template-columns:300px 1fr 1fr;gap:14px;align-items:start}
-@media(max-width:1100px){.manual-layout{grid-template-columns:260px 1fr 1fr}}
-@media(max-width:860px){.manual-layout{grid-template-columns:1fr}}
-
-/* 左側設定面板 */
-.config-card .card-body{padding:14px}
-.section-title{font-size:.86rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 8px;display:flex;align-items:center;gap:6px}
-.section-title:first-child{margin-top:0}
-/* 章節樹覆寫：本頁需要更高（chapter-tree 通用樣式在 theme.css） */
-.chapter-tree{max-height:260px}
-
-/* 中間題目庫 */
-.q-card{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-bottom:1px solid var(--border-light);cursor:pointer;transition:background .1s;user-select:none}
-.q-card:last-child{border-bottom:none}
-.q-card:hover{background:#f0f4f8}
-.q-card.selected{background:#e8f4fd}
-.q-card .q-check{width:16px;height:16px;flex-shrink:0;margin-top:2px;cursor:pointer;accent-color:var(--primary-light)}
-.q-card .q-info{flex:1;min-width:0}
-.q-card .q-title{font-size:.9rem;line-height:1.5;margin-bottom:3px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
-.q-card .q-meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-.q-card .q-act{flex-shrink:0}
-.bank-list{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;max-height:600px;overflow-y:auto;background:white}
-.bank-header{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--bg-base);border-bottom:1px solid var(--border);font-size:.88rem;color:var(--text-secondary)}
-
-/* 右側已選 */
-
-.selected-list{max-height:520px;overflow-y:auto;padding:12px}
-.sel-item{display:flex;align-items:flex-start;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border-light);font-size:.88rem}
-.sel-item:last-child{border-bottom:none}
-.sel-item .si-num{color:var(--text-muted);font-size:.84rem;width:22px;flex-shrink:0;text-align:right;padding-top:2px}
-.sel-item .si-text{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.5}
-.sel-item{position:relative}
-.sel-tooltip{display:none;position:absolute;left:30px;top:100%;z-index:200;background:white;border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-md);padding:10px 12px;font-size:.88rem;line-height:1.6;width:320px;max-width:90vw;color:var(--text-primary)}
-.sel-item:hover .sel-tooltip{display:block}
-.sel-tooltip .tt-text{margin-bottom:4px}
-.sel-tooltip .tt-opts{color:var(--text-secondary);font-size:.86rem;margin-bottom:4px}
-.sel-tooltip .tt-ans{color:var(--success);font-weight:600;font-size:.86rem}
-.sel-item .si-remove{flex-shrink:0;background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:.9rem;padding:0 3px;line-height:1}
-.sel-item .si-remove:hover{color:var(--danger)}
-.drag-handle{cursor:grab;color:var(--text-muted);font-size:.88rem;flex-shrink:0;padding-top:2px}
+.manual-layout{display:block}
+.manual-panel[hidden]{display:none}
+.manual-panel .card-header{min-height:60px;padding:10px 20px;gap:12px;flex-wrap:wrap}
+.manual-panel .card-header h2{font-size:1.2rem;font-weight:700;letter-spacing:.01em}
+.manual-panel .card-body{padding:18px 20px}
+.selection-layout{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:16px;align-items:start}
+.selection-layout .card{min-width:0}
+.bank-list,.selected-list{max-height:650px;overflow-y:auto;padding:18px 20px;background:#fff}
+.result-section-title{cursor:default}
+.result-list{border:0;border-radius:0}
+#bankList .result-q{cursor:pointer}
+.result-q.selected{background:#eaf1f8}
+.result-q.selected:hover{background:#e2ebf4}
+.q-check-col{flex:none;display:flex;padding-top:4px}
+.q-check-col input{width:16px;height:16px;accent-color:#385b8a;cursor:pointer}
+.drag-handle{cursor:grab;color:var(--text-muted);flex:none;line-height:1.65}
 .drag-handle:active{cursor:grabbing}
-.sel-item.dragging{opacity:.4;background:#f0f4ff}
-.sel-item.drag-over{border-top:2px solid var(--primary-light)}
-.score-cfg{display:flex;align-items:center;gap:6px;padding:10px 12px;background:var(--bg-base);border-top:1px solid var(--border-light);font-size:.88rem;flex-wrap:wrap}
-.score-cfg .sc-row{display:flex;align-items:center;gap:4px;white-space:nowrap}
-.sc-inp{width:48px;font-size:.88rem;padding:3px 5px;text-align:center}
-.total-score-bar{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;font-size:.86rem;font-weight:600;color:var(--primary);border-top:1px solid var(--border-light)}
-
-/* 分頁 */
-.pag-wrap{display:flex;align-items:center;gap:4px;padding:10px 12px;flex-wrap:wrap}
-.pag-btn{border:1px solid var(--border);background:white;padding:3px 9px;border-radius:var(--radius);font-size:.86rem;cursor:pointer;font-family:var(--font-sans)}
-.pag-btn:hover:not(:disabled){background:var(--bg-base)}
-.pag-btn.active{background:var(--primary);color:white;border-color:var(--primary)}
-.pag-btn:disabled{opacity:.4;cursor:not-allowed}
-
-/* 題目庫結果樣式（同電腦選題） */
-.result-section{margin-bottom:12px}.result-section:last-child{margin-bottom:0}
-.result-section-title{display:flex;align-items:center;justify-content:space-between;padding:7px 12px;background:var(--bg-header);color:white;border-radius:var(--radius) var(--radius) 0 0;font-size:.88rem;font-weight:600}
-.result-list{border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius) var(--radius);overflow:hidden}
-.result-q{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-bottom:1px solid var(--border-light);font-size:.9rem;background:white;cursor:pointer;transition:background .1s}
-.result-q:last-child{border-bottom:none}
-.result-q:hover{background:#f0f8ff}
-.result-q.selected{background:#e8f4fd}
-.result-q .q-num{color:var(--text-muted);font-size:.85rem;width:26px;flex-shrink:0;padding-top:2px;text-align:right}
-.result-q .q-body{flex:1;min-width:0}
-.result-q .q-text{line-height:1.6;margin-bottom:3px}
-.result-q .q-ans{font-size:.85rem;color:var(--success);font-weight:600}
-.result-q .q-check-col{flex-shrink:0;display:flex;align-items:flex-start;padding-top:2px}
-.result-q .q-check-col input{width:16px;height:16px;cursor:pointer;accent-color:var(--primary-light)}
-
-/* 搜尋列覆寫：本頁是兩列、上方緊接 bank-list（須移除下圓角） */
-.filter-bar{padding:10px 12px;border-radius:var(--radius-lg) var(--radius-lg) 0 0;border-bottom:none;margin-bottom:0}
-.filter-bar .form-control{min-width:90px}
+#selList .result-q:has(.dragging){opacity:.4;background:#f0f4ff}
+#selList .result-q.drag-over{box-shadow:inset 0 2px var(--primary-light)}
+.si-remove{margin-left:auto}
+.manual-filters{display:flex;gap:12px;flex-wrap:wrap}
+.manual-filters .form-group{flex:1;min-width:140px;margin:0!important}
+.manual-select-all{display:flex;align-items:center;gap:6px;font-size:.88rem;font-weight:400;color:var(--text-secondary)}
+.manual-select-all input{accent-color:#385b8a}
+.score-cfg{padding:18px 20px;background:#fff}
+.total-score-bar{display:flex;align-items:center;justify-content:space-between;margin:0 20px 18px;padding:13px 14px;border-radius:9px;background:#e1f3e9;color:#176d49;font-weight:700}
+#manualSummary .exam-summary-table tbody tr{cursor:default}
+.manual-panel .btn-auto-score{background:#e0edff;color:#2458a6;border-color:transparent}
+.manual-panel .btn-auto-score:hover{background:#cbdfff;color:#174889}
+.manual-panel .btn-auto-score:focus-visible{outline:2px solid #3478f6;outline-offset:2px}
+@media(max-width:1100px){.selection-layout{grid-template-columns:1fr}}
+@media(max-width:760px){.manual-panel .card-header,.manual-panel .card-body,.bank-list,.selected-list,.score-cfg{padding-left:14px;padding-right:14px}}
 </style>
 </head>
 <body>
@@ -93,63 +54,39 @@
       <div class="topbar-breadcrumb"><span>首頁</span> › 手動選題</div>
     </div>
     <div class="page-content">
-      <div class="manual-layout">
-
-        <!-- 左：出題設定 -->
-        <div>
-          <div class="card config-card">
-            <div class="card-header"><h2>⚙️ 出題設定</h2></div>
-            <div class="card-body">
-
-              <div class="section-title">📚 科目與範圍</div>
-              <div class="form-group" style="margin-bottom:8px">
-                <select class="form-control" id="cSubject" onchange="onSubjectChange()">
+<section class="import-progress" aria-label="手動選題流程" style="--process-step-count:5;--process-initial-width:20%"><div class="steps" role="list"><div class="step active" id="manualStep1" role="listitem"><span class="step-num">1</span><span class="step-copy"><strong>出題範圍</strong></span></div><div class="step" id="manualStep2" role="listitem"><span class="step-num">2</span><span class="step-copy"><strong>選擇題目</strong></span></div><div class="step" id="manualStep3" role="listitem"><span class="step-num">3</span><span class="step-copy"><strong>題型與配分</strong></span></div><div class="step" id="manualStep4" role="listitem"><span class="step-num">4</span><span class="step-copy"><strong>試卷設定</strong></span></div><div class="step" id="manualStep5" role="listitem"><span class="step-num">5</span><span class="step-copy"><strong>預覽試卷</strong></span></div></div><div class="import-progress-track" id="manualProgressTrack" role="progressbar" aria-label="手動選題進度" aria-valuemin="1" aria-valuemax="5" aria-valuenow="1"><div class="import-progress-fill" id="manualProgressFill"></div></div></section><div class="manual-layout"><section id="manualPanel1" class="manual-panel"><div class="scope-layout"><section class="card"><div class="card-header"><h2>選擇命題科目</h2></div><div class="scope-tree" id="subjectTree"></div><div hidden><select class="form-control" id="cSubject" aria-label="科目" onchange="onSubjectChange()">
                   <option value="">請選擇科目</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <select class="form-control" id="cBook" disabled onchange="loadChapters()">
+                </select><select class="form-control" id="cBook" aria-label="冊次" disabled onchange="loadChapters()">
                   <option value="">請先選科目</option>
-                </select>
-              </div>
-
-              <div class="section-title">📖 章節範圍<button class="btn btn-ghost btn-sm" onclick="clearAllChapters()" style="font-size:.84rem;padding:1px 6px;margin-left:auto;font-weight:400;text-transform:none;letter-spacing:0">全部清除</button></div>
-              <div class="chapter-tree" id="chapterTree">
+                </select></div></section><section class="card"><div class="card-header"><h2>選擇命題章節</h2><div class="scope-header-actions"><button class="btn btn-primary btn-sm" onclick="goManualStep(2)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m13.5 6 6 6-6 6"/><path d="m6 6 6 6-6 6" stroke-opacity=".5"/></svg>下一步：選擇題目</button></div></div>              <div class="chapter-tree scope-tree" id="chapterTree">
                 <div style="padding:20px;text-align:center;color:var(--text-muted);font-size:.88rem">請先選擇科目與冊次</div>
               </div>
 
-              <div class="section-title">🔍 題型與難易度</div>
-              <div class="form-group" style="margin-bottom:8px">
-                <select class="form-control" id="fType" onchange="applyFilters()">
+<div class="wizard-actions"><button class="btn btn-ghost btn-sm" onclick="clearAllChapters()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 3 5 5a2 2 0 0 1 0 3L11 21H6l-4-4a2 2 0 0 1 0-3L13 3a2 2 0 0 1 3 0zM8 8l8 8M11 21h11"/></svg>取消選取</button></div></section></div></section><section id="manualPanel2" class="manual-panel" hidden><div class="card"><div class="card-header"><h2>選擇題目</h2><div class="scope-header-actions"><button class="btn btn-previous btn-sm" onclick="goManualStep(1)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10.5 6-6 6 6 6"/><path d="m18 6-6 6 6 6" stroke-opacity=".5"/></svg>上一步</button><button class="btn btn-primary btn-sm" onclick="goManualStep(3)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m13.5 6 6 6-6 6"/><path d="m6 6 6 6-6 6" stroke-opacity=".5"/></svg>下一步：題型與配分</button></div></div><div class="card-body manual-filters">              <div class="form-group" style="margin-bottom:8px">
+                <select class="form-control" id="fType" aria-label="題型" onchange="applyFilters()">
                   <option value="">全部題型</option>
                 </select>
               </div>
               <div class="form-group" style="margin-bottom:8px">
-                <select class="form-control" id="fDiff" onchange="applyFilters()">
+                <select class="form-control" id="fDiff" aria-label="難易度" onchange="applyFilters()">
                   <option value="">不限難易度</option>
                   <option value="◎">較難 ◎</option>
                   <option value="△">簡易 △</option>
                 </select>
               </div>
               <div class="form-group">
-                <input class="form-control" id="fKeyword" placeholder="搜尋題目…" oninput="applyFilters()">
+                <input class="form-control" id="fKeyword" aria-label="搜尋題目" placeholder="搜尋題目…" oninput="applyFilters()">
               </div>
-
-            </div>
-          </div>
-        </div>
-
-        <!-- 中：題目庫 -->
-        <div class="card">
+</div></div><div class="selection-layout">        <div class="card">
           <div class="card-header">
-            <h2>📚 題目庫<strong style="font-size:.88rem;font-weight:400;color:var(--text-secondary);margin-left:6px" id="bankCount"></strong></h2>
+            <h2>題目庫<strong style="font-size:.88rem;font-weight:400;color:var(--text-secondary);margin-left:6px" id="bankCount"></strong></h2>
             <div style="display:flex;align-items:center;gap:8px">
-              <label style="font-size:.88rem;display:flex;align-items:center;gap:4px;font-weight:400;color:var(--text-secondary)">
+              <label class="manual-select-all">
                 <input type="checkbox" id="selectPageAll" onchange="selectPage(this.checked)"> 全選
               </label>
             </div>
           </div>
-          <div class="bank-list" style="max-height:600px;overflow-y:auto;border:none;padding:12px" id="bankList">
+          <div class="bank-list"  id="bankList">
             <div style="text-align:center;padding:48px 24px;color:var(--text-muted)">
               <div style="font-size:2rem;margin-bottom:10px;opacity:.3">📚</div>
               <p style="font-size:.88rem">請在左側選擇科目與冊次</p>
@@ -158,31 +95,15 @@
           <div class="pag-wrap" id="bankPag"></div>
         </div>
 
-        <!-- 右：已選題目 -->
-        <div style="position:sticky;top:76px">
           <div class="card">
             <div class="card-header">
-              <h2>📋 已選題目</h2>
+              <h2>已選題目</h2>
               <span style="font-size:.88rem;color:var(--text-secondary)" id="selCountLabel">0 題</span>
             </div>
             <div id="selList" class="selected-list">
-              <div style="text-align:center;padding:32px;color:var(--text-muted);font-size:.9rem">點擊題目「＋」加入</div>
+              <div style="text-align:center;padding:32px;color:var(--text-muted);font-size:.9rem">勾選題目加入試卷</div>
             </div>
-            <div class="score-cfg" id="scoreCfg" style="display:none"></div>
-            <div class="total-score-bar" id="totalScoreBar" style="display:none">
-              <span>預估總分</span>
-              <span id="totalScoreVal">0 分</span>
-            </div>
-            <div style="padding:10px 12px;border-top:1px solid var(--border-light);display:flex;gap:6px;flex-wrap:wrap">
-              <button class="btn btn-outline btn-sm" onclick="shuffleSelected()" id="shuffleBtn" disabled>↕ 亂數排序</button>
-              <button class="btn btn-outline btn-sm" onclick="openHeaderSettings()" title="設定試卷上方表頭資訊">✎ 試卷表頭</button>
-              <button class="btn btn-outline btn-sm" onclick="previewSelected()" id="previewBtn" disabled>◉ 預覽試卷</button>
-              <button class="btn btn-accent" onclick="openSaveModal()" id="saveBtn" disabled style="flex:1">💾 儲存試卷</button>
-            </div>
-          </div>
-        </div>
-
-      </div>
+</div><div class="wizard-actions"><button class="btn btn-outline btn-sm" id="shuffleBtn" onclick="shuffleSelected()" disabled>亂數排序</button></div></div></section><section id="manualPanel3" class="manual-panel" hidden><section class="card"><div class="card-header"><h2>題型與配分</h2><div class="scope-header-actions"><button class="btn btn-auto-score btn-sm" onclick="autoManualScores()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3-1.9 5.8L4 10l5.8 1.9L12 18l1.9-5.8L20 10l-5.8-1.9zM5 18l-.7 1.4L3 20l1.3.6L5 22l.7-1.4L7 20l-1.3-.6zM19 16l-.7 1.4L17 18l1.3.6L19 20l.7-1.4L21 18l-1.3-.6z"/></svg>自動配分</button><button class="btn btn-previous btn-sm" onclick="goManualStep(2)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10.5 6-6 6 6 6"/><path d="m18 6-6 6 6 6" stroke-opacity=".5"/></svg>上一步</button><button class="btn btn-primary btn-sm" onclick="goManualStep(4)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m13.5 6 6 6-6 6"/><path d="m6 6 6 6-6 6" stroke-opacity=".5"/></svg>下一步：試卷設定</button></div></div><div class="score-cfg" id="scoreCfg"></div><div class="total-score-bar" id="totalScoreBar"><span>預估總分</span><span id="totalScoreVal">0 分</span></div></section></section><section id="manualPanel4" class="manual-panel" hidden><div class="scope-layout settings-layout"><section class="card"><div class="card-header"><h2>試卷檢視</h2><div class="scope-header-actions"><button class="btn btn-previous btn-sm" onclick="goManualStep(3)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10.5 6-6 6 6 6"/><path d="m18 6-6 6 6 6" stroke-opacity=".5"/></svg>上一步</button><button class="btn btn-primary btn-sm" onclick="goManualStep(5)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m13.5 6 6 6-6 6"/><path d="m6 6 6 6-6 6" stroke-opacity=".5"/></svg>下一步：預覽試卷</button></div></div><div class="card-body" id="manualSummary"></div></section><section class="card"><div class="card-header"><h2>試卷表頭</h2></div><div class="card-body" id="manualHeaderFields"></div></section></div></section><section id="manualPanel5" class="manual-panel" hidden><section class="card"><div class="card-header"><h2>預覽試卷</h2><div class="scope-header-actions"><button class="btn btn-previous btn-sm" onclick="goManualStep(4)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10.5 6-6 6 6 6"/><path d="m18 6-6 6 6 6" stroke-opacity=".5"/></svg>上一步</button></div><div class="compose-preview-tools" id="manualPreviewTools"></div><button class="btn btn-primary btn-sm" id="saveBtn" onclick="openSaveModal()" disabled>儲存試卷</button></div><div id="manualExamPreview"></div></section></section></div>
     </div>
   </div>
 </div>
@@ -211,7 +132,8 @@
 
 <script type="module">
 import { guardPage } from './js/auth-guard.js';
-import { showExamPreview, showHeaderSettings, newExamHeader, loadAppearance } from './js/exam-preview.js';
+import { showExamPreview, showHeaderSettings, newExamHeader, loadAppearance, mountInlineHeaderEditor } from './js/exam-preview.js';
+import { allocateTypeScores } from './js/score-allocation.js';
 window._activeNav = 'manual';
 const user = await guardPage(['admin','manager','teacher']);
 if (!user) throw new Error('not auth');
@@ -236,6 +158,22 @@ window.openHeaderSettings = () => {
   showHeaderSettings(draftPreviewData);
 };
 
+const escapeTreeText = value => UI.escapeHtml(String(value ?? ''));
+function renderScopeCatalog() {
+  document.getElementById('subjectTree').innerHTML = (_tbCache?.subjects || []).map(subject => {
+    const books = _tbCache.booksBySubject[subject.id] || [];
+    return `<details class="subject-node"><summary>${escapeTreeText(subject.name)}</summary>${books.length ? books.map(book=>`<label class="book-node"><input type="radio" name="scopeBook" data-subject="${escapeTreeText(subject.code)}" value="${escapeTreeText(book.code)}"><span>${escapeTreeText(book.name)}</span></label>`).join('') : '<div class="scope-empty">尚無冊次</div>'}</details>`;
+  }).join('') || '<div class="scope-empty">尚無科目</div>';
+}
+document.getElementById('subjectTree').addEventListener('change',async event=>{
+  const input=event.target;
+  if(input.name!=='scopeBook') return;
+  cSubject.value=input.dataset.subject;
+  onSubjectChange();
+  document.getElementById('cBook').value=input.value;
+  await loadChapters();
+});
+
 // ── 科目/冊次 ─────────────────────────────────────
 window.onSubjectChange = () => {
   const sc = cSubject.value;
@@ -252,12 +190,12 @@ window.onSubjectChange = () => {
   }
   document.getElementById('chapterTree').innerHTML =
     '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:.88rem">請先選擇冊次</div>';
-  filtered = []; renderBank();
+  allQs = []; filtered = []; renderBank();
 };
 
 window.loadChapters = async () => {
   const sc = cSubject.value, bc = document.getElementById('cBook').value;
-  if (!sc || !bc) return;
+  if (!sc || !bc) { allQs = []; filtered = []; document.getElementById('chapterTree').innerHTML = '<div class="scope-empty">請先選擇冊次</div>'; renderBank(); return; }
   const tree = document.getElementById('chapterTree');
   tree.innerHTML = '<div style="padding:12px;text-align:center;color:var(--text-muted);font-size:.88rem">載入中…</div>';
 
@@ -408,7 +346,7 @@ window.applyFilters = () => {
   filtered = allQs.filter(q => {
     const qDiff = q.difficulty || '';
     const diffOk = !df || (df === '__normal__' ? qDiff === '' : qDiff === df);
-    const chOk = !chapters.length || chapters.some(c => {
+    const chOk = chapters.length > 0 && chapters.some(c => {
       const p = c.split('-').map(Number);
       const eq = (a,b) => Number(a)===Number(b);
       if (p.length===1) return eq(q.chapterNum, p[0]);
@@ -424,8 +362,21 @@ window.applyFilters = () => {
 // ── 題目庫渲染 ────────────────────────────────────
 const TYPE_ORDER_BANK = ['T1','T2','T3','T4','T5','T6'];
 
+function manualQuestionBody(q, action = '') {
+  const choice = q.type === 'T2' || q.type === 'T3';
+  const options = choice && q.options?.length ? ' ' + q.options.map((option,index)=>'('+String.fromCharCode(65+index)+')'+UI.questionHtml(option)).join(' ') : '';
+  const tail = choice && q.tail ? (String(q.tail).trim()==='。' ? '' : ' ') + UI.questionHtml(q.tail) : '';
+  return `<div class="q-meta"><span class="q-catalog-num">${UI.escapeHtml(q.qnum || '—')}</span>${UI.typeBadge(q.type)}${UI.diffBadge(q.difficulty)}<span class="q-source">來源：${UI.escapeHtml(q.source || '未註明')}</span>${action}</div>
+    <div class="q-text">${q.type==='T5' ? UI.matchingQuestionHtml(q.text) : UI.questionHtml(q.text || '—')}${options}${tail}</div>
+    ${!choice && q.tail ? '<div class="q-tail">'+UI.questionHtml(q.tail)+'</div>' : ''}
+    <div class="q-ans"><span class="answer-label">答案</span><span class="answer-text">${UI.questionHtml(q.answer || '—')}</span></div>`;
+}
+
 function renderBank() {
   const total = filtered.length;
+  const selectAll = document.getElementById('selectPageAll');
+  selectAll.checked = total > 0 && filtered.every(q => selectedIds.has(q.id));
+  selectAll.indeterminate = filtered.some(q => selectedIds.has(q.id)) && !selectAll.checked;
   document.getElementById('bankCount').textContent = total ? `（${total} 題）` : '';
   document.getElementById('bankPag').innerHTML = '';
 
@@ -453,7 +404,7 @@ function renderBank() {
     html += `<div class="result-section">
       <div class="result-section-title">
         ${tLabel}（${qs.length} 題）
-        <label style="font-size:.85rem;font-weight:400;display:flex;align-items:center;gap:4px;cursor:pointer">
+        <label class="manual-select-all">
           <input type="checkbox" onchange="selectGroup('${tCode}',this.checked)"
             ${qs.every(q=>selectedIds.has(q.id))?'checked':''} style="cursor:pointer"> 全選本組
         </label>
@@ -461,17 +412,13 @@ function renderBank() {
       <div class="result-list">
         ${qs.map(q => {
           const inSel = selectedIds.has(q.id);
-          const optHTML = q.type==='T2'&&q.options?.length
-            ? `<div style="font-size:.86rem;color:var(--text-secondary);margin-top:3px">${q.options.map((o,i)=>`（${'ＡＢＣＤＥ'[i]}）${o}`).join('　')}</div>` : '';
           return `<div class="result-q ${inSel?'selected':''}" id="qcard-${q.id}" onclick="toggleQ('${q.id}',${!inSel})">
             <div class="q-check-col"><input type="checkbox" ${inSel?'checked':''} onclick="event.stopPropagation()" onchange="toggleQ('${q.id}',this.checked)"></div>
             <span class="q-num">${qNum++}.</span>
             <div class="q-body">
-              <div class="q-text">${q.type==='T5' ? UI.matchingQuestionHtml(q.text) : UI.questionHtml(q.text||'—')}</div>
-              ${optHTML}
-              <div class="q-ans">答：${q.answer||'—'}</div>
+              ${manualQuestionBody(q)}
             </div>
-            <div>${UI.diffBadge(q.difficulty)}</div>
+
           </div>`;
         }).join('')}
       </div>
@@ -516,6 +463,7 @@ window.toggleQ = (id, add, silent=false) => {
       card.setAttribute('onclick', `toggleQ('${id}',${!add})`);
     }
     renderSelected();
+    renderBank();
   }
 };
 
@@ -524,10 +472,10 @@ const TYPE_SCORES = {T1:2,T2:2,T3:4,T4:2,T5:2,T6:10};
 function renderSelected() {
   const count = selectedOrder.length;
   document.getElementById('selCountLabel').textContent = count + ' 題';
-  ['saveBtn','shuffleBtn','previewBtn'].forEach(id => document.getElementById(id).disabled = count===0);
+  ['saveBtn','shuffleBtn'].forEach(id => document.getElementById(id).disabled = count===0);
   const list = document.getElementById('selList');
   if (!count) {
-    list.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-muted);font-size:.9rem">點擊題目「＋」加入</div>';
+    list.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-muted);font-size:.9rem">勾選題目加入試卷</div>';
     document.getElementById('scoreCfg').style.display = 'none';
     document.getElementById('totalScoreBar').style.display = 'none';
     return;
@@ -549,21 +497,12 @@ function renderSelected() {
       <div class="result-section-title">${tLabel}（${items.length} 題）</div>
       <div class="result-list">
         ${items.map(({q, id, idx}) => {
-          const optHTML = q.type==='T2'&&q.options?.length
-            ? `<div style="font-size:.86rem;color:var(--text-secondary);margin-top:3px">${q.options.map((o,i)=>`（${'ＡＢＣＤＥ'[i]}）${o}`).join('　')}</div>` : '';
-          const tailHTML = q.tail ? `${q.tail}` : '';
           return `<div class="result-q" data-id="${id}"
             ondragover="dragOver(event,'${id}')" ondrop="dropOn(event,'${id}')" ondragend="dragEnd()">
             <span class="drag-handle" style="padding-top:3px;cursor:grab" draggable="true" ondragstart="dragStart(event,'${id}')" title="拖曳排序">⠿</span>
             <span class="q-num">${idx+1}.</span>
             <div class="q-body">
-              <div class="q-text">${q.type==='T5' ? UI.matchingQuestionHtml(q.text) : UI.questionHtml(q.text||'—')}${tailHTML}</div>
-              ${optHTML}
-              <div class="q-ans">答：${q.answer||'—'}</div>
-            </div>
-            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
-              ${UI.diffBadge(q.difficulty)}
-              <button class="si-remove" onclick="toggleQ('${id}',false)" style="font-size:.84rem;padding:2px 6px;border:1px solid var(--border);border-radius:3px;background:white;cursor:pointer;color:var(--text-muted)">移除</button>
+              ${manualQuestionBody(q, `<button type="button" class="btn btn-ghost btn-sm replace-question si-remove" onclick="toggleQ('${id}',false)">移除</button>`)}
             </div>
           </div>`;
         }).join('')}
@@ -573,17 +512,17 @@ function renderSelected() {
   list.innerHTML = selHTML;
   const typeGroups = {};
   selectedOrder.forEach(id => { const q=selQuestions[id]; if(q){ typeGroups[q.type]=(typeGroups[q.type]||0)+1; } });
-  document.getElementById('scoreCfg').style.display = 'flex';
+  document.getElementById('scoreCfg').style.display = 'block';
   document.getElementById('scoreCfg').innerHTML = Object.entries(typeGroups).map(([t,c]) =>
-    `<div class="sc-row">${QUESTION_TYPES[t]||t} ×${c}:
-      <input class="form-control sc-inp" type="number" id="sc-${t}" value="${TYPE_SCORES[t]||2}" min="1" max="99" oninput="calcTotal()">分
+    `<div class="score-config-row"><span class="score-label">${QUESTION_TYPES[t]||t}<span class="type-title-note">（${c} 題）</span></span>
+      <div class="number-stepper"><input class="form-control" type="number" id="sc-${t}" value="${TYPE_SCORES[t]||2}" min="0.5" max="100" step="0.5" aria-label="${QUESTION_TYPES[t]}每題配分" oninput="updateManualScore('${t}',this)"><div class="number-stepper-buttons"><button type="button" tabindex="-1" aria-label="增加配分" onclick="adjustManualScore('${t}',1)">▲</button><button type="button" tabindex="-1" aria-label="減少配分" onclick="adjustManualScore('${t}',-1)">▼</button></div></div><span class="row-unit">分／題</span>
     </div>`).join('');
   calcTotal();
   document.getElementById('totalScoreBar').style.display = 'flex';
 }
 function calcTotal() {
   let total=0;
-  selectedOrder.forEach(id => { const q=selQuestions[id]; if(!q) return; const inp=document.getElementById('sc-'+q.type); total += inp?parseInt(inp.value)||0:(TYPE_SCORES[q.type]||2); });
+  selectedOrder.forEach(id => { const q=selQuestions[id]; if(!q) return; const inp=document.getElementById('sc-'+q.type); total += inp?Number(inp.value)||0:(TYPE_SCORES[q.type]||2); });
   document.getElementById('totalScoreVal').textContent = total + ' 分';
 }
 window.calcTotal = calcTotal;
@@ -591,8 +530,8 @@ window.calcTotal = calcTotal;
 // ── 拖曳 ─────────────────────────────────────────
 let dragId=null;
 window.dragStart=(e,id)=>{dragId=id;e.currentTarget.classList.add('dragging');e.dataTransfer.effectAllowed='move';};
-window.dragEnd=()=>{dragId=null;document.querySelectorAll('.sel-item').forEach(el=>el.classList.remove('dragging','drag-over'));};
-window.dragOver=(e,id)=>{e.preventDefault();if(id!==dragId)document.querySelector(`.sel-item[data-id="${id}"]`)?.classList.add('drag-over');};
+window.dragEnd=()=>{dragId=null;document.querySelectorAll('#selList .result-q').forEach(el=>el.classList.remove('dragging','drag-over'));};
+window.dragOver=(e,id)=>{e.preventDefault();if(id!==dragId)document.querySelector(`#selList .result-q[data-id="${id}"]`)?.classList.add('drag-over');};
 window.dropOn=(e,targetId)=>{e.preventDefault();if(!dragId||dragId===targetId)return;const from=selectedOrder.indexOf(dragId),to=selectedOrder.indexOf(targetId);if(from<0||to<0)return;selectedOrder.splice(from,1);selectedOrder.splice(to,0,dragId);renderSelected();};
 
 // ── 排序/預覽/儲存 ───────────────────────────────
@@ -607,7 +546,7 @@ window.shuffleSelected = () => {
 window.previewSelected = () => {
   if (!selectedOrder.length) { UI.toast('請先選題','warning'); return; }
   const typeScores={};
-  Object.keys(TYPE_SCORES).forEach(t=>{const el=document.getElementById('sc-'+t);typeScores[t]=el?parseInt(el.value)||TYPE_SCORES[t]:TYPE_SCORES[t];});
+  Object.keys(TYPE_SCORES).forEach(t=>{const el=document.getElementById('sc-'+t);typeScores[t]=el?Number(el.value)||TYPE_SCORES[t]:TYPE_SCORES[t];});
   const qs = selectedOrder.map(id=>selQuestions[id]).filter(Boolean);
   const firstQ = qs[0];
   draftPreviewData = { title:'（預覽）', typeScores, subjectCode:firstQ?.subjectCode||'', bookCode:firstQ?.bookCode||'',
@@ -623,7 +562,7 @@ window.doSaveExam = async () => {
   const title = document.getElementById('examTitle').value.trim();
   if (!title) { document.getElementById('saveErr').textContent='請填寫試卷名稱'; document.getElementById('saveErr').classList.remove('hidden'); return; }
   let totalScore=0; const typeScores={};
-  selectedOrder.forEach(id=>{const q=selQuestions[id];if(!q)return;const inp=document.getElementById('sc-'+q.type);const score=inp?parseInt(inp.value)||2:2;typeScores[q.type]=score;totalScore+=score;});
+  selectedOrder.forEach(id=>{const q=selQuestions[id];if(!q)return;const inp=document.getElementById('sc-'+q.type);const score=inp?Number(inp.value)||2:2;typeScores[q.type]=score;totalScore+=score;});
   const firstQ = selQuestions[selectedOrder[0]];
   const exam = {
     title, header: draftPreviewData?.header ?? newExamHeader(), appearance: draftPreviewData?.appearance ?? loadAppearance(), description: document.getElementById('examDesc').value.trim(),
@@ -638,6 +577,73 @@ window.doSaveExam = async () => {
     document.getElementById('saveModal').classList.add('hidden');
   } catch(e) { document.getElementById('saveErr').textContent='儲存失敗：'+e.message; document.getElementById('saveErr').classList.remove('hidden'); }
 };
+
+window.autoManualScores = () => {
+  const counts = {};
+  selectedOrder.forEach(id => { const q=selQuestions[id]; counts[q.type]=(counts[q.type]||0)+1; });
+  Object.assign(TYPE_SCORES, allocateTypeScores(Object.entries(counts).map(([code,cnt])=>({code,cnt})), {T1:1,T2:1,T3:2,T4:1,T5:3,T6:5},100,0.5));
+  renderSelected();
+};
+window.adjustManualScore = (type,direction) => {
+  const input=document.getElementById('sc-'+type);
+  input.value=Math.min(100,Math.max(0.5,(Number(input.value)||0)+direction*0.5));
+  updateManualScore(type,input);
+  input.focus();
+};
+window.updateManualScore = (type, input) => {
+  TYPE_SCORES[type] = Number(input.value);
+  calcTotal();
+};
+window.goManualStep = n => {
+  if (n > 1 && !document.querySelector('.chap-cb:checked')) { UI.toast('請勾選至少一個章節','warning'); return; }
+  if (n > 2 && !selectedOrder.length) { UI.toast('請先選擇題目','warning'); return; }
+  if (n > 3 && [...document.querySelectorAll('#scoreCfg input')].some(input => !input.checkValidity() || !Number.isFinite(Number(input.value)))) { UI.toast('請輸入有效配分（0.5 至 100 分）','warning'); return; }
+  for (let i=1;i<=5;i++) {
+    document.getElementById('manualPanel'+i).hidden = i !== n;
+    const step = document.getElementById('manualStep'+i);
+    step.classList.toggle('active',i===n); step.classList.toggle('done',i<n);
+    if(i===n) step.setAttribute('aria-current','step'); else step.removeAttribute('aria-current');
+  }
+  document.getElementById('manualProgressFill').style.width = `${n*20}%`;
+  document.getElementById('manualProgressTrack').setAttribute('aria-valuenow',String(n));
+  document.getElementById('manualProgressTrack').setAttribute('aria-valuetext',`第 ${n} 步，共 5 步`);
+  if (n===2) {
+    const typeFilter=document.getElementById('fType');
+    const diffFilter=document.getElementById('fDiff');
+    const keyword=document.getElementById('fKeyword');
+    const previous=[typeFilter.value,diffFilter.value,keyword.value];
+    typeFilter.value=diffFilter.value=keyword.value='';
+    applyFilters();
+    const allowed=new Set(filtered.map(q=>q.id));
+    selectedOrder.filter(id=>!allowed.has(id)).forEach(id=>{ selectedIds.delete(id); delete selQuestions[id]; });
+    selectedOrder=selectedOrder.filter(id=>allowed.has(id));
+    [typeFilter.value,diffFilter.value,keyword.value]=previous;
+    applyFilters(); renderSelected();
+  }
+  if (n===3) renderSelected();
+  if (n===4) {
+    draftPreviewData ??= { header:newExamHeader(), appearance:loadAppearance() };
+    const groups = {};
+    selectedOrder.forEach(id => { const q=selQuestions[id]; groups[q.type]=(groups[q.type]||0)+1; });
+    document.getElementById('manualSummary').innerHTML = `<div class="exam-summary-table-wrap"><table class="exam-summary-table"><thead><tr><th>題型</th><th>題數</th><th>每題配分</th><th>小計</th></tr></thead><tbody>${Object.entries(groups).map(([type,count])=>`<tr><td>${QUESTION_TYPES[type]}</td><td>${count}</td><td>${TYPE_SCORES[type]}</td><td>${count*TYPE_SCORES[type]}</td></tr>`).join('')}</tbody><tfoot><tr><td colspan="4">共 ${selectedOrder.length} 題，${document.getElementById('totalScoreVal').textContent}</td></tr></tfoot></table></div>`;
+    mountInlineHeaderEditor(document.getElementById('manualHeaderFields'),draftPreviewData,()=>{},()=>goManualStep(4));
+    document.querySelector('#manualHeaderFields .ep-inline-header-actions')?.remove();
+  }
+  if (n===5) {
+    document.getElementById('manualPreviewTools').replaceChildren();
+    previewSelected();
+    const modal=document.getElementById('epModal');
+    document.getElementById('manualExamPreview').append(modal);
+    modal.classList.add('compose-inline-preview'); modal.removeAttribute('aria-modal');
+    modal.querySelectorAll('.modal-header button').forEach(button=>{
+      if(!button.classList.contains('modal-close') && button.id!=='epFullscreenToggle') document.getElementById('manualPreviewTools').append(button);
+    });
+    window._epClose=()=>goManualStep(4);
+  }
+  window.scrollTo({top:0,behavior:'smooth'});
+};
+document.getElementById('manualStep1').setAttribute('aria-current','step');
+renderScopeCatalog();
 </script>
 </body>
 </html>
