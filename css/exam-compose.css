@@ -148,9 +148,8 @@
 .result-q:last-child{border-bottom:none}
 .result-q:hover{background:#f8faff}
 .result-q .q-num{color:var(--text-muted);font-size:.9rem;width:26px;flex-shrink:0;text-align:right;line-height:1.6}
-.result-q .replace-question{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border:0;border-radius:6px;font-size:.82rem;line-height:1.5;background:#e8eef6;color:#365e91}
+.result-q .replace-question{display:inline-flex;align-items:center;margin-left:auto;padding:2px 8px;border:0;border-radius:6px;font-size:.82rem;line-height:1.5;background:#e8eef6;color:#365e91}
 .result-q .replace-question:hover{background:#d9e5f4;color:#264d80}
-.result-q .replace-question svg{display:block;flex:none}
 .result-q .q-body{flex:1;min-width:0;overflow-wrap:anywhere}
 .result-q .q-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;line-height:1.6}
 .result-q .q-meta .badge,.result-q .q-catalog-num,.result-q .q-source{padding:2px 8px;border-radius:6px;font-size:.82rem;line-height:1.5}

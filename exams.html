@@ -29,10 +29,21 @@
 #editModal.is-fullscreen .edit-fullscreen-icon-expand{display:none}
 #editModal.is-fullscreen .edit-fullscreen-icon-restore{display:block}
 .edit-q-item{display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--border-light);font-size:.9rem}
-.edit-q-section{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:7px 12px;background:var(--bg-base);border-top:1px solid var(--border);border-bottom:1px solid var(--border-light);font-size:.9rem;font-weight:700;color:var(--text-primary)}
+.edit-q-section{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:7px 12px;background:var(--bg-base);border-top:1px solid var(--border);border-bottom:1px solid var(--border-light);font-size:.9rem;font-weight:700;color:var(--text-primary);cursor:pointer}
 .edit-q-section:first-child{border-top:0}
+.edit-q-group{margin-bottom:14px;border:1px solid var(--border-light);border-radius:9px;overflow:hidden;background:#fff}
+.edit-q-group:last-child{margin-bottom:0}
+.edit-q-group .edit-q-section{border-top:0}
+.edit-q-group.is-collapsed .edit-q-section{border-bottom:0}
+#editQList{border:0!important;border-radius:0!important;background:transparent!important}
+.edit-q-section-toggle{display:inline-flex;align-items:center;gap:6px;padding:0;border:0;background:none;color:inherit;font:inherit;font-weight:inherit;text-align:left;cursor:pointer}
+.edit-q-section-toggle svg{flex:none;transition:transform .15s ease}
+.edit-q-section-toggle[aria-expanded="false"] svg{transform:rotate(-90deg)}
+.edit-q-section-toggle:focus-visible{outline:2px solid var(--primary);outline-offset:4px;border-radius:3px}
+.edit-q-items[hidden]{display:none}
 .edit-q-score{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;font-size:.9rem;font-weight:400}
-.edit-q-score input{width:64px;padding:3px 5px;text-align:center;font-size:.9rem}
+.edit-q-score input[type="number"]{width:68px;padding:3px 2px;text-align:center;font-size:.9rem;appearance:auto;-moz-appearance:auto}
+.edit-q-score input[type="number"]::-webkit-inner-spin-button,.edit-q-score input[type="number"]::-webkit-outer-spin-button{-webkit-appearance:auto;opacity:1;margin:0}
 .edit-type-order-list{display:grid;gap:7px}
 .edit-type-order-item{display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid var(--border);border-radius:6px;background:white;font-size:.88rem;cursor:grab}
 .edit-type-order-item:active{cursor:grabbing}
@@ -42,13 +53,33 @@
 .edit-type-order-handle{color:var(--text-muted);font-weight:700}
 .edit-q-item:last-child{border-bottom:none}
 .edit-q-item:hover{background:#faf8f5}
-.eq-num{color:var(--text-muted);font-size:.9rem;width:22px;flex-shrink:0;text-align:right}
+.eq-num{color:var(--text-muted);font-size:.9rem;width:18px;flex-shrink:0;text-align:right}
 .eq-qnum{font-family:var(--font-mono);font-size:.9rem;background:#e8eef6;color:var(--primary);padding:1px 5px;border-radius:var(--radius);flex-shrink:0}
 .eq-text{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.edit-q-display-toggle{display:inline-flex;align-items:center;gap:5px;margin-left:8px;white-space:nowrap}
+.edit-q-display-toggle svg{display:block;flex:none}
+.eq-full{display:none;flex:1;min-width:0;line-height:1.65;overflow-wrap:anywhere}
+#editQList.show-full .edit-q-item{align-items:flex-start;padding:12px;gap:10px}
+#editQList.show-full .eq-num{width:18px;line-height:1.6}
+#editQList.show-full .eq-text,#editQList.show-full .eq-compact-meta,#editQList.show-full .eq-compact-replace,#editQList.show-full .eq-remove-compact{display:none}
+#editQList.show-full .eq-full{display:block}
+.eq-full-meta{position:relative;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;padding-right:24px;line-height:1.6}
+.eq-full-meta .badge,.eq-full-num,.eq-full-source{padding:2px 8px;border-radius:6px;font-size:.82rem;line-height:1.5}
+.eq-full-num{font-family:var(--font-mono);background:#e8eef6;color:var(--primary)}
+.eq-full-source{background:#f1edfa;color:#68518f;overflow-wrap:anywhere}
+.eq-full-replace{display:inline-flex;align-items:center;padding:2px 8px;border:0;border-radius:6px;background:#e8eef6;color:#365e91;font-size:.82rem;cursor:pointer}
+.eq-full-meta .eq-full-replace{margin-left:auto}
+.eq-full-replace:hover{background:#d9e5f4;color:#264d80}
+.eq-full-replace:disabled{opacity:.55;cursor:wait}
+.eq-full-remove{position:absolute;top:2px;right:0}
+.eq-full-question{white-space:pre-wrap}
+.eq-full-answer{display:flex;align-items:flex-start;gap:8px;margin-top:9px;padding:7px 10px;border-radius:6px;background:#eef7f2;color:#176d49;line-height:1.6}
+.eq-full-answer-label{flex:none;font-size:.82rem;font-weight:700}
+.eq-full-answer-text{min-width:0;white-space:pre-wrap;overflow-wrap:anywhere}
 .edit-q-item .badge{font-size:.9rem;border-radius:var(--radius)}
 .eq-remove{background:none;border:none;color:var(--text-muted);cursor:pointer;padding:0 3px;font-size:.9rem;flex-shrink:0}
 .eq-remove:hover{color:var(--danger)}
-.drag-handle{cursor:grab;color:var(--text-muted);font-size:.9rem;flex-shrink:0}
+.drag-handle{cursor:grab;color:var(--text-muted);font-size:.9rem;flex-shrink:0;margin-right:-6px}
 .eq-item.dragging{opacity:.4}.eq-item.drag-over{border-top:2px solid var(--primary-light)}
 .edit-header-sample{padding:10px 14px;margin-bottom:12px;border-bottom:2px solid #333;color:#000;background:#f5f3ee;line-height:1.6}
 .edit-header-sample .ep-exam-header{border:0;padding:0;margin:0}
@@ -114,7 +145,8 @@
       </div>
       <div style="font-size:.9rem;color:var(--text-secondary);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
         <span>題目清單（可拖曳排序或移除）</span>
-        <span id="editQCount" style="font-weight:600;color:var(--primary)"></span>
+        <span id="editQCount" style="font-weight:600;color:var(--primary);margin-left:auto"></span>
+        <button class="btn btn-ghost btn-sm edit-q-display-toggle" id="editQDisplayToggle" type="button" onclick="toggleEditQDisplay()" aria-pressed="false" aria-controls="editQList"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"/></svg><span>完整顯示</span></button>
       </div>
       <div id="editQList" style="border:1px solid var(--border);border-radius:var(--radius);max-height:400px;overflow-y:auto;background:white"></div>
     </div>
@@ -135,6 +167,7 @@
 <script type="module">
 import { guardPage } from './js/auth-guard.js';
 import { confirmExamDeletion } from './js/confirm-exam-deletion.js';
+import { chooseExamReplacement } from './js/exam-question-replacement.js';
 import { showExamPreview, downloadExam, printWithPaperChoice, showHeaderSettings, loadHeader, loadAppearance, mountInlineHeaderEditor, buildHeaderHtml, fontStackById } from './js/exam-preview.js';
 window.openHeaderSettings = showHeaderSettings;
 window._activeNav = 'exams';
@@ -149,7 +182,9 @@ let allQuestions = {};  // id -> q
 let editExamId   = null;
 let editDraftExam = null;
 let editQOrder   = [];  // array of question ids
+const editCollapsedTypes = new Set();
 let editQMap     = {};  // id -> q
+let editReplaceBusy = false;
 let editTypeOrder = [];
 let typeOrderDraft = [];
 let draggedEditType = null;
@@ -335,6 +370,7 @@ window.openEdit = async (id) => {
   editQOrder.forEach(qid => { if (allQuestions[qid]) editQMap[qid] = allQuestions[qid]; });
   // Remove ids without question data
   editQOrder = editQOrder.filter(qid => editQMap[qid]);
+  editCollapsedTypes.clear();
   editTypeOrder = [...new Set([...(e.typeOrder || []), ...EDIT_TYPE_ORDER])];
   editQOrder = orderedEditTypes().flatMap(type => editQOrder.filter(id => editQMap[id].type === type));
 
@@ -342,6 +378,7 @@ window.openEdit = async (id) => {
   document.getElementById('editExamTitle').value  = e.title || '';
   document.getElementById('editExamDescription').value = e.description || '';
   renderEditQList(e.typeScores||{});
+  setEditQDisplay(false);
   document.getElementById('editTypeOrderModal').classList.add('hidden');
   document.getElementById('editHeaderPanel').classList.add('hidden');
   document.getElementById('editHeaderToggle').setAttribute('aria-expanded', 'false');
@@ -470,12 +507,42 @@ window.normalizeEditScore = (input, type) => {
 
 function updateEditTotal() {
   const scores = getCurrentEditScores();
+  const typeTotals = {};
   const total = editQOrder.reduce((sum, id) => {
     const q = editQMap[id];
-    return sum + (scores[q?.type] || 0) * (q?.type === 'T4' && editDraftExam?.scoreUnits?.T4 === 'blank' ? Math.max(1, parseInt(q.answerCount, 10) || 1) : 1);
+    const points = (scores[q?.type] || 0) * (q?.type === 'T4' && editDraftExam?.scoreUnits?.T4 === 'blank' ? Math.max(1, parseInt(q.answerCount, 10) || 1) : 1);
+    if (q) typeTotals[q.type] = (typeTotals[q.type] || 0) + points;
+    return sum + points;
   }, 0);
   document.getElementById('editQCount').textContent = `${editQOrder.length} 題 / 共 ${total} 分`;
+  Object.entries(typeTotals).forEach(([type, points]) => {
+    const label = document.getElementById(`escore-total-${type}`);
+    if (label) label.textContent = points;
+  });
 }
+
+function setEditQDisplay(full) {
+  document.getElementById('editQList').classList.toggle('show-full', full);
+  const button = document.getElementById('editQDisplayToggle');
+  button.setAttribute('aria-pressed', String(full));
+  button.innerHTML = full
+    ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h11M4 17h16"/></svg><span>精簡顯示</span>'
+    : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"/></svg><span>完整顯示</span>';
+}
+window.toggleEditQDisplay = () => {
+  setEditQDisplay(!document.getElementById('editQList').classList.contains('show-full'));
+};
+
+window.toggleEditQSection = type => {
+  const items = document.getElementById(`editQItems-${type}`);
+  const button = document.querySelector(`.edit-q-section-toggle[data-type="${type}"]`);
+  if (!items || !button) return;
+  items.hidden = !items.hidden;
+  items.parentElement.classList.toggle('is-collapsed', items.hidden);
+  button.setAttribute('aria-expanded', String(!items.hidden));
+  if (items.hidden) editCollapsedTypes.add(type);
+  else editCollapsedTypes.delete(type);
+};
 
 function renderEditQList(typeScores = getCurrentEditScores()) {
   const container = document.getElementById('editQList');
@@ -488,8 +555,10 @@ function renderEditQList(typeScores = getCurrentEditScores()) {
     const ids = editQOrder.filter(id => editQMap[id]?.type === type);
     const score = editScoreValue(typeScores[type], type);
     const byBlank = type === 'T4' && editDraftExam?.scoreUnits?.T4 === 'blank';
-    const countLabel = byBlank ? `${ids.length} 題，共 ${ids.reduce((sum, id) => sum + Math.max(1, parseInt(editQMap[id]?.answerCount, 10) || 1), 0)} 格` : `${ids.length} 題`;
-    return `<div class="edit-q-section"><span>${EDIT_ROMANS[sectionIndex] || sectionIndex + 1}、${EDIT_TYPE_LABELS[type] || type}（${countLabel}）</span><label class="edit-q-score">每${byBlank ? '格' : '題'} <input class="form-control" type="number" id="escore-${type}" value="${score}" min="0.5" max="99.5" step="0.5" oninput="updateEditTotal()" onchange="normalizeEditScore(this,'${type}')"> 分</label></div>` + ids.map((id, idx) => {
+    const units = byBlank ? ids.reduce((sum, id) => sum + Math.max(1, parseInt(editQMap[id]?.answerCount, 10) || 1), 0) : ids.length;
+    const countLabel = byBlank ? `${ids.length} 題，共 ${units} 格` : `${ids.length} 題`;
+    const collapsed = editCollapsedTypes.has(type);
+    return `<div class="edit-q-group${collapsed ? ' is-collapsed' : ''}"><div class="edit-q-section" onclick="if (!event.target.closest('input')) toggleEditQSection('${type}')"><button class="edit-q-section-toggle" type="button" data-type="${type}" aria-expanded="${!collapsed}" aria-controls="editQItems-${type}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg><span>${EDIT_ROMANS[sectionIndex] || sectionIndex + 1}、${EDIT_TYPE_LABELS[type] || type}（${countLabel}）</span></button><label class="edit-q-score">每${byBlank ? '格' : '題'} <input class="form-control" type="number" id="escore-${type}" value="${score}" min="0.5" max="99.5" step="0.5" oninput="updateEditTotal()" onchange="normalizeEditScore(this,'${type}')"> 分，共 <span id="escore-total-${type}">${units * score}</span> 分</label></div><div class="edit-q-items" id="editQItems-${type}"${collapsed ? ' hidden' : ''}>` + ids.map((id, idx) => {
       const q = editQMap[id];
       const questionLine = [
         q.text || '—',
@@ -498,17 +567,20 @@ function renderEditQList(typeScores = getCurrentEditScores()) {
           : []),
         q.tail || ''
       ].filter(Boolean).join(q.type === 'T2' || q.type === 'T3' ? ' ' : '　');
+      const fullQuestion = `${q.type === 'T5' ? UI.matchingQuestionHtml(q.text) : UI.questionHtml(q.text || '—')}${(q.type === 'T2' || q.type === 'T3') && q.options?.length ? ' ' + q.options.map((option, index) => `(${String.fromCharCode(65 + index)})${UI.questionHtml(option)}`).join(' ') : ''}${(q.type === 'T2' || q.type === 'T3') && q.tail ? (String(q.tail).trim() === '。' ? '' : ' ') + UI.questionHtml(q.tail) : ''}`;
       return `<div class="edit-q-item eq-item" draggable="true" data-id="${id}"
       ondragstart="eqDragStart(event,'${id}')" ondragover="eqDragOver(event,'${id}')"
       ondrop="eqDrop(event,'${id}')" ondragend="eqDragEnd()">
       <span class="drag-handle">⠿</span>
       <span class="eq-num">${idx+1}.</span>
-      ${q.qnum?`<span class="eq-qnum">${q.qnum}</span>`:''}
-      <span style="flex-shrink:0">${UI.typeBadge(q.type)}</span>
+      ${q.qnum?`<span class="eq-qnum eq-compact-meta">${UI.escapeHtml(q.qnum)}</span>`:''}
+      <span class="eq-compact-meta" style="flex-shrink:0">${UI.typeBadge(q.type)}</span>
       <span class="eq-text" title="${UI.escapeHtml(questionLine)}">${UI.escapeHtml(questionLine)}</span>
-      <button class="eq-remove" onclick="removeEditQ('${id}')" title="從試卷移除">✕</button>
+      <div class="eq-full"><div class="eq-full-meta"><span class="eq-full-num">${UI.escapeHtml(q.qnum || '—')}</span>${UI.typeBadge(q.type)}${UI.diffBadge(q.difficulty)}<span class="eq-full-source">來源：${UI.escapeHtml(q.source || '未註明')}</span><button class="eq-full-replace" type="button" onclick="replaceEditQ('${id}',this)" title="更換此題">換題</button><button class="eq-remove eq-full-remove" type="button" onclick="removeEditQ('${id}')" title="從試卷移除" aria-label="從試卷移除">✕</button></div><div class="eq-full-question">${fullQuestion}</div>${q.type !== 'T2' && q.type !== 'T3' && q.tail ? `<div>${UI.questionHtml(q.tail)}</div>` : ''}<div class="eq-full-answer"><span class="eq-full-answer-label">答案</span><span class="eq-full-answer-text">${UI.questionHtml(q.answer || '—')}</span></div></div>
+      <button class="eq-full-replace eq-compact-replace" type="button" onclick="replaceEditQ('${id}',this)" title="更換此題">換題</button>
+      <button class="eq-remove eq-remove-compact" onclick="removeEditQ('${id}')" title="從試卷移除">✕</button>
     </div>`;
-    }).join('');
+    }).join('') + '</div></div>';
   }).join('');
   updateEditTotal();
 }
@@ -517,6 +589,38 @@ window.removeEditQ = (id) => {
   const scores = getCurrentEditScores();
   editQOrder = editQOrder.filter(x => x!==id);
   renderEditQList(scores);
+};
+
+window.replaceEditQ = async (id, button) => {
+  const original = editQMap[id];
+  if (!original || editReplaceBusy) return;
+  editReplaceBusy = true;
+  button.disabled = true;
+  const draft = editDraftExam;
+  const scores = getCurrentEditScores();
+  const list = document.getElementById('editQList');
+  const scrollTop = list.scrollTop;
+  try {
+    const { question, sameSection } = await chooseExamReplacement(original, editQOrder);
+    if (editDraftExam !== draft) return;
+    if (!question) {
+      UI.toast(original.type === 'T4' ? '同冊沒有未使用且格數相同的填空題' : '同冊沒有未使用的同題型題目', 'warning');
+      return;
+    }
+    const index = editQOrder.indexOf(id);
+    if (index < 0 || editQOrder.includes(question.id)) return;
+    editQOrder[index] = question.id;
+    editQMap[question.id] = question;
+    allQuestions[question.id] = question;
+    renderEditQList(scores);
+    list.scrollTop = scrollTop;
+    UI.toast(sameSection ? '已更換同章節題目' : '原章節無可用題目，已從同冊更換', 'success');
+  } catch (error) {
+    UI.toast('換題失敗：' + error.message, 'danger');
+  } finally {
+    editReplaceBusy = false;
+    button.disabled = false;
+  }
 };
 
 function getCurrentEditScores() {
