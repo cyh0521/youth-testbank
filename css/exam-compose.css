@@ -1,4 +1,4 @@
-/* 電腦選題與手動選題共用的介面樣式。 */
+/* 三種選題方式共用的介面樣式。 */
 
 .compose-layout{display:block}
 .compose-panel[hidden]{display:none}
@@ -167,3 +167,6 @@
 .score-input{width:56px;font-size:.88rem;padding:3px 6px;text-align:center}
 .exam-save-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:14px 16px;background:#e8eef6;border-radius:var(--radius-lg);border:1px solid var(--border);margin-top:16px}
 .exam-save-bar .form-control{flex:1;min-width:200px}
+
+#chapterTree .chapter-item:not(.is-disabled){cursor:pointer}
+#chapterTree .chapter-item>label,#chapterTree .chapter-item>span,#chapterTree .chapter-item>input{cursor:inherit}

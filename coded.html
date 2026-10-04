@@ -4,103 +4,48 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>編碼選題 — 幼獅題庫系統</title>
 <link rel="stylesheet" href="css/theme.css">
+<link rel="stylesheet" href="css/process-bar.css">
 <script>if(localStorage.getItem("sidebarCollapsed")==="1")document.documentElement.classList.add("sidebar-collapsed");</script>
+<link rel="stylesheet" href="css/exam-compose.css?v=20261004-scope-cursor">
 <style>
-.coded-layout{display:grid;grid-template-columns:380px 1fr;gap:16px;align-items:start}
-@media(max-width:960px){.coded-layout{grid-template-columns:1fr}}
-
-/* 左側輸入區 */
-.input-panel .card-body{padding:16px}
-.section-title{font-size:.86rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 8px;display:flex;align-items:center;gap:6px}
-.section-title:first-child{margin-top:0}
-
-/* 題號輸入框 */
-.qnum-input-wrap{display:flex;gap:8px;align-items:stretch}
-.qnum-input{
-  flex:1;font-family:var(--font-mono);font-size:1.1rem;font-weight:700;
-  letter-spacing:.12em;text-align:center;padding:10px 12px;
-  border:2px solid var(--border);border-radius:var(--radius);
-  background:white;color:var(--primary);transition:border-color .15s;
-}
-.qnum-input:focus{outline:none;border-color:var(--primary-light);box-shadow:0 0 0 3px rgba(44,95,138,.12)}
-.qnum-input::placeholder{color:var(--text-muted);letter-spacing:normal;font-size:.88rem;font-weight:400}
-.add-btn{padding:10px 16px;background:#246cec;color:white;border:none;border-radius:var(--radius);font-size:.9rem;cursor:pointer;font-family:var(--font-sans);font-weight:600;transition:background-color .15s ease;flex-shrink:0}
-.add-btn:hover:not(:disabled){background:#195dd3}
-.add-btn:disabled{opacity:.5;cursor:not-allowed}
-
-/* 批次輸入 */
-.batch-textarea{
-  width:100%;min-height:100px;font-family:var(--font-mono);font-size:.88rem;
-  letter-spacing:.06em;border:1px solid var(--border);border-radius:var(--radius);
-  padding:8px 12px;resize:vertical;line-height:1.8;color:var(--primary);
-}
-.batch-textarea:focus{outline:none;border-color:var(--primary-light);box-shadow:0 0 0 3px rgba(44,95,138,.12)}
-
-/* 題號提示 */
-.qnum-hint{
-  font-size:.86rem;color:var(--text-muted);margin-top:6px;
-  display:flex;align-items:center;gap:4px;
-}
-.hint-ok{color:var(--success);font-weight:600}
-.hint-err{color:var(--danger);font-weight:600}
-.hint-warn{color:var(--warning);font-weight:600}
-
-/* 最近使用 */
-.recent-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
-.chip{
-  font-family:var(--font-mono);font-size:.85rem;font-weight:700;
-  background:#e8eef6;color:var(--primary);border:1px solid var(--border);
-  border-radius:4px;padding:2px 7px;cursor:pointer;transition:background-color .15s ease,color .15s ease;
-  letter-spacing:.06em;
-}
-.chip:hover{background:var(--primary);color:white}
-
-/* 已選清單 */
-.sel-panel{position:sticky;top:76px}
-.sel-list{max-height:520px;overflow-y:auto}
-.sel-item{
-  display:flex;align-items:flex-start;gap:8px;
-  padding:9px 12px;border-bottom:1px solid var(--border-light);
-  font-size:.9rem;transition:background .1s;
-}
-.sel-item:last-child{border-bottom:none}
-.sel-item:hover{background:#faf8f5}
-.sel-num-badge{
-  font-family:var(--font-mono);font-size:.84rem;font-weight:700;
-  background:#e8eef6;color:var(--primary);border-radius:3px;
-  padding:1px 5px;flex-shrink:0;margin-top:2px;letter-spacing:.04em;
-}
-.sel-order{color:var(--text-muted);font-size:.84rem;width:22px;flex-shrink:0;text-align:right;padding-top:3px}
-.sel-body{flex:1;min-width:0}
-.sel-text{line-height:1.5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:2px}
-.sel-meta{display:flex;gap:6px;align-items:center}
-.sel-remove{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:.9rem;padding:0 3px;flex-shrink:0;line-height:1}
-.sel-remove:hover{color:var(--danger)}
-.drag-handle{cursor:grab;color:var(--text-muted);font-size:.88rem;flex-shrink:0;padding-top:3px}
+.coded-layout{display:block}
+.coded-panel[hidden]{display:none}
+.coded-panel .card-header{min-height:60px;padding:10px 20px;gap:12px;flex-wrap:wrap}
+.coded-panel .card-header h2{font-size:1.2rem;font-weight:700;letter-spacing:.01em}
+.coded-panel .card-body{padding:18px 20px}
+.selection-layout{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
+.selection-layout .card{min-width:0}
+.bank-list,.selected-list{max-height:650px;overflow-y:auto;padding:18px 20px;background:#fff}
+.result-section-title{cursor:pointer}
+.coded-panel .result-type-toggle{display:flex;width:100%;padding:9px 12px;box-sizing:border-box}
+.coded-panel .result-section-title:has(.result-type-toggle){padding:0}
+.result-list{border:0;border-radius:0}
+.coded-panel .result-q{gap:6px}
+.coded-panel .result-q .q-num{width:auto;min-width:18px;text-align:left}
+.result-q.selected{background:#eaf1f8}
+.result-q.selected:hover{background:#e2ebf4}
+.drag-handle{cursor:grab;color:var(--text-muted);flex:none;line-height:1.65}
 .drag-handle:active{cursor:grabbing}
-.sel-item.dragging{opacity:.4}
-.sel-item.drag-over{border-top:2px solid var(--primary-light)}
-
-/* 空狀態 */
-.empty-sel{text-align:center;padding:40px 16px;color:var(--text-muted)}
-.empty-sel .ei{font-size:2.5rem;opacity:.25;margin-bottom:10px}
-
-/* 分數設定 */
-.score-cfg{display:flex;flex-wrap:wrap;gap:8px;padding:10px 12px;background:var(--bg-base);border-top:1px solid var(--border-light);font-size:.88rem}
-.sc-row{display:flex;align-items:center;gap:4px;white-space:nowrap}
-.sc-inp{width:48px;font-size:.88rem;padding:3px 5px;text-align:center;border:1px solid var(--border);border-radius:var(--radius)}
-
-.total-bar{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;font-size:.86rem;font-weight:600;color:var(--primary);border-top:1px solid var(--border-light)}
-
-/* 快速查詢結果 */
-.lookup-result{
-  background:white;border:1px solid var(--border);border-radius:var(--radius);
-  padding:10px 13px;margin-top:8px;font-size:.9rem;line-height:1.6;
-  display:none;
-}
-.lookup-result.show{display:block}
-.lookup-result.found{border-color:var(--success);background:#f0fff4}
-.lookup-result.notfound{border-color:var(--danger);background:#fff5f5}
+#selList .result-q:has(.dragging){opacity:.4;background:#f0f4ff}
+#selList .result-q.drag-over{box-shadow:inset 0 2px var(--primary-light)}
+.si-remove{margin-left:auto}
+.coded-filters{display:flex;align-items:center;gap:8px;flex:1;flex-wrap:wrap;justify-content:flex-end;min-width:0}
+.coded-filters .form-group{flex:0 1 110px;min-width:95px;margin:0!important}
+.coded-filters .form-group:last-child{flex:1 1 120px;max-width:180px}
+.coded-filters .form-control{font-size:.86rem;padding:5px 8px}
+.score-cfg{padding:18px 20px;background:#fff}
+#codedPanel3>.card{width:calc((100% - 16px)/2)}
+#codedPanel3 .score-cfg{padding:0}
+#codedPanel3 .total-score-bar{margin:14px 0 0;justify-content:flex-start}
+@media(max-width:1100px){#codedPanel3>.card{width:100%}}
+.total-score-bar{display:flex;align-items:center;justify-content:space-between;margin:0 20px 18px;padding:13px 14px;border-radius:9px;background:#e1f3e9;color:#176d49;font-weight:700}
+.coded-panel .btn-auto-score{background:#e0edff;color:#2458a6;border-color:transparent}
+.coded-panel .btn-auto-score:hover{background:#cbdfff;color:#174889}
+.coded-panel .btn-auto-score:focus-visible{outline:2px solid #3478f6;outline-offset:2px}
+@media(max-width:1100px){.selection-layout{grid-template-columns:1fr}}
+@media(max-width:760px){.coded-panel .card-header,.coded-panel .card-body,.bank-list,.selected-list,.score-cfg{padding-left:14px;padding-right:14px}}
+.coded-input-cards{display:grid;gap:16px;min-width:0}.coded-input-cards .form-group{margin-bottom:0}.coded-input-row{display:flex;gap:8px;align-items:center}.coded-input-row .form-control{flex:1;min-width:0}#lookupResult:empty{display:none}#lookupResult{margin-top:12px}#codedPanel2 .selection-layout{grid-template-columns:minmax(280px,1fr) minmax(0,1.4fr)}@media(max-width:1100px){#codedPanel2 .selection-layout{grid-template-columns:1fr}}
+.coded-single-input{align-items:stretch}.coded-single-input .form-control{font-size:.86rem;padding:5px 8px}.coded-single-input .btn{font-size:.86rem;padding:5px 10px;white-space:nowrap}#qnumHint:empty,#batchHint:empty{display:none}
 </style>
 </head>
 <body>
@@ -115,79 +60,26 @@
       <div class="topbar-breadcrumb"><span>首頁</span> › 編碼選題</div>
     </div>
     <div class="page-content">
-      <div class="coded-layout">
-
-        <!-- 左側：輸入 -->
-        <div>
-          <div class="card input-panel">
-            <div class="card-header"><h2>🔢 輸入題目編號</h2></div>
-            <div class="card-body">
-
-              <!-- 單題輸入 -->
-              <div class="section-title">單題加入</div>
-              <div class="qnum-input-wrap">
-                <input class="qnum-input" type="text" id="qnumInput"
-                       maxlength="5" placeholder="輸入 5 位數題號"
-                       oninput="onQnumInput()"
-                       onkeydown="if(event.key==='Enter')addByCode()">
-                <button class="add-btn" id="addBtn" onclick="addByCode()" disabled>加入</button>
-              </div>
-              <div class="qnum-hint" id="qnumHint">輸入 1～5 位數字，如「42」或「00042」</div>
-              <div class="lookup-result" id="lookupResult"></div>
-
-              <!-- 最近使用 -->
-              <div id="recentWrap" style="display:none">
-                <div class="section-title" style="margin-top:10px">最近加入</div>
-                <div class="recent-chips" id="recentChips"></div>
-              </div>
-
-              <!-- 批次輸入 -->
-              <div class="section-title" style="margin-top:16px">批次輸入</div>
-              <p style="font-size:.86rem;color:var(--text-muted);margin-bottom:8px">
-                每行一個題號，或以逗號/空白分隔。例：<br>
-                <span style="font-family:var(--font-mono);color:var(--primary)">00001, 00042, 00156</span>
-              </p>
-              <textarea class="batch-textarea" id="batchInput"
-                placeholder="00001&#10;00042&#10;00156&#10;..."></textarea>
-              <div style="display:flex;gap:8px;margin-top:8px">
-                <button class="btn btn-outline btn-sm" onclick="addBatch()">批次加入</button>
-                <button class="btn btn-ghost btn-sm" onclick="document.getElementById('batchInput').value=''">清除</button>
-              </div>
-              <div style="font-size:.86rem;color:var(--text-muted);margin-top:6px" id="batchHint"></div>
-
-              <!-- 清除全部 -->
-              <div style="margin-top:16px;border-top:1px solid var(--border-light);padding-top:14px">
-                <button class="btn btn-ghost btn-sm w-full" onclick="clearAll()" id="clearAllBtn" disabled>🗑 清除全部已選題目</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 右側：已選 -->
-        <div class="sel-panel">
+<section class="import-progress" aria-label="編碼選題流程" style="--process-step-count:5;--process-initial-width:20%"><div class="steps" role="list"><div class="step active" id="codedStep1" role="listitem"><span class="step-num">1</span><span class="step-copy"><strong>出題範圍</strong></span></div><div class="step" id="codedStep2" role="listitem"><span class="step-num">2</span><span class="step-copy"><strong>編碼選題</strong></span></div><div class="step" id="codedStep3" role="listitem"><span class="step-num">3</span><span class="step-copy"><strong>題型與配分</strong></span></div><div class="step" id="codedStep4" role="listitem"><span class="step-num">4</span><span class="step-copy"><strong>試卷設定</strong></span></div><div class="step" id="codedStep5" role="listitem"><span class="step-num">5</span><span class="step-copy"><strong>預覽試卷</strong></span></div></div><div class="import-progress-track" id="codedProgressTrack" role="progressbar" aria-label="編碼選題進度" aria-valuemin="1" aria-valuemax="5" aria-valuenow="1"><div class="import-progress-fill" id="codedProgressFill"></div></div></section><div class="coded-layout"><section id="codedPanel1" class="coded-panel"><div id="examScope"></div></section><section id="codedPanel2" class="coded-panel" hidden><div class="selection-layout"><div class="coded-input-cards"><section class="card"><div class="card-header"><div class="scope-title"><h2>單題編碼選題</h2><span class="scope-available" id="bankCount">︱可選 0 題</span></div></div>
+<div class="card-body"><div hidden><select id="fType"></select><select id="fDiff"></select><input id="fKeyword"></div>
+<div class="form-group"><label class="sr-only" for="qnumInput">題目編碼</label><div class="coded-input-row coded-single-input"><input class="form-control" id="qnumInput" inputmode="numeric" maxlength="5" placeholder="填入所選命題範圍內的題目編碼，如 00042。" oninput="onQnumInput()" onkeydown="if(event.key==='Enter')addByCode()"><button type="button" class="btn btn-primary" id="addBtn" onclick="addByCode()" disabled>加入</button><button type="button" class="btn btn-ghost" onclick="clearCodedInput()">清除</button></div><p class="difficulty-note" id="qnumHint" role="status"></p><div id="lookupResult"></div></div>
+</div></section><section class="card"><div class="card-header"><div class="scope-title"><h2>批次編碼選題</h2><span class="type-title-note">每行一個編碼，或以空白、逗號、頓號分隔。</span></div></div><div class="card-body"><div class="form-group"><label class="sr-only" for="batchInput">批次題目編碼</label><textarea class="form-control" id="batchInput" rows="6" placeholder="例：&#10;00125, 00136, 00159&#10;00237&#10;00269&#10;00398"></textarea><div class="coded-input-row"><button type="button" class="btn btn-outline btn-sm" onclick="addBatch()">批次加入</button><button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('batchInput').value=''">清除輸入</button></div><p class="difficulty-note" id="batchHint" role="status"></p></div>
+</div></section></div>
           <div class="card">
             <div class="card-header">
-              <h2>📋 已選題目</h2>
-              <span style="font-size:.88rem;color:var(--text-secondary)" id="selCountLabel">0 題</span>
+              <div class="scope-title"><h2>已選題目</h2><span class="scope-available" id="selCountLabel">︱已選 0 題</span></div>
+<div class="scope-header-actions"><button class="btn btn-previous btn-sm" onclick="goCodedStep(1)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10.5 6-6 6 6 6"/><path d="m18 6-6 6 6 6" stroke-opacity=".5"/></svg>上一步</button><button class="btn btn-primary btn-sm" onclick="goCodedStep(3)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m13.5 6 6 6-6 6"/><path d="m6 6 6 6-6 6" stroke-opacity=".5"/></svg>下一步：題型與配分</button></div>
             </div>
-            <div class="sel-list" id="selList">
-              <div class="empty-sel">
-                <div class="ei">🔢</div>
-                <p style="font-size:.9rem">輸入題目編號後加入</p>
-                <p style="font-size:.85rem;margin-top:4px">編號可從「題目維護」頁面查詢</p>
-              </div>
+            <div id="selList" class="selected-list">
+              <div style="text-align:center;padding:32px;color:var(--text-muted);font-size:.9rem">輸入編碼後點擊「加入」將題目加入試卷</div>
             </div>
-            <div class="score-cfg" id="scoreCfg" style="display:none"></div>
-            <div class="total-bar" id="totalBar" style="display:none">
-              <span>預估總分</span>
-              <span id="totalScoreVal">0 分</span>
-            </div>
-            <div style="padding:10px 12px;border-top:1px solid var(--border-light);display:flex;gap:8px">
-              <button class="btn btn-accent w-full" onclick="openSaveModal()" id="saveBtn" disabled>💾 儲存為試卷</button>
-            </div>
+</div><div class="wizard-actions"><button type="button" class="btn btn-ghost btn-sm" onclick="clearCodedSelection()">清除全部已選題目</button><button class="btn btn-outline btn-sm" id="shuffleBtn" onclick="shuffleSelected()" disabled>亂數排序</button></div></div></section><section id="codedPanel3" class="coded-panel" hidden><section class="card"><div class="card-header"><div class="scope-title"><h2>每題配分</h2><span class="type-title-note">︱自動配分或手動調整</span></div><div class="scope-header-actions"><button class="btn btn-previous btn-sm" onclick="goCodedStep(2)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10.5 6-6 6 6 6"/><path d="m18 6-6 6 6 6" stroke-opacity=".5"/></svg>上一步</button><button class="btn btn-primary btn-sm" onclick="goCodedStep(4)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m13.5 6 6 6-6 6"/><path d="m6 6 6 6-6 6" stroke-opacity=".5"/></svg>下一步：試卷設定</button></div></div><div class="type-card-body"><div class="score-cfg" id="scoreCfg"></div><div class="total-score-bar" id="totalScoreBar"><span id="totalScoreVal">總計：0 分</span></div><div class="score-tools"><label class="integer-score-option"><input type="checkbox" id="codedIntegerScores" checked onchange="toggleCodedIntegerScores()">以整數配分（未勾選時以 0.5 分為調整單位）</label><div class="score-tools-actions"><button type="button" class="btn btn-ghost btn-sm" onclick="clearCodedScores()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 3 5 5a2 2 0 0 1 0 3L11 21H6l-4-4a2 2 0 0 1 0-3L13 3a2 2 0 0 1 3 0zM8 8l8 8M11 21h11"/></svg>清除配分</button><button class="btn btn-auto-score btn-sm" onclick="autoCodedScores()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3-1.9 5.8L4 10l5.8 1.9L12 18l1.9-5.8L20 10l-5.8-1.9zM5 18l-.7 1.4L3 20l1.3.6L5 22l.7-1.4L7 20l-1.3-.6zM19 16l-.7 1.4L17 18l1.3.6L19 20l.7-1.4L21 18l-1.3-.6z"/></svg>自動配分</button></div></div></div></section></section><section id="codedPanel4" class="coded-panel" hidden>
+          <div class="scope-layout settings-layout">
+            <section class="card"><div class="card-header"><div class="scope-title"><h2>試卷檢視</h2><span class="type-title-note">︱確認題型、題數與配分，可拖曳整列調整排序</span></div><div class="scope-header-actions"><button type="button" class="btn btn-previous btn-sm" onclick="goCodedStep(3)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10.5 6-6 6 6 6"/><path d="m18 6-6 6 6 6" stroke-opacity=".5"/></svg>上一步</button><button type="button" class="btn btn-primary btn-sm" onclick="goCodedStep(5)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m13.5 6 6 6-6 6"/><path d="m6 6 6 6-6 6" stroke-opacity=".5"/></svg>下一步：預覽試卷</button></div></div><div class="type-card-body"><div id="codedSummary"></div></div></section>
+            <section class="card"><div class="card-header"><div class="scope-title"><h2>試卷表頭</h2><span class="type-title-note">︱設定文字與欄位位置</span></div></div><div class="type-card-body"><div class="settings-header-sample" id="codedHeaderSample" aria-label="試卷表頭預覽"></div><div id="codedHeaderFields"></div></div></section>
           </div>
-        </div>
-      </div>
+        </section>
+        <section id="codedPanel5" class="coded-panel" hidden><div class="scope-layout"><section class="card" style="grid-column:1/-1"><div class="card-header"><div class="scope-title"><h2>預覽試卷</h2><span class="type-title-note">︱確認試卷呈現</span></div><div class="scope-header-actions"><button type="button" class="btn btn-previous btn-sm" onclick="goCodedStep(4)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10.5 6-6 6 6 6"/><path d="m18 6-6 6 6 6" stroke-opacity=".5"/></svg>上一步</button></div></div><div id="codedExamPreview"></div></section></div></section></div>
     </div>
   </div>
 </div>
@@ -215,330 +107,433 @@
 </div>
 
 <script type="module">
+import { renderScopePanel, mountScopeSelector } from './js/exam-scope.js';
 import { guardPage } from './js/auth-guard.js';
-import { loadAppearance, newExamHeader } from './js/exam-preview.js';
+import { showExamPreview, showHeaderSettings, newExamHeader, loadAppearance, mountInlineHeaderEditor, buildHeaderHtml, fontStackById } from './js/exam-preview.js';
+import { allocateTypeScores } from './js/score-allocation.js';
 window._activeNav = 'coded';
 const user = await guardPage(['admin','manager','teacher']);
 if (!user) throw new Error('not auth');
 
-// ── 資料 ─────────────────────────────────────────
-let allQs = {};        // qnum -> question object（建立查詢索引）
-let selectedOrder = []; // 依序的 qnum 陣列
-let selQuestions = {};  // qnum -> question
-let recentNums = [];    // 最近輸入的題號
+// ── 初始化 ────────────────────────────────────────
+await initTextbookCache();
+document.getElementById('examScope').innerHTML = renderScopePanel({ nextAction:'goCodedStep(2)', nextLabel:'編碼選題' });
+const cSubject = document.getElementById('cSubject');
+cSubject.innerHTML = tbSubjectOptions();
 
-const TYPE_SCORES = { T1:2, T2:2, T3:4, T4:2, T5:2, T6:10 };
-
-async function init() {
-  // 不預先載入全部題目，輸入題號時才查詢
-  document.getElementById('qnumHint').textContent =
-    '輸入 1～5 位數字（如「42」或「00042」）';
-}
-
-// ── 題號輸入處理 ──────────────────────────────────
-window.onQnumInput = async () => {
-  const raw = document.getElementById('qnumInput').value.trim();
-  const btn = document.getElementById('addBtn');
-  const hint = document.getElementById('qnumHint');
-  const result = document.getElementById('lookupResult');
-
-  if (!raw) {
-    btn.disabled = true;
-    hint.innerHTML = '輸入 1～5 位數字（如「42」或「00042」）';
-    result.className = 'lookup-result';
-    return;
-  }
-
-  // 只允許數字
-  if (!/^\d+$/.test(raw)) {
-    btn.disabled = true;
-    hint.innerHTML = '<span class="hint-err">✕ 請輸入純數字</span>';
-    result.className = 'lookup-result';
-    return;
-  }
-
-  const padded = raw.padStart(5, '0');
-  // 先查快取，沒有才向 Firestore 查
-  let q = allQs[padded];
-  if (!q) {
-    hint.innerHTML = '<span style="color:var(--text-muted)">查詢中…</span>';
-    btn.disabled = true;
-    try {
-      const qs = await DataService.getQuestions({ qnum: padded });
-      q = qs[0] || null;
-      if (q) allQs[padded] = q;  // 快取起來
-    } catch(e) {
-      hint.innerHTML = `<span class="hint-err">✕ 查詢失敗：${e.message}</span>`;
-      return;
-    }
-  }
-
-  if (!q) {
-    btn.disabled = true;
-    hint.innerHTML = `<span class="hint-err">✕ 找不到編號 ${padded}</span>`;
-    result.className = 'lookup-result notfound show';
-    result.innerHTML = `❌ 題號 <strong style="font-family:var(--font-mono)">${padded}</strong> 不存在，請確認編號是否正確`;
-    return;
-  }
-
-  if (selectedOrder.includes(padded)) {
-    btn.disabled = true;
-    hint.innerHTML = `<span class="hint-warn">⚠ 題號 ${padded} 已在清單中</span>`;
-    result.className = 'lookup-result show';
-    result.innerHTML = `⚠ 題號 <strong style="font-family:var(--font-mono)">${padded}</strong> 已加入`;
-    return;
-  }
-
-  btn.disabled = false;
-  hint.innerHTML = `<span class="hint-ok">✓ 找到題目</span>`;
-  result.className = 'lookup-result found show';
-  result.innerHTML = `
-    <div style="display:flex;align-items:flex-start;gap:8px">
-      <span style="font-family:var(--font-mono);font-weight:700;color:var(--primary);flex-shrink:0">${padded}</span>
-      <div>
-        <div style="line-height:1.5;margin-bottom:4px">${UI.questionHtml(q.text||'—')}</div>
-        <div style="display:flex;gap:6px">${UI.typeBadge(q.type)}${UI.diffBadge(q.difficulty)}<span style="font-size:.84rem;color:var(--text-muted)">第${parseInt(q.chapterNum)||'?'}章</span></div>
-      </div>
-    </div>`;
+// ── 狀態 ─────────────────────────────────────────
+let allQs = [], filtered = [], pageSize = 30, curPage = 1;
+let selectedIds = new Set();
+let selectedOrder = [];
+let settingsTypeOrder = ['T1','T2','T3','T4','T5','T6'];
+let selQuestions = {};
+let draftPreviewData = null;
+window.openHeaderSettings = () => {
+  draftPreviewData ??= { header:newExamHeader(), appearance:loadAppearance() };
+  showHeaderSettings(draftPreviewData);
 };
 
-window.addByCode = () => {
+function getCodedScopeQuestions() { return scopeSelector.getQuestions(); }
+
+window.applyFilters = () => {
+  const df  = document.getElementById('fDiff').value;
+  const kw  = document.getElementById('fKeyword').value.toLowerCase();
+  const scopeQs = getCodedScopeQuestions();
+  const typeFilter = document.getElementById('fType');
+  const previousType = typeFilter.value;
+  const availableTypes = new Set(scopeQs.map(q => q.type));
+  typeFilter.innerHTML = '<option value="">全部題型</option>' + Object.entries(QUESTION_TYPES)
+    .filter(([type]) => availableTypes.has(type))
+    .map(([type,label]) => `<option value="${type}">${label}</option>`).join('');
+  typeFilter.value = availableTypes.has(previousType) ? previousType : '';
+  const tp = typeFilter.value;
+  filtered = scopeQs.filter(q => {
+    const qDiff = q.difficulty || '';
+    const diffOk = !df || (df === '__normal__' ? qDiff === '' : qDiff === df);
+    return (!tp || q.type === tp) && diffOk && (!kw || (q.text || '').toLowerCase().includes(kw));
+  });
+  curPage = 1;
+  renderBank();
+};
+
+// ── 題目庫渲染 ────────────────────────────────────
+
+function codedQuestionBody(q, action = '') {
+  const choice = q.type === 'T2' || q.type === 'T3';
+  const options = choice && q.options?.length ? ' ' + q.options.map((option,index)=>'('+String.fromCharCode(65+index)+')'+UI.questionHtml(option)).join(' ') : '';
+  const tail = choice && q.tail ? (String(q.tail).trim()==='。' ? '' : ' ') + UI.questionHtml(q.tail) : '';
+  return `<div class="q-meta"><span class="q-catalog-num">${UI.escapeHtml(q.qnum || '—')}</span>${UI.typeBadge(q.type)}${UI.diffBadge(q.difficulty)}<span class="q-source">來源：${UI.escapeHtml(q.source || '未註明')}</span>${action}</div>
+    <div class="q-text">${q.type==='T5' ? UI.matchingQuestionHtml(q.text) : UI.questionHtml(q.text || '—')}${options}${tail}</div>
+    ${!choice && q.tail ? '<div class="q-tail">'+UI.questionHtml(q.tail)+'</div>' : ''}
+    <div class="q-ans"><span class="answer-label">答案</span><span class="answer-text">${UI.questionHtml(q.answer || '—')}</span></div>`;
+}
+
+const collapsedCodedTypes = { bank:new Set(), selected:new Set() };
+window.toggleCodedType = (side, code, button) => {
+  const list = document.getElementById(`coded-${side}-${code}`);
+  if (!list) return;
+  const collapsed = !list.hidden;
+  list.hidden = collapsed;
+  button.setAttribute('aria-expanded',String(!collapsed));
+  button.setAttribute('aria-label',`${collapsed ? '展開' : '收合'}${QUESTION_TYPES[code]}題目`);
+  button.closest('.result-section').classList.toggle('is-collapsed',collapsed);
+  if (collapsed) collapsedCodedTypes[side].add(code);
+  else collapsedCodedTypes[side].delete(code);
+};
+function codedTypeToggle(side, code, label) {
+  const collapsed = collapsedCodedTypes[side].has(code);
+  return `<button type="button" class="result-type-toggle" onclick="toggleCodedType('${side}','${code}',this)" aria-expanded="${!collapsed}" aria-controls="coded-${side}-${code}" aria-label="${collapsed ? '展開' : '收合'}${QUESTION_TYPES[code]}題目"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg><span>${label}</span></button>`;
+}
+
+function renderBank() {
+  document.getElementById('bankCount').textContent = `︱可選 ${filtered.length} 題`;
+  onQnumInput();
+}
+function findCodedQuestion(raw) {
+  const code = raw.padStart(5, '0');
+  return filtered.find(q => String(q.qnum || '').padStart(5, '0') === code);
+}
+window.onQnumInput = () => {
   const raw = document.getElementById('qnumInput').value.trim();
-  if (!raw || !/^\d+$/.test(raw)) return;
-  const padded = raw.padStart(5, '0');
-  const q = allQs[padded];
-  if (!q || selectedOrder.includes(padded)) return;
-
-  selectedOrder.push(padded);
-  selQuestions[padded] = q;
-
-  // 加入最近使用
-  recentNums = [padded, ...recentNums.filter(n => n !== padded)].slice(0, 10);
-  renderRecent();
-
-  // 清空輸入
+  const q = /^\d{1,5}$/.test(raw) ? findCodedQuestion(raw) : null;
+  const duplicate = q && selectedIds.has(q.id);
+  document.getElementById('addBtn').disabled = !q || duplicate;
+  document.getElementById('qnumHint').textContent = !raw ? '' : !/^\d{1,5}$/.test(raw) ? '請輸入 1～5 位數字。' : !q ? '所選範圍內找不到此編碼，請確認編碼與出題範圍。' : duplicate ? '此題目已在清單中。' : '已找到題目，可加入試卷。';
+  document.getElementById('lookupResult').innerHTML = q ? `<div class="result-q"><div class="q-body">${codedQuestionBody(q)}</div></div>` : '';
+};
+window.clearCodedInput = () => {
   document.getElementById('qnumInput').value = '';
-  document.getElementById('addBtn').disabled = true;
-  document.getElementById('lookupResult').className = 'lookup-result';
-  document.getElementById('qnumHint').innerHTML = `<span class="hint-ok">✓ 已加入 ${padded}</span>`;
-
-  renderSelected();
+  onQnumInput();
   document.getElementById('qnumInput').focus();
 };
-
-// ── 批次輸入 ──────────────────────────────────────
+window.addByCode = () => {
+  const raw = document.getElementById('qnumInput').value.trim();
+  if (!/^\d{1,5}$/.test(raw)) return;
+  const q = findCodedQuestion(raw);
+  if (!q || selectedIds.has(q.id)) return;
+  toggleQ(q.id, true);
+  document.getElementById('qnumInput').value = '';
+  onQnumInput();
+  document.getElementById('qnumInput').focus();
+};
 window.addBatch = () => {
-  const text = document.getElementById('batchInput').value;
-  // 分割：換行、逗號、空白、頓號
-  const tokens = text.split(/[\n,\s、，]+/).map(t => t.trim()).filter(Boolean);
-  let added = 0, notFound = 0, duplicate = 0, invalid = 0;
-
-  tokens.forEach(t => {
-    if (!/^\d+$/.test(t)) { invalid++; return; }
-    const padded = t.padStart(5, '0');
-    const q = allQs[padded];
-    if (!q) { notFound++; return; }
-    if (selectedOrder.includes(padded)) { duplicate++; return; }
-    selectedOrder.push(padded);
-    selQuestions[padded] = q;
-    recentNums = [padded, ...recentNums.filter(n => n !== padded)].slice(0, 10);
-    added++;
-  });
-
-  const parts = [];
-  if (added)     parts.push(`✓ 新增 ${added} 題`);
-  if (duplicate) parts.push(`⚠ ${duplicate} 題已在清單`);
-  if (notFound)  parts.push(`✕ ${notFound} 題號不存在`);
-  if (invalid)   parts.push(`✕ ${invalid} 個無效格式`);
-
-  document.getElementById('batchHint').innerHTML = parts.map((p,i) =>
-    `<span style="color:${i===0?'var(--success)':'var(--warning)'}">${p}</span>`
-  ).join('　');
-
-  if (added) {
-    renderRecent();
+  const tokens = document.getElementById('batchInput').value.split(/[\s,，、]+/).filter(Boolean);
+  let added=0, duplicate=0, missing=0, invalid=0;
+  for (const token of tokens) {
+    if (!/^\d{1,5}$/.test(token)) { invalid++; continue; }
+    const q = findCodedQuestion(token);
+    if (!q) { missing++; continue; }
+    if (selectedIds.has(q.id)) { duplicate++; continue; }
+    toggleQ(q.id,true,true); added++;
+  }
+  renderSelected(); renderBank();
+  document.getElementById('batchHint').textContent = tokens.length ? `新增 ${added} 題；重複 ${duplicate} 題；範圍內未找到 ${missing} 題；格式無效 ${invalid} 筆。` : '請先輸入題目編碼。';
+  if (added && !missing && !invalid) document.getElementById('batchInput').value='';
+};
+window.clearCodedSelection = () => {
+  selectedIds.clear(); selectedOrder=[]; selQuestions={};
+  renderSelected(); renderBank();
+};
+window.toggleQ = (id, add, silent=false) => {
+  const q = allQs.find(x=>x.id===id); if (!q) return;
+  if (add) { selectedIds.add(id); if (!selectedOrder.includes(id)) selectedOrder.push(id); selQuestions[id]=q; }
+  else { selectedIds.delete(id); selectedOrder=selectedOrder.filter(x=>x!==id); delete selQuestions[id]; }
+  if (!silent) {
     renderSelected();
-    document.getElementById('batchInput').value = '';
+    renderBank();
   }
 };
 
-// ── 最近使用 ──────────────────────────────────────
-function renderRecent() {
-  const wrap = document.getElementById('recentWrap');
-  if (!recentNums.length) { wrap.style.display = 'none'; return; }
-  wrap.style.display = '';
-  document.getElementById('recentChips').innerHTML = recentNums.map(n => {
-    const already = selectedOrder.includes(n);
-    return `<span class="chip ${already?'':''}\"
-      style="${already?'opacity:.45;cursor:default':''}"
-      onclick="${already?'':` addFromChip('${n}')`}"
-      title="${already?'已在清單':'點擊重新加入'}">${n}</span>`;
-  }).join('');
-}
-
-window.addFromChip = (padded) => {
-  if (selectedOrder.includes(padded)) return;
-  const q = allQs[padded]; if (!q) return;
-  selectedOrder.push(padded);
-  selQuestions[padded] = q;
-  recentNums = [padded, ...recentNums.filter(n => n !== padded)].slice(0, 10);
-  renderRecent();
-  renderSelected();
-};
-
-// ── 已選清單渲染 ─────────────────────────────────
+// ── 已選面板 ─────────────────────────────────────
+const TYPE_SCORES = {T1:2,T2:2,T3:4,T4:2,T5:2,T6:10};
 function renderSelected() {
   const count = selectedOrder.length;
-  document.getElementById('selCountLabel').textContent = count + ' 題';
-  document.getElementById('saveBtn').disabled = count === 0;
-  document.getElementById('clearAllBtn').disabled = count === 0;
-
+  document.getElementById('selCountLabel').textContent = `︱已選 ${count} 題`;
+  ['shuffleBtn'].forEach(id => document.getElementById(id).disabled = count===0);
   const list = document.getElementById('selList');
   if (!count) {
-    list.innerHTML = `<div class="empty-sel"><div class="ei">🔢</div><p style="font-size:.9rem">輸入題目編號後加入</p><p style="font-size:.85rem;margin-top:4px">編號可從「題目維護」頁面查詢</p></div>`;
+    list.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-muted);font-size:.9rem">輸入編碼後點擊「加入」將題目加入試卷</div>';
     document.getElementById('scoreCfg').style.display = 'none';
-    document.getElementById('totalBar').style.display = 'none';
+    document.getElementById('totalScoreBar').style.display = 'none';
     return;
   }
-
-  list.innerHTML = selectedOrder.map((qnum, idx) => {
-    const q = selQuestions[qnum];
-    return `<div class="sel-item" draggable="true" data-qnum="${qnum}"
-      ondragstart="dragStart(event,'${qnum}')" ondragover="dragOver(event,'${qnum}')"
-      ondrop="dropOn(event,'${qnum}')" ondragend="dragEnd()">
-      <span class="drag-handle" title="拖曳排序">⠿</span>
-      <span class="sel-order">${idx+1}.</span>
-      <span class="sel-num-badge">${qnum}</span>
-      <div class="sel-body">
-        <div class="sel-text" title="${(q?.text||'').replace(/"/g,'&quot;')}">${q?.text||'—'}</div>
-        <div class="sel-meta">${UI.typeBadge(q?.type||'')}${UI.diffBadge(q?.difficulty)}</div>
+  // 依題型分組顯示（同題目庫樣式）
+  const selGroups = {};
+  const TYPE_ORDER_SEL = ['T1','T2','T3','T4','T5','T6'];
+  TYPE_ORDER_SEL.forEach(t => { selGroups[t] = []; });
+  selectedOrder.forEach((id,idx) => {
+    const q = selQuestions[id];
+    if (q) selGroups[q.type].push({q, id, idx});
+  });
+  let selHTML = '';
+  for (const tCode of TYPE_ORDER_SEL) {
+    const items = selGroups[tCode];
+    if (!items.length) continue;
+    const tLabel = QUESTION_TYPES[tCode] || tCode;
+    selHTML += `<div class="result-section${collapsedCodedTypes.selected.has(tCode) ? ' is-collapsed' : ''}">
+      <div class="result-section-title">${codedTypeToggle('selected', tCode, `${tLabel}（${items.length} 題）`)}</div>
+      <div class="result-list" id="coded-selected-${tCode}"${collapsedCodedTypes.selected.has(tCode) ? ' hidden' : ''}>
+        ${items.map(({q, id, idx}) => {
+          return `<div class="result-q" data-id="${id}"
+            ondragover="dragOver(event,'${id}')" ondrop="dropOn(event,'${id}')" ondragend="dragEnd()">
+            <span class="drag-handle" style="padding-top:3px;cursor:grab" draggable="true" ondragstart="dragStart(event,'${id}')" title="拖曳排序">⠿</span>
+            <span class="q-num">${idx+1}.</span>
+            <div class="q-body">
+              ${codedQuestionBody(q, `<button type="button" class="btn btn-ghost btn-sm replace-question si-remove" onclick="toggleQ('${id}',false)">移除</button>`)}
+            </div>
+          </div>`;
+        }).join('')}
       </div>
-      <button class="sel-remove" onclick="removeQ('${qnum}')" title="移除">✕</button>
     </div>`;
-  }).join('');
-
-  // 計分設定
+  }
+  list.innerHTML = selHTML;
   const typeGroups = {};
-  selectedOrder.forEach(qnum => {
-    const q = selQuestions[qnum]; if (!q) return;
-    typeGroups[q.type] = (typeGroups[q.type]||0) + 1;
-  });
-  document.getElementById('scoreCfg').style.display = 'flex';
-  document.getElementById('scoreCfg').innerHTML =
-    Object.entries(typeGroups).map(([t,c]) =>
-      `<div class="sc-row">${QUESTION_TYPES[t]||t} ×${c}：
-        <input class="sc-inp" type="number" id="sc-${t}" value="${TYPE_SCORES[t]||2}" min="1" max="99" oninput="calcTotal()">分
-      </div>`
-    ).join('');
-
+  selectedOrder.forEach(id => { const q=selQuestions[id]; if(q){ typeGroups[q.type]=(typeGroups[q.type]||0)+1; } });
+  document.getElementById('scoreCfg').style.display = 'block';
+  document.getElementById('scoreCfg').innerHTML = Object.entries(typeGroups).map(([t,c]) =>
+    `<div class="score-config-row"><span class="score-label">${QUESTION_TYPES[t]||t}<span class="type-title-note">（${c} 題）</span></span>
+      <div class="number-stepper"><input class="form-control" type="number" id="sc-${t}" value="${TYPE_SCORES[t] ?? 2}" min="${document.getElementById('codedIntegerScores').checked ? 1 : 0.5}" max="100" step="${document.getElementById('codedIntegerScores').checked ? 1 : 0.5}" aria-label="${QUESTION_TYPES[t]}每題配分" oninput="updateCodedScore('${t}',this)"><div class="number-stepper-buttons"><button type="button" tabindex="-1" aria-label="增加配分" onclick="adjustCodedScore('${t}',1)">▲</button><button type="button" tabindex="-1" aria-label="減少配分" onclick="adjustCodedScore('${t}',-1)">▼</button></div></div><span class="row-unit">分／題</span>
+    </div>`).join('');
   calcTotal();
-  document.getElementById('totalBar').style.display = 'flex';
+  document.getElementById('totalScoreBar').style.display = 'flex';
 }
-
-window.removeQ = (qnum) => {
-  selectedOrder = selectedOrder.filter(n => n !== qnum);
-  delete selQuestions[qnum];
-  renderRecent();
-  renderSelected();
-};
-
-window.clearAll = () => {
-  if (!confirm(`確定要清除全部 ${selectedOrder.length} 題嗎？`)) return;
-  selectedOrder = [];
-  selQuestions = {};
-  renderRecent();
-  renderSelected();
-};
-
 function calcTotal() {
-  let total = 0;
-  selectedOrder.forEach(qnum => {
-    const q = selQuestions[qnum]; if (!q) return;
-    const inp = document.getElementById('sc-'+q.type);
-    total += inp ? parseInt(inp.value)||0 : (TYPE_SCORES[q.type]||2);
-  });
-  document.getElementById('totalScoreVal').textContent = total + ' 分';
+  let total=0;
+  selectedOrder.forEach(id => { const q=selQuestions[id]; if(!q) return; const inp=document.getElementById('sc-'+q.type); total += inp?Number(inp.value)||0:(TYPE_SCORES[q.type]||2); });
+  document.getElementById('totalScoreVal').textContent = `總計：${total} 分`;
 }
 window.calcTotal = calcTotal;
 
-// ── 拖曳排序 ─────────────────────────────────────
-let dragQnum = null;
-window.dragStart = (e, qnum) => {
-  dragQnum = qnum;
-  e.currentTarget.classList.add('dragging');
-  e.dataTransfer.effectAllowed = 'move';
-};
-window.dragEnd   = () => {
-  dragQnum = null;
-  document.querySelectorAll('.sel-item').forEach(el => el.classList.remove('dragging','drag-over'));
-};
-window.dragOver  = (e, qnum) => {
-  e.preventDefault();
-  if (qnum !== dragQnum) document.querySelector(`.sel-item[data-qnum="${qnum}"]`)?.classList.add('drag-over');
-};
-window.dropOn = (e, targetQnum) => {
-  e.preventDefault();
-  if (!dragQnum || dragQnum === targetQnum) return;
-  const from = selectedOrder.indexOf(dragQnum);
-  const to   = selectedOrder.indexOf(targetQnum);
-  if (from < 0 || to < 0) return;
-  selectedOrder.splice(from, 1);
-  selectedOrder.splice(to, 0, dragQnum);
-  renderSelected();
-};
+// ── 拖曳 ─────────────────────────────────────────
+let dragId=null;
+window.dragStart=(e,id)=>{dragId=id;e.currentTarget.classList.add('dragging');e.dataTransfer.effectAllowed='move';};
+window.dragEnd=()=>{dragId=null;document.querySelectorAll('#selList .result-q').forEach(el=>el.classList.remove('dragging','drag-over'));};
+window.dragOver=(e,id)=>{e.preventDefault();if(id!==dragId)document.querySelector(`#selList .result-q[data-id="${id}"]`)?.classList.add('drag-over');};
+window.dropOn=(e,targetId)=>{e.preventDefault();if(!dragId||dragId===targetId)return;const from=selectedOrder.indexOf(dragId),to=selectedOrder.indexOf(targetId);if(from<0||to<0)return;selectedOrder.splice(from,1);selectedOrder.splice(to,0,dragId);renderSelected();};
 
-// ── 儲存試卷 ──────────────────────────────────────
+// ── 排序/預覽/儲存 ───────────────────────────────
+window.shuffleSelected = () => {
+  if (!selectedOrder.length) return;
+  const byType={};
+  selectedOrder.forEach(id=>{const q=selQuestions[id];if(!q)return;if(!byType[q.type])byType[q.type]=[];byType[q.type].push(id);});
+  Object.values(byType).forEach(arr=>arr.sort(()=>Math.random()-.5));
+  selectedOrder = ['T1','T2','T3','T4','T5','T6'].flatMap(t=>byType[t]||[]);
+  renderSelected(); UI.toast('已在各題型內重新亂數排序','success');
+};
+window.previewSelected = () => {
+  if (!selectedOrder.length) { UI.toast('請先選題','warning'); return; }
+  const typeScores={};
+  Object.keys(TYPE_SCORES).forEach(t=>{const el=document.getElementById('sc-'+t);typeScores[t]=el?Number(el.value)||TYPE_SCORES[t]:TYPE_SCORES[t];});
+  const qs = selectedOrder.map(id=>selQuestions[id]).filter(Boolean);
+  const firstQ = qs[0];
+  draftPreviewData = { typeOrder:[...settingsTypeOrder], title:'（預覽）', typeScores, subjectCode:firstQ?.subjectCode||'', bookCode:firstQ?.bookCode||'',
+    header:draftPreviewData?.header ?? newExamHeader(), appearance:draftPreviewData?.appearance ?? loadAppearance() };
+  showExamPreview(draftPreviewData, qs);
+};
 window.openSaveModal = async () => {
-  if (!selectedOrder.length) { UI.toast('請先加入題目', 'warning'); return; }
+  if (!selectedOrder.length) { UI.toast('請先選題','warning'); return; }
   document.getElementById('saveErr').classList.add('hidden');
   document.getElementById('saveModal').classList.remove('hidden');
 };
-
 window.doSaveExam = async () => {
   const title = document.getElementById('examTitle').value.trim();
-  if (!title) {
-    document.getElementById('saveErr').textContent = '請填寫試卷名稱';
-    document.getElementById('saveErr').classList.remove('hidden');
-    return;
-  }
-  document.getElementById('saveErr').classList.add('hidden');
-
-  const typeScores = {};
-  let totalScore = 0;
-  selectedOrder.forEach(qnum => {
-    const q = selQuestions[qnum]; if (!q) return;
-    const inp = document.getElementById('sc-'+q.type);
-    const score = inp ? parseInt(inp.value)||2 : 2;
-    typeScores[q.type] = score;
-    totalScore += score;
-  });
-
+  if (!title) { document.getElementById('saveErr').textContent='請填寫試卷名稱'; document.getElementById('saveErr').classList.remove('hidden'); return; }
+  let totalScore=0; const typeScores={};
+  selectedOrder.forEach(id=>{const q=selQuestions[id];if(!q)return;const inp=document.getElementById('sc-'+q.type);const score=inp?Number(inp.value)||2:2;typeScores[q.type]=score;totalScore+=score;});
   const firstQ = selQuestions[selectedOrder[0]];
   const exam = {
-    title,
-    appearance: loadAppearance(),
-    header: newExamHeader(),
-    description: document.getElementById('examDesc').value.trim(),
-    subjectCode: firstQ?.subjectCode || '',
-    bookCode:    firstQ?.bookCode    || '',
-    totalScore,
-    typeScores,
-    questionIds:   [...selectedOrder.map(qnum => selQuestions[qnum]?.id).filter(Boolean)],
-    questionCount: selectedOrder.length,
-    composeMode:   'coded',
+    title, typeOrder:[...settingsTypeOrder], header: draftPreviewData?.header ?? newExamHeader(), appearance: draftPreviewData?.appearance ?? loadAppearance(), description: document.getElementById('examDesc').value.trim(),
+    subjectCode: firstQ?.subjectCode||'', bookCode: firstQ?.bookCode||'',
+    totalScore, typeScores, questionIds:[...selectedOrder],
+    questionCount: selectedOrder.length, composeMode:'coded',
   };
-
   try {
     await DataService.saveExam(exam);
-    UI.toast('試卷已儲存！', 'success');
+    draftPreviewData = null;
+    UI.toast('試卷已儲存！','success');
     document.getElementById('saveModal').classList.add('hidden');
-  } catch(e) {
-    document.getElementById('saveErr').textContent = '儲存失敗：' + e.message;
-    document.getElementById('saveErr').classList.remove('hidden');
-  }
+  } catch(e) { document.getElementById('saveErr').textContent='儲存失敗：'+e.message; document.getElementById('saveErr').classList.remove('hidden'); }
 };
 
-init();
+window.clearCodedScores = () => {
+  document.querySelectorAll('#scoreCfg input').forEach(input=>{
+    input.value='';
+    TYPE_SCORES[input.id.slice(3)]=0;
+  });
+  calcTotal();
+};
+window.toggleCodedIntegerScores = () => {
+  const step=document.getElementById('codedIntegerScores').checked ? 1 : 0.5;
+  Object.keys(TYPE_SCORES).forEach(type=>{
+    if(TYPE_SCORES[type]>0) TYPE_SCORES[type]=Math.max(step,Math.round(TYPE_SCORES[type]/step)*step);
+  });
+  renderSelected();
+};
+window.autoCodedScores = () => {
+  const counts = {};
+  selectedOrder.forEach(id => { const q=selQuestions[id]; counts[q.type]=(counts[q.type]||0)+1; });
+  Object.assign(TYPE_SCORES, allocateTypeScores(Object.entries(counts).map(([code,cnt])=>({code,cnt})), {T1:1,T2:1,T3:2,T4:1,T5:3,T6:5},100,document.getElementById('codedIntegerScores').checked ? 1 : 0.5));
+  renderSelected();
+};
+window.adjustCodedScore = (type,direction) => {
+  const input=document.getElementById('sc-'+type);
+  const step=Number(input.step)||0.5;
+  input.value=Math.min(100,Math.max(step,(Number(input.value)||0)+direction*step));
+  updateCodedScore(type,input);
+  input.focus();
+};
+window.updateCodedScore = (type, input) => {
+  TYPE_SCORES[type] = Number(input.value);
+  calcTotal();
+};
+function renderSettingsHeaderSample() {
+  const sample = document.getElementById('codedHeaderSample');
+  sample.style.fontFamily = fontStackById(draftPreviewData.appearance.font);
+  sample.innerHTML = buildHeaderHtml(draftPreviewData.header);
+}
+
+function renderExamSummary() {
+  const colors = { T1:'#4b84cf', T2:'#3ca6a1', T3:'#cb9d36', T4:'#9670bf', T5:'#da8260', T6:'#6d819e' };
+  const rows = settingsTypeOrder.map(code => ({code,label:QUESTION_TYPES[code],defaultScore:TYPE_SCORES[code]})).map(type => {
+    const questions = selectedOrder.map(id=>selQuestions[id]).filter(q=>q?.type === type.code);
+    const units = questions.length;
+    const score = Number(document.getElementById('sc-' + type.code)?.value) || type.defaultScore;
+    return { ...type, count:questions.length, units, score, total:Math.round(units * score * 10) / 10 };
+  }).filter(type => type.count > 0);
+  const total = Math.round(rows.reduce((sum, type) => sum + type.total, 0) * 10) / 10;
+  document.getElementById('codedSummary').innerHTML = `
+    <div class="exam-score-chart" role="img" aria-label="各題型配分分布：${rows.map(type => `${type.label} ${type.total} 分`).join('、')}">${rows.map(type => `<span style="width:${total ? type.total / total * 100 : 0}%;background:${colors[type.code]}" title="${type.label}：${type.total} 分"></span>`).join('')}</div>
+    <div class="exam-summary-table-wrap"><table class="exam-summary-table"><thead><tr><th scope="col">題型</th><th scope="col">題數</th><th scope="col">配分</th><th scope="col">小計</th></tr></thead><tbody>${rows.map(type => `<tr draggable="true" data-type="${type.code}"><td><span class="exam-type-drag" aria-hidden="true">⠿</span><span class="exam-type-dot" style="background:${colors[type.code]}"></span>${type.label}</td><td>${type.count} 題</td><td>${type.score} 分／題</td><td>${type.total} 分</td></tr>`).join('')}</tbody><tfoot><tr><td colspan="4">總分：${total} 分</td></tr></tfoot></table></div>`;
+  const table = document.querySelector('#codedSummary tbody');
+  let draggedType = null;
+  table.addEventListener('dragstart', event => {
+    const row = event.target.closest('[data-type]');
+    if (!row) return;
+    draggedType = row.dataset.type;
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', draggedType);
+    row.classList.add('is-dragging');
+  });
+  table.addEventListener('dragover', event => {
+    const row = event.target.closest('[data-type]');
+    if (!draggedType || !row || row.dataset.type === draggedType) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+    table.querySelectorAll('.drag-target').forEach(item => item.classList.remove('drag-target'));
+    row.classList.add('drag-target');
+  });
+  table.addEventListener('drop', event => {
+    const row = event.target.closest('[data-type]');
+    if (!draggedType || !row || row.dataset.type === draggedType) return;
+    event.preventDefault();
+    const next = settingsTypeOrder.filter(code => code !== draggedType);
+    next.splice(next.indexOf(row.dataset.type), 0, draggedType);
+    settingsTypeOrder = next;
+    selectedOrder = settingsTypeOrder.flatMap(code => selectedOrder.filter(id => selQuestions[id]?.type === code));
+    if (draftPreviewData) draftPreviewData.typeOrder = [...settingsTypeOrder];
+    renderExamSummary();
+  });
+  table.addEventListener('dragend', () => {
+    draggedType = null;
+    table.querySelectorAll('.is-dragging,.drag-target').forEach(row => row.classList.remove('is-dragging','drag-target'));
+  });
+}
+
+function renderExamSettings() {
+  draftPreviewData ??= { header:newExamHeader(), appearance:loadAppearance() };
+  renderExamSummary();
+  renderSettingsHeaderSample();
+  draftPreviewData.onHeaderSaved = renderSettingsHeaderSample;
+  draftPreviewData.onPreviewClose = renderExamSettings;
+  const fields = document.getElementById('codedHeaderFields');
+  mountInlineHeaderEditor(fields, draftPreviewData, renderSettingsHeaderSample, () => {
+    const status = fields.querySelector('[data-header-status]')?.textContent;
+    renderExamSettings();
+    const nextStatus = fields.querySelector('[data-header-status]');
+    if (nextStatus) nextStatus.textContent = status === '尚未儲存' ? '已取消變更' : status || '';
+  });
+  fields.querySelector('.ep-inline-header-actions')?.remove();
+}
+
+
+function renderCodedExamPreview() {
+  previewSelected();
+  const modal = document.getElementById('epModal');
+  document.getElementById('codedExamPreview').append(modal);
+  modal.classList.add('compose-inline-preview');
+  modal.removeAttribute('aria-modal');
+  const actions = document.querySelector('#codedPanel5 .scope-header-actions');
+  let tools = actions.querySelector('.compose-preview-tools');
+  if (!tools) {
+    tools = document.createElement('div');
+    tools.className = 'compose-preview-tools';
+    tools.setAttribute('role', 'group');
+    tools.setAttribute('aria-label', '試卷預覽工具');
+    actions.append(tools);
+  }
+  modal.querySelectorAll('.modal-header button').forEach(button => {
+    if (!button.classList.contains('modal-close') && button.id !== 'epFullscreenToggle') tools.append(button);
+  });
+  const download = tools.querySelector('button[onclick="window._epDoExport()"]');
+  if (download) {
+    download.classList.remove('btn-ghost');
+    download.classList.add('btn-primary');
+  }
+  if (!tools.querySelector('[data-compose-save]')) {
+    const save = document.createElement('button');
+    save.type = 'button';
+    save.className = 'btn btn-primary btn-sm';
+    save.setAttribute('data-compose-save', '');
+    save.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2zM17 21v-8H7v8M7 3v5h8"/></svg>儲存';
+    save.onclick = () => openSaveModal();
+    tools.append(save);
+  }
+  window._epClose = () => goCodedStep(4);
+}
+
+window.goCodedStep = n => {
+  if (n > 1 && !document.querySelector('.chap-cb:checked')) { UI.toast('請勾選至少一個章節','warning'); return; }
+  if (n > 1 && !getCodedScopeQuestions().length) { UI.toast('所選命題範圍尚無題目，請重新選擇章節。','warning'); return; }
+  if (n > 2 && !selectedOrder.length) { UI.toast('請先編碼選題','warning'); return; }
+  if (n > 3 && [...document.querySelectorAll('#scoreCfg input')].some(input => !input.checkValidity() || !Number.isFinite(Number(input.value)))) { UI.toast('請輸入有效配分（0.5 至 100 分）','warning'); return; }
+  for (let i=1;i<=5;i++) {
+    document.getElementById('codedPanel'+i).hidden = i !== n;
+    const step = document.getElementById('codedStep'+i);
+    step.classList.toggle('active',i===n); step.classList.toggle('done',i<n);
+    if(i===n) step.setAttribute('aria-current','step'); else step.removeAttribute('aria-current');
+  }
+  document.getElementById('codedProgressFill').style.width = `${n*20}%`;
+  document.getElementById('codedProgressTrack').setAttribute('aria-valuenow',String(n));
+  document.getElementById('codedProgressTrack').setAttribute('aria-valuetext',`第 ${n} 步，共 5 步`);
+  if (n===2) {
+    const typeFilter=document.getElementById('fType');
+    const diffFilter=document.getElementById('fDiff');
+    const keyword=document.getElementById('fKeyword');
+    const previous=[typeFilter.value,diffFilter.value,keyword.value];
+    typeFilter.value=diffFilter.value=keyword.value='';
+    applyFilters();
+    const allowed=new Set(filtered.map(q=>q.id));
+    selectedOrder.filter(id=>!allowed.has(id)).forEach(id=>{ selectedIds.delete(id); delete selQuestions[id]; });
+    selectedOrder=selectedOrder.filter(id=>allowed.has(id));
+    [typeFilter.value,diffFilter.value,keyword.value]=previous;
+    applyFilters(); renderSelected();
+  }
+  if (n===3) renderSelected();
+  if (n===4) renderExamSettings();
+  if (n===5) renderCodedExamPreview();
+  window.scrollTo({top:0,behavior:'smooth'});
+};
+document.getElementById('codedStep1').setAttribute('aria-current','step');
+const scopeSelector = mountScopeSelector({ cache:_tbCache, dataService:DataService, onChange(questions, selected, reason) {
+  allQs = questions;
+  const allowed = new Set(selected.map(q => q.id));
+  selectedOrder = selectedOrder.filter(id => {
+    if (allowed.has(id)) return true;
+    selectedIds.delete(id); delete selQuestions[id]; return false;
+  });
+  if (reason === 'book') draftPreviewData = null;
+  applyFilters(); renderSelected();
+} });
 </script>
 </body>
 </html>

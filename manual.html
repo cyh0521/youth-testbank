@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="css/theme.css">
 <link rel="stylesheet" href="css/process-bar.css">
 <script>if(localStorage.getItem("sidebarCollapsed")==="1")document.documentElement.classList.add("sidebar-collapsed");</script>
-<link rel="stylesheet" href="css/exam-compose.css">
+<link rel="stylesheet" href="css/exam-compose.css?v=20261004-scope-cursor">
 <style>
 .manual-layout{display:block}
 .manual-panel[hidden]{display:none}
@@ -60,15 +60,7 @@
       <div class="topbar-breadcrumb"><span>首頁</span> › 手動選題</div>
     </div>
     <div class="page-content">
-<section class="import-progress" aria-label="手動選題流程" style="--process-step-count:5;--process-initial-width:20%"><div class="steps" role="list"><div class="step active" id="manualStep1" role="listitem"><span class="step-num">1</span><span class="step-copy"><strong>出題範圍</strong></span></div><div class="step" id="manualStep2" role="listitem"><span class="step-num">2</span><span class="step-copy"><strong>選擇題目</strong></span></div><div class="step" id="manualStep3" role="listitem"><span class="step-num">3</span><span class="step-copy"><strong>題型與配分</strong></span></div><div class="step" id="manualStep4" role="listitem"><span class="step-num">4</span><span class="step-copy"><strong>試卷設定</strong></span></div><div class="step" id="manualStep5" role="listitem"><span class="step-num">5</span><span class="step-copy"><strong>預覽試卷</strong></span></div></div><div class="import-progress-track" id="manualProgressTrack" role="progressbar" aria-label="手動選題進度" aria-valuemin="1" aria-valuemax="5" aria-valuenow="1"><div class="import-progress-fill" id="manualProgressFill"></div></div></section><div class="manual-layout"><section id="manualPanel1" class="manual-panel"><div class="scope-layout"><section class="card"><div class="card-header"><h2>選擇命題科目</h2></div><div class="scope-tree" id="subjectTree"></div><div hidden><select class="form-control" id="cSubject" aria-label="科目" onchange="onSubjectChange()">
-                  <option value="">請選擇科目</option>
-                </select><select class="form-control" id="cBook" aria-label="冊次" disabled onchange="loadChapters()">
-                  <option value="">請先選科目</option>
-                </select></div></section><section class="card"><div class="card-header"><h2>選擇命題章節</h2><div class="scope-header-actions"><button class="btn btn-primary btn-sm" onclick="goManualStep(2)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m13.5 6 6 6-6 6"/><path d="m6 6 6 6-6 6" stroke-opacity=".5"/></svg>下一步：選擇題目</button></div></div>              <div class="chapter-tree scope-tree" id="chapterTree">
-                <div style="padding:20px;text-align:center;color:var(--text-muted);font-size:.88rem">請先選擇科目與冊次</div>
-              </div>
-
-<div class="wizard-actions"><button class="btn btn-ghost btn-sm" onclick="clearAllChapters()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 3 5 5a2 2 0 0 1 0 3L11 21H6l-4-4a2 2 0 0 1 0-3L13 3a2 2 0 0 1 3 0zM8 8l8 8M11 21h11"/></svg>取消選取</button></div></section></div></section><section id="manualPanel2" class="manual-panel" hidden><div class="selection-layout">        <div class="card">
+<section class="import-progress" aria-label="手動選題流程" style="--process-step-count:5;--process-initial-width:20%"><div class="steps" role="list"><div class="step active" id="manualStep1" role="listitem"><span class="step-num">1</span><span class="step-copy"><strong>出題範圍</strong></span></div><div class="step" id="manualStep2" role="listitem"><span class="step-num">2</span><span class="step-copy"><strong>選擇題目</strong></span></div><div class="step" id="manualStep3" role="listitem"><span class="step-num">3</span><span class="step-copy"><strong>題型與配分</strong></span></div><div class="step" id="manualStep4" role="listitem"><span class="step-num">4</span><span class="step-copy"><strong>試卷設定</strong></span></div><div class="step" id="manualStep5" role="listitem"><span class="step-num">5</span><span class="step-copy"><strong>預覽試卷</strong></span></div></div><div class="import-progress-track" id="manualProgressTrack" role="progressbar" aria-label="手動選題進度" aria-valuemin="1" aria-valuemax="5" aria-valuenow="1"><div class="import-progress-fill" id="manualProgressFill"></div></div></section><div class="manual-layout"><section id="manualPanel1" class="manual-panel"><div id="examScope"></div></section><section id="manualPanel2" class="manual-panel" hidden><div class="selection-layout">        <div class="card">
           <div class="card-header">
             <div class="scope-title"><h2>題目庫</h2><span class="scope-available" id="bankCount">︱共 0 題</span></div>
           <div class="manual-filters">              <div class="form-group" style="margin-bottom:8px">
@@ -90,10 +82,7 @@
           </div>
 
           <div class="bank-list"  id="bankList">
-            <div style="text-align:center;padding:48px 24px;color:var(--text-muted)">
-              <div style="font-size:2rem;margin-bottom:10px;opacity:.3">📚</div>
-              <p style="font-size:.88rem">請在左側選擇科目與冊次</p>
-            </div>
+            <div class="scope-empty">請先在「出題範圍」選擇有題目的章節。</div>
           </div>
           <div class="pag-wrap" id="bankPag"></div>
         </div>
@@ -140,6 +129,7 @@
 </div>
 
 <script type="module">
+import { renderScopePanel, mountScopeSelector } from './js/exam-scope.js';
 import { guardPage } from './js/auth-guard.js';
 import { showExamPreview, showHeaderSettings, newExamHeader, loadAppearance, mountInlineHeaderEditor, buildHeaderHtml, fontStackById } from './js/exam-preview.js';
 import { allocateTypeScores } from './js/score-allocation.js';
@@ -149,6 +139,7 @@ if (!user) throw new Error('not auth');
 
 // ── 初始化 ────────────────────────────────────────
 await initTextbookCache();
+document.getElementById('examScope').innerHTML = renderScopePanel({ nextAction:'goManualStep(2)', nextLabel:'選擇題目' });
 const cSubject = document.getElementById('cSubject');
 cSubject.innerHTML = tbSubjectOptions();
 
@@ -158,208 +149,18 @@ let selectedIds = new Set();
 let selectedOrder = [];
 let settingsTypeOrder = ['T1','T2','T3','T4','T5','T6'];
 let selQuestions = {};
-let _bookObj = null, _chapters = [];
 let draftPreviewData = null;
 window.openHeaderSettings = () => {
   draftPreviewData ??= { header:newExamHeader(), appearance:loadAppearance() };
   showHeaderSettings(draftPreviewData);
 };
 
-const escapeTreeText = value => UI.escapeHtml(String(value ?? ''));
-function renderScopeCatalog() {
-  document.getElementById('subjectTree').innerHTML = (_tbCache?.subjects || []).map(subject => {
-    const books = _tbCache.booksBySubject[subject.id] || [];
-    return `<details class="subject-node"><summary>${escapeTreeText(subject.name)}</summary>${books.length ? books.map(book=>`<label class="book-node"><input type="radio" name="scopeBook" data-subject="${escapeTreeText(subject.code)}" value="${escapeTreeText(book.code)}"><span>${escapeTreeText(book.name)}</span></label>`).join('') : '<div class="scope-empty">尚無冊次</div>'}</details>`;
-  }).join('') || '<div class="scope-empty">尚無科目</div>';
-}
-document.getElementById('subjectTree').addEventListener('change',async event=>{
-  const input=event.target;
-  if(input.name!=='scopeBook') return;
-  cSubject.value=input.dataset.subject;
-  onSubjectChange();
-  document.getElementById('cBook').value=input.value;
-  await loadChapters();
-});
+function getManualScopeQuestions() { return scopeSelector.getQuestions(); }
 
-// ── 科目/冊次 ─────────────────────────────────────
-window.onSubjectChange = () => {
-  const sc = cSubject.value;
-  const bk = document.getElementById('cBook');
-  if (sc) {
-    const subj = _tbCache?.subjectByCode?.[sc];
-    const books = subj ? (_tbCache?.booksBySubject?.[subj.id]||[]) : [];
-    bk.innerHTML = '<option value="">請選擇冊次</option>';
-    books.forEach(b => bk.innerHTML += `<option value="${b.code}">${b.name}</option>`);
-    bk.disabled = false;
-  } else {
-    bk.innerHTML = '<option value="">請先選科目</option>';
-    bk.disabled = true;
-  }
-  document.getElementById('chapterTree').innerHTML =
-    '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:.88rem">請先選擇冊次</div>';
-  allQs = []; applyFilters();
-};
-
-window.loadChapters = async () => {
-  const sc = cSubject.value, bc = document.getElementById('cBook').value;
-  if (!sc || !bc) { allQs = []; filtered = []; document.getElementById('chapterTree').innerHTML = '<div class="scope-empty">請先選擇冊次</div>'; renderBank(); return; }
-  const tree = document.getElementById('chapterTree');
-  tree.innerHTML = '<div style="padding:12px;text-align:center;color:var(--text-muted);font-size:.88rem">載入中…</div>';
-  allQs = []; applyFilters();
-
-  // 載入題目
-  try {
-    allQs = await DataService.getQuestions({ subjectCode: sc, bookCode: bc });
-  } catch(e) { allQs = []; }
-
-  const subj = _tbCache?.subjectByCode?.[sc];
-  const bookObj = subj ? (_tbCache?.booksBySubject?.[subj.id]||[]).find(b=>b.code===bc) : null;
-  _bookObj = bookObj || null;
-
-  let tbChapters = [];
-  if (subj && bookObj) {
-    tbChapters = await DataService.getChapterDefs(subj.id, bookObj.id);
-    _chapters = tbChapters;
-  }
-  const l1 = bookObj?.l1 || '章';
-  const l2 = bookObj?.l2 || '';
-  const l3 = bookObj?.l3 || '';
-
-  // 統計題數
-  const countMap = {};
-  allQs.forEach(q => {
-    const ch = q.chapterNum; if (!ch) return;
-    if (!countMap[ch]) countMap[ch] = { count:0, sections:{} };
-    countMap[ch].count++;
-    if (q.sectionNum) countMap[ch].sections[q.sectionNum] = (countMap[ch].sections[q.sectionNum]||0)+1;
-  });
-
-  // 章節名稱對照
-  const chTitles = {}, secTitles = {}, subsecTitles = {};
-  tbChapters.forEach(c => {
-    chTitles[String(c.chapterNum)] = c.title || '';
-    (c.sections||[]).forEach(s => {
-      if (!secTitles[String(c.chapterNum)]) secTitles[String(c.chapterNum)] = {};
-      secTitles[String(c.chapterNum)][String(s.sectionNum)] = s.title || '';
-      if (l3 && (s.subsections||[]).length) {
-        if (!subsecTitles[String(c.chapterNum)]) subsecTitles[String(c.chapterNum)] = {};
-        subsecTitles[String(c.chapterNum)][String(s.sectionNum)] = s.subsections;
-      }
-    });
-  });
-
-  const allChNums = new Set([
-    ...tbChapters.map(c => String(c.chapterNum)),
-    ...Object.keys(countMap)
-  ]);
-
-  if (!allChNums.size) {
-    tree.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:.88rem">此科目/冊次無章節資料</div>';
-    filtered = []; renderBank(); return;
-  }
-
-  tree.innerHTML = [...allChNums].sort((a,b)=>parseInt(a)-parseInt(b)).map(ch => {
-    const info = countMap[ch] || { count:0, sections:{} };
-    const allSecs = new Set([...Object.keys(secTitles[ch]||{}), ...Object.keys(info.sections)]);
-    const hasChildren = l2 && allSecs.size > 0;
-    const secHTML = l2 ? [...allSecs].sort((a,b)=>parseInt(a)-parseInt(b)).map(sec => {
-      const subs = subsecTitles[ch]?.[sec] || [];
-      const hasSubChildren = l3 && subs.length > 0;
-      const subsHTML = hasSubChildren ? subs.map(ss => `
-        <div class="chapter-item subsection">
-          <span style="width:16px;flex-shrink:0;display:inline-block"></span>
-          <input type="checkbox" class="chap-cb" data-ch="${ch}" data-sec="${sec}" data-sub="${ss.num}">
-          <span>${ss.title || (l3+ss.num)}</span>
-        </div>`).join('') : '';
-      return `<div class="chapter-item section">
-        ${hasSubChildren ? `<button class="expand-btn" onclick="toggleChildren(this)">▶</button>` : '<span style="width:16px;flex-shrink:0"></span>'}
-        <input type="checkbox" class="chap-cb sec-cb" data-ch="${ch}" data-sec="${sec}" onchange="onSecCbChange(this)">
-        <span>${secTitles[ch]?.[sec] || (l2+parseInt(sec))}</span>
-        <span class="ch-count">${info.sections[sec]||0} 題</span>
-      </div>${hasSubChildren ? `<div class="chapter-children">${subsHTML}</div>` : ''}`;
-    }).join('') : '';
-    return `<div class="chapter-item">
-      ${hasChildren ? `<button class="expand-btn" onclick="toggleChildren(this)">▶</button>` : '<span style="width:16px;flex-shrink:0"></span>'}
-      <input type="checkbox" class="chap-cb chapter-cb" data-ch="${ch}" onchange="onChapterCbChange(this)">
-      <span>${chTitles[ch] || (l1+parseInt(ch))}</span>
-      <span class="ch-count">${info.count} 題</span>
-    </div>${hasChildren ? `<div class="chapter-children">${secHTML}</div>` : secHTML}`;
-  }).join('');
-
-  filtered = [];
-  curPage = 1;
-  renderBank();  // 載入後先不顯示，等勾選章節
-};
-
-window.toggleChildren = (btn) => {
-  const parent = btn.closest('.chapter-item');
-  const children = parent.nextElementSibling;
-  if (!children?.classList.contains('chapter-children')) return;
-  const open = children.classList.toggle('open');
-  btn.textContent = open ? '▼' : '▶';
-};
-window.clearAllChapters = () => {
-  document.querySelectorAll('.chap-cb').forEach(c => c.checked = false);
-  applyFilters();
-};
-
-function syncParentCb(ch, sec) {
-  // 第三層→第二層
-  if (sec !== undefined) {
-    const subs = [...document.querySelectorAll(`.chap-cb[data-ch="${ch}"][data-sec="${sec}"][data-sub]`)];
-    if (subs.length) {
-      const secCb = document.querySelector(`.chap-cb.sec-cb[data-ch="${ch}"][data-sec="${sec}"]`);
-      if (secCb) secCb.checked = subs.every(s => s.checked);
-    }
-  }
-  // 第二層→第一層
-  const allChildren = [...document.querySelectorAll(`.chap-cb[data-ch="${ch}"]:not(.chapter-cb)`)];
-  if (allChildren.length) {
-    const chapCb = document.querySelector(`.chap-cb.chapter-cb[data-ch="${ch}"]`);
-    if (chapCb) chapCb.checked = allChildren.every(s => s.checked);
-  }
-}
-
-window.onChapterCbChange = (cb) => {
-  const ch = cb.dataset.ch, checked = cb.checked;
-  document.querySelectorAll(`.chap-cb[data-ch="${ch}"]:not(.chapter-cb)`).forEach(s => s.checked = checked);
-  applyFilters();
-};
-window.onSecCbChange = (cb) => {
-  const ch = cb.dataset.ch, sec = cb.dataset.sec, checked = cb.checked;
-  document.querySelectorAll(`.chap-cb[data-ch="${ch}"][data-sec="${sec}"][data-sub]`).forEach(s => s.checked = checked);
-  syncParentCb(ch, undefined);
-  applyFilters();
-};
-// 第三層直接點選 → 向上同步
-document.addEventListener('change', e => {
-  const t = e.target;
-  if (!t.classList.contains('chap-cb')) return;
-  if (t.classList.contains('chapter-cb') || t.classList.contains('sec-cb')) return;
-  syncParentCb(t.dataset.ch, t.dataset.sec);
-  applyFilters();
-});
-
-// ── 篩選 ─────────────────────────────────────────
 window.applyFilters = () => {
   const df  = document.getElementById('fDiff').value;
   const kw  = document.getElementById('fKeyword').value.toLowerCase();
-  const checkedCbs = [...document.querySelectorAll('.chap-cb:checked')];
-  const chapters = checkedCbs.map(c =>
-    c.dataset.sub  ? `${c.dataset.ch}-${c.dataset.sec}-${c.dataset.sub}` :
-    c.dataset.sec  ? `${c.dataset.ch}-${c.dataset.sec}` :
-    c.dataset.ch
-  );
-  const scopeQs = allQs.filter(q => {
-    const chOk = chapters.length > 0 && chapters.some(c => {
-      const p = c.split('-').map(Number);
-      const eq = (a,b) => Number(a)===Number(b);
-      if (p.length===1) return eq(q.chapterNum, p[0]);
-      if (p.length===2) return eq(q.chapterNum, p[0]) && eq(q.sectionNum, p[1]);
-      return eq(q.chapterNum, p[0]) && eq(q.sectionNum, p[1]) && eq(q.subsectionNum, p[2]);
-    });
-    return chOk;
-  });
+  const scopeQs = getManualScopeQuestions();
   const typeFilter = document.getElementById('fType');
   const previousType = typeFilter.value;
   const availableTypes = new Set(scopeQs.map(q => q.type));
@@ -414,7 +215,7 @@ function renderBank() {
 
   const bankList = document.getElementById('bankList');
   if (!allQs.length) {
-    bankList.innerHTML = '<div style="text-align:center;padding:48px 24px;color:var(--text-muted)"><div style="font-size:2rem;margin-bottom:10px;opacity:.3">📚</div><p style="font-size:.88rem">請在左側選擇科目與冊次</p></div>';
+    bankList.innerHTML = '<div class="scope-empty">所選命題範圍尚無題目，請返回「出題範圍」重新選擇章節。</div>';
     return;
   }
   if (!total) {
@@ -725,6 +526,7 @@ function renderManualExamPreview() {
 
 window.goManualStep = n => {
   if (n > 1 && !document.querySelector('.chap-cb:checked')) { UI.toast('請勾選至少一個章節','warning'); return; }
+  if (n > 1 && !getManualScopeQuestions().length) { UI.toast('所選命題範圍尚無題目，請重新選擇章節。','warning'); return; }
   if (n > 2 && !selectedOrder.length) { UI.toast('請先選擇題目','warning'); return; }
   if (n > 3 && [...document.querySelectorAll('#scoreCfg input')].some(input => !input.checkValidity() || !Number.isFinite(Number(input.value)))) { UI.toast('請輸入有效配分（0.5 至 100 分）','warning'); return; }
   for (let i=1;i<=5;i++) {
@@ -755,7 +557,16 @@ window.goManualStep = n => {
   window.scrollTo({top:0,behavior:'smooth'});
 };
 document.getElementById('manualStep1').setAttribute('aria-current','step');
-renderScopeCatalog();
+const scopeSelector = mountScopeSelector({ cache:_tbCache, dataService:DataService, onChange(questions, selected, reason) {
+  allQs = questions;
+  const allowed = new Set(selected.map(q => q.id));
+  selectedOrder = selectedOrder.filter(id => {
+    if (allowed.has(id)) return true;
+    selectedIds.delete(id); delete selQuestions[id]; return false;
+  });
+  if (reason === 'book') draftPreviewData = null;
+  applyFilters(); renderSelected();
+} });
 </script>
 </body>
 </html>
