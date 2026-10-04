@@ -16,9 +16,11 @@ export function mountScopeSelector({ cache, dataService, onChange }) {
   const escapeTreeText = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   let bookQuestions = [];
   let chapterData = {};
+  const getSelectedChapters = () => [...document.querySelectorAll('.chap-cb:checked:not(:disabled)')]
+    .map(cb => cb.dataset.sub ? `${cb.dataset.ch}-${cb.dataset.sec}-${cb.dataset.sub}` : cb.dataset.sec ? `${cb.dataset.ch}-${cb.dataset.sec}` : cb.dataset.ch);
   const selectedQuestions = () => filterComposePool(bookQuestions, {
     subjectCode: cSubject.value, bookCode: document.getElementById('cBook').value,
-    chapters: [...document.querySelectorAll('.chap-cb:checked:not(:disabled)')].map(cb => cb.dataset.sub ? `${cb.dataset.ch}-${cb.dataset.sec}-${cb.dataset.sub}` : cb.dataset.sec ? `${cb.dataset.ch}-${cb.dataset.sec}` : cb.dataset.ch)
+    chapters: getSelectedChapters()
   });
   function notify(reason = 'selection') {
     const questions = selectedQuestions();
@@ -315,5 +317,5 @@ export function mountScopeSelector({ cache, dataService, onChange }) {
 
 
   renderScopeCatalog();
-  return { getQuestions: selectedQuestions, clear: window.clearAllChapters };
+  return { getQuestions: selectedQuestions, getSelectedChapters, clear: window.clearAllChapters };
 }

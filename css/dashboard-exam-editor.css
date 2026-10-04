@@ -40,8 +40,6 @@
 .eq-num{color:var(--text-muted);font-size:.9rem;width:18px;flex-shrink:0;text-align:right}
 .eq-qnum{font-family:var(--font-mono);font-size:.9rem;background:#e8eef6;color:var(--primary);padding:1px 5px;border-radius:3px;flex-shrink:0}
 .eq-text{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.edit-q-display-toggle{display:inline-flex;align-items:center;gap:5px;margin-left:8px;white-space:nowrap}
-.edit-q-display-toggle svg{display:block;flex:none}
 .eq-full{display:none;flex:1;min-width:0;line-height:1.65;overflow-wrap:anywhere}
 #editQList.show-full .edit-q-item{align-items:flex-start;padding:12px;gap:10px}
 #editQList.show-full .eq-num{width:18px;line-height:1.6}

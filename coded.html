@@ -346,6 +346,7 @@ window.doSaveExam = async () => {
     subjectCode: firstQ?.subjectCode||'', bookCode: firstQ?.bookCode||'',
     totalScore, typeScores, questionIds:[...selectedOrder],
     questionCount: selectedOrder.length, composeMode:'coded',
+    scopeChapters: scopeSelector.getSelectedChapters(),
   };
   try {
     await DataService.saveExam(exam);

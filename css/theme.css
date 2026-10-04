@@ -388,6 +388,24 @@ input, select, textarea { font-family: var(--font-sans); }
 .header-example-input:focus::placeholder { color: transparent; }
 .ep-inline-header{padding:12px 16px;background:#f5f3ee;border:1px solid #e0dcd2;border-radius:6px;margin-bottom:14px}
 .btn.ep-panel-toggle[aria-expanded="true"],.btn.ep-panel-toggle[aria-expanded="true"]:hover{background:#e1edff;border-color:#84a9df;color:#174f9f;box-shadow:none}
+.edit-basic-fields .form-group{display:grid;grid-template-columns:max-content minmax(0,1fr);align-items:center;column-gap:4px;min-width:0}
+.edit-basic-fields .form-label{margin-bottom:0;white-space:nowrap}
+.edit-description-control{display:grid;grid-template-columns:minmax(0,1fr) max-content;align-items:stretch;gap:8px;width:100%}
+.edit-basic-fields .form-control,.edit-description-control .btn{height:32px;box-sizing:border-box}
+.edit-description-control .form-control{min-width:0;width:100%}
+.edit-description-control .btn{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.edit-description-control .btn svg{display:block;flex:none}
+.edit-scope-panel{margin:-5px 0 16px;padding:10px 14px;border:1px solid var(--border-light);border-radius:8px;background:var(--bg-base);font-size:.88rem;color:var(--text-primary)}
+.edit-scope-panel[hidden]{display:none}
+.edit-scope-title{font-weight:700;margin-bottom:5px}
+.edit-scope-list{margin:0;padding-left:22px;line-height:1.7}
+.edit-scope-empty{margin:0;color:var(--text-secondary)}
+.edit-q-view-toggle{display:inline-flex;flex:none;height:32px;margin-left:8px;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;background:white}
+.edit-q-view-toggle button{display:inline-flex;align-items:center;justify-content:center;gap:5px;height:100%;padding:0 10px;border:0;background:none;color:var(--text-secondary);font-size:.86rem;line-height:1;white-space:nowrap;cursor:pointer;transition:background .12s,color .12s}
+.edit-q-view-toggle button+button{border-left:1px solid var(--border)}
+.edit-q-view-toggle button:hover{background:var(--bg-base)}
+.edit-q-view-toggle button.active,.edit-q-view-toggle button.active:hover{background:var(--primary);color:white}
+.edit-q-view-toggle svg{display:block;width:14px;height:14px;flex:none}
 .ep-inline-header-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 12px}
 .ep-inline-header-fields .form-group{margin:0;min-width:0}
 .ep-inline-header-fields .form-label{display:block;margin-bottom:4px}

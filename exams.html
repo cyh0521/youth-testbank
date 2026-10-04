@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>試卷管理 — 幼獅題庫系統</title>
-<link rel="stylesheet" href="css/theme.css">
+<link rel="stylesheet" href="css/theme.css?v=20261005-tight-labels">
 <link rel="stylesheet" href="css/dashboard.css">
 <script>if(localStorage.getItem("sidebarCollapsed")==="1")document.documentElement.classList.add("sidebar-collapsed");</script>
 <style>
@@ -56,8 +56,6 @@
 .eq-num{color:var(--text-muted);font-size:.9rem;width:18px;flex-shrink:0;text-align:right}
 .eq-qnum{font-family:var(--font-mono);font-size:.9rem;background:#e8eef6;color:var(--primary);padding:1px 5px;border-radius:var(--radius);flex-shrink:0}
 .eq-text{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.edit-q-display-toggle{display:inline-flex;align-items:center;gap:5px;margin-left:8px;white-space:nowrap}
-.edit-q-display-toggle svg{display:block;flex:none}
 .eq-full{display:none;flex:1;min-width:0;line-height:1.65;overflow-wrap:anywhere}
 #editQList.show-full .edit-q-item{align-items:flex-start;padding:12px;gap:10px}
 #editQList.show-full .eq-num{width:18px;line-height:1.6}
@@ -140,13 +138,14 @@
         </div>
         <div class="form-group">
           <label class="form-label" for="editExamDescription">說明</label>
-          <input class="form-control" id="editExamDescription" placeholder="可填寫考試類型、試題範圍等資訊。">
+          <div class="edit-description-control"><input class="form-control" id="editExamDescription" placeholder="可填寫考試類型、試題範圍等資訊。"><button class="btn btn-ghost btn-sm ep-panel-toggle" id="editScopeToggle" type="button" onclick="toggleEditScope()" aria-expanded="false" aria-controls="editScopePanel"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>命題範圍</button></div>
         </div>
       </div>
+      <div id="editScopePanel" class="edit-scope-panel" hidden></div>
       <div style="font-size:.9rem;color:var(--text-secondary);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
         <span>題目清單（可拖曳排序或移除）</span>
         <span id="editQCount" style="font-weight:600;color:var(--primary);margin-left:auto"></span>
-        <button class="btn btn-ghost btn-sm edit-q-display-toggle" id="editQDisplayToggle" type="button" onclick="toggleEditQDisplay()" aria-pressed="false" aria-controls="editQList"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"/></svg><span>完整顯示</span></button>
+        <div class="edit-q-view-toggle" role="group" aria-label="題目顯示模式"><button id="editQCompactBtn" class="active" type="button" onclick="setEditQDisplay(false)" aria-pressed="true" aria-controls="editQList"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>精簡顯示</button><button id="editQFullBtn" type="button" onclick="setEditQDisplay(true)" aria-pressed="false" aria-controls="editQList"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 10 5-10 5L2 7l10-5ZM2 12l10 5 10-5M2 17l10 5 10-5"/></svg>完整顯示</button></div>
       </div>
       <div id="editQList" style="border:1px solid var(--border);border-radius:var(--radius);max-height:400px;overflow-y:auto;background:white"></div>
     </div>
@@ -168,6 +167,7 @@
 import { guardPage } from './js/auth-guard.js';
 import { confirmExamDeletion } from './js/confirm-exam-deletion.js';
 import { chooseExamReplacement } from './js/exam-question-replacement.js';
+import { examScopeSummaryHtml } from './js/exam-scope-summary.js';
 import { showExamPreview, downloadExam, printWithPaperChoice, showHeaderSettings, loadHeader, loadAppearance, mountInlineHeaderEditor, buildHeaderHtml, fontStackById } from './js/exam-preview.js';
 window.openHeaderSettings = showHeaderSettings;
 window._activeNav = 'exams';
@@ -377,6 +377,9 @@ window.openEdit = async (id) => {
   document.getElementById('editTitle').textContent = `編輯試卷：${e.title||''}`;
   document.getElementById('editExamTitle').value  = e.title || '';
   document.getElementById('editExamDescription').value = e.description || '';
+  document.getElementById('editScopePanel').hidden = true;
+  document.getElementById('editScopePanel').innerHTML = '';
+  document.getElementById('editScopeToggle').setAttribute('aria-expanded', 'false');
   renderEditQList(e.typeScores||{});
   setEditQDisplay(false);
   document.getElementById('editTypeOrderModal').classList.add('hidden');
@@ -384,6 +387,20 @@ window.openEdit = async (id) => {
   document.getElementById('editHeaderToggle').setAttribute('aria-expanded', 'false');
   setEditFullscreen(false);
   document.getElementById('editModal').classList.remove('hidden');
+};
+
+window.toggleEditScope = async () => {
+  const panel = document.getElementById('editScopePanel');
+  const button = document.getElementById('editScopeToggle');
+  const open = panel.hidden;
+  panel.hidden = !open;
+  button.setAttribute('aria-expanded', String(open));
+  if (!open) return;
+  const exam = allExams.find(item => item.id === editExamId);
+  if (!exam) return;
+  panel.textContent = '載入中…';
+  const html = await examScopeSummaryHtml(exam);
+  if (editExamId === exam.id && !panel.hidden) panel.innerHTML = html;
 };
 
 function setEditFullscreen(fullscreen) {
@@ -523,15 +540,13 @@ function updateEditTotal() {
 
 function setEditQDisplay(full) {
   document.getElementById('editQList').classList.toggle('show-full', full);
-  const button = document.getElementById('editQDisplayToggle');
-  button.setAttribute('aria-pressed', String(full));
-  button.innerHTML = full
-    ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h11M4 17h16"/></svg><span>精簡顯示</span>'
-    : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"/></svg><span>完整顯示</span>';
+  for (const [id, active] of [['editQCompactBtn', !full], ['editQFullBtn', full]]) {
+    const button = document.getElementById(id);
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-pressed', String(active));
+  }
 }
-window.toggleEditQDisplay = () => {
-  setEditQDisplay(!document.getElementById('editQList').classList.contains('show-full'));
-};
+window.setEditQDisplay = setEditQDisplay;
 
 window.toggleEditQSection = type => {
   const items = document.getElementById(`editQItems-${type}`);

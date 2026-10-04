@@ -156,6 +156,7 @@ window.adjustComposeNumber = (id, direction) => {
   input.focus();
 };
 let generatedQuestions = [];
+let generatedScopeChapters = [];
 let settingsTypeOrder = TYPE_CONFIGS.map(type => type.code);
 let draftPreviewData = null;
 window.openHeaderSettings = () => {
@@ -474,9 +475,8 @@ window.doGenerate = async () => {
   }
 
   // 取章節篩選（必須勾選至少一個）
-  const checkedCbs = [...document.querySelectorAll('.chap-cb:checked')];
-  if (!checkedCbs.length) { UI.toast('請勾選至少一個章節', 'warning'); return; }
-  const chapters = checkedCbs.map(c => c.dataset.sub ? `${c.dataset.ch}-${c.dataset.sec}-${c.dataset.sub}` : c.dataset.sec ? `${c.dataset.ch}-${c.dataset.sec}` : c.dataset.ch);
+  const chapters = scopeSelector.getSelectedChapters();
+  if (!chapters.length) { UI.toast('請勾選至少一個章節', 'warning'); return; }
 
   const configuredScore = Math.round(typeCounts.reduce((sum, type) => {
     const score = Number(document.getElementById('score-' + type.code)?.value) || 0;
@@ -511,6 +511,7 @@ window.doGenerate = async () => {
     }
 
     generatedQuestions = allPicked.flatMap(t => t.items.map(q => ({...q, _typeLabel: t.label, _icon: t.icon})));
+    generatedScopeChapters = generatedQuestions.length ? [...chapters] : [];
     updateScoreRows();
     renderPreview(allPicked);
     if (generatedQuestions.length) setComposeStep(3);
@@ -691,6 +692,7 @@ window.doSaveExam = async () => {
     questionIds,
     questionCount: questionIds.length,
     composeMode: 'auto',
+    scopeChapters: [...generatedScopeChapters],
   };
 
   try {
@@ -708,6 +710,7 @@ setComposeStep(1);
 const scopeSelector = mountScopeSelector({ cache:_tbCache, dataService:DataService, onChange(questions, selected, reason) {
   window._allBookQs = questions;
   generatedQuestions = [];
+  generatedScopeChapters = [];
   if (reason === 'book') {
     draftPreviewData = null;
     document.getElementById('examTitle').value = '';
