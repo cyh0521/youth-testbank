@@ -4,6 +4,8 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>題本列印 — 幼獅題庫系統</title>
 <link rel="stylesheet" href="css/theme.css">
+<link rel="stylesheet" href="css/process-bar.css">
+<link rel="stylesheet" href="css/exam-compose.css">
 <script>if(localStorage.getItem('sidebarCollapsed')==='1')document.documentElement.classList.add('sidebar-collapsed');</script>
 </head>
 <body>
@@ -15,17 +17,68 @@
   <div class="main" inert>
     <div class="topbar"><span class="topbar-title">題本列印</span></div>
     <div class="page-content">
-      <div class="card" style="max-width:760px">
-        <div class="card-header"><h2>題本列印</h2></div>
-        <div class="card-body"><p style="color:var(--text-secondary);margin:0">功能規劃中。</p></div>
-      </div>
+      <section class="import-progress" aria-label="題本列印流程" style="--process-step-count:2;--process-initial-width:50%">
+        <div class="steps" role="list">
+          <div class="step active" id="bookletStep1" role="listitem" aria-current="step"><span class="step-num">1</span><span class="step-copy"><strong>出題範圍</strong></span></div>
+          <div class="step" id="bookletStep2" role="listitem"><span class="step-num">2</span><span class="step-copy"><strong>預覽題本</strong></span></div>
+        </div>
+        <div class="import-progress-track" id="bookletProgressTrack" role="progressbar" aria-label="題本列印進度" aria-valuemin="1" aria-valuemax="2" aria-valuenow="1" aria-valuetext="第 1 步，共 2 步"><div class="import-progress-fill" id="bookletProgressFill"></div></div>
+      </section>
+      <section id="bookletPanel1"><div id="examScope"></div></section>
+      <section id="bookletPanel2" hidden>
+        <div class="card"><div class="card-header"><h2>預覽題本</h2><div class="scope-header-actions"><button type="button" class="btn btn-previous btn-sm" onclick="goBookletStep(1)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10.5 6-6 6 6 6"/><path d="m18 6-6 6 6 6" stroke-opacity=".5"/></svg>上一步</button><div id="bookletPreviewTools" class="compose-preview-tools"></div></div></div><div id="bookletPreview"></div></div>
+      </section>
     </div>
   </div>
 </div>
 <script type="module">
+import { renderScopePanel, mountScopeSelector } from './js/exam-scope.js';
+import { showExamPreview, loadAppearance } from './js/exam-preview.js';
 import { guardPage } from './js/auth-guard.js';
 window._activeNav = 'booklet';
-await guardPage(['admin','manager','teacher']);
+const user = await guardPage(['admin','manager','teacher']);
+if (!user) throw new Error('not auth');
+await initTextbookCache();
+document.getElementById('examScope').innerHTML = renderScopePanel({nextAction:'goBookletStep(2)', nextLabel:'預覽題本'});
+document.getElementById('cSubject').innerHTML = tbSubjectOptions();
+let bookletData = {title:'題本', booklet:true, appearance:loadAppearance()};
+let scopeRevision = 0;
+let previewRevision = -1;
+const scopeSelector = mountScopeSelector({cache:_tbCache, dataService:DataService, onChange(questions, selected, reason) {
+  scopeRevision++;
+  if (reason === 'book') bookletData = {title:'題本', booklet:true, appearance:bookletData.appearance};
+}});
+window.goBookletStep = n => {
+  if (n === 2) {
+    if (!scopeSelector.getSelectedChapters().length) { UI.toast('請勾選至少一個章節','warning'); return; }
+    const questions = scopeSelector.getQuestions();
+    if (!questions.length) { UI.toast('所選命題範圍尚無題目，請重新選擇章節。','warning'); return; }
+    if (previewRevision !== scopeRevision) {
+      showExamPreview(bookletData, questions);
+      const modal = document.getElementById('epModal');
+      document.getElementById('bookletPreview').append(modal);
+      modal.classList.add('compose-inline-preview');
+      modal.removeAttribute('aria-modal');
+      const tools = document.getElementById('bookletPreviewTools');
+      ['epAppearanceToggle'].forEach(id => tools.append(document.getElementById(id)));
+      modal.querySelectorAll('.modal-header button').forEach(button => {
+        if (['_epDoPrint()', '_epDoExport()'].some(action => button.getAttribute('onclick') === 'window.' + action)) tools.append(button);
+      });
+      previewRevision = scopeRevision;
+    }
+  }
+  for (let i=1;i<=2;i++) {
+    document.getElementById('bookletPanel'+i).hidden = i !== n;
+    const step = document.getElementById('bookletStep'+i);
+    step.classList.toggle('active',i===n);
+    step.classList.toggle('done',i<n);
+    if (i===n) step.setAttribute('aria-current','step'); else step.removeAttribute('aria-current');
+  }
+  document.getElementById('bookletProgressFill').style.width = (n * 50) + '%';
+  document.getElementById('bookletProgressTrack').setAttribute('aria-valuenow',String(n));
+  document.getElementById('bookletProgressTrack').setAttribute('aria-valuetext',`第 ${n} 步，共 2 步`);
+  window.scrollTo({top:0,behavior:'smooth'});
+};
 </script>
 </body>
 </html>

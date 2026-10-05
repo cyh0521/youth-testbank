@@ -129,15 +129,15 @@ function choosePaperLayout(format, chooseDestination = null) {
 
 export async function downloadExam(examData, questions, format) {
   if (format !== 'Word') throw new Error('不支援的下載格式');
-  if (!window.showSaveFilePicker) {
+  if (!window.showSaveFilePicker && !examData.booklet) {
     UI.toast('請使用支援另存新檔的 Chrome 或 Edge，並透過 HTTPS 或 localhost 開啟網站', 'warning');
     return;
   }
-  const layout = await choosePaperLayout(format, () => window.showSaveFilePicker({
+  const layout = await choosePaperLayout(format, window.showSaveFilePicker && !examData.booklet ? () => window.showSaveFilePicker({
     id:'exam-downloads',
     suggestedName:`${(examData.title || '試卷').replace(/[\\/:*?"<>|]/g, '_')}.docx`,
     types:[{ description:'Word 文件', accept:{ 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':['.docx'] } }],
-  }));
+  }) : null);
   if (!layout) return;
   await exportToWord(examData, questions, layout.paperKey, layout.columns, layout.fileHandle);
 }
@@ -702,7 +702,9 @@ function applyAppearance() {
 export function showExamPreview(examData, questions) {
   ensurePreviewModal();
   setPreviewFullscreen(false);
-  examData.header ??= loadHeader();
+  if (!examData.booklet) examData.header ??= loadHeader();
+  document.getElementById('epHeaderToggle').classList.toggle('hidden', !!examData.booklet);
+  document.querySelector('#epShowSource').parentElement.lastChild.textContent = examData.booklet ? '出處' : '頁數';
   examAppearance(examData);
   document.getElementById('epToolbar').classList.add('hidden');
   document.getElementById('epAppearanceToggle').setAttribute('aria-expanded', 'false');
@@ -713,11 +715,11 @@ export function showExamPreview(examData, questions) {
 
   window._epExamData   = examData;
   window._epQuestions  = questions;
-  document.getElementById('epShowAnswers').checked = false;
-  document.getElementById('epShowAnalysis').checked = false;
-  document.getElementById('epShowSource').checked = false;
-  document.getElementById('epShowDifficulty').checked = false;
-  window._epRefresh    = () => { renderPaper(examData, questions, previewDisplay()); applyAppearance(); };
+  document.getElementById('epShowAnswers').checked = examData.booklet ? !!examData.display?.answers : false;
+  document.getElementById('epShowAnalysis').checked = examData.booklet ? !!examData.display?.analysis : false;
+  document.getElementById('epShowSource').checked = examData.booklet ? (examData.display?.source ?? true) : false;
+  document.getElementById('epShowDifficulty').checked = examData.booklet ? (examData.display?.difficulty ?? true) : false;
+  window._epRefresh    = () => { const display = previewDisplay(); if (examData.booklet) examData.display = display; renderPaper(examData, questions, display); applyAppearance(); };
   window._epDoPrint    = () => printWithPaperChoice(examData, questions);
   window._epDoExport   = () => downloadExam(examData, questions, 'Word');
   window._epClose = () => {
@@ -841,12 +843,13 @@ export function buildHeaderHtml(h) {
 }
 
 function buildPaperHtml(examData, questions, previewOptions) {
+  if (examData.booklet) previewOptions = {...(previewOptions || examData.display || {answers:false, analysis:false, source:true, difficulty:true}), booklet:true};
   const h = examData.header ?? loadHeader();
   const typeScores = examData.typeScores || {};
   const grouped = groupByType(questions);
   const types = orderedTypes(grouped, examData.typeOrder);
 
-  let html = `<div id="epPaper">${buildHeaderHtml(h)}`;
+  let html = `<div id="epPaper">${examData.booklet ? '' : buildHeaderHtml(h)}`;
 
   html += '<div class="ep-question-columns">';
   types.forEach((type, secIdx) => {
@@ -855,7 +858,7 @@ function buildPaperHtml(examData, questions, previewOptions) {
     const byBlank = type === 'T4' && examData.scoreUnits?.T4 === 'blank';
     const blanks = byBlank ? qs.reduce((sum, q) => sum + (Number.isInteger(Number(q.answerCount)) && Number(q.answerCount) > 0 ? Number(q.answerCount) : 1), 0) : 0;
     const total = (byBlank ? blanks : qs.length) * score;
-    html += `<div class="ep-section-head">${ROMANS[secIdx]}、${TYPE_LABELS[type]}（${byBlank ? `${qs.length} 題，共 ${blanks} 格；每格` : '每題'} ${score} 分，共 ${total} 分）</div>`;
+    html += examData.booklet ? `<div class="ep-section-head">${ROMANS[secIdx]}、${TYPE_LABELS[type]}（${qs.length} 題）</div>` : `<div class="ep-section-head">${ROMANS[secIdx]}、${TYPE_LABELS[type]}（${byBlank ? `${qs.length} 題，共 ${blanks} 格；每格` : '每題'} ${score} 分，共 ${total} 分）</div>`;
     qs.forEach((q, i) => { html += renderQPreview(q, i+1, type, previewOptions); });
   });
 
@@ -891,8 +894,26 @@ function buildPaperHtml(examData, questions, previewOptions) {
   return html;
 }
 
+function renderBookletQuestion(q, type, display) {
+  const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+  const code = q.qnum === undefined || q.qnum === null || q.qnum === '' ? '未編碼' : String(q.qnum).padStart(5, '0');
+  const difficulty = q.difficulty === '◎' ? '較難' : q.difficulty === '△' ? '簡易' : '普通';
+  const sources = typeof SOURCE_CODES === 'undefined' ? {A1:'課本', A2:'四技二專考題'} : SOURCE_CODES;
+  const badge = (text, background, color, mono = false) => `<span style="display:inline-block;padding:2px 8px;border-radius:6px;font-size:.82rem;line-height:1.5;background:${background};color:${color};${mono ? 'font-family:var(--font-mono);' : ''}">${text}</span>`;
+  const meta = [badge(`編碼：${escape(code)}`, '#e8eef6', '#365e91', true)];
+  if (display.difficulty) meta.push(badge(`難易度：${difficulty}`, q.difficulty === '◎' ? '#fdecea' : q.difficulty === '△' ? '#eafaf1' : '#edf1f6', q.difficulty === '◎' ? '#b92c20' : q.difficulty === '△' ? '#1a7a4a' : '#526780'));
+  if (display.source) meta.push(badge(`出處：${escape(sources[q.sourceCode] || q.sourceCode || '未註明')}`, '#f1edfa', '#68518f'), badge(`頁數：${escape(q.source || '未註明')}`, '#f1edfa', '#68518f'));
+  // Reuse the exam question layout, hiding only the number and metadata now shown above it.
+  const rendered = renderQPreview(q, null, type, {...display, booklet:false, hideNumber:true, source:false, difficulty:false});
+  const body = rendered.slice('<div class="ep-q">'.length, -'</div>'.length);
+  return `<div class="ep-q ep-booklet-question" style="margin-bottom:18px;break-inside:avoid"><div class="ep-booklet-meta" style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:6px;line-height:1.6">${meta.join(' ')}</div>${body}</div>`;
+
+}
+
 function renderQPreview(q, num, type, previewOptions) {
+  if (previewOptions?.booklet) return renderBookletQuestion(q, type, previewOptions);
   const escapeText = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[char]);
+  const numberLabel = previewOptions?.hideNumber ? '' : `${num}.`;
   const answer = String(q.answer ?? '').trim();
   const answerValue = previewOptions?.answers && answer
     ? escapeText(answer.replace(/[A-Z]/g, char => String.fromCharCode(char.charCodeAt(0) + 65248)))
@@ -904,12 +925,12 @@ function renderQPreview(q, num, type, previewOptions) {
   const difficultyTag = previewOptions?.difficulty ? `<span class="ep-q-difficulty ${q.difficulty === '◎' ? 'is-hard' : q.difficulty === '△' ? 'is-easy' : ''}">${difficultyLabel}</span>` : '';
   let body = '';
   if (type === 'T1') {
-    body = `<table class="ep-answer-table" role="presentation"><tr><td class="ep-answer-prefix">${difficultyTag}${answerSlot}${num}.</td><td>${UI.questionHtml(q.text)}${sourceTag}</td></tr></table>`;
+    body = `<table class="ep-answer-table" role="presentation"><tr><td class="ep-answer-prefix">${difficultyTag}${answerSlot}${numberLabel}</td><td>${UI.questionHtml(q.text)}${sourceTag}</td></tr></table>`;
   } else if (type === 'T2' || type === 'T3') {
     const opts = q.options?.length
       ? ` ${q.options.map((o,i)=>`(${String.fromCharCode(65+i)})${o}`).join(' ')}` : '';
     const tail = q.tail?.trim() || '';
-    body = `<table class="ep-answer-table" role="presentation"><tr><td class="ep-answer-prefix">${difficultyTag}${answerSlot}${num}.</td><td>${UI.questionHtml(q.text)}${opts}${tail ? `${tail === '。' ? '' : ' '}${tail}` : ''}${sourceTag}</td></tr></table>`;
+    body = `<table class="ep-answer-table" role="presentation"><tr><td class="ep-answer-prefix">${difficultyTag}${answerSlot}${numberLabel}</td><td>${UI.questionHtml(q.text)}${opts}${tail ? `${tail === '。' ? '' : ' '}${tail}` : ''}${sourceTag}</td></tr></table>`;
   } else if (type === 'T4' || type === 'T5' || type === 'T6') {
     const questionText = type === 'T5' ? UI.matchingQuestionHtml(q.text)
       : UI.questionHtml(q.text);
@@ -918,9 +939,9 @@ function renderQPreview(q, num, type, previewOptions) {
       ? `<div class="ep-essay-blank${previewOptions?.answers && answer ? ' ep-labeled-answer' : ''}">${previewOptions?.answers && answer ? labeledAnswer : ''}</div>`
       : previewOptions?.answers && answer
         ? `<div class="ep-answer-blank ep-labeled-answer">${labeledAnswer}</div>` : '';
-    body = `<table class="ep-answer-table ep-indented-question" role="presentation"><tr><td class="ep-answer-prefix">${difficultyTag}${num}.</td><td>${questionText}${sourceTag}${answerArea}</td></tr></table>`;
+    body = `<table class="ep-answer-table ep-indented-question" role="presentation"><tr><td class="ep-answer-prefix">${difficultyTag}${numberLabel}</td><td>${questionText}${sourceTag}${answerArea}</td></tr></table>`;
   } else {
-    body = `${difficultyTag}${num}.${UI.questionHtml(q.text)}${sourceTag}`;
+    body = `${difficultyTag}${numberLabel}${UI.questionHtml(q.text)}${sourceTag}`;
     if (previewOptions?.answers && answer) body += `<div class="ep-answer-blank">【答案】<span class="ep-answer-value">${escapeText(answer)}</span></div>`;
   }
   if (previewOptions?.analysis && q.analysis) {
@@ -964,6 +985,14 @@ export async function exportToWord(examData, questions, paperKey = 'A4', columns
     paragraph.style.fontFamily = fontStack;
     paragraph.style.fontSize = `${a.fontSize}px`;
     paragraph.style.lineHeight = lineHeightPx;
+    const metadata = question.querySelector('.ep-booklet-meta');
+    if (metadata) {
+      const metadataLine = document.createElement('span');
+      metadataLine.style.fontSize = '.85em';
+      metadataLine.style.color = '#526780';
+      metadataLine.textContent = metadata.textContent;
+      paragraph.append(metadataLine, document.createElement('br'));
+    }
     paragraph.appendChild(document.createTextNode(prefix.textContent));
     while (content.firstChild) paragraph.appendChild(content.firstChild);
     const essayBlank = paragraph.querySelector('.ep-essay-blank');
