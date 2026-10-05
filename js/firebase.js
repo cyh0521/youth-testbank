@@ -294,6 +294,7 @@ window.DataService = {
     if (opts.type)        constraints.push(where('type',        '==', opts.type));
     if (opts.difficulty)  constraints.push(where('difficulty',  '==', opts.difficulty));
     if (opts.qnum)        constraints.push(where('qnum',        '==', opts.qnum));
+    if (opts.sourceFile)  constraints.push(where('_srcFile', '==', opts.sourceFile));
     // orderBy removed: Firestore requires composite index for where+orderBy
     // Sorting is done client-side instead
     const snap = await getDocs(constraints.length ? query(q, ...constraints) : q);
@@ -345,7 +346,7 @@ window.DataService = {
   },
 
   // ── 批次新增題目（匯入用，含自動流水號 + stats 同步）──
-  async addQuestions(questions) {
+  async addQuestions(questions, onProgress) {
     const BATCH_SIZE = 400;
     const seqNums = await DataService._nextSeqNums(questions.length);
     let count = 0;
@@ -369,6 +370,7 @@ window.DataService = {
       });
       await batch.commit();
       count += chunk.length;
+      onProgress?.(count);
     }
     // 一次更新 stats（用 increment 累加）
     await DataService._applyStatsDelta(delta);
@@ -409,6 +411,28 @@ window.DataService = {
     await setDoc(doc(db, 'settings', 'questionStats'),
       { total: 0, byType: {}, bySubject: {}, byDifficulty: {}, updatedAt: serverTimestamp() });
     return docs.length;
+  },
+
+  async deleteImportedFiles(names, onDeleted) {
+    for (const name of new Set(names)) {
+      const questions = await DataService.getQuestions({ sourceFile:name });
+      for (let i = 0; i < questions.length; i += 400) {
+        const chunk = questions.slice(i, i + 400);
+        const batch = writeBatch(db);
+        const delta = {total:0, byType:{}, bySubject:{}, byDifficulty:{}};
+        chunk.forEach(q => {
+          batch.delete(doc(db, 'questions', q.id));
+          delta.total--;
+          delta.byType[q.type] = (delta.byType[q.type] || 0) - 1;
+          delta.bySubject[q.subjectCode] = (delta.bySubject[q.subjectCode] || 0) - 1;
+          const difficulty = q.difficulty || '';
+          delta.byDifficulty[difficulty] = (delta.byDifficulty[difficulty] || 0) - 1;
+        });
+        await batch.commit();
+        onDeleted?.(chunk.map(q => q.id));
+        await DataService._applyStatsDelta(delta);
+      }
+    }
   },
 
   async deleteQuestion(id) {

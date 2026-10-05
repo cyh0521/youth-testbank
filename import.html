@@ -95,6 +95,8 @@
 .import-log .log-warn{color:#f0ad4e}
 .import-complete-icon{display:flex;align-items:center;justify-content:center;width:72px;height:72px;margin:0 auto 16px;border-radius:20px;background:#ddf4e9;color:#267656}
 .import-complete-icon svg{width:36px;height:36px}
+.import-complete-icon.is-error{background:#ffe5e8;color:var(--danger)}
+.import-complete-icon.is-warning{background:#fff3d6;color:#9a6700}
 .preview-table{min-width:1012px}
 @media(max-width:1000px){.import-intro{grid-template-columns:1fr}}
 
@@ -230,7 +232,7 @@
   </div>
   <div class="card-body import-card-body" style="text-align:center">
     <div class="import-complete-icon" id="completeIcon"></div>
-    <h2 style="margin-bottom:8px;color:var(--success)">匯入完成！</h2>
+    <h2 id="importResultTitle" style="margin-bottom:8px;color:var(--success)">匯入完成！</h2>
     <div id="importResult" style="font-size:.9rem;color:var(--text-secondary);margin-bottom:20px"></div>
     <div class="import-log" id="importLog"></div>
   </div>
@@ -558,6 +560,8 @@ window.doImport = async () => {
   const validQs = parsedAll.filter(q => q.text);
   const log = [];
   let ok = 0, fail = 0;
+  const skipped = parsedAll.length - validQs.length;
+  let importError = false;
 
   try {
     log.push(`<span class="log-info">[開始] 準備匯入 ${validQs.length} 題（${selectedFiles.filter(f=>f.status==='done').length} 個檔案）…</span>`);
@@ -571,13 +575,11 @@ window.doImport = async () => {
     );
     document.getElementById('importLog').innerHTML = log.join('<br>');
 
-    const count = await DataService.addQuestions(validQs);
+    const count = await DataService.addQuestions(validQs, count => { ok = count; });
     ok = count;
     log.push(`<span class="log-ok">[完成] 成功寫入 ${count} 題，已分配題目編號</span>`);
 
-    const skipped = parsedAll.length - validQs.length;
     if (skipped > 0) {
-      fail = skipped;
       log.push(`<span class="log-warn">[略過] ${skipped} 題因缺少題目文字被跳過</span>`);
     }
     const errorFiles = selectedFiles.filter(f => f.status === 'error');
@@ -585,12 +587,21 @@ window.doImport = async () => {
       log.push(`<span class="log-err">[失敗] ${errorFiles.length} 個檔案解析失敗未匯入：${errorFiles.map(f=>f.name).join('、')}</span>`);
     }
   } catch(e) {
-    fail = validQs.length;
-    log.push(`<span class="log-err">[錯誤] ${e.message}</span>`);
+    importError = true;
+    fail = validQs.length - ok;
+    log.push(`<span class="log-err">[錯誤] ${UI.escapeHtml(e.message)}</span>`);
   }
 
+  const title = document.getElementById('importResultTitle');
+  const icon = document.getElementById('completeIcon');
+  const hasIssues = importError || skipped > 0 || selectedFiles.some(f => f.status === 'error');
+  title.textContent = importError && ok === 0 ? '匯入失敗' : hasIssues ? '匯入部分完成' : '匯入完成！';
+  title.style.color = importError && ok === 0 ? 'var(--danger)' : hasIssues ? '#9a6700' : 'var(--success)';
+  icon.classList.toggle('is-error', importError && ok === 0);
+  icon.classList.toggle('is-warning', hasIssues && !(importError && ok === 0));
+  icon.innerHTML = hasIssues ? I.info : I.check;
   document.getElementById('importResult').textContent =
-    `成功匯入 ${ok} 題${fail ? `，略過 ${fail} 題` : ''}`;
+    `成功匯入 ${ok} 題${fail ? `，匯入失敗 ${fail} 題` : ''}${skipped ? `，略過 ${skipped} 題` : ''}`;
   document.getElementById('importLog').innerHTML = log.join('<br>');
   setStep(4);
 };
