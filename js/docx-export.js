@@ -15,6 +15,7 @@ async function nodeRuns(node, docx, base) {
   if (node.nodeType === 3) return node.textContent ? [new docx.TextRun({ text:node.textContent, ...base })] : [];
   if (node.nodeType !== 1) return [];
   const tag = node.tagName.toLowerCase();
+  if (node.classList?.contains('ep-word-prefix-tab')) return [new docx.TextRun({ children:[new docx.Tab()], ...base })];
   if (node.classList?.contains('question-paragraph-break')) return [QUESTION_PARAGRAPH_BREAK];
   if (tag === 'br') return [new docx.TextRun({ break:1 })];
   if (tag === 'img') {
@@ -32,10 +33,13 @@ async function nodeRuns(node, docx, base) {
     } catch { return [new docx.TextRun({ text:node.alt || '［圖片］', ...base })]; }
   }
   const style = { ...base };
+  if (node.classList?.contains('ep-answer-value') || node.classList?.contains('ep-answer-label')) style.color = 'B4232C';
+  if (node.classList?.contains('ep-q-analysis')) style.color = '245FA5';
   if (tag === 'b' || tag === 'strong') style.bold = true;
   if (tag === 'i' || tag === 'em') style.italics = true;
   if (tag === 'u') style.underline = {};
   const runs = [];
+  if (node.classList?.contains('ep-q-analysis') || node.classList?.contains('ep-answer-blank') || node.classList?.contains('ep-essay-blank')) runs.push(QUESTION_PARAGRAPH_BREAK);
   for (const child of node.childNodes) runs.push(...await nodeRuns(child, docx, style));
   return runs;
 }
@@ -79,14 +83,21 @@ export async function createDocxBlob({ docx, content, title, appearance, margins
       ...(rowIndex === rows.length - 1 ? { border:{ bottom:{ style:docx.BorderStyle.SINGLE, color:'333333', size:12, space:8 } } } : {}),
     }));
   }
-  if (!header.length) header.push(paragraph([]));
 
   const questions = [];
   const questionArea = content.querySelector('.ep-question-columns');
   for (const item of questionArea?.children || []) {
+    if (item.classList.contains('ep-word-meta')) {
+      questions.push(paragraph(await runsFromNodes(item.childNodes, docx, { ...baseRun, size:Math.round(fontSize * .85), color:'000000' }), {
+        spacing:{ ...spacing, after:pxToTwips(6) },
+      }));
+      continue;
+    }
     if (item.classList.contains('ep-section-head')) {
+      const chapterLine = item.classList.contains('ep-booklet-chapter-line');
       questions.push(paragraph(await runsFromNodes(item.childNodes, docx, { ...baseRun, bold:true }), {
-        spacing:{ ...spacing, before:pxToTwips(14), after:pxToTwips(8) },
+        spacing:{ ...spacing, before:pxToTwips(chapterLine ? 0 : 14), after:pxToTwips(chapterLine ? 6 : 8) },
+        ...(item.classList.contains('ep-booklet-chapter-end') ? { border:{ bottom:{ style:docx.BorderStyle.SINGLE, color:'000000', size:6, space:6 } } } : {}),
       }));
       continue;
     }
@@ -97,6 +108,7 @@ export async function createDocxBlob({ docx, content, title, appearance, margins
       parts.forEach((runs, index) => questions.push(paragraph(runs, {
         alignment:docx.AlignmentType.LEFT,
         indent:index ? { left:indent } : { left:indent, hanging:indent },
+        tabStops:[{ type:docx.TabStopType.LEFT, position:indent }],
         spacing:{ ...spacing, before:index ? pxToTwips(appearance.fontSize * .45) : 0, after:index === parts.length - 1 ? pxToTwips(8) : 0 },
       })));
       continue;
@@ -133,7 +145,7 @@ export async function createDocxBlob({ docx, content, title, appearance, margins
   };
   const sections = columns === 2
     ? [
-        { properties:{ page }, children:header },
+        ...(header.length ? [{ properties:{ page }, children:header }] : []),
         { properties:{ page, type:docx.SectionType.CONTINUOUS, column:{ count:2, space:mmToTwips(5) } }, children:questions },
         ...(answers.length ? [{ properties:{ page, type:docx.SectionType.CONTINUOUS }, children:answers }] : []),
       ]

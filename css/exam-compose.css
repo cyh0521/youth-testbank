@@ -1,5 +1,11 @@
 /* 三種選題方式共用的介面樣式。 */
 
+body.booklet-page{height:100vh;height:100dvh;overflow:hidden}
+.booklet-page .layout{height:100%;min-height:0;overflow:hidden}
+.booklet-page .main{height:100%;min-height:0;overflow:hidden}
+.booklet-page .topbar{flex-shrink:0}
+.booklet-page .page-content{min-height:0;overflow-y:auto;overscroll-behavior:contain}
+
 .compose-layout{display:block}
 .compose-panel[hidden]{display:none}
 .scope-layout{display:grid;grid-template-columns:minmax(240px,.7fr) minmax(0,1.7fr);gap:16px;align-items:start}
@@ -93,6 +99,10 @@
 #composePanel5 .card-header{flex-wrap:wrap}
 #composePanel5 .scope-header-actions{flex-wrap:wrap}
 .compose-preview-tools{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin:0}
+#bookletPreview .ep-preview-options{margin-bottom:20px}
+#bookletPreview #epModal.compose-inline-preview .ep-preview-modal{display:block;min-width:0}
+#bookletPreview #epModal.compose-inline-preview .ep-preview-modal > div{min-width:0;max-height:none;overflow:visible}
+#bookletPreview #epBody{min-width:0;overflow-wrap:anywhere}
 .compose-preview-tools .btn svg{width:16px;height:16px;flex:none;transform:none;border:0;border-radius:0;background:transparent}
 .settings-layout{grid-template-columns:minmax(0,1fr)}
 .settings-layout .card-header{flex-wrap:wrap}
