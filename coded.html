@@ -245,6 +245,7 @@ window.toggleQ = (id, add, silent=false) => {
 };
 
 // ── 已選面板 ─────────────────────────────────────
+let defaultScoreSignature = '';
 const TYPE_SCORES = {T1:2,T2:2,T3:4,T4:2,T5:2,T6:10};
 function renderSelected() {
   const count = selectedOrder.length;
@@ -290,7 +291,7 @@ function renderSelected() {
   const typeGroups = {};
   selectedOrder.forEach(id => { const q=selQuestions[id]; if(q){ typeGroups[q.type]=(typeGroups[q.type]||0)+1; } });
   document.getElementById('scoreCfg').style.display = 'block';
-  document.getElementById('scoreCfg').innerHTML = Object.entries(typeGroups).map(([t,c]) =>
+  document.getElementById('scoreCfg').innerHTML = TYPE_ORDER_SEL.filter(t => typeGroups[t] > 0).map(t => [t, typeGroups[t]]).map(([t,c]) =>
     `<div class="score-config-row"><span class="score-label">${QUESTION_TYPES[t]||t}<span class="type-title-note">（${c} 題）</span></span>
       <div class="number-stepper"><input class="form-control" type="number" id="sc-${t}" value="${TYPE_SCORES[t] ?? 2}" min="${document.getElementById('codedIntegerScores').checked ? 1 : 0.5}" max="100" step="${document.getElementById('codedIntegerScores').checked ? 1 : 0.5}" aria-label="${QUESTION_TYPES[t]}每題配分" oninput="updateCodedScore('${t}',this)"><div class="number-stepper-buttons"><button type="button" tabindex="-1" aria-label="增加配分" onclick="adjustCodedScore('${t}',1)">▲</button><button type="button" tabindex="-1" aria-label="減少配分" onclick="adjustCodedScore('${t}',-1)">▼</button></div></div><span class="row-unit">分／題</span>
     </div>`).join('');
@@ -519,7 +520,15 @@ window.goCodedStep = n => {
     [typeFilter.value,diffFilter.value,keyword.value]=previous;
     applyFilters(); renderSelected();
   }
-  if (n===3) renderSelected();
+  if (n===3) {
+    const counts = {};
+    selectedOrder.forEach(id => { const q = selQuestions[id]; if (q) counts[q.type] = (counts[q.type] || 0) + 1; });
+    const signature = JSON.stringify([Object.entries(counts).sort(([a],[b]) => a.localeCompare(b)), document.getElementById('codedIntegerScores').checked]);
+    if (signature !== defaultScoreSignature) {
+      autoCodedScores();
+      defaultScoreSignature = signature;
+    } else renderSelected();
+  }
   if (n===4) renderExamSettings();
   if (n===5) renderCodedExamPreview();
   window.scrollTo({top:0,behavior:'smooth'});

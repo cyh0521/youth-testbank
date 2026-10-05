@@ -35,19 +35,22 @@ function allocateBaseScores(typeCounts, weights, target = 100, step = 0.5) {
 /** 優先湊足總分、採用整數，再讓是非與選擇同分；配合、問答較高。 */
 export function allocateTypeScores(typeCounts, weights, target = 100, step = 0.5) {
   const base = allocateBaseScores(typeCounts, weights, target, step);
-  const scores = findWeightedScores(typeCounts, base, weights, target, step)?.scores || base;
+  const weighted = findWeightedScores(typeCounts, base, weights, target, step);
+  const total = values => typeCounts.reduce((sum, t) => sum + t.cnt * values[t.code], 0);
+  const scores = weighted && weighted.total >= total(base) ? weighted.scores : base;
   const trueFalse = typeCounts.find(t => t.code === 'T1');
   const choice = typeCounts.find(t => t.code === 'T2');
   if (!trueFalse || !choice || scores.T1 === scores.T2) return scores;
   // Treat the two types as one scoring group, then compare without sacrificing total or integer preference.
   const grouped = typeCounts.filter(t => t.code !== 'T2').map(t => t.code === 'T1' ? { ...t, cnt:t.cnt + choice.cnt } : t);
   const groupedBase = allocateBaseScores(grouped, weights, target, step);
-  const groupedScores = findWeightedScores(grouped, groupedBase, weights, target, step)?.scores || groupedBase;
+  const groupedWeighted = findWeightedScores(grouped, groupedBase, weights, target, step);
+  const groupedTotal = values => grouped.reduce((sum, t) => sum + t.cnt * values[t.code], 0);
+  const groupedScores = groupedWeighted && groupedWeighted.total >= groupedTotal(groupedBase) ? groupedWeighted.scores : groupedBase;
   const equalScores = { ...groupedScores, T2:groupedScores.T1 };
   const respectsWeight = values => typeCounts.filter(t => t.code === 'T5' || t.code === 'T6').every(t =>
     typeCounts.filter(other => other.code !== 'T5' && other.code !== 'T6').every(other => values[t.code] > values[other.code]));
-  if (respectsWeight(scores) && !respectsWeight(equalScores)) return scores;
-  const total = values => typeCounts.reduce((sum, t) => sum + t.cnt * values[t.code], 0);
+  if (total(scores) === total(equalScores) && respectsWeight(scores) && !respectsWeight(equalScores)) return scores;
   const fractions = values => typeCounts.filter(t => !Number.isInteger(values[t.code])).length;
   if (total(equalScores) > total(scores) || (total(equalScores) === total(scores) && fractions(equalScores) <= fractions(scores))) {
     return equalScores;

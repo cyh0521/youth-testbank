@@ -45,7 +45,7 @@
 .section-title:first-child{margin-top:0}
 .type-row,.score-config-row{display:flex;align-items:center;gap:10px;padding:9px 11px;margin-bottom:8px;border:1px solid var(--border-light);border-radius:9px;background:#fff;font-size:.9rem}
 .type-row .type-label,.score-config-row .score-label{flex:1;min-width:0}
-.type-row .type-label{display:flex;align-items:baseline;gap:8px;font-weight:500}
+.type-row .type-label{display:flex;align-items:baseline;gap:8px;font-weight:400}
 .type-row .type-pool{font-size:.82rem;color:var(--text-muted);font-weight:400;white-space:nowrap}
 .type-row .row-unit,.score-config-row .row-unit{color:var(--text-secondary);font-size:.86rem;white-space:nowrap}
 .chapter-tree{max-height:220px}

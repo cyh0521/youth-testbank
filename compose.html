@@ -108,6 +108,13 @@ function setComposeStep(n) {
     if (i === n) step.setAttribute('aria-current', 'step');
     else step.removeAttribute('aria-current');
   }
+  if (n === 2) {
+    const signature = JSON.stringify([TYPE_CONFIGS.map(type => [type.code, Number(document.getElementById('cnt-' + type.code).value) || 0]), document.getElementById('integerScores').checked]);
+    if (signature !== defaultScoreSignature) {
+      autoAllocateScores();
+      defaultScoreSignature = signature;
+    }
+  }
   if (n === 4) renderExamSettings();
   if (n === 5) renderComposeExamPreview();
 }
@@ -367,6 +374,7 @@ function renderComposeExamPreview() {
 }
 
 const scoreOverrides = {};
+let defaultScoreSignature = '';
 const scoreWeights = { T1:1, T2:1, T3:2, T4:1, T5:3, T6:5 };
 window.autoAllocateScores = () => {
   Object.keys(scoreOverrides).forEach(code => delete scoreOverrides[code]);
