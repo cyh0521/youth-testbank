@@ -585,7 +585,7 @@ function renderPreview(grouped) {
           <div class="result-q">
             <span class="q-num">${qNum++}.</span>
             <div class="q-body">
-              <div class="q-meta"><span class="q-catalog-num">${UI.escapeHtml(q.qnum || '—')}</span>${UI.typeBadge(q.type)}${UI.diffBadge(q.difficulty)}<span class="q-source">來源：${UI.escapeHtml(q.source || '未註明')}</span><button type="button" class="btn btn-ghost btn-sm replace-question" data-replace-question="${UI.escapeHtml(String(q.id))}" aria-label="更換第 ${qNum - 1} 題">換題</button></div>
+              <div class="q-meta"><span class="q-catalog-num">${UI.escapeHtml(q.qnum || '—')}</span>${UI.typeBadge(q.type)}${UI.diffBadge(q.difficulty)}<span class="q-source">頁數 ${UI.escapeHtml(q.source || '未註明')}</span><button type="button" class="btn btn-ghost btn-sm replace-question" data-replace-question="${UI.escapeHtml(String(q.id))}" aria-label="更換第 ${qNum - 1} 題">換題</button></div>
               <div class="q-text">${q.type === 'T5' ? UI.matchingQuestionHtml(q.text) : UI.questionHtml(q.text || '—')}${(q.type === 'T2' || q.type === 'T3') && q.options?.length ? ' ' + q.options.map((option, index) => '(' + String.fromCharCode(65 + index) + ')' + UI.questionHtml(option)).join(' ') : ''}${(q.type === 'T2' || q.type === 'T3') && q.tail ? (String(q.tail).trim() === '。' ? '' : ' ') + UI.questionHtml(q.tail) : ''}</div>
               ${q.type !== 'T2' && q.type !== 'T3' && q.tail ? '<div class="q-tail">' + UI.questionHtml(q.tail) + '</div>' : ''}
               <div class="q-ans"><span class="answer-label">答案</span><span class="answer-text">${UI.questionHtml(q.answer || '—')}</span></div>

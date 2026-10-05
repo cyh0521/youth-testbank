@@ -581,7 +581,7 @@ function ensurePreviewModal() {
       <div class="ep-preview-options" role="group" aria-label="預覽內容">
         <label><input type="checkbox" id="epShowAnswers">解答</label>
         <label><input type="checkbox" id="epShowAnalysis">解析</label>
-        <label><input type="checkbox" id="epShowSource">出處</label>
+        <label><input type="checkbox" id="epShowSource">頁數</label>
         <label><input type="checkbox" id="epShowDifficulty">難易度</label>
       </div>
     </div>

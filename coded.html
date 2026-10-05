@@ -162,7 +162,7 @@ function codedQuestionBody(q, action = '') {
   const choice = q.type === 'T2' || q.type === 'T3';
   const options = choice && q.options?.length ? ' ' + q.options.map((option,index)=>'('+String.fromCharCode(65+index)+')'+UI.questionHtml(option)).join(' ') : '';
   const tail = choice && q.tail ? (String(q.tail).trim()==='。' ? '' : ' ') + UI.questionHtml(q.tail) : '';
-  return `<div class="q-meta"><span class="q-catalog-num">${UI.escapeHtml(q.qnum || '—')}</span>${UI.typeBadge(q.type)}${UI.diffBadge(q.difficulty)}<span class="q-source">來源：${UI.escapeHtml(q.source || '未註明')}</span>${action}</div>
+  return `<div class="q-meta"><span class="q-catalog-num">${UI.escapeHtml(q.qnum || '—')}</span>${UI.typeBadge(q.type)}${UI.diffBadge(q.difficulty)}<span class="q-source">頁數 ${UI.escapeHtml(q.source || '未註明')}</span>${action}</div>
     <div class="q-text">${q.type==='T5' ? UI.matchingQuestionHtml(q.text) : UI.questionHtml(q.text || '—')}${options}${tail}</div>
     ${!choice && q.tail ? '<div class="q-tail">'+UI.questionHtml(q.tail)+'</div>' : ''}
     <div class="q-ans"><span class="answer-label">答案</span><span class="answer-text">${UI.questionHtml(q.answer || '—')}</span></div>`;

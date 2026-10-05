@@ -6,19 +6,33 @@
 <link rel="stylesheet" href="css/theme.css">
 <link rel="stylesheet" href="css/process-bar.css">
 <link rel="stylesheet" href="css/dashboard.css">
+<link rel="stylesheet" href="css/exam-compose.css">
 <script>if(localStorage.getItem("sidebarCollapsed")==="1")document.documentElement.classList.add("sidebar-collapsed");</script>
 <style>
 /* ── 步驟 ── */
 .import-intro{display:grid;grid-template-columns:minmax(300px,.85fr) minmax(0,1.4fr);gap:18px;align-items:start}
-.import-card{padding:22px}
-.import-card .section-heading{margin-bottom:18px}
-.import-card .section-heading h2{font-size:1.3rem}
-.import-card .section-heading p{line-height:1.55}
+.import-card{padding:0;min-width:0}
+.import-card .section-heading{min-height:60px;padding:10px 20px;margin:0;gap:12px;border-bottom:1px solid var(--border-light)}
+.import-card-body{padding:20px}
+.import-intro{grid-template-columns:minmax(240px,.7fr) minmax(0,1.7fr);gap:16px}
+.import-card .scope-tree{padding:0}
+.import-header-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.import-card .section-heading h2{font-size:1.2rem}
+.import-card .section-heading > div{display:flex;align-items:baseline;min-width:0}
+.import-card .section-heading > .import-header-actions{align-items:center}
+.import-card .section-heading h2{flex:none}
+.import-card .section-heading p{display:flex;align-items:baseline;margin:0;font-size:.84rem;color:var(--text-secondary);line-height:1.55}
+.import-card .section-heading p::before{content:'︱';margin:0 0 0 8px;color:var(--text-light);flex:none}
 .import-fields{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .import-fields .form-group{min-width:0}
 .import-action{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .import-card .btn svg{display:block;flex:none}
-.import-card .btn{gap:6px}
+.import-card .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;line-height:1.4}
+.import-card .btn > span:has(svg){display:inline-flex;align-items:center}
+.import-card .btn .step-icon{width:19px;height:19px;margin-right:-3px}
+.import-card .btn-previous{background:#607a99;color:#fff;border-color:transparent}
+.import-card .btn-previous:hover{background:#4e6887;color:#fff}
+.import-card .btn-previous:focus-visible{outline:2px solid #7c9ec5;outline-offset:2px}
 
 /* ── 上傳區 ── */
 .upload-zone{
@@ -55,13 +69,18 @@
 
 /* ── 解析統計 ── */
 .parse-summary{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
-.parse-stat{display:flex;flex-direction:column;align-items:center;padding:10px 18px;background:white;border:1px solid var(--border);border-radius:var(--radius-lg);min-width:80px}
-.parse-stat-num{font-size:1.5rem;font-weight:700;color:var(--primary);font-family:var(--font-mono)}
-.parse-stat-label{font-size:.84rem;color:var(--text-muted);margin-top:2px}
+.parse-stat{display:inline-flex;flex-direction:row-reverse;align-items:center;gap:8px;padding:6px 12px;background:white;border:1px solid var(--border);border-radius:var(--radius);white-space:nowrap;line-height:1.4}
+.parse-stat-num{font-size:.9rem;font-weight:700;color:var(--primary);font-family:var(--font-mono)}
+.parse-stat-label{font-size:.86rem;color:var(--text-muted);margin:0}
 
 /* ── 預覽表格 ── */
-.preview-wrap{max-height:400px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius);margin-bottom:14px}
-.preview-table{width:100%;border-collapse:collapse;font-size:.88rem}
+.preview-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius);margin-bottom:14px}
+.preview-table{display:block;width:100%;border-collapse:collapse;font-size:.88rem}
+.preview-table thead,.preview-table tbody{display:block;scrollbar-gutter:stable}
+.preview-table thead{overflow-y:hidden;background:var(--bg-base)}
+.preview-table tbody{max-height:360px;overflow-y:auto;overflow-x:hidden}
+.preview-table tr{display:grid;grid-template-columns:44px 140px 76px 44px 44px 68px 90px 120px minmax(180px,1fr) 90px}
+.preview-table th,.preview-table td{min-width:0;box-sizing:border-box}
 .preview-table th{position:sticky;top:0;background:var(--bg-base);padding:7px 10px;border-bottom:2px solid var(--border);text-align:left;font-weight:600;font-size:.84rem;color:var(--text-secondary);white-space:nowrap;z-index:1}
 .preview-table td{padding:7px 10px;border-bottom:1px solid var(--border-light);vertical-align:top;max-width:280px}
 .preview-table tr:hover td{background:#faf8f5}
@@ -76,11 +95,10 @@
 .import-log .log-warn{color:#f0ad4e}
 .import-complete-icon{display:flex;align-items:center;justify-content:center;width:72px;height:72px;margin:0 auto 16px;border-radius:20px;background:#ddf4e9;color:#267656}
 .import-complete-icon svg{width:36px;height:36px}
-.preview-wrap{overflow:auto}
-.preview-table{min-width:760px}
+.preview-table{min-width:1012px}
 @media(max-width:1000px){.import-intro{grid-template-columns:1fr}}
 
-@media(max-width:600px){.import-card{padding:18px}.import-fields{grid-template-columns:1fr}}
+@media(max-width:600px){.import-card .section-heading,.import-card-body{padding-left:14px;padding-right:14px}.import-fields{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -100,8 +118,8 @@
         <div class="steps" id="stepsBar" role="list">
           <div class="step active" id="step1" role="listitem" aria-current="step"><span class="step-num">1</span><span class="step-copy"><strong>選擇科目</strong></span></div>
           <div class="step" id="step2" role="listitem"><span class="step-num">2</span><span class="step-copy"><strong>上傳檔案</strong></span></div>
-          <div class="step" id="step3" role="listitem"><span class="step-num">3</span><span class="step-copy"><strong>預覽確認</strong></span></div>
-          <div class="step" id="step4" role="listitem"><span class="step-num">4</span><span class="step-copy"><strong>匯入完成</strong></span></div>
+          <div class="step" id="step3" role="listitem"><span class="step-num">3</span><span class="step-copy"><strong>解析預覽</strong></span></div>
+          <div class="step" id="step4" role="listitem"><span class="step-num">4</span><span class="step-copy"><strong>匯入題目</strong></span></div>
         </div>
         <div class="import-progress-track" id="importProgressTrack" role="progressbar" aria-label="題目匯入進度" aria-valuemin="0" aria-valuemax="4" aria-valuenow="1" aria-valuetext="第 1 步，共 4 步"><div class="import-progress-fill" id="importProgressFill"></div></div>
       </section>
@@ -109,27 +127,14 @@
       <!-- Step 1：科目 -->
       <div id="panelStep1" class="import-intro">
         <section class="card import-card">
-          <div class="section-heading"><div><h2>選擇科目與冊次</h2><p>匯入的題目會歸入所選冊別</p></div></div>
-            <div class="import-fields">
-              <div class="form-group">
-                <label class="form-label">科目 <span style="color:var(--danger)">*</span></label>
-                <select class="form-control" id="subjectSel" onchange="onSubjectChange()">
-                  <option value="">請選擇科目</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label class="form-label">冊次 <span style="color:var(--danger)">*</span></label>
-                <select class="form-control" id="bookSel" disabled>
-                  <option value="">請先選科目</option>
-                </select>
-              </div>
-            </div>
-            <button class="btn btn-primary" onclick="goStep2()">下一步 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button>
-        </section>
+          <div class="card-header section-heading"><div><h2>選擇科目與冊次</h2><p>選取匯入題目的冊別</p></div></div><div class="card-body import-card-body">
+            <input type="hidden" id="subjectSel"><input type="hidden" id="bookSel"><div class="scope-tree" id="importBookTree"></div>
+
+        </div></section>
 
         <!-- 格式說明 -->
         <section class="card import-card">
-          <div class="section-heading"><div><h2>入題檔格式說明</h2><p>上傳前確認 Word 表格欄位</p></div></div>
+          <div class="card-header section-heading"><div><h2>入題檔格式說明</h2><p>上傳前確認 Word 表格欄位</p></div><div class="import-header-actions"><button class="btn btn-primary btn-sm" onclick="goStep2()"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m13.5 6 6 6-6 6"/><path d="m6 6 6 6-6 6" stroke-opacity=".5"/></svg>下一步：上傳檔案</button></div></div><div class="card-body import-card-body">
             <div class="table-wrapper">
               <table class="data-table" style="font-size:.88rem">
                 <thead><tr><th>欄位</th><th>說明</th><th>範例</th><th>必填</th></tr></thead>
@@ -150,16 +155,16 @@
                 </tbody>
               </table>
             </div>
-        </section>
+        </div></section>
       </div>
 
       <!-- Step 2：上傳 -->
       <div id="panelStep2" style="display:none">
         <section class="card import-card">
-          <div class="section-heading">
+          <div class="card-header section-heading">
             <div><h2>上傳入題檔</h2><p>支援一次選取多個 Word 檔案</p></div>
-            <button class="btn btn-ghost btn-sm" onclick="backStep1()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5m6 6-6-6 6-6"/></svg>重選科目</button>
-          </div>
+            <div class="import-header-actions"><button class="btn btn-previous btn-sm" onclick="backStep1()"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10.5 6-6 6 6 6"/><path d="m18 6-6 6 6 6" stroke-opacity=".5"/></svg>上一步</button><button class="btn btn-primary btn-sm" id="parseBtn" onclick="parseAllFiles()" disabled><span id="parseBtnIcon"></span><span id="parseBtnLabel">下一步：解析預覽</span></button></div>
+          </div><div class="card-body import-card-body">
             <div id="selectedSubjectInfo" style="background:#e8eef6;border-radius:var(--radius);padding:10px 14px;font-size:.9rem;margin-bottom:16px;color:var(--primary)"></div>
 
             <!-- 上傳區 -->
@@ -178,19 +183,19 @@
             <div class="file-list" id="fileList"></div>
 
             <div class="import-action" style="margin-top:14px">
-              <button class="btn btn-primary" id="parseBtn" onclick="parseAllFiles()" disabled><span id="parseBtnIcon"></span><span id="parseBtnLabel">解析所有檔案</span></button>
+
               <span style="font-size:.88rem;color:var(--text-muted)" id="fileCountLabel"></span>
             </div>
-        </section>
+        </div></section>
       </div>
 
       <!-- Step 3：預覽 -->
       <div id="panelStep3" style="display:none">
         <section class="card import-card">
-          <div class="section-heading">
-            <div><h2>預覽解析結果</h2><p>確認題目與答案後再匯入</p></div>
-            <button class="btn btn-ghost btn-sm" onclick="backStep2()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5m6 6-6-6 6-6"/></svg>重新上傳</button>
-          </div>
+          <div class="card-header section-heading">
+            <div><h2>解析預覽</h2><p>確認題目與答案後再匯入</p></div>
+            <div class="import-header-actions"><button class="btn btn-previous btn-sm" onclick="backStep2()"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10.5 6-6 6 6 6"/><path d="m18 6-6 6 6 6" stroke-opacity=".5"/></svg>上一步</button><button class="btn btn-primary btn-sm" id="importBtn" onclick="doImport()"><span id="importBtnIcon"></span><span id="importBtnLabel">下一步：匯入題目</span></button></div>
+          </div><div class="card-body import-card-body">
             <div class="parse-summary" id="parseSummary"></div>
             <div id="parseWarnings" style="margin-bottom:10px"></div>
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px">
@@ -200,34 +205,38 @@
             <div class="preview-wrap">
               <table class="preview-table">
                 <thead>
-                  <tr><th>#</th><th>來源檔案</th><th>題型</th><th>章</th><th>節</th><th>難易</th><th>題目</th><th>答案</th></tr>
+                  <tr><th>#</th><th>來源檔案</th><th>題型</th><th>章</th><th>節</th><th>難易</th><th>頁數</th><th>來源</th><th>題目</th><th>答案</th></tr>
                 </thead>
                 <tbody id="previewTbody"></tbody>
               </table>
             </div>
             <div style="display:flex;gap:4px;margin-bottom:14px" id="previewPagBtns2"></div>
             <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-              <button class="btn btn-primary" id="importBtn" onclick="doImport()"><span id="importBtnIcon"></span><span id="importBtnLabel">確認匯入</span></button>
+
               <span style="font-size:.88rem;color:var(--text-muted)" id="importNote2"></span>
             </div>
-        </section>
+        </div></section>
       </div>
 
       <!-- Step 4：完成 -->
       <div id="panelStep4" style="display:none">
-        <div class="card import-card" style="text-align:center;padding:48px 24px">
-            <div class="import-complete-icon" id="completeIcon"></div>
-            <h2 style="margin-bottom:8px;color:var(--success)">匯入完成！</h2>
-            <div id="importResult" style="font-size:.9rem;color:var(--text-secondary);margin-bottom:20px"></div>
-            <div class="import-log" id="importLog"></div>
-            <div style="margin-top:20px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
-              <button class="btn btn-outline" onclick="resetImport()">繼續匯入</button>
-              <button class="btn btn-primary" onclick="nav('questions')">前往題目維護 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button>
-            </div>
-        </div>
-      </div>
-
+        <section class="card import-card">
+  <div class="card-header section-heading">
+    <div><h2>匯入題目</h2><p>查看匯入結果</p></div>
+    <div class="import-header-actions">
+      <button class="btn btn-outline btn-sm" onclick="resetImport()"><span id="continueImportIcon"></span>繼續匯入</button>
+      <button class="btn btn-primary btn-sm" onclick="nav('dashboard')"><span id="homeIcon"></span>回到首頁</button>
     </div>
+  </div>
+  <div class="card-body import-card-body" style="text-align:center">
+    <div class="import-complete-icon" id="completeIcon"></div>
+    <h2 style="margin-bottom:8px;color:var(--success)">匯入完成！</h2>
+    <div id="importResult" style="font-size:.9rem;color:var(--text-secondary);margin-bottom:20px"></div>
+    <div class="import-log" id="importLog"></div>
+  </div>
+</section>
+</div>
+</div>
   </div>
 </div>
 
@@ -240,26 +249,26 @@ const user = await guardPage(['admin','manager']);
 if (!user) throw new Error('not auth');
 const I = window.ICONS;
 document.getElementById('uploadIcon').innerHTML = I.upload;
-document.getElementById('parseBtnIcon').innerHTML = I.search16;
-document.getElementById('importBtnIcon').innerHTML = I.check16;
+const nextStepIcon = '<svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m13.5 6 6 6-6 6"/><path d="m6 6 6 6-6 6" stroke-opacity=".5"/></svg>';
+document.getElementById('parseBtnIcon').innerHTML = nextStepIcon;
+document.getElementById('importBtnIcon').innerHTML = nextStepIcon;
 document.getElementById('completeIcon').innerHTML = I.check;
+document.getElementById('continueImportIcon').innerHTML = I.refresh16;
+document.getElementById('homeIcon').innerHTML = I.home16;
 
 // ── 初始化科目下拉（從課本管理系統讀取）─────────
 const subjectSel = document.getElementById('subjectSel');
 await initTextbookCache();
-subjectSel.innerHTML = tbSubjectOptions();
-
-window.onSubjectChange = () => {
-  const sc = subjectSel.value;
-  const bookSel = document.getElementById('bookSel');
-  if (sc) {
-    bookSel.innerHTML = tbBookOptions(sc);
-    bookSel.disabled = false;
-  } else {
-    bookSel.disabled = true;
-    bookSel.innerHTML = '<option value="">請先選科目</option>';
-  }
-};
+document.getElementById('importBookTree').innerHTML = (window._tbCache.subjects || []).map(subject => {
+  const books = window._tbCache.booksBySubject[subject.id] || [];
+  return `<details class="subject-node"><summary>${UI.escapeHtml(subject.name)}</summary>${books.length ? books.map(book => `<label class="book-node"><input type="radio" name="importBook" data-subject="${UI.escapeHtml(subject.code)}" value="${UI.escapeHtml(book.code)}"><span>${UI.escapeHtml(book.name)}</span></label>`).join('') : '<div class="scope-empty">尚無冊次</div>'}</details>`;
+}).join('');
+document.getElementById('importBookTree').addEventListener('change', event => {
+  const selected = event.target.closest('input[name="importBook"]');
+  if (!selected) return;
+  subjectSel.value = selected.dataset.subject;
+  document.getElementById('bookSel').value = selected.value;
+});
 
 // ── Step 導航 ─────────────────────────────────────
 function setStep(n) {
@@ -390,7 +399,7 @@ window.parseAllFiles = async () => {
   }
 
   isParsing = false;
-  document.getElementById('parseBtnLabel').textContent = '解析所有檔案';
+  document.getElementById('parseBtnLabel').textContent = '下一步：解析預覽';
   renderFileList();
 
   // 合併所有成功解析的題目
@@ -450,9 +459,9 @@ function buildPreview(qs, sc, bc) {
   qs.forEach(q => { totalByType[q.type] = (totalByType[q.type]||0)+1; });
 
   // 統計卡
-  let sumHTML = `<div class="parse-stat"><div class="parse-stat-num">${qs.length}</div><div class="parse-stat-label">總題數</div></div>`;
   const doneFiles = selectedFiles.filter(f => f.status === 'done');
-  sumHTML += `<div class="parse-stat"><div class="parse-stat-num">${doneFiles.length}</div><div class="parse-stat-label">檔案數</div></div>`;
+  let sumHTML = `<div class="parse-stat"><div class="parse-stat-num">${doneFiles.length}</div><div class="parse-stat-label">檔案數</div></div>`;
+  sumHTML += `<div class="parse-stat"><div class="parse-stat-num">${qs.length}</div><div class="parse-stat-label">總題數</div></div>`;
   Object.entries(totalByType).forEach(([t,c]) =>
     sumHTML += `<div class="parse-stat"><div class="parse-stat-num">${c}</div><div class="parse-stat-label">${QUESTION_TYPES[t]||t}</div></div>`
   );
@@ -500,6 +509,8 @@ function renderPreviewPage() {
       <td>${q.chapterNum||'—'}</td>
       <td>${q.sectionNum||'—'}</td>
       <td>${UI.diffBadge(q.difficulty)}</td>
+      <td>${UI.escapeHtml(q.source || '—')}</td>
+      <td>${UI.escapeHtml(SOURCE_CODES[q.sourceCode] || q.sourceCode || '—')}</td>
       <td class="q-text-cell" style="${q.type==='T5' ? 'white-space:normal' : ''}" title="${UI.escapeHtml(q.text||'')}">${q.type==='T5' ? UI.matchingQuestionHtml(q.text) : q.text ? UI.questionHtml(q.text) : '<span style="color:var(--danger)">缺少題目</span>'}</td>
       <td style="font-size:.85rem;color:var(--primary);max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${q.answer||'—'}</td>
     </tr>`;
@@ -589,8 +600,9 @@ window.resetImport = () => {
   parsedAll = [];
   renderFileList();
   document.getElementById('subjectSel').value = '';
-  document.getElementById('bookSel').disabled = true;
-  document.getElementById('bookSel').innerHTML = '<option value="">請先選科目</option>';
+  document.getElementById('bookSel').value = '';
+  document.querySelectorAll('input[name="importBook"]:checked').forEach(input => { input.checked = false; });
+
   setStep(1);
 };
 
