@@ -90,3 +90,16 @@ test('資訊以標籤及分隔線呈現，並保留內容跳脫', () => {
   const page = context.buildBookletHtml({}, [question('題目', 1, {qnum:252, sourceCode:'A1', source:'25'})], {source:true, difficulty:true});
   assert(page.includes('編碼：00252︱難易度：簡易題︱出處：課本︱頁數：P.25'));
 });
+
+test('資訊列與題目同字級；是非及單選解析在表格下方並以標籤寬度縮排', () => {
+  for (const type of ['T1','T2']) {
+    const html = context.buildBookletHtml({}, [question('題目', 1, {type, analysis:'長篇解析內容'})], {analysis:true});
+    assert(html.includes('margin-bottom:6px;font-size:1em'));
+    assert(html.indexOf('</table>') < html.indexOf('class="ep-q-analysis"'));
+    assert(html.includes('display:flex;margin:6px 0 0'));
+    assert(html.includes('flex:none;white-space:nowrap'));
+    assert(html.includes('min-width:0;overflow-wrap:anywhere'));
+  }
+  const multiple = context.renderQPreview(question('複選題', 1, {type:'T3', analysis:'複選解析'}),1,'T3',{analysis:true});
+  assert(multiple.indexOf('class="ep-q-analysis"') < multiple.indexOf('</table>'));
+});

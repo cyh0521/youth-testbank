@@ -3,6 +3,8 @@ const mmToTwips = mm => Math.round(Number(mm) * 1440 / 25.4);
 const pxToTwips = px => Math.round(Number(px) * 15);
 const HEADER_LINE_HEIGHT = 1.6;
 const QUESTION_PARAGRAPH_BREAK = Symbol('questionParagraphBreak');
+const QUESTION_ANALYSIS_BREAK = Symbol('questionAnalysisBreak');
+const QUESTION_ANSWER_BREAK = Symbol('questionAnswerBreak');
 
 function wordFont(fontId) {
   if (fontId === 'serif') return 'Noto Serif TC';
@@ -15,7 +17,6 @@ async function nodeRuns(node, docx, base) {
   if (node.nodeType === 3) return node.textContent ? [new docx.TextRun({ text:node.textContent, ...base })] : [];
   if (node.nodeType !== 1) return [];
   const tag = node.tagName.toLowerCase();
-  if (node.classList?.contains('ep-word-prefix-tab')) return [new docx.TextRun({ children:[new docx.Tab()], ...base })];
   if (node.classList?.contains('question-paragraph-break')) return [QUESTION_PARAGRAPH_BREAK];
   if (tag === 'br') return [new docx.TextRun({ break:1 })];
   if (tag === 'img') {
@@ -34,12 +35,22 @@ async function nodeRuns(node, docx, base) {
   }
   const style = { ...base };
   if (node.classList?.contains('ep-answer-value') || node.classList?.contains('ep-answer-label')) style.color = 'B4232C';
-  if (node.classList?.contains('ep-q-analysis')) style.color = '245FA5';
+  if (node.classList?.contains('ep-q-analysis')) { style.color = '245FA5'; style.size = Math.round(base.size * .9); }
+  if (node.classList?.contains('ep-q-source')) style.color = '27734C';
+  if (node.classList?.contains('ep-q-difficulty')) {
+    style.size = Math.round(base.size * .75);
+    style.bold = true;
+    const hard = node.classList.contains('is-hard');
+    const easy = node.classList.contains('is-easy');
+    style.color = hard ? 'A34D17' : easy ? '237553' : '526780';
+    style.shading = {fill:hard ? 'FFF0E5' : easy ? 'E3F3EC' : 'EDF1F6'};
+  }
   if (tag === 'b' || tag === 'strong') style.bold = true;
   if (tag === 'i' || tag === 'em') style.italics = true;
   if (tag === 'u') style.underline = {};
   const runs = [];
-  if (node.classList?.contains('ep-q-analysis') || node.classList?.contains('ep-answer-blank') || node.classList?.contains('ep-essay-blank')) runs.push(QUESTION_PARAGRAPH_BREAK);
+  if (node.classList?.contains('ep-q-analysis')) runs.push(QUESTION_ANALYSIS_BREAK);
+  else if (node.classList?.contains('ep-answer-blank') || node.classList?.contains('ep-essay-blank')) runs.push(QUESTION_ANSWER_BREAK);
   for (const child of node.childNodes) runs.push(...await nodeRuns(child, docx, style));
   return runs;
 }
@@ -53,7 +64,17 @@ async function runsFromNodes(nodes, docx, base) {
 function splitQuestionParagraphs(runs) {
   const parts = [[]];
   for (const run of runs) {
-    if (run === QUESTION_PARAGRAPH_BREAK) parts.push([]);
+    if (run === QUESTION_ANALYSIS_BREAK) {
+      const analysis = [];
+      analysis.isAnalysis = true;
+      parts.push(analysis);
+    }
+    else if (run === QUESTION_ANSWER_BREAK) {
+      const answer = [];
+      answer.isAnswer = true;
+      parts.push(answer);
+    }
+    else if (run === QUESTION_PARAGRAPH_BREAK) parts.push([]);
     else parts.at(-1).push(run);
   }
   return parts;
@@ -92,7 +113,7 @@ export async function createDocxBlob({ docx, content, title, appearance, margins
       continue;
     }
     if (item.classList.contains('ep-word-meta')) {
-      questions.push(paragraph(await runsFromNodes(item.childNodes, docx, { ...baseRun, size:Math.round(fontSize * .85), color:'000000' }), {
+      questions.push(paragraph(await runsFromNodes(item.childNodes, docx, { ...baseRun, color:'000000' }), {
         spacing:{ ...spacing, after:pxToTwips(6) },
       }));
       continue;
@@ -109,12 +130,16 @@ export async function createDocxBlob({ docx, content, title, appearance, margins
     if (!item.classList.contains('ep-q') && !item.classList.contains('ep-word-question')) continue;
     if (item.classList.contains('ep-word-question')) {
       const indent = pxToTwips(parseFloat(item.style.marginLeft) || appearance.fontSize * 4.8);
+      const questionGap = parseFloat(item.style.marginBottom) || 8;
       const parts = splitQuestionParagraphs(await runsFromNodes(item.childNodes, docx, baseRun));
+      const analysisIndent = Number(item.dataset?.analysisIndent);
+      const analysisOffset = Number(item.dataset?.analysisOffset) || 0;
+      const analysisGap = Number(item.dataset?.analysisGap ?? 6);
+      const answerIndent = Number(item.dataset?.answerIndent);
       parts.forEach((runs, index) => questions.push(paragraph(runs, {
         alignment:docx.AlignmentType.LEFT,
-        indent:index ? { left:indent } : { left:indent, hanging:indent },
-        tabStops:[{ type:docx.TabStopType.LEFT, position:indent }],
-        spacing:{ ...spacing, before:index ? pxToTwips(appearance.fontSize * .45) : 0, after:index === parts.length - 1 ? pxToTwips(8) : 0 },
+        indent:runs.isAnalysis && Number.isFinite(analysisIndent) ? { left:pxToTwips(analysisOffset + analysisIndent), hanging:pxToTwips(analysisIndent) } : runs.isAnswer && Number.isFinite(answerIndent) ? {left:indent + pxToTwips(answerIndent), hanging:pxToTwips(answerIndent)} : index ? { left:indent } : { left:indent, hanging:indent },
+        spacing:{ ...spacing, line:runs.isAnalysis ? Math.round(line * .9) : line, before:runs.isAnalysis ? pxToTwips(Number.isFinite(analysisIndent) ? analysisGap : 2) : runs.isAnswer ? pxToTwips(4) : index ? pxToTwips(appearance.fontSize * .45) : 0, after:index === parts.length - 1 ? pxToTwips(questionGap) : 0 },
       })));
       continue;
     }
@@ -151,7 +176,7 @@ export async function createDocxBlob({ docx, content, title, appearance, margins
   const sections = columns === 2
     ? [
         ...(header.length ? [{ properties:{ page }, children:header }] : []),
-        { properties:{ page, type:docx.SectionType.CONTINUOUS, column:{ count:2, space:mmToTwips(5) } }, children:questions },
+        { properties:{ page, type:docx.SectionType.CONTINUOUS, column:{ count:2, space:mmToTwips(10) } }, children:questions },
         ...(answers.length ? [{ properties:{ page, type:docx.SectionType.CONTINUOUS }, children:answers }] : []),
       ]
     : [{ properties:{ page }, children:[...header, ...questions, ...answers] }];

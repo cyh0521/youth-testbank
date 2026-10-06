@@ -147,9 +147,37 @@ export async function downloadExam(examData, questions, format) {
   await exportToWord(examData, questions, layout.paperKey, layout.columns, layout.fileHandle);
 }
 
+function confirmPrintSettings() {
+  let modal = document.getElementById('epPrintReminder');
+  if (!modal) {
+    document.body.insertAdjacentHTML('beforeend', `<div class="modal-overlay hidden" id="epPrintReminder" style="z-index:1300"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="epPrintReminderTitle"><div class="modal-header"><h3 id="epPrintReminderTitle">列印設定提醒</h3><button type="button" class="modal-close" id="epPrintReminderClose" aria-label="關閉列印提醒">✕</button></div><div class="modal-body"><p>請在瀏覽器列印視窗中調整設定：</p><ul style="padding-left:1.5em;line-height:1.8"><li>選擇要列印的紙張大小。</li><li>設定「頁首及首尾」、「雙面列印」等選項。</li><li>將「邊界」設為「預設值」，以套用頁邊距設定。</li><li>將「縮放比例」設為 100%。</li></ul></div><div class="modal-footer"><button type="button" class="btn btn-ghost" id="epPrintReminderCancel">取消</button><button type="button" class="btn btn-primary" id="epPrintReminderConfirm">繼續列印</button></div></div></div>`);
+    modal = document.getElementById('epPrintReminder');
+  }
+  const previousFocus = document.activeElement;
+  modal.classList.remove('hidden');
+  return new Promise(resolve => {
+    const close = accepted => {
+      modal.classList.add('hidden');
+      document.getElementById('epPrintReminderClose').onclick = null;
+      document.getElementById('epPrintReminderCancel').onclick = null;
+      document.getElementById('epPrintReminderConfirm').onclick = null;
+      modal.removeEventListener('keydown', onKeydown);
+      previousFocus?.focus();
+      resolve(accepted);
+    };
+    const onKeydown = event => { if (event.key === 'Escape') close(false); };
+    modal.addEventListener('keydown', onKeydown);
+    document.getElementById('epPrintReminderClose').onclick = () => close(false);
+    document.getElementById('epPrintReminderCancel').onclick = () => close(false);
+    document.getElementById('epPrintReminderConfirm').onclick = () => close(true);
+    document.getElementById('epPrintReminderConfirm').focus();
+  });
+}
+
 export async function printWithPaperChoice(examData, questions) {
-  const layout = await choosePaperLayout('列印');
-  if (layout) printExam(examData, questions, layout.paperKey, layout.columns);
+  try { await DataService.refreshExamPreferences(); }
+  catch (error) { UI.toast(`無法取得最新列印設定：${error.message}`, 'danger'); return; }
+  if (await confirmPrintSettings()) printExam(examData, questions);
 }
 
 export function loadWordMargins() {
@@ -741,7 +769,7 @@ export function showExamPreview(examData, questions) {
 // ══════════════════════════════════════════════════════════
 //  直接列印（使用與預覽相同的表頭、字型與版面）
 // ══════════════════════════════════════════════════════════
-export function printExam(examData, questions, paperKey = 'A4', columns = 1) {
+export function printExam(examData, questions) {
   ensurePreviewModal();
   const paper = document.createElement('div');
   paper.innerHTML = buildPaperHtml(examData, questions);
@@ -750,10 +778,8 @@ export function printExam(examData, questions, paperKey = 'A4', columns = 1) {
   printContent.style.fontFamily = fontStackById(appearance.font);
   printContent.style.fontSize = `${appearance.fontSize}px`;
   printContent.style.lineHeight = appearance.lineHeight;
-  const size = PAPER_SIZES[paperKey] || PAPER_SIZES.A4;
   const margins = loadWordMargins();
   const printPaper = printContent;
-  if (columns === 2) printPaper.classList.add('ep-two-columns');
 
   const frame = document.createElement('iframe');
   frame.setAttribute('title', '試卷列印');
@@ -769,7 +795,7 @@ export function printExam(examData, questions, paperKey = 'A4', columns = 1) {
   doc.open();
   doc.write(`<!DOCTYPE html><html lang="zh-TW"><head><meta charset="UTF-8"><title>${examData.title || '試卷'}</title>
     <style>
-      @page { size: ${size.width}mm ${size.height}mm; margin: ${margins.top}mm ${margins.right}mm ${margins.bottom}mm ${margins.left}mm; }
+      @page { margin: ${margins.top}mm ${margins.right}mm ${margins.bottom}mm ${margins.left}mm; }
       * { box-sizing: border-box; }
       body { margin: 0; color: #000; }
       .ep-exam-header { border: 0; border-bottom: 2px solid #333; padding: 10px 14px; margin-bottom: 14px; font-size: .94em; line-height: 1.6; }
@@ -789,8 +815,6 @@ export function printExam(examData, questions, paperKey = 'A4', columns = 1) {
       .ep-essay-blank { min-height: 2lh; margin-top: 4px; }
       .ep-labeled-answer { display: grid; grid-template-columns: max-content minmax(0,1fr); align-items: start; }
       .ep-labeled-answer .ep-answer-value { min-width: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
-      .ep-two-columns .ep-question-columns { column-count: 2; column-gap: 10mm; }
-      .ep-two-columns .ep-section-head { break-after: avoid; }
     </style></head><body>${printPaper.outerHTML}</body></html>`);
   doc.close();
 
@@ -970,7 +994,7 @@ function renderBookletQuestion(q, num, type, display) {
   // Reuse the exam question layout with numbering within each chapter's question type.
   const rendered = renderQPreview(q, num, type, {...display, booklet:false, source:false, difficulty:false});
   const body = rendered.slice('<div class="ep-q">'.length, -'</div>'.length);
-  return `<div class="ep-q ep-booklet-question" style="margin-bottom:18px;break-inside:avoid"><div class="ep-booklet-meta" style="margin-bottom:6px;font-size:.85em;color:#000;line-height:inherit">${meta.join('︱')}</div>${body}</div>`;
+  return `<div class="ep-q ep-booklet-question" style="margin-bottom:18px;break-inside:avoid"><div class="ep-booklet-meta" style="margin-bottom:6px;font-size:1em;color:#000;line-height:inherit">${meta.join('︱')}</div>${body}</div>`;
 
 }
 
@@ -1009,9 +1033,10 @@ function renderQPreview(q, num, type, previewOptions) {
     if (previewOptions?.answers && answer) body += `<div class="ep-answer-blank">【答案】<span class="ep-answer-value">${escapeText(answer)}</span></div>`;
   }
   if (previewOptions?.analysis && q.analysis) {
-    const analysis = `<div class="ep-q-analysis"><span class="ep-analysis-label">【解析】</span><span class="ep-analysis-text">${escapeText(q.analysis)}</span></div>`;
+    const alignWithAnswer = type === 'T1' || type === 'T2';
+    const analysis = `<div class="ep-q-analysis"${alignWithAnswer ? ' style="display:flex;margin:6px 0 0;text-align:left"' : ''}><span class="ep-analysis-label" style="flex:none;white-space:nowrap">【解析】</span><span class="ep-analysis-text" style="min-width:0;overflow-wrap:anywhere">${escapeText(q.analysis)}</span></div>`;
     const tableEnd = '</td></tr></table>';
-    body = body.endsWith(tableEnd)
+    body = !alignWithAnswer && body.endsWith(tableEnd)
       ? body.slice(0, -tableEnd.length) + analysis + tableEnd
       : body + analysis;
   }
@@ -1030,7 +1055,7 @@ export async function exportToWord(examData, questions, paperKey = 'A4', columns
   const fontStack = fontStackById(a.font);
   const lineHeightPx = `${(a.fontSize * a.lineHeight).toFixed(2)}px`;
   const paper = document.createElement('div');
-  paper.innerHTML = buildPaperHtml(examData, questions);
+  paper.innerHTML = buildPaperHtml(examData, questions, window._epExamData === examData ? previewDisplay() : undefined);
   const measure = document.createElement('canvas').getContext('2d');
   measure.font = `${a.fontSize}px ${fontStack}`;
   // Word 在表格欄位交界加入可見編輯記號，也容易拉大題號後的空白。
@@ -1044,7 +1069,8 @@ export async function exportToWord(examData, questions, paperKey = 'A4', columns
     const indent = Math.ceil(measure.measureText(prefix.textContent).width + a.fontSize * .2);
     const paragraph = document.createElement('p');
     paragraph.className = 'ep-word-question';
-    paragraph.style.margin = `0 0 8px ${indent}px`;
+    const questionGap = parseFloat(question.style?.marginBottom) || 8;
+    paragraph.style.margin = `0 0 ${questionGap}px ${indent}px`;
     paragraph.style.textIndent = `-${indent}px`;
     paragraph.style.fontFamily = fontStack;
     paragraph.style.fontSize = `${a.fontSize}px`;
@@ -1057,12 +1083,25 @@ export async function exportToWord(examData, questions, paperKey = 'A4', columns
       question.before(metadataLine);
     }
     while (prefix.firstChild) paragraph.appendChild(prefix.firstChild);
-    const tab = document.createElement('span');
-    tab.className = 'ep-word-prefix-tab';
-    paragraph.appendChild(tab);
+    paragraph.appendChild(document.createTextNode(' '));
     while (content.firstChild) paragraph.appendChild(content.firstChild);
+    const externalAnalyses = [...question.children].filter(child => child.classList.contains('ep-q-analysis'));
+    const analysis = externalAnalyses[0] || paragraph.querySelector('.ep-q-analysis');
+    if (analysis) {
+      const label = analysis.querySelector('.ep-analysis-label')?.textContent || '【解析】';
+      measure.font = `${a.fontSize * .9}px ${fontStack}`;
+      paragraph.dataset.analysisIndent = String(Math.ceil(measure.measureText(label).width));
+      paragraph.dataset.analysisOffset = externalAnalyses.length ? '0' : String(indent);
+      paragraph.dataset.analysisGap = externalAnalyses.length ? '6' : '2';
+      measure.font = `${a.fontSize}px ${fontStack}`;
+    }
+    externalAnalyses.forEach(analysis => paragraph.appendChild(analysis));
+    const answerLabel = paragraph.querySelector('.ep-labeled-answer .ep-answer-label');
+    if (answerLabel) paragraph.dataset.answerIndent = String(Math.ceil(measure.measureText(answerLabel.textContent).width));
     const essayBlank = paragraph.querySelector('.ep-essay-blank');
-    if (essayBlank) essayBlank.replaceWith(document.createElement('br'), document.createElement('br'));
+    if (essayBlank && !essayBlank.classList.contains('ep-labeled-answer')) {
+      essayBlank.replaceChildren(document.createElement('br'));
+    }
     question.replaceWith(paragraph);
   });
   try {
