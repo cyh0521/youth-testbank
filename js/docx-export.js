@@ -108,6 +108,40 @@ export async function createDocxBlob({ docx, content, title, appearance, margins
   const questions = [];
   const questionArea = content.querySelector('.ep-question-columns');
   for (const item of questionArea?.children || []) {
+    if (item.classList.contains('ep-response-grid')) {
+      const count = Number(item.dataset.columns) || 1;
+      const rowLines = Number(item.dataset.rowLines) === 4 ? 4 : 1.5;
+      const verticalAlign = item.dataset.verticalAlign === 'top' ? docx.VerticalAlign.TOP : docx.VerticalAlign.CENTER;
+      const numberWidth = Number(item.dataset.numberWidth) || 4;
+      const centerAnswers = item.dataset.answerAlign === 'center';
+      const border = {style:docx.BorderStyle.SINGLE, color:'555555', size:6};
+      const rows = [];
+      for (const row of item.rows) {
+        const cells = [];
+        for (const cell of row.cells) {
+          const isNumber = cell.classList.contains('ep-response-number');
+          const children = [];
+          for (const lineNode of cell.children) {
+            children.push(paragraph(await runsFromNodes(lineNode.childNodes, docx, baseRun), {
+              spacing:{...spacing, before:0, after:0},
+              alignment:isNumber || centerAnswers ? docx.AlignmentType.CENTER : docx.AlignmentType.LEFT,
+            }));
+          }
+          cells.push(new docx.TableCell({
+            width:{size:isNumber ? numberWidth : 100 / count - numberWidth,type:docx.WidthType.PERCENTAGE},
+            verticalAlign:isNumber ? docx.VerticalAlign.CENTER : verticalAlign,
+            margins:{top:pxToTwips(2),bottom:pxToTwips(2),left:pxToTwips(2),right:pxToTwips(2)},
+            borders:{top:border,bottom:border,left:border,right:border},
+            children:children.length ? children : [paragraph([],{spacing:{...spacing,after:0}})],
+          }));
+        }
+        rows.push(new docx.TableRow({children:cells,cantSplit:true,height:{value:line * rowLines + pxToTwips(4),rule:docx.HeightRule.ATLEAST}}));
+      }
+      const contentWidth = (paperSize.width - Number(margins.left) - Number(margins.right) - (columns === 2 ? 10 : 0)) / (columns === 2 ? 2 : 1);
+      const columnWidths = Array.from({length:count}, () => [mmToTwips(contentWidth * numberWidth / 100), mmToTwips(contentWidth * (1 / count - numberWidth / 100))]).flat();
+      questions.push(new docx.Table({rows,columnWidths,width:{size:100,type:docx.WidthType.PERCENTAGE},layout:docx.TableLayoutType.FIXED}));
+      continue;
+    }
     if (item.classList.contains('ep-booklet-chapter-spacer')) {
       questions.push(paragraph([], { spacing:{ ...spacing, before:0, after:0 } }));
       continue;

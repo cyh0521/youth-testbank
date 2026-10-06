@@ -1,3 +1,4 @@
+import { DOWNLOAD_TYPES, buildDownloadVariants, downloadFilename } from './download-variants.js';
 import { createDocxBlob } from './docx-export.js';
 
 /**
@@ -69,7 +70,7 @@ function loadDocxLibrary() {
   return docxLibraryPromise;
 }
 
-async function choosePaperLayout(format, chooseDestination = null) {
+async function choosePaperLayout(format, showTypes = true) {
   try { await DataService.refreshExamPreferences(); }
   catch (error) { UI.toast(`無法取得最新列印設定：${error.message}`, 'danger'); return null; }
   let modal = document.getElementById('epPaperSizeModal');
@@ -78,13 +79,19 @@ async function choosePaperLayout(format, chooseDestination = null) {
       <div class="modal ep-layout-modal">
         <div class="modal-header"><h3 id="epPaperSizeTitle">列印與下載設定</h3><button class="modal-close" type="button" id="epPaperSizeClose">✕</button></div>
         <div class="modal-body ep-layout-body">
+          <div class="ep-layout-paper">
           <fieldset class="ep-layout-fieldset"><legend>紙張大小</legend><div class="ep-layout-options ep-paper-options">
-            ${Object.entries(PAPER_SIZES).map(([key, size]) => `<label class="ep-layout-option">
-              <input type="radio" name="epPaperSize" value="${key}"><span class="ep-layout-visual"><span class="ep-paper-icon ep-paper-${key.toLowerCase()}"><i></i><i></i><i></i></span></span><strong>${key}${key.startsWith('B') ? '（JIS）' : ''}</strong><small>${size.width} × ${size.height} mm</small>
+            ${Object.keys(PAPER_SIZES).map(key => `<label class="ep-layout-option">
+              <input type="radio" name="epPaperSize" value="${key}"><span class="ep-layout-visual"><span class="ep-paper-icon ep-paper-${key.toLowerCase()}">${'<i></i>'.repeat(9)}</span></span><strong>${key}${key.startsWith('B') ? '（JIS）' : ''}</strong>
             </label>`).join('')}
           </div></fieldset>
           <fieldset class="ep-layout-fieldset"><legend>列印欄數</legend><div class="ep-layout-options ep-column-options">
-            ${[1, 2].map(count => `<label class="ep-layout-option"><input type="radio" name="epPaperColumns" value="${count}"><span class="ep-layout-visual"><span class="ep-column-icon ep-column-${count}"><i></i><i></i><i></i><i></i><i></i><i></i></span></span><strong>${count === 1 ? '單欄' : '雙欄'}</strong><small>${count === 1 ? '題目使用整頁寬度' : '題目由左欄接續右欄'}</small></label>`).join('')}
+            ${[1, 2].map(count => `<label class="ep-layout-option"><input type="radio" name="epPaperColumns" value="${count}"><span class="ep-layout-visual"><span class="ep-column-icon ep-column-${count}">${'<i></i>'.repeat(9 * count)}</span></span><strong>${count === 1 ? '單欄' : '雙欄'}</strong></label>`).join('')}
+          </div></fieldset>
+          </div>
+          <fieldset class="ep-layout-fieldset" id="epDownloadTypes"><legend>試卷類型（可複選）</legend><div class="ep-download-types">
+            ${DOWNLOAD_TYPES.map(type => `<label><input type="checkbox" name="epDownloadType" value="${type.code}" ${type.code === 'questions' ? 'checked' : ''}><span>${type.label}</span></label>`).join('')}
+            <label><input type="checkbox" id="epDownloadAB"><span>AB卷</span></label>
           </div></fieldset>
         </div>
         <div class="modal-footer"><button class="btn btn-ghost" type="button" id="epPaperSizeCancel">取消</button><button class="btn btn-primary" type="button" id="epPaperSizeConfirm">確定</button></div>
@@ -93,10 +100,15 @@ async function choosePaperLayout(format, chooseDestination = null) {
   }
   document.getElementById('epPaperSizeTitle').textContent = format === '列印' ? '列印設定' : '下載檔案設定';
   document.getElementById('epPaperSizeConfirm').textContent = format === '列印' ? '列印' : '下載';
+  document.getElementById('epDownloadTypes').hidden = format !== 'Word' || !showTypes;
+  modal.querySelector('.ep-layout-modal').classList.toggle('ep-layout-with-types', format === 'Word' && showTypes);
+  modal.querySelectorAll('input[name="epDownloadType"]').forEach(input => { input.checked = input.value === 'questions'; });
+  document.getElementById('epDownloadAB').checked = false;
   const saved = DataService.getExamPreferences().paperLayout || {};
   modal.querySelector(`input[name="epPaperSize"][value="${PAPER_SIZES[saved.paperKey] ? saved.paperKey : 'A4'}"]`).checked = true;
   modal.querySelector(`input[name="epPaperColumns"][value="${saved.columns === 2 ? '2' : '1'}"]`).checked = true;
   modal.classList.remove('hidden');
+  modal.querySelector('.ep-layout-body').scrollTop = 0;
   return new Promise(resolve => {
     const close = value => {
       modal.classList.add('hidden');
@@ -112,39 +124,34 @@ async function choosePaperLayout(format, chooseDestination = null) {
       confirm.disabled = true;
       const paperKey = modal.querySelector('input[name="epPaperSize"]:checked').value;
       const columns = Number(modal.querySelector('input[name="epPaperColumns"]:checked').value);
-      let fileHandle;
-      if (chooseDestination) {
-        try { fileHandle = await chooseDestination(); }
-        catch (error) {
-          if (error.name !== 'AbortError') UI.toast(`無法選擇存放位置：${error.message}`, 'danger');
-          confirm.disabled = false;
-          return;
-        }
-      }
+      const downloadTypes = format === 'Word' && showTypes ? [...modal.querySelectorAll('input[name="epDownloadType"]:checked')].map(input => input.value) : null;
+      const ab = format === 'Word' && showTypes && document.getElementById('epDownloadAB').checked;
+      if (downloadTypes && !downloadTypes.length) { UI.toast('請至少選擇一種試卷類型', 'warning'); confirm.disabled = false; return; }
       try {
         await DataService.refreshExamPreferences();
         await DataService.updateExamPreferences({ paperLayout:{ paperKey, columns } });
       }
       catch (error) { UI.toast(`列印與下載設定儲存失敗：${error.message}`, 'danger'); confirm.disabled = false; return; }
       confirm.disabled = false;
-      close({ paperKey, columns, fileHandle });
+      close({ paperKey, columns, downloadTypes, ab });
     };
   });
 }
 
 export async function downloadExam(examData, questions, format) {
   if (format !== 'Word') throw new Error('不支援的下載格式');
-  if (!window.showSaveFilePicker) {
-    UI.toast('請使用支援另存新檔的 Chrome 或 Edge，並透過 HTTPS 或 localhost 開啟網站', 'warning');
-    return;
-  }
-  const layout = await choosePaperLayout(format, () => window.showSaveFilePicker({
-    id:'exam-downloads',
-    suggestedName:`${(examData.title || '試卷').replace(/[\\/:*?"<>|]/g, '_')}.docx`,
-    types:[{ description:'Word 文件', accept:{ 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':['.docx'] } }],
-  }));
+  const display = window._epExamData === examData ? previewDisplay() : examData.display || {};
+  const layout = await choosePaperLayout(format, !examData.booklet);
   if (!layout) return;
-  await exportToWord(examData, questions, layout.paperKey, layout.columns, layout.fileHandle);
+  try {
+    if (examData.booklet) { await exportToWord(examData, questions, layout.paperKey, layout.columns); return; }
+    const variants = buildDownloadVariants(questions, layout.downloadTypes, layout.ab);
+    let count = 0;
+    for (const variant of variants) {
+      if (await exportToWord(examData, variant.questions, layout.paperKey, layout.columns, null, {variant, display})) count++;
+    }
+    if (count) UI.toast(`已開始下載 ${count} 個 Word 檔案`, count === variants.length ? 'success' : 'warning');
+  } catch (error) { UI.toast('Word 下載失敗：' + error.message, 'danger'); }
 }
 
 function confirmPrintSettings() {
@@ -772,7 +779,8 @@ export function showExamPreview(examData, questions) {
 export function printExam(examData, questions) {
   ensurePreviewModal();
   const paper = document.createElement('div');
-  paper.innerHTML = buildPaperHtml(examData, questions);
+  const display = window._epExamData === examData ? previewDisplay() : undefined;
+  paper.innerHTML = buildPaperHtml(examData, questions, display, false);
   const appearance = examAppearance(examData);
   const printContent = paper.firstElementChild;
   printContent.style.fontFamily = fontStackById(appearance.font);
@@ -871,7 +879,7 @@ export function buildHeaderHtml(h) {
   </div>`;
 }
 
-function buildPaperHtml(examData, questions, previewOptions) {
+function buildPaperHtml(examData, questions, previewOptions, includeAnswerSheet = true) {
   if (examData.booklet) previewOptions = {answers:true, analysis:true, source:true, difficulty:true, ...(previewOptions || examData.display || {}), booklet:true};
   if (examData.booklet) return buildBookletHtml(examData, questions, previewOptions);
   const h = examData.header ?? loadHeader();
@@ -889,11 +897,12 @@ function buildPaperHtml(examData, questions, previewOptions) {
     const blanks = byBlank ? qs.reduce((sum, q) => sum + (Number.isInteger(Number(q.answerCount)) && Number(q.answerCount) > 0 ? Number(q.answerCount) : 1), 0) : 0;
     const total = (byBlank ? blanks : qs.length) * score;
     html += examData.booklet ? `<div class="ep-section-head">${ROMANS[secIdx]}、${TYPE_LABELS[type]}（${qs.length} 題）</div>` : `<div class="ep-section-head">${ROMANS[secIdx]}、${TYPE_LABELS[type]}（${byBlank ? `${qs.length} 題，共 ${blanks} 格；每格` : '每題'} ${score} 分，共 ${total} 分）</div>`;
-    qs.forEach((q, i) => { html += renderQPreview(q, i+1, type, previewOptions); });
+    if (previewOptions?.answerSheet) html += renderAnswerGrid(qs, type, previewOptions.answers);
+    else qs.forEach((q, i) => { html += renderQPreview(q, i+1, type, previewOptions); });
   });
 
   html += '</div>';
-  if (!previewOptions) {
+  if (!previewOptions && includeAnswerSheet) {
     const display = { answers:true, analysis:true };
     const label = display.answers && display.analysis ? '解答與解析' : display.answers ? '解答' : '解析';
     html += `<div class="ep-answers" style="border-top:2px dashed #aaa;margin-top:20px;padding-top:12px">
@@ -922,6 +931,41 @@ function buildPaperHtml(examData, questions, previewOptions) {
   html += '</div>';
 
   return html;
+}
+
+function renderAnswerGrid(questions, type, showAnswers) {
+  const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+  const columns = ['T1','T2'].includes(type) ? 10 : type === 'T3' ? 5 : type === 'T4' ? 3 : 1;
+  const rowLines = type === 'T6' ? 4 : 1.5;
+  const verticalAlign = type === 'T6' ? 'top' : 'middle';
+  const numberWidth = 4;
+  const answerAlign = ['T1','T2'].includes(type) ? 'center' : 'left';
+  const entries = questions.flatMap((q, index) => {
+    const count = type === 'T4' && Number.isInteger(Number(q.answerCount)) && Number(q.answerCount) > 0 ? Number(q.answerCount) : 1;
+    const answer = showAnswers ? String(q.answer ?? '').trim() : '';
+    let answers = [answer];
+    if (answer && count > 1) {
+      const numbered = answer.split(/(?:\(\d+\)|（\d+）)/).map(part => part.trim()).filter(Boolean);
+      const separated = answer.split(/[、,，;；|｜\r\n]+/).map(part => part.trim()).filter(Boolean);
+      if (numbered.length === count) answers = numbered;
+      else if (separated.length === count) answers = separated;
+    }
+    return Array.from({length:count}, (_, blank) => ({
+      label:count > 1 ? `${index + 1}-${blank + 1}` : String(index + 1), answer:answers[blank] || '',
+    }));
+  });
+  let html = `<table class="ep-response-grid" data-columns="${columns}" data-number-width="${numberWidth}" data-answer-align="${answerAlign}" data-vertical-align="${verticalAlign}" data-row-lines="${rowLines}" style="width:100%;border-collapse:collapse;table-layout:fixed"><colgroup>${Array.from({length:columns}, () => `<col style="width:${numberWidth}%"><col style="width:${100 / columns - numberWidth}%">`).join('')}</colgroup>`;
+  for (let start = 0; start < entries.length; start += columns) {
+    html += '<tr>';
+    for (let offset = 0; offset < columns; offset++) {
+      const entry = entries[start + offset];
+      const value = entry?.answer ? `<span class="ep-answer-value">${escape(entry.answer)}</span>` : '';
+      const cellStyle = `border:1px solid #555;padding:2px;height:${rowLines}lh`;
+      html += `<td class="ep-response-number" style="${cellStyle};vertical-align:middle;text-align:center"><p style="margin:0;white-space:nowrap">${entry?.label || ''}</p></td><td class="ep-response-answer${entry ? '' : ' ep-response-empty'}" style="${cellStyle};vertical-align:${verticalAlign};text-align:${answerAlign}"><p style="margin:0;${rowLines === 1.5 ? 'white-space:nowrap' : ''}">${value}</p></td>`;
+    }
+    html += '</tr>';
+  }
+  return html + '</table>';
 }
 
 function buildBookletHtml(examData, questions, display) {
@@ -966,7 +1010,7 @@ function buildBookletHtml(examData, questions, display) {
     const grouped = groupByType(group.questions);
     orderedTypes(grouped, examData.typeOrder).forEach((type, index) => {
       html += `<div class="ep-section-head">${ROMANS[index]}、${TYPE_LABELS[type]}（${grouped[type].length} 題）</div>`;
-      grouped[type].sort((a, b) => {
+      if (!examData.preserveQuestionOrder) grouped[type].sort((a, b) => {
         const first = String(a.qnum ?? '').trim();
         const second = String(b.qnum ?? '').trim();
         if (!first || !second) return first ? -1 : second ? 1 : 0;
@@ -1047,7 +1091,7 @@ function renderQPreview(q, num, type, previewOptions) {
 // ══════════════════════════════════════════════════════════
 //  輸出 Word（讀取相同的表頭與外觀偏好）
 // ══════════════════════════════════════════════════════════
-export async function exportToWord(examData, questions, paperKey = 'A4', columns = 1, fileHandle = null) {
+export async function exportToWord(examData, questions, paperKey = 'A4', columns = 1, fileHandle = null, downloadOptions = null) {
   const a = examAppearance(examData);
   const margins = loadWordMargins();
   const size = PAPER_SIZES[paperKey] || PAPER_SIZES.A4;
@@ -1055,7 +1099,18 @@ export async function exportToWord(examData, questions, paperKey = 'A4', columns
   const fontStack = fontStackById(a.font);
   const lineHeightPx = `${(a.fontSize * a.lineHeight).toFixed(2)}px`;
   const paper = document.createElement('div');
-  paper.innerHTML = buildPaperHtml(examData, questions, window._epExamData === examData ? previewDisplay() : undefined);
+  const baseDisplay = window._epExamData === examData ? previewDisplay() : examData.display || {};
+  if (downloadOptions?.variant) {
+    const variant = downloadOptions.variant;
+    const display = { ...(downloadOptions.display || baseDisplay), ...(examData.booklet ? {} : { difficulty:false }) };
+    const data = {...examData, preserveQuestionOrder:variant.preserveQuestionOrder};
+    paper.innerHTML = buildPaperHtml(data, variant.questions, {...display, answers:variant.answers, analysis:variant.analysis, source:variant.source ?? display.source, answerSheet:!!variant.answerSheet}, false);
+  } else paper.innerHTML = buildPaperHtml(examData, questions,
+    window._epExamData === examData ? { ...baseDisplay, ...(examData.booklet ? {} : { difficulty:false }) } : undefined);
+  paper.querySelectorAll('.ep-answer-slot .ep-answer-value').forEach(value => {
+    const answer = value.textContent.trim();
+    if (answer) value.textContent = ` ${answer} `;
+  });
   const measure = document.createElement('canvas').getContext('2d');
   measure.font = `${a.fontSize}px ${fontStack}`;
   // Word 在表格欄位交界加入可見編輯記號，也容易拉大題號後的空白。
@@ -1117,17 +1172,19 @@ export async function exportToWord(examData, questions, paperKey = 'A4', columns
         throw error;
       }
       UI.toast(`已儲存 ${fileHandle.name}`, 'success');
-      return;
+      return true;
     }
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `${title.replace(/[\\/:*?"<>|]/g, '_')}.docx`;
+    link.download = downloadFilename(title, downloadOptions?.variant?.label || '');
     document.body.appendChild(link);
     link.click();
     link.remove();
     setTimeout(() => URL.revokeObjectURL(link.href), 60000);
+    return true;
   } catch (error) {
     console.error('DOCX 匯出失敗', error);
     UI.toast(`Word 下載失敗：${error.message || '請稍後再試'}`, 'danger');
+    return false;
   }
 }

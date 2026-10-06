@@ -4,6 +4,8 @@ import { runInNewContext } from 'node:vm';
 import test from 'node:test';
 
 const source = readFileSync(new URL('../js/exam-preview.js', import.meta.url), 'utf8');
+const variantSource = readFileSync(new URL('../js/download-variants.js', import.meta.url), 'utf8');
+const {downloadFilename} = await import('data:text/javascript;base64,' + Buffer.from(variantSource).toString('base64'));
 
 test('Word 題目與解析分成不同段落', async () => {
   const exporter = readFileSync(new URL('../js/docx-export.js', import.meta.url), 'utf8');
@@ -39,7 +41,7 @@ test('Word 匯出完成題號寬度計算並觸發下載', async () => {
   const question = {children:[externalAnalysis], querySelector: selector => selector === '.ep-answer-table' ? table : null, replaceWith: value => { replacement = value; }};
   const paper = {firstElementChild:{}, querySelectorAll:() => [question]};
   const context = {
-    Math, console, window:{_epExamData:exam}, previewDisplay:()=>display, setTimeout() {},
+    Math, console, downloadFilename, window:{_epExamData:exam}, previewDisplay:()=>display, setTimeout() {},
     examAppearance:() => ({font:'serif', fontSize:16, lineHeight:1.6}),
     loadWordMargins:() => ({}), PAPER_SIZES:{A4:{}}, fontStackById:() => 'serif', buildPaperHtml:(data,questions,options) => {assert.equal(options,display); return '';},
     loadDocxLibrary:async () => ({}), createDocxBlob:async () => ({}),

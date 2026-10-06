@@ -28,7 +28,7 @@ test('列印不固定紙張大小，使用最新帳號邊距且無雙欄；Word 
   let html;
   const frame = {style:{},setAttribute(){},contentDocument:{open(){},write:value=>{html=value;},close(){}},contentWindow:{addEventListener(){}}};
   const context = {
-    ensurePreviewModal(){},buildPaperHtml:()=>'',examAppearance:()=>({font:'system',fontSize:16,lineHeight:1.3}),
+    window:{}, ensurePreviewModal(){},buildPaperHtml:(exam, questions, display, includeAnswerSheet)=>{assert.equal(includeAnswerSheet,false);return '';},examAppearance:()=>({font:'system',fontSize:16,lineHeight:1.3}),
     fontStackById:()=> 'system-ui',loadWordMargins:()=>({top:12,right:15,bottom:18,left:20}),setTimeout(){},
     document:{body:{appendChild(){}},createElement:tag=>tag==='iframe'?frame:{firstElementChild:{style:{},outerHTML:'<div id="epPaper"></div>'}}},
   };
