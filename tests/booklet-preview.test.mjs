@@ -50,6 +50,21 @@ test('缺少章節定義時仍顯示層級，標題內容會跳脫 HTML', () => 
   assert(escaped.includes('&lt;測試&gt;'));
 });
 
+test('未設定的下層不顯示第0節或第0小節，零值與空值歸入相同章節', () => {
+  const html = context.buildBookletHtml({chapterCatalog:{labels:['章','節','小節'], chapters:[{chapterNum:1, title:'妙用資源樂消費'}]}}, [
+    question('零值題目', 0, {subsectionNum:0}),
+    question('補零題目', '00', {subsectionNum:'000'}),
+    question('空值題目', '', {subsectionNum:null}),
+    question('未填題目', undefined)
+  ], {});
+  assert(html.includes('第1章　妙用資源樂消費'));
+  assert(!html.includes('第0節'));
+  assert(!html.includes('第0小節'));
+  assert.equal((html.match(/ep-booklet-chapter-line/g) || []).length, 1);
+  assert.equal((html.match(/ep-booklet-chapter-end/g) || []).length, 1);
+  assert(html.includes('選擇題（4 題）'));
+});
+
 test('各節各題型以編碼的數值順序排列，未編碼排最後', () => {
   const questions = [
     question('編碼十', 1, {qnum:10}),

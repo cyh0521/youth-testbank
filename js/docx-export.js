@@ -87,6 +87,10 @@ export async function createDocxBlob({ docx, content, title, appearance, margins
   const questions = [];
   const questionArea = content.querySelector('.ep-question-columns');
   for (const item of questionArea?.children || []) {
+    if (item.classList.contains('ep-booklet-chapter-spacer')) {
+      questions.push(paragraph([], { spacing:{ ...spacing, before:0, after:0 } }));
+      continue;
+    }
     if (item.classList.contains('ep-word-meta')) {
       questions.push(paragraph(await runsFromNodes(item.childNodes, docx, { ...baseRun, size:Math.round(fontSize * .85), color:'000000' }), {
         spacing:{ ...spacing, after:pxToTwips(6) },
@@ -95,9 +99,10 @@ export async function createDocxBlob({ docx, content, title, appearance, margins
     }
     if (item.classList.contains('ep-section-head')) {
       const chapterLine = item.classList.contains('ep-booklet-chapter-line');
-      questions.push(paragraph(await runsFromNodes(item.childNodes, docx, { ...baseRun, bold:true }), {
-        spacing:{ ...spacing, before:pxToTwips(chapterLine ? 0 : 14), after:pxToTwips(chapterLine ? 6 : 8) },
-        ...(item.classList.contains('ep-booklet-chapter-end') ? { border:{ bottom:{ style:docx.BorderStyle.SINGLE, color:'000000', size:6, space:6 } } } : {}),
+      const chapterEnd = item.classList.contains('ep-booklet-chapter-end');
+      questions.push(paragraph(await runsFromNodes(item.childNodes, docx, { ...baseRun, bold:true, size:fontSize }), {
+        spacing:{ ...spacing, line, before:pxToTwips(chapterLine ? 0 : 14), after:pxToTwips(chapterEnd ? 22 : chapterLine ? 6 : 8) },
+        ...(chapterEnd ? { border:{ bottom:{ style:docx.BorderStyle.SINGLE, color:'000000', size:6, space:12 } } } : {}),
       }));
       continue;
     }

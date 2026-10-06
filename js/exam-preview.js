@@ -129,15 +129,15 @@ function choosePaperLayout(format, chooseDestination = null) {
 
 export async function downloadExam(examData, questions, format) {
   if (format !== 'Word') throw new Error('不支援的下載格式');
-  if (!window.showSaveFilePicker && !examData.booklet) {
+  if (!window.showSaveFilePicker) {
     UI.toast('請使用支援另存新檔的 Chrome 或 Edge，並透過 HTTPS 或 localhost 開啟網站', 'warning');
     return;
   }
-  const layout = await choosePaperLayout(format, window.showSaveFilePicker && !examData.booklet ? () => window.showSaveFilePicker({
+  const layout = await choosePaperLayout(format, () => window.showSaveFilePicker({
     id:'exam-downloads',
     suggestedName:`${(examData.title || '試卷').replace(/[\\/:*?"<>|]/g, '_')}.docx`,
     types:[{ description:'Word 文件', accept:{ 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':['.docx'] } }],
-  }) : null);
+  }));
   if (!layout) return;
   await exportToWord(examData, questions, layout.paperKey, layout.columns, layout.fileHandle);
 }
@@ -898,7 +898,10 @@ function buildPaperHtml(examData, questions, previewOptions) {
 function buildBookletHtml(examData, questions, display) {
   const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
   const catalog = examData.chapterCatalog || { labels: ['章', '節', ''], chapters: [] };
-  const normalize = value => String(value ?? '').replace(/^0+(?=\d)/, '');
+  const normalize = value => {
+    const number = String(value ?? '').trim().replace(/^0+(?=\d)/, '');
+    return number === '0' ? '' : number;
+  };
   const fields = ['chapterNum', 'sectionNum', 'subsectionNum'];
   const groups = new Map();
   for (const q of questions) {
@@ -928,9 +931,9 @@ function buildBookletHtml(examData, questions, display) {
       const title = titles[index] || '';
       const text = /^(?:第\s*)?(?:[0-9０-９一二三四五六七八九十百]+\s*(?:章|節|單元)|單元\s*[0-9０-９一二三四五六七八九十百]+)/.test(title) ? title : `${prefix}${title ? `　${title}` : ''}`;
       const lastLine = !group.path.slice(index + 1).some(Boolean);
-      return `<div class="ep-section-head ep-booklet-chapter-line${lastLine ? ' ep-booklet-chapter-end' : ''}" style="margin:0 0 6px;break-after:avoid;${lastLine ? 'padding-bottom:8px;border-bottom:1px solid #000;' : ''}">${escape(text)}</div>`;
+      return `<div class="ep-section-head ep-booklet-chapter-line${lastLine ? ' ep-booklet-chapter-end' : ''}" style="margin:0 0 6px;break-after:avoid;${lastLine ? 'padding-bottom:16px;margin-bottom:22px;border-bottom:1px solid #000;' : ''}">${escape(text)}</div>`;
     }).join('');
-    html += heading || '<div class="ep-section-head ep-booklet-chapter-end" style="padding-bottom:8px;border-bottom:1px solid #000">未標示章節</div>';
+    html += heading || '<div class="ep-section-head ep-booklet-chapter-end" style="padding-bottom:16px;margin-bottom:22px;border-bottom:1px solid #000">未標示章節</div>';
     const grouped = groupByType(group.questions);
     orderedTypes(grouped, examData.typeOrder).forEach((type, index) => {
       html += `<div class="ep-section-head">${ROMANS[index]}、${TYPE_LABELS[type]}（${grouped[type].length} 題）</div>`;
@@ -942,6 +945,7 @@ function buildBookletHtml(examData, questions, display) {
       });
       grouped[type].forEach((q, questionIndex) => { html += renderBookletQuestion(q, questionIndex + 1, type, display); });
     });
+    html += '<div class="ep-booklet-chapter-spacer" aria-hidden="true" style="height:1lh"></div>';
   }
   return html + '</div></div>';
 }

@@ -54,6 +54,8 @@ window.goBookletStep = n => {
     const questions = scopeSelector.getQuestions();
     if (!questions.length) { UI.toast('所選命題範圍尚無題目，請重新選擇章節。','warning'); return; }
     if (previewRevision !== scopeRevision) {
+      const bookName = document.getElementById('cBook').selectedOptions[0]?.textContent.trim() || '';
+      bookletData.title = `${bookName}題本`;
       bookletData.chapterCatalog = scopeSelector.getChapterCatalog();
       showExamPreview(bookletData, questions);
       const modal = document.getElementById('epModal');
@@ -61,14 +63,14 @@ window.goBookletStep = n => {
       modal.classList.add('compose-inline-preview');
       modal.removeAttribute('aria-modal');
       const tools = document.getElementById('bookletPreviewTools');
-      ['epAppearanceToggle'].forEach(id => tools.append(document.getElementById(id)));
-      modal.querySelectorAll('.modal-header button').forEach(button => {
-        if (['_epDoPrint()', '_epDoExport()'].some(action => button.getAttribute('onclick') === 'window.' + action)) {
-          button.classList.remove('btn-ghost');
-          button.classList.add('btn-primary');
-          tools.append(button);
-        }
+      const appearanceButton = document.getElementById('epAppearanceToggle');
+      const printButton = document.querySelector('button[onclick="window._epDoPrint()"]');
+      const downloadButton = document.querySelector('button[onclick="window._epDoExport()"]');
+      [printButton, downloadButton].forEach(button => {
+        button.classList.remove('btn-ghost');
+        button.classList.add('btn-primary');
       });
+      tools.append(appearanceButton, printButton, downloadButton);
       previewRevision = scopeRevision;
     }
   }
