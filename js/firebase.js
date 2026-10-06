@@ -9,7 +9,7 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import {
   getFirestore, collection, doc, getDoc, getDocs, addDoc, setDoc,
-  getDocsFromServer, getCountFromServer,
+  getDocFromServer, getDocsFromServer, getCountFromServer,
   updateDoc, deleteDoc, query, where,
   serverTimestamp, writeBatch, Timestamp,
   runTransaction, increment
@@ -244,6 +244,15 @@ window.DataService = {
 
   getExamPreferences() {
     return DataService._currentUser?.examPreferences || {};
+  },
+  async refreshExamPreferences() {
+    const user = DataService._currentUser;
+    if (!user?.uid) throw new Error('請先登入');
+    const snapshot = await getDocFromServer(doc(db, 'users', user.uid));
+    if (!snapshot.exists()) throw new Error('找不到帳號設定');
+    if (DataService._currentUser !== user) throw new Error('登入狀態已變更，請重新操作');
+    user.examPreferences = snapshot.data().examPreferences || {};
+    return user.examPreferences;
   },
   async updateExamPreferences(patch) {
     const uid = DataService._currentUser?.uid;

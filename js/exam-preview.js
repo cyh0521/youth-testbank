@@ -69,7 +69,9 @@ function loadDocxLibrary() {
   return docxLibraryPromise;
 }
 
-function choosePaperLayout(format, chooseDestination = null) {
+async function choosePaperLayout(format, chooseDestination = null) {
+  try { await DataService.refreshExamPreferences(); }
+  catch (error) { UI.toast(`無法取得最新列印設定：${error.message}`, 'danger'); return null; }
   let modal = document.getElementById('epPaperSizeModal');
   if (!modal) {
     document.body.insertAdjacentHTML('beforeend', `<div class="modal-overlay hidden" id="epPaperSizeModal" style="z-index:1300">
@@ -119,7 +121,10 @@ function choosePaperLayout(format, chooseDestination = null) {
           return;
         }
       }
-      try { await DataService.updateExamPreferences({ paperLayout:{ paperKey, columns } }); }
+      try {
+        await DataService.refreshExamPreferences();
+        await DataService.updateExamPreferences({ paperLayout:{ paperKey, columns } });
+      }
       catch (error) { UI.toast(`列印與下載設定儲存失敗：${error.message}`, 'danger'); confirm.disabled = false; return; }
       confirm.disabled = false;
       close({ paperKey, columns, fileHandle });
