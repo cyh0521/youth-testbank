@@ -10,10 +10,10 @@
 </head>
 <body class="booklet-page">
 <script src="js/icons.js"></script>
-<script src="js/core.js"></script>
+<script src="js/core.js?v=20261007-images-dir"></script>
 <div class="layout">
   <aside class="sidebar" id="sidebar"></aside>
-  <script src="js/shell.js"></script>
+  <script src="js/shell.js?v=20261007-images-dir"></script>
   <div class="main" inert>
     <div class="topbar"><span class="topbar-title">題本列印</span></div>
     <div class="page-content">
@@ -33,7 +33,7 @@
 </div>
 <script type="module">
 import { renderScopePanel, mountScopeSelector } from './js/exam-scope.js';
-import { showExamPreview, loadAppearance } from './js/exam-preview.js';
+import { showExamPreview, loadAppearance } from './js/exam-preview.js?v=20261007-images-2';
 import { guardPage } from './js/auth-guard.js';
 window._activeNav = 'booklet';
 const user = await guardPage(['admin','manager','teacher']);

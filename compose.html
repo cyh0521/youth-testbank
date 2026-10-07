@@ -10,10 +10,10 @@
 </head>
 <body>
 <script src="js/icons.js"></script>
-<script src="js/core.js"></script>
+<script src="js/core.js?v=20261007-images-dir"></script>
 <div class="layout">
   <aside class="sidebar" id="sidebar"></aside>
-  <script src="js/shell.js"></script>
+  <script src="js/shell.js?v=20261007-images-dir"></script>
   <div class="main" inert>
     <div class="topbar">
       <span class="topbar-title">電腦選題</span>
@@ -95,11 +95,11 @@
 <script type="module">
 import { renderScopePanel, mountScopeSelector } from './js/exam-scope.js';
 import { guardPage } from './js/auth-guard.js';
-import { showExamPreview, showHeaderSettings, newExamHeader, loadAppearance, mountInlineHeaderEditor, buildHeaderHtml, fontStackById } from './js/exam-preview.js';
+import { showExamPreview, showHeaderSettings, newExamHeader, loadAppearance, mountInlineHeaderEditor, buildHeaderHtml, fontStackById } from './js/exam-preview.js?v=20261007-images-2';
 import { allocateTypeScores, AUTO_SCORE_WEIGHTS } from './js/score-allocation.js?v=20261007-weighted-scores';
 import { blankCount, reachableBlankCounts } from './js/blank-selection.js';
 import { filterComposePool } from './js/compose-selection.js';
-import { selectedSections, questionInSection, selectSectionQuestions } from './js/section-selection.js';
+import { selectedSections, questionInSection, selectSectionQuestions, requiresSectionCoverage } from './js/section-selection.js?v=20261007-coverage';
 import { confirmAction } from './js/confirm-exam-deletion.js';
 window._activeNav = 'compose';
 const user = await guardPage(['admin','manager','teacher']);
@@ -682,8 +682,9 @@ async function replaceResultQuestion(questionId, button) {
     const index = generatedQuestions.indexOf(original);
     if (index < 0) return;
     const selectedIds = new Set(generatedQuestions.map(q => String(q.id)));
-    const section = currentSections().find(item => questionInSection(original,item.code));
-    const mustKeepSection = section && generatedQuestions.filter(q => questionInSection(q,section.code)).length === 1;
+    const sections = currentSections();
+    const section = sections.find(item => questionInSection(original,item.code));
+    const mustKeepSection = requiresSectionCoverage(generatedQuestions.length, sections) && section && generatedQuestions.filter(q => questionInSection(q,section.code)).length === 1;
     const candidates = pool.filter(q => q.type === original.type && !selectedIds.has(String(q.id)) && (!mustKeepSection || questionInSection(q,section.code)) && (original.type !== 'T4' || blankCount(q) === blankCount(original)));
     if (!candidates.length && mustKeepSection) { UI.toast('此節必須保留至少一題，目前沒有同題型與格數的替換題目', 'warning'); return; }
     if (!candidates.length) {

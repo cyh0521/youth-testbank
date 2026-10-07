@@ -67,6 +67,18 @@
 .question-break-hint{margin-top:5px;color:var(--text-muted);font-size:.84rem}
 .question-editor{min-height:132px;max-height:340px;overflow-y:auto;white-space:pre-wrap;line-height:1.6}
 .question-editor > :is(div,p):not(:first-child){margin-top:.45em}
+.question-editor .question-image{cursor:pointer;margin:4px 2px}
+.question-editor .question-image.is-selected{outline:2px solid var(--primary);outline-offset:3px;border-radius:3px}
+.question-editor .question-image.is-missing{min-height:48px;border:1px dashed #d97706;background:#fff7ed}
+.question-image-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0}
+.question-image-toolbar .btn{height:32px;padding:0 10px;font-size:.86rem}
+.question-image-status{color:var(--primary);font-size:.84rem}
+.question-image-path,.question-image-settings{display:flex;align-items:flex-end;flex-wrap:wrap;gap:10px;padding:12px;background:#f5f8fd;border:1px solid var(--border-light);border-radius:8px;margin-bottom:8px}
+.question-image-path label,.question-image-settings label{display:grid;gap:5px;font-size:.84rem;min-width:0}
+.question-image-path label{flex:1;min-width:200px}
+.question-image-settings label:has([data-alt]){flex:1;min-width:160px}
+.question-image-settings [data-width]{width:105px}
+.question-image-hint{color:var(--text-muted);font-size:.82rem;line-height:1.6}
 #qModal .modal-footer .btn{height:36px;min-width:88px;justify-content:center;font-size:.9rem;padding:0 14px}
 #qModal .modal-footer .btn svg{width:16px;height:16px}
 #eq-location{width:100%;justify-content:flex-start;text-align:left;white-space:normal;line-height:1.5}
@@ -158,10 +170,10 @@
 </head>
 <body>
 <script src="js/icons.js"></script>
-<script src="js/core.js"></script>
+<script src="js/core.js?v=20261007-images-dir"></script>
 <div class="layout">
   <aside class="sidebar" id="sidebar"></aside>
-  <script src="js/shell.js"></script>
+  <script src="js/shell.js?v=20261007-images-dir"></script>
   <div class="main" inert>
     <div class="topbar">
       <span class="topbar-title">題目維護</span>
@@ -318,6 +330,7 @@
 <script type="module">
 import { guardPage } from './js/auth-guard.js';
 import { confirmDeletion } from './js/confirm-exam-deletion.js';
+import { QuestionImageEditor, editorHtml, editorText, imageArchive, downloadArchive } from './js/question-image-editor.js?v=20261007-images-dir';
 window._activeNav = 'questions';
 const user = await guardPage(['admin','manager']);
 if (!user) throw new Error('not auth');
@@ -606,7 +619,7 @@ function renderTableMode(pageItems) {
     const chap = [q.chapterNum,q.sectionNum,q.subsectionNum].filter(Boolean).join('-');
     const ans = (q.answer||'').length>16 ? q.answer.slice(0,16)+'…' : q.answer;
     const questionLine = [
-      q.text || '—',
+      UI.questionSummary(q.text || '—'),
       ...((q.type === 'T2' || q.type === 'T3') && q.options?.length
         ? q.options.map((option, index) => `(${String.fromCharCode(65 + index)}) ${option}`)
         : []),
@@ -619,7 +632,7 @@ function renderTableMode(pageItems) {
       <td class="exam-date">${escapeHtml(chap||'—')}</td>
       <td>${UI.diffBadge(q.difficulty)}</td>
       <td><div class="q-text" title="${escapeHtml(questionLine)}">${escapeHtml(questionLine)}</div></td>
-      <td><span class="q-answer" title="${UI.questionHtml(q.answer||'—')}">${escapeHtml(ans||'—')}</span></td>
+      <td><span class="q-answer" title="${escapeHtml(q.answer||'—')}">${escapeHtml(ans||'—')}</span></td>
       <td>
         <div class="q-actions">
           <button class="btn btn-sm btn-outline" onclick="openEdit('${q.id}')">${ICONS.edit16}編輯</button>
@@ -770,29 +783,15 @@ function optionFields(q) {
 }
 
 function questionEditorHtml(value) {
-  return UI.questionText(value).split('\u2029').map(paragraph =>
-    `<div>${UI.escapeHtml(paragraph).replace(/\n/g, '<br>') || '<br>'}</div>`
-  ).join('');
+  return editorHtml(value);
 }
 
 function questionEditorText(editor) {
-  const inlineText = node => {
-    if (node.nodeType === Node.TEXT_NODE) return node.nodeValue;
-    if (node.nodeType !== Node.ELEMENT_NODE) return '';
-    if (node.tagName === 'BR') return '\n';
-    return [...node.childNodes].map(inlineText).join('');
-  };
-  return [...editor.childNodes].map(node => {
-    if (node.nodeType === Node.ELEMENT_NODE && /^(DIV|P)$/.test(node.tagName)) {
-      const text = inlineText(node);
-      const breaks = [...node.childNodes].filter(child => child.nodeName === 'BR');
-      if (breaks.length === 1 && node.textContent === '') return '';
-      return breaks.length >= 2 && node.lastChild?.nodeName === 'BR' ? text.slice(0, -1) : text;
-    }
-    return inlineText(node);
-  }).join('\u2029').trim();
+  return editorText(editor);
 }
 
+let questionImageEditor = null;
+let savingQuestion = false;
 let editChapters = [];
 let editBook = null;
 let editLocation = {chapterNum:0, sectionNum:0, subsectionNum:0};
@@ -866,6 +865,9 @@ document.getElementById('chapterPickerModal').addEventListener('click', event =>
 });
 
 window.openEdit = async id => {
+  if (savingQuestion) return;
+  questionImageEditor?.destroy();
+  questionImageEditor = null;
   const q = allQuestions.find(x=>x.id===id); if(!q) return;
   const subject = _tbCache?.subjectByCode?.[q.subjectCode];
   editBook = (subject ? (_tbCache?.booksBySubject?.[subject.id] || []).find(b => b.code === q.bookCode) : null)
@@ -938,6 +940,7 @@ window.openEdit = async id => {
       <h4 class="edit-section-heading">題目內容</h4>
       <div class="edit-full form-group"><label class="form-label">題目 <span class="required">*</span></label>
         <div class="form-control question-editor" id="eq-text" contenteditable="true" role="textbox" aria-label="題目" aria-multiline="true">${questionEditorHtml(q.text||'')}</div>
+        <div id="eq-image-controls"></div>
         <div class="question-break-hint">Enter：換段（增加段距）　Shift+Enter：段內換行</div>
       </div>
       ${optionFields(q)}
@@ -959,6 +962,7 @@ window.openEdit = async id => {
     </div>`;
 
   updateEditLocationLabel();
+  questionImageEditor = new QuestionImageEditor(document.getElementById('eq-text'), document.getElementById('eq-image-controls'));
   document.getElementById('eq-type').addEventListener('change', event => {
     document.getElementById('eq-truefalse-answers').style.display = event.target.value === 'T1' ? '' : 'none';
     document.getElementById('eq-answer').style.display = event.target.value === 'T1' ? 'none' : '';
@@ -973,11 +977,13 @@ window.openEdit = async id => {
   document.getElementById('qModalFooter').innerHTML = `
     <button class="btn btn-ghost" onclick="closeQModal()">取消</button>
     ${canEdit?`<button class="btn btn-danger" onclick="closeQModal();deleteOne('${q.id}')">${ICONS.trash16}刪除</button>`:''}
-    <button class="btn btn-primary" onclick="saveEdit()">儲存</button>`;
+    <button class="btn btn-primary" id="eq-save" onclick="saveEdit()">儲存</button>`;
   document.getElementById('qModal').classList.remove('hidden');
 };
 
 window.saveEdit = async () => {
+  if (savingQuestion) return;
+  if (questionImageEditor?.busy) { UI.toast('請等待圖片處理完成', 'warning'); return; }
   const id = document.getElementById('qModal').dataset.editId;
   const q  = allQuestions.find(x=>x.id===id); if(!q) return;
   const text = questionEditorText(document.getElementById('eq-text'));
@@ -1011,17 +1017,34 @@ window.saveEdit = async () => {
       .filter(Boolean);
   }
   try {
+    savingQuestion = true;
+    document.getElementById('qModalBody').inert = true;
+    document.querySelectorAll('#qModalFooter button, #qModal .modal-close').forEach(button => { button.disabled = true; });
+    const imageEntries = questionImageEditor?.entries() || [];
+    const archive = imageEntries.length ? await imageArchive(imageEntries) : null;
     await DataService.updateQuestion(id, updates);
     // 同步 allQuestions
     const idx = allQuestions.findIndex(x=>x.id===id);
     if (idx>=0) allQuestions[idx] = {...allQuestions[idx], ...updates};
+    if (archive) downloadArchive(archive, q.qnum);
+    questionImageEditor?.destroy(new Set(imageEntries.map(([path]) => path)));
+    questionImageEditor = null;
+    savingQuestion = false;
     closeQModal();
     doSearch();
-    UI.toast('題目已更新','success');
+    UI.toast(archive ? '題目已更新並下載圖片，請將解壓後的圖片上傳至 GitHub 的 images 資料夾' : '題目已更新','success', archive ? 8000 : 3000);
   } catch(e) { UI.toast('儲存失敗：'+e.message,'danger'); }
+  finally {
+    savingQuestion = false;
+    document.getElementById('qModalBody').inert = false;
+    document.querySelectorAll('#qModalFooter button, #qModal .modal-close').forEach(button => { button.disabled = false; });
+  }
 };
 
 window.closeQModal = () => {
+  if (savingQuestion) return;
+  questionImageEditor?.destroy();
+  questionImageEditor = null;
   document.getElementById('chapterPickerModal').classList.add('hidden');
   document.getElementById('qModal').classList.add('hidden');
 };

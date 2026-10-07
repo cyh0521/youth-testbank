@@ -219,7 +219,7 @@
       const I = window.ICONS || {};
       const item = (page, icon, label, href = `${page}.html`) => `<a class="nav-item" href="${href}" data-page="${page}" title="${label}"><span class="icon">${icon || ''}</span><span class="nav-label">${label}</span></a>`;
       const section = label => `<div class="nav-section-title"><span class="nav-label">${label}</span></div>`;
-      const brandIcon = '<img src="img/youth.png" alt="" aria-hidden="true" draggable="false">';
+      const brandIcon = '<img src="images/youth.png" alt="" aria-hidden="true" draggable="false">';
       el.innerHTML = `
         <div class="sidebar-top">
           <button class="sidebar-brand-toggle" id="sidebarToggle" type="button" aria-controls="sidebarNav">

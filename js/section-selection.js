@@ -5,6 +5,10 @@ export function questionInSection(question, code) {
   return code.split('-').every((value, index) => same([question.chapterNum, question.sectionNum, question.subsectionNum][index], value));
 }
 
+export function requiresSectionCoverage(questionCount, sections) {
+  return questionCount >= sections.length;
+}
+
 // Use catalog leaves, including empty leaves, so missing coverage is reported.
 export function selectedSections(catalog, selected, pool = []) {
   const rows = [];
@@ -47,13 +51,14 @@ export function selectSectionQuestions({ pool, sections, counts, weights = {}, h
   const remaining = { ...targets };
   locked.forEach(q => { remaining[q.type] = (remaining[q.type] || 0) - units(q); });
   if (Object.values(remaining).some(n => n < 0)) throw new Error('既有題數超過目前題型設定，請重新選題');
+  let coverageError = '';
   sections.forEach((section, i) => {
     if (!covered.has(i) && !candidates.some(q => index(q) === i && units(q) <= remaining[q.type])) {
-      throw new Error(`${section.label} 沒有符合目前題型與格數設定的可用題目，請調整題型或命題範圍`);
+      coverageError ||= `${section.label} 沒有符合目前題型與格數設定的可用題目，請調整題型或命題範圍`;
     }
   });
   if (Object.values(remaining).reduce((s,n) => s + n, 0) < sections.filter((_, i) => !covered.has(i)).length) {
-    throw new Error(`已選 ${sections.length} 節，設定題數不足以讓每節至少一題，請增加題數或縮小範圍`);
+    coverageError ||= `已選 ${sections.length} 節，設定題數不足以讓每節至少一題，請增加題數或縮小範圍`;
   }
   const shuffled = [...candidates];
   for (let i = shuffled.length - 1; i > 0; i--) { const j = Math.floor(random() * (i + 1)); [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]; }
@@ -72,6 +77,22 @@ export function selectSectionQuestions({ pool, sections, counts, weights = {}, h
     }
     return true;
   }
+  if (!feasible()) throw new Error(coverageError || '目前範圍的題數不足或無法湊足填空格數，請調整題數或命題範圍');
+  // 填空依完整題目計算最少／最多題數，不把格數視為題數。
+  const fillTarget = remaining.T4 || 0;
+  const minFill = Array(fillTarget + 1).fill(Infinity);
+  const maxFill = Array(fillTarget + 1).fill(-Infinity);
+  minFill[0] = maxFill[0] = 0;
+  shuffled.filter(q => q.type === 'T4').forEach(q => {
+    const n = units(q);
+    for (let sum = fillTarget; sum >= n; sum--) {
+      minFill[sum] = Math.min(minFill[sum], minFill[sum - n] + 1);
+      maxFill[sum] = Math.max(maxFill[sum], maxFill[sum - n] + 1);
+    }
+  });
+  const regularCount = Object.entries(remaining).reduce((sum, [type, count]) => sum + (type === 'T4' ? 0 : count), 0);
+  const baseQuestionCount = locked.length + regularCount;
+  const canUseFewerQuestions = !requiresSectionCoverage(baseQuestionCount + minFill[fillTarget], sections);
   let nodes = 0;
   function cover() {
     if (++nodes > 50000) throw new Error('章節與填空格數組合較複雜，請縮小範圍或調整題數後再試');
@@ -94,7 +115,12 @@ export function selectSectionQuestions({ pool, sections, counts, weights = {}, h
     }
     return false;
   }
-  if (!cover()) throw new Error('目前題型題數與填空格數無法讓每節至少一題，請調整題數或命題範圍');
+  // 題數足夠時仍優先涵蓋每節；只有實際題數少於節數才可略過此限制。
+  const enforceCoverage = !coverageError && requiresSectionCoverage(baseQuestionCount + maxFill[fillTarget], sections) && cover();
+  if (!enforceCoverage && !canUseFewerQuestions) {
+    throw new Error(coverageError || '目前題型題數與填空格數無法讓每節至少一題，請調整題數或命題範圍');
+  }
+  const fillQuestionLimit = sections.length - 1 - baseQuestionCount;
   const sectionCounts = sections.map((_, i) => chosen.filter(q => index(q) === i).length);
   const weight = i => Number(weights[sections[i].code]) || 2;
   // Marginal cost of sum(count² / weight) distributes questions by 3:2:1.
@@ -105,21 +131,23 @@ export function selectSectionQuestions({ pool, sections, counts, weights = {}, h
     const hardUnits = chosen.filter(q => q.type === type && q.difficulty === '◎').reduce((sum,q) => sum + units(q), 0);
     if (type === 'T4') {
       const dp = Array.from({length:target + 1}, () => new Map());
-      dp[0].set(0, {cost:0,items:[]});
+      dp[0].set(0, {cost:0,items:[],hardCount:0});
       for (const q of items) {
         const n = units(q), hard = q.difficulty === '◎' ? n : 0;
         for (let sum = target; sum >= n; sum--) {
-          for (const [hardCount, prev] of dp[sum - n]) {
+          for (const prev of dp[sum - n].values()) {
+            if (!enforceCoverage && prev.items.length + 1 > fillQuestionLimit) continue;
             const count = prev.items.filter(item => index(item) === index(q)).length;
             const cost = prev.cost + marginal(q, sectionCounts[index(q)] + count);
-            const key = hardCount + hard;
-            if (!dp[sum].has(key) || cost < dp[sum].get(key).cost) dp[sum].set(key, {cost,items:[...prev.items,q]});
+            const hardCount = prev.hardCount + hard;
+            const key = enforceCoverage ? hardCount : `${hardCount}:${prev.items.length + 1}`;
+            if (!dp[sum].has(key) || cost < dp[sum].get(key).cost) dp[sum].set(key, {cost,items:[...prev.items,q],hardCount});
           }
         }
       }
       let best = null, bestCost = Infinity;
-      for (const [hardCount, state] of dp[target]) {
-        const cost = state.cost + Math.abs(hardUnits + hardCount - targets[type] * hardRatio) * .2;
+      for (const state of dp[target].values()) {
+        const cost = state.cost + Math.abs(hardUnits + state.hardCount - targets[type] * hardRatio) * .2;
         if (cost < bestCost) { best = state; bestCost = cost; }
       }
       if (!best) throw new Error('無法湊足填空格數，請調整格數');
@@ -144,7 +172,7 @@ export function selectSectionQuestions({ pool, sections, counts, weights = {}, h
       const from = index(old);
       shuffled.forEach(q => {
         if (used.has(String(q.id)) || q.type !== old.type || units(q) !== units(old)) return;
-        const to = index(q); if (to !== from && sectionCounts[from] <= 1) return;
+        const to = index(q); if (enforceCoverage && to !== from && sectionCounts[from] <= 1) return;
         const distributionDelta = to === from ? 0 : (-2 * sectionCounts[from] + 1) / weight(from) + (2 * sectionCounts[to] + 1) / weight(to);
         const hard = hardTotals[old.type] || 0, goal = targets[old.type] * hardRatio;
         const nextHard = hard + ((q.difficulty === '◎' ? 1 : 0) - (old.difficulty === '◎' ? 1 : 0)) * units(q);

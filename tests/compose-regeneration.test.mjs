@@ -6,7 +6,7 @@ import test from 'node:test';
 const page = readFileSync(new URL('../compose.html', import.meta.url), 'utf8');
 const blankUrl = 'data:text/javascript;base64,' + Buffer.from(readFileSync(new URL('../js/blank-selection.js', import.meta.url), 'utf8')).toString('base64');
 const selectionSource = readFileSync(new URL('../js/section-selection.js', import.meta.url), 'utf8').replace("'./blank-selection.js'", JSON.stringify(blankUrl));
-const {selectedSections, selectSectionQuestions, questionInSection} = await import('data:text/javascript;base64,' + Buffer.from(selectionSource).toString('base64'));
+const {selectedSections, selectSectionQuestions, questionInSection, requiresSectionCoverage} = await import('data:text/javascript;base64,' + Buffer.from(selectionSource).toString('base64'));
 
 test('每次按自動選題都重新選取；返回上一步後讀取最新章節比重與難易比例', async () => {
   const nodes = new Map();
@@ -99,4 +99,50 @@ test('每次按自動選題都重新選取；返回上一步後讀取最新章�
   assert.equal(node('composePanel3').hidden,false);
   assert.equal(node('generateBtn').disabled,false);
   assert.equal(node('generateBtnLabel').textContent,'下一步：自動選題');
+});
+
+test('實際自動選題按鈕：3節有5道配合題，出2題可成功；改出3題仍受涵蓋限制', async () => {
+  const nodes=new Map();
+  const node=id=>{
+    if(!nodes.has(id))nodes.set(id,{value:'',disabled:false,textContent:'',classList:{add(){},remove(){}},scrollIntoView(){}});
+    return nodes.get(id);
+  };
+  node('cSubject').value='A1'; node('cBook').value='01';
+  node('cnt-T5').value='2'; node('score-T5').value='50';
+  const sections=[1,2,3].map(n=>({code:`1-${n}`,label:`第1章 第${n}節`}));
+  const pool=Array.from({length:5},(_,i)=>({id:String(i),chapterNum:1,sectionNum:i<3?1:2,type:'T5',difficulty:'◎'}));
+  const messages=[],steps=[];
+  const context={window:{},document:{getElementById:node},cSubject:node('cSubject'),TYPE_CONFIGS:[{code:'T5',label:'配合題'}],
+    generatedQuestions:[],generatedScopeChapters:[],sectionWeights:{'1-1':3,'1-2':2,'1-3':1},currentSections:()=>sections,difficultyHardRatio:()=>1,
+    scopeSelector:{getQuestions:()=>pool,getSelectedChapters:()=>['1']},selectSectionQuestions,
+    validateTypeCounts:()=>true,confirmAction:async()=>assert.fail('配分100分不應詢問確認'),
+    UI:{toast:message=>messages.push(message)},shuffleQuestions:q=>q,updateScoreRows(){},renderPreview(){},setComposeStep:step=>steps.push(step)};
+  runInNewContext(page.slice(page.indexOf('function chooseWeightedQuestions('),page.indexOf('function renderExamSettings('))+
+    page.slice(page.indexOf('window.doGenerate ='),page.indexOf('const collapsedResultTypes =')),context);
+  await context.window.doGenerate();
+  assert.equal(context.generatedQuestions.length,2); assert.deepEqual(steps,[3]); assert.equal(messages.length,0);
+  node('cnt-T5').value='3';node('score-T5').value=String(100/3);
+  await context.window.doGenerate();
+  assert.match(messages.at(-1),/第3節.*沒有/);assert.deepEqual(steps,[3]);
+  node('cnt-T5').value='2';node('score-T5').value='50';
+  await context.window.doGenerate();
+  assert.deepEqual(steps,[3,3]); assert.equal(context.generatedQuestions.length,2);assert.equal(node('generateBtn').disabled,false);
+});
+
+test('實際個別換題：總題數少於節數可跨節，不少於節數則保留各節至少一題', async () => {
+  for(const total of [2,3]){
+    const original={id:'old',type:'T5',chapterNum:1,sectionNum:1};
+    const replacement={id:'new',type:'T5',chapterNum:1,sectionNum:2};
+    const sections=[1,2,3].map(n=>({code:`1-${n}`}));
+    const questions=[original,...Array.from({length:total-1},(_,i)=>({id:`fixed-${i}`,type:'T1',chapterNum:1,sectionNum:i+2}))];
+    const messages=[];
+    const context={window:{_allBookQs:[replacement]},document:{querySelectorAll:()=>[{dataset:{ch:'1'}}],getElementById:()=>({value:'01'})},
+      cSubject:{value:'A1'},generatedQuestions:questions,TYPE_CONFIGS:[{code:'T1'},{code:'T5'}],filterComposePool:()=>[replacement],
+      currentSections:()=>sections,questionInSection,requiresSectionCoverage,UI:{toast:message=>messages.push(message)},renderPreview(){}};
+    runInNewContext(page.slice(page.indexOf('async function replaceResultQuestion('),page.indexOf('async function regenerateType(')),context);
+    const button={disabled:false}; await context.replaceResultQuestion('old',button);
+    assert.equal(questions[0].id,total===2?'new':'old');
+    assert.match(messages.at(-1),total===2?/已更換題目/:/此節必須保留至少一題/);
+    assert.equal(button.disabled,false);
+  }
 });

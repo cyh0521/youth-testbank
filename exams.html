@@ -89,10 +89,10 @@
 </head>
 <body>
 <script src="js/icons.js"></script>
-<script src="js/core.js"></script>
+<script src="js/core.js?v=20261007-images-dir"></script>
 <div class="layout">
   <aside class="sidebar" id="sidebar"></aside>
-  <script src="js/shell.js"></script>
+  <script src="js/shell.js?v=20261007-images-dir"></script>
   <div class="main" inert>
     <div class="topbar">
       <span class="topbar-title">試卷管理</span>
@@ -168,7 +168,7 @@ import { guardPage } from './js/auth-guard.js';
 import { confirmExamDeletion } from './js/confirm-exam-deletion.js';
 import { chooseExamReplacement } from './js/exam-question-replacement.js';
 import { examScopeSummaryHtml } from './js/exam-scope-summary.js';
-import { showExamPreview, downloadExam, printWithPaperChoice, showHeaderSettings, loadHeader, loadAppearance, mountInlineHeaderEditor, buildHeaderHtml, fontStackById } from './js/exam-preview.js';
+import { showExamPreview, downloadExam, printWithPaperChoice, showHeaderSettings, loadHeader, loadAppearance, mountInlineHeaderEditor, buildHeaderHtml, fontStackById } from './js/exam-preview.js?v=20261007-images-2';
 window.openHeaderSettings = showHeaderSettings;
 window._activeNav = 'exams';
 const user = await guardPage(['admin','manager','teacher']);

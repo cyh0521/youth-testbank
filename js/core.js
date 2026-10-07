@@ -98,14 +98,55 @@ const UI = {
 
   questionHtml(value) {
     return this.questionText(value).split('\u2029')
-      .map(part => this.escapeHtml(part).replace(/\n/g, '<br>'))
+      .map(part => this.questionInlineHtml(part).replace(/\n/g, '<br>'))
       .join('<span class="question-paragraph-break" aria-hidden="true"></span>');
+  },
+
+  // 圖片只保存本站相對路徑；不接受 HTML、外部網址或資料 URL。
+  imagePath(value) {
+    // 舊題庫的圖片標記仍可讀取；顯示與重新儲存時統一使用新資料夾。
+    const path = String(value || '').trim().replace(/^\.\//, '').replace(/^question-images\//i, 'images/');
+    return /^images\/(?:[A-Za-z0-9_-]+\/)*[A-Za-z0-9_-]+\.(?:png|jpe?g)$/i.test(path) ? path : '';
+  },
+
+  imageMarker(path, width = 320, alt = '題目圖片') {
+    if (!this.imagePath(path)) throw new Error('請使用 images/ 開頭的 PNG 或 JPG 圖片路徑');
+    const size = Math.max(40, Math.min(1200, Math.round(Number(width) || 320)));
+    return `[[圖片:${this.imagePath(path)}|${size}|${encodeURIComponent(String(alt ?? '題目圖片').replace(/[\r\n\u2029]/g, ' '))}]]`;
+  },
+
+  questionImageParts(value) {
+    const parts = [];
+    const text = String(value ?? '');
+    const pattern = /\[\[圖片:([^|\]\r\n]+)\|(\d{1,4})\|([^\]\r\n]*)\]\]/g;
+    let offset = 0;
+    for (const match of text.matchAll(pattern)) {
+      const path = this.imagePath(match[1]);
+      if (!path) continue;
+      let alt;
+      try { alt = decodeURIComponent(match[3]); } catch { continue; }
+      if (match.index > offset) parts.push({text:text.slice(offset, match.index)});
+      parts.push({path, width:Math.max(40, Math.min(1200, Number(match[2]))), alt});
+      offset = match.index + match[0].length;
+    }
+    if (offset < text.length) parts.push({text:text.slice(offset)});
+    return parts;
+  },
+
+  questionInlineHtml(value) {
+    return this.questionImageParts(value).map(part => part.path
+      ? `<img class="question-image" data-question-image="${this.escapeHtml(part.path)}" src="${this.escapeHtml(window.questionImagePreviews?.get(part.path) || part.path)}" width="${part.width}" alt="${this.escapeHtml(part.alt)}" style="max-width:100%;height:auto;vertical-align:middle;object-fit:contain">`
+      : this.escapeHtml(part.text)).join('');
+  },
+
+  questionSummary(value) {
+    return this.questionImageParts(value).map(part => part.path ? `［${part.alt || '圖片'}］` : part.text).join('');
   },
 
   matchingQuestionHtml(value) {
     let text = this.questionText(value);
     // 只為完全失去換行的舊資料補排版；有換行的匯入內容依原檔呈現。
-    if (!/[\n\u2029]/.test(text)) {
+    if (!/[\n\u2029]/.test(text) && !this.questionImageParts(text).some(part => part.path)) {
       if (/[AＡ][.．、]/.test(text) && /[BＢ][.．、]/.test(text)) {
         text = text.replace(/([^\n])(?=[AＡ][.．、])/, '$1\n');
       }

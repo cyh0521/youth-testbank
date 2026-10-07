@@ -13,7 +13,7 @@ function wordFont(fontId) {
   return 'Microsoft JhengHei';
 }
 
-async function nodeRuns(node, docx, base) {
+async function nodeRuns(node, docx, base, imageWidthLimit = 500) {
   if (node.nodeType === 3) return node.textContent ? [new docx.TextRun({ text:node.textContent, ...base })] : [];
   if (node.nodeType !== 1) return [];
   const tag = node.tagName.toLowerCase();
@@ -26,12 +26,20 @@ async function nodeRuns(node, docx, base) {
       const mime = response.headers.get('content-type') || '';
       const type = mime.includes('png') ? 'png' : mime.includes('jpeg') || mime.includes('jpg') ? 'jpg' : mime.includes('gif') ? 'gif' : null;
       if (!type) throw new Error('不支援的圖片格式');
-      const width = Math.min(Number(node.getAttribute('width')) || node.naturalWidth || 240, 500);
-      const naturalWidth = Number(node.getAttribute('width')) || node.naturalWidth || width;
-      const naturalHeight = Number(node.getAttribute('height')) || node.naturalHeight || 120;
+      const blob = await response.blob();
+      let naturalWidth = node.naturalWidth;
+      let naturalHeight = node.naturalHeight;
+      if (!naturalWidth || !naturalHeight) {
+        const bitmap = await createImageBitmap(blob);
+        naturalWidth = bitmap.width; naturalHeight = bitmap.height; bitmap.close();
+      }
+      const width = Math.min(Number(node.getAttribute('width')) || naturalWidth || 240, imageWidthLimit);
       const height = Math.max(1, Math.round(width * naturalHeight / naturalWidth));
-      return [new docx.ImageRun({ data:new Uint8Array(await response.arrayBuffer()), type, transformation:{ width, height } })];
-    } catch { return [new docx.TextRun({ text:node.alt || '［圖片］', ...base })]; }
+      return [new docx.ImageRun({ data:new Uint8Array(await blob.arrayBuffer()), type, transformation:{ width, height } })];
+    } catch (error) {
+      if (node.dataset?.questionImage) throw new Error(`題目圖片無法載入：${node.dataset.questionImage}。請確認圖片已上傳至 GitHub 並完成發布。`);
+      return [new docx.TextRun({ text:node.alt || '［圖片］', ...base })];
+    }
   }
   const style = { ...base };
   if (node.classList?.contains('ep-answer-value') || node.classList?.contains('ep-answer-label')) style.color = 'B4232C';
@@ -51,13 +59,13 @@ async function nodeRuns(node, docx, base) {
   const runs = [];
   if (node.classList?.contains('ep-q-analysis')) runs.push(QUESTION_ANALYSIS_BREAK);
   else if (node.classList?.contains('ep-answer-blank') || node.classList?.contains('ep-essay-blank')) runs.push(QUESTION_ANSWER_BREAK);
-  for (const child of node.childNodes) runs.push(...await nodeRuns(child, docx, style));
+  for (const child of node.childNodes) runs.push(...await nodeRuns(child, docx, style, imageWidthLimit));
   return runs;
 }
 
-async function runsFromNodes(nodes, docx, base) {
+async function runsFromNodes(nodes, docx, base, imageWidthLimit = 500) {
   const runs = [];
-  for (const node of nodes) runs.push(...await nodeRuns(node, docx, base));
+  for (const node of nodes) runs.push(...await nodeRuns(node, docx, base, imageWidthLimit));
   return runs;
 }
 
@@ -85,8 +93,14 @@ export async function createDocxBlob({ docx, content, title, appearance, margins
   const fontSize = Math.round(appearance.fontSize * 1.5); // px → half-points
   const line = pxToTwips(appearance.fontSize * appearance.lineHeight);
   const baseRun = { font:{ ascii:font, hAnsi:font, eastAsia:font }, size:fontSize, snapToGrid:false };
+  const columnImageWidth = Math.max(1, (paperSize.width - Number(margins.left) - Number(margins.right) - (columns === 2 ? 10 : 0)) / (columns === 2 ? 2 : 1) * 96 / 25.4);
   const spacing = { line, lineRule:docx.LineRuleType.EXACT, after:pxToTwips(8) };
-  const paragraph = (runs, options = {}) => new docx.Paragraph({ children:runs.length ? runs : [new docx.TextRun('')], spacing, ...options });
+  const paragraph = (runs, options = {}) => {
+    const hasImage = docx.ImageRun && runs.some(run => run instanceof docx.ImageRun);
+    // 固定行高會裁掉內嵌圖片；有圖片的段落使用相同行距作為最小高度。
+    return new docx.Paragraph({ children:runs.length ? runs : [new docx.TextRun('')], ...options,
+      spacing:{...spacing, ...options.spacing, ...(hasImage ? {lineRule:docx.LineRuleType.AT_LEAST} : {})} });
+  };
   const header = [];
   const rows = [...content.querySelectorAll('.ep-exam-header .ep-header-row')];
   for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
@@ -165,7 +179,7 @@ export async function createDocxBlob({ docx, content, title, appearance, margins
     if (item.classList.contains('ep-word-question')) {
       const indent = pxToTwips(parseFloat(item.style.marginLeft) || appearance.fontSize * 4.8);
       const questionGap = parseFloat(item.style.marginBottom) || 8;
-      const parts = splitQuestionParagraphs(await runsFromNodes(item.childNodes, docx, baseRun));
+      const parts = splitQuestionParagraphs(await runsFromNodes(item.childNodes, docx, baseRun, Math.max(1, columnImageWidth - indent / 15)));
       const analysisIndent = Number(item.dataset?.analysisIndent);
       const analysisOffset = Number(item.dataset?.analysisOffset) || 0;
       const analysisGap = Number(item.dataset?.analysisGap ?? 6);
