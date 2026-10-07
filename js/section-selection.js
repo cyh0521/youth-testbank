@@ -13,7 +13,7 @@ export function selectedSections(catalog, selected, pool = []) {
     if (!selected.some(parent => parent === code || code.startsWith(parent + '-'))) return;
     const name = String(title).replace(/^(?:第\s*[0-9０-９一二三四五六七八九十百千零〇]+\s*(?:單元|章|節|課)|(?:單元|章|節|課)\s*[0-9０-９一二三四五六七八九十百千零〇]+)\s*/, '').trim();
     const levels = parts.map((num, i) => `第${num}${catalog.labels[i] || ['章','節','小節'][i]}`).slice(-2);
-    rows.push({ code, label:levels.join(' ') + (name ? ' ' + name : '') });
+    rows.push({ code, label:levels.join(' ') + (name ? ' ' + name : ''), numberLabels:levels, title:name });
   };
   (catalog.chapters || []).forEach(chapter => {
     const ch = [String(chapter.chapterNum)];

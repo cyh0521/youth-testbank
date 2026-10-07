@@ -41,10 +41,36 @@ test('重選可鎖定其他題型，保留每節覆蓋且不重複', () => {
   const picked=selectSectionQuestions({pool:[a,b,c],sections:sections.slice(0,2),counts:{T1:1,T2:1},locked:[a]});
   assert(picked.includes(a)); assert(picked.includes(b)); assert.equal(picked.length,2);
 });
-test('有足夠難易题時保持目標比例', () => {
+test('有足夠難易題時，0% 至 100% 每 10% 的比例都正確選題', () => {
   const pool=sections.flatMap((_,i)=>Array.from({length:20},(_,j)=>q(`${i}-${j}`,i+1,'T1',{difficulty:j%2?'◎':'△'})));
-  const picked=selectSectionQuestions({pool,sections,counts:{T1:10},hardRatio:.7});
-  assert.equal(picked.filter(q=>q.difficulty==='◎').length,7);
+  for (let hard = 0; hard <= 10; hard++) {
+    const picked=selectSectionQuestions({pool,sections,counts:{T1:10},hardRatio:hard / 10,random:()=>.4});
+    assert.equal(picked.filter(q=>q.difficulty==='◎').length,hard,`較難題 ${hard * 10}%`);
+    assert.equal(picked.length,10);
+    assert(sections.every(section=>picked.some(q=>questionInSection(q,section.code))));
+  }
+});
+test('同時套用 3:2:1 章節比重與難易度比例，保留題型數、覆蓋及唯一性', () => {
+  const pool=sections.flatMap((_,i)=>Array.from({length:40},(_,j)=>q(`${i}-${j}`,i+1,'T1',{difficulty:j%2?'◎':'△'})));
+  for (const hardRatio of [0,.1,.3,.7,.9,1]) for (const random of [()=>0,()=>.4,()=>.8]) {
+    const picked=selectSectionQuestions({pool,sections,counts:{T1:30},weights:{'1-1':3,'1-2':2,'1-3':1},hardRatio,random});
+    assert.deepEqual(sections.map(section=>picked.filter(q=>questionInSection(q,section.code)).length),[15,10,5]);
+    assert.equal(picked.filter(q=>q.difficulty==='◎').length,30 * hardRatio);
+    assert.equal(new Set(picked.map(q=>q.id)).size,30);
+    assert(picked.every(q=>q.type==='T1'));
+  }
+});
+test('題型重選保留其他題型，仍綜合章節比重與難易比例', () => {
+  const pool=sections.flatMap((_,i)=>['T1','T2'].flatMap(type=>Array.from({length:40},(_,j)=>q(`${type}-${i}-${j}`,i+1,type,{difficulty:j%2?'◎':'△'}))));
+  const settings={pool,sections,counts:{T1:12,T2:18},weights:{'1-1':3,'1-2':2,'1-3':1},hardRatio:.5};
+  const initial=selectSectionQuestions({...settings,random:()=>.4});
+  const locked=initial.filter(q=>q.type==='T1');
+  const picked=selectSectionQuestions({...settings,locked,random:()=>.8});
+  assert.deepEqual(picked.filter(q=>q.type==='T1').map(q=>q.id),locked.map(q=>q.id));
+  assert.equal(picked.filter(q=>q.type==='T2').length,18);
+  assert.deepEqual(sections.map(section=>picked.filter(q=>questionInSection(q,section.code)).length),[15,10,5]);
+  assert.equal(picked.filter(q=>q.type==='T2'&&q.difficulty==='◎').length,9);
+  assert.equal(new Set(picked.map(q=>q.id)).size,30);
 });
 test('混合題型及填空格數與窮舉可行結果一致', () => {
   const pool=[q('a',1),q('b',2),q('c',3),q('d',1,'T4',{answerCount:2}),q('e',2,'T4',{answerCount:3}),q('f',3,'T4',{answerCount:1}),q('g',1,'T4',{answerCount:1})];

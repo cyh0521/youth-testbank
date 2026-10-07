@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="css/theme.css">
 <link rel="stylesheet" href="css/process-bar.css">
 <script>if(localStorage.getItem("sidebarCollapsed")==="1")document.documentElement.classList.add("sidebar-collapsed");</script>
-<link rel="stylesheet" href="css/exam-compose.css?v=20261004-scope-cursor">
+<link rel="stylesheet" href="css/exam-compose.css?v=20261007-difficulty-ratio">
 </head>
 <body>
 <script src="js/icons.js"></script>
@@ -37,7 +37,7 @@
           <div class="scope-layout type-layout">
             <div class="type-left-column">
               <section class="card type-count-card"><div class="card-header"><div class="scope-title"><h2>題型與題數</h2><span class="type-title-note">︱調整各題型題數</span></div><div class="scope-header-actions"><button type="button" class="btn btn-ghost btn-sm" id="openSectionWeights" aria-haspopup="dialog" aria-controls="sectionWeightModal"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/><path d="M8 3v6M16 9v6M10 15v6"/></svg>章節題目比重</button></div></div><div class="type-card-body"><div id="typeRows"></div></div></section>
-              <section class="card difficulty-card"><div class="card-header"><div class="scope-title"><h2>試卷難易度</h2><span class="type-title-note">︱調整難易題配置比例</span></div></div><div class="card-body"><div class="form-group"><label class="sr-only" for="cDifficulty">試卷難易度</label><select class="form-control" id="cDifficulty"><option value="medium" selected>適中｜較難題 50% ≈ 簡易題 50%</option><option value="easy">偏易｜簡易題 70% &gt; 較難題 30%</option><option value="hard">偏難｜較難題 70% &gt; 簡易題 30%</option></select><p class="difficulty-note">難易題比例僅供參考。題目數量不足時，會依可用題目調整比例。</p></div></div></section>
+              <section class="card difficulty-card"><div class="card-header"><div class="scope-title"><h2>試卷難易度</h2><span class="type-title-note">︱調整難易題配置比例</span></div></div><div class="card-body"><div class="form-group"><div class="difficulty-ratio-row"><output id="difficultyRatio" for="cDifficulty" class="difficulty-ratio" aria-live="polite"><span>較難題 <strong id="difficultyHard">50%</strong></span><span class="difficulty-ratio-divider" aria-hidden="true">｜</span><span>簡易題 <strong id="difficultyEasy">50%</strong></span></output></div><label class="sr-only" for="cDifficulty">較難題比例</label><input type="range" class="difficulty-range" id="cDifficulty" min="0" max="100" step="10" value="50" aria-valuetext="較難題 50%，簡易題 50%"><div class="difficulty-scale" aria-hidden="true"><span data-difficulty="easy">偏易</span><span data-difficulty="medium" class="is-current">適中</span><span data-difficulty="hard">偏難</span></div><p class="difficulty-note">比例僅供參考，實際配置會依題型與可用題目調整。</p></div></div></section>
             </div>
             <section class="card"><div class="card-header"><div class="scope-title"><h2>每題配分</h2><span class="type-title-note">︱自動配分或手動調整</span></div><div class="scope-header-actions"><button class="btn btn-previous btn-sm" onclick="goComposeStep(1)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10.5 6-6 6 6 6"/><path d="m18 6-6 6 6 6" stroke-opacity=".5"/></svg>上一步</button><button class="btn btn-primary btn-sm" onclick="doGenerate()" id="generateBtn"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m13.5 6 6 6-6 6"/><path d="m6 6 6 6-6 6" stroke-opacity=".5"/></svg><span id="generateBtnLabel">下一步：自動選題</span></button></div></div><div class="type-card-body"><div id="scoreRows">請先設定題型與題數</div><div class="score-tools" id="scoreTools" hidden><label class="integer-score-option" id="integerScoreOption" hidden><input type="checkbox" id="integerScores" checked onchange="toggleIntegerScores()">以整數配分（未勾選時以 0.5 分為調整單位）</label><div class="score-tools-actions"><button type="button" class="btn btn-ghost btn-sm" onclick="clearComposeScores()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 3 5 5a2 2 0 0 1 0 3L11 21H6l-4-4a2 2 0 0 1 0-3L13 3a2 2 0 0 1 3 0zM8 8l8 8M11 21h11"/></svg>清除配分</button><button type="button" class="btn btn-auto-score btn-sm" onclick="autoAllocateScores()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3-1.9 5.8L4 10l5.8 1.9L12 18l1.9-5.8L20 10l-5.8-1.9zM5 18l-.7 1.4L3 20l1.3.6L5 22l.7-1.4L7 20l-1.3-.6zM19 16l-.7 1.4L17 18l1.3.6L19 20l.7-1.4L21 18l-1.3-.6z"/></svg>自動配分</button></div></div></div></section>
             <div id="sectionWeightError" class="alert alert-danger hidden section-weight-error" role="alert"></div>
@@ -64,9 +64,9 @@
 
 <div class="modal-overlay hidden" id="sectionWeightModal">
   <div class="modal section-weight-modal" role="dialog" aria-modal="true" aria-labelledby="sectionWeightTitle" aria-describedby="sectionWeightNote">
-    <div class="modal-header"><h3 id="sectionWeightTitle">章節題目比重</h3><button type="button" class="modal-close" data-close-section-weights aria-label="關閉">✕</button></div>
-    <div class="modal-body"><p id="sectionWeightNote" class="section-weight-note">調整各節出題比重，每節至少選入一題。</p><div id="sectionWeights"></div><p class="difficulty-note">比重為選題參考，實際題數會依題型、填空格數與可用題目調整。</p></div>
-    <div class="modal-footer"><button type="button" class="btn btn-ghost" id="resetSectionWeights">全部設為一般</button><button type="button" class="btn btn-primary" data-close-section-weights>完成</button></div>
+    <div class="modal-header"><div class="section-weight-heading"><h3 id="sectionWeightTitle">章節題目比重</h3><span id="sectionWeightNote" class="section-weight-note">調整各章節出題比重</span></div><button type="button" class="modal-close" data-close-section-weights aria-label="關閉">✕</button></div>
+    <div class="modal-body"><div id="sectionWeights"></div><p class="difficulty-note">比重為選題參考，實際題數會依題型、填空格數與可用題目調整。</p></div>
+    <div class="modal-footer"><button type="button" class="btn btn-ghost" id="resetSectionWeights">恢復預設</button><button type="button" class="btn btn-primary" data-close-section-weights>完成</button></div>
   </div>
 </div>
 
@@ -236,6 +236,21 @@ function renderExamSummary() {
   });
 }
 
+function difficultyHardRatio() {
+  const percent = Number(document.getElementById('cDifficulty').value);
+  return Number.isFinite(percent) ? Math.max(0, Math.min(100, percent)) / 100 : .5;
+}
+function updateDifficultyRatio() {
+  const hard = Math.round(difficultyHardRatio() * 100);
+  document.getElementById('difficultyHard').textContent = `${hard}%`;
+  document.getElementById('difficultyEasy').textContent = `${100 - hard}%`;
+  document.getElementById('cDifficulty').setAttribute('aria-valuetext', `較難題 ${hard}%，簡易題 ${100 - hard}%`);
+  const mode = hard < 50 ? 'easy' : hard > 50 ? 'hard' : 'medium';
+  document.querySelectorAll('[data-difficulty]').forEach(label => label.classList.toggle('is-current', label.dataset.difficulty === mode));
+}
+document.getElementById('cDifficulty').addEventListener('input', updateDifficultyRatio);
+updateDifficultyRatio();
+
 const sectionWeights = {};
 function currentSections() {
   return selectedSections(scopeSelector.getChapterCatalog(), scopeSelector.getSelectedChapters(), scopeSelector.getQuestions());
@@ -245,7 +260,10 @@ function renderSectionWeights() {
   const active = new Set(sections.map(section => section.code));
   Object.keys(sectionWeights).forEach(code => { if (!active.has(code)) delete sectionWeights[code]; });
   document.getElementById('sectionWeightError').classList.add('hidden');
-  document.getElementById('sectionWeights').innerHTML = sections.map(section => `<div class="section-weight-row"><span>${UI.escapeHtml(section.label)}</span><div class="section-weight-options" role="group" aria-label="${UI.escapeHtml(section.label)}題目比重">${[{value:1,label:'較少'},{value:2,label:'一般'},{value:3,label:'較多'}].map(option => `<button type="button" data-section="${section.code}" data-weight="${option.value}" class="section-weight-option weight-${option.value}" aria-pressed="${(sectionWeights[section.code] || 2) === option.value}">${option.label}</button>`).join('')}</div></div>`).join('') || '<div class="scope-empty">請先選擇命題範圍</div>';
+  document.getElementById('sectionWeights').innerHTML = sections.map(section => {
+    const weight = sectionWeights[section.code] || 2;
+    return `<div class="section-weight-row"><div class="section-weight-label"><span class="section-weight-numbers">${section.numberLabels.map(label => `<span class="section-weight-number">${UI.escapeHtml(label)}</span>`).join('')}</span><span class="section-weight-name">${UI.escapeHtml(section.title)}</span></div><div class="section-weight-slider"><input type="range" class="section-weight-range" data-section="${UI.escapeHtml(section.code)}" min="1" max="3" step="1" value="${weight}" aria-label="${UI.escapeHtml(section.label)}題目比重" aria-valuetext="${{3:'較多',2:'一般',1:'較少'}[weight]}"><div class="section-weight-scale" aria-hidden="true">${[{value:1,label:'較少'},{value:2,label:'一般'},{value:3,label:'較多'}].map(option => `<span data-weight-label="${option.value}" class="${weight === option.value ? 'is-current' : ''}">${option.label}</span>`).join('')}</div></div></div>`;
+  }).join('') || '<div class="scope-empty">請先選擇命題範圍</div>';
 }
 const sectionWeightModal = document.getElementById('sectionWeightModal');
 let sectionWeightFocus = null;
@@ -269,16 +287,18 @@ sectionWeightModal.addEventListener('click', event => {
 sectionWeightModal.addEventListener('keydown', event => {
   if (event.key === 'Escape') { event.preventDefault(); closeSectionWeightModal(); }
   if (event.key === 'Tab') {
-    const buttons = [...sectionWeightModal.querySelectorAll('button:not(:disabled)')];
-    if (event.shiftKey && document.activeElement === buttons[0]) { event.preventDefault(); buttons.at(-1).focus(); }
-    else if (!event.shiftKey && document.activeElement === buttons.at(-1)) { event.preventDefault(); buttons[0].focus(); }
+    const controls = [...sectionWeightModal.querySelectorAll('button:not(:disabled), input:not(:disabled)')];
+    if (event.shiftKey && document.activeElement === controls[0]) { event.preventDefault(); controls.at(-1).focus(); }
+    else if (!event.shiftKey && document.activeElement === controls.at(-1)) { event.preventDefault(); controls[0].focus(); }
   }
 });
-document.getElementById('sectionWeights').addEventListener('click', event => {
-  const button = event.target.closest('[data-weight]');
-  if (!button) return;
-  sectionWeights[button.dataset.section] = Number(button.dataset.weight);
-  button.parentElement.querySelectorAll('button').forEach(item => item.setAttribute('aria-pressed', String(item === button)));
+document.getElementById('sectionWeights').addEventListener('input', event => {
+  const slider = event.target.closest('.section-weight-range');
+  if (!slider) return;
+  const weight = Number(slider.value);
+  sectionWeights[slider.dataset.section] = weight;
+  slider.setAttribute('aria-valuetext', {3:'較多',2:'一般',1:'較少'}[weight]);
+  slider.parentElement.querySelectorAll('[data-weight-label]').forEach(label => label.classList.toggle('is-current', Number(label.dataset.weightLabel) === weight));
   document.getElementById('sectionWeightError').classList.add('hidden');
 });
 document.getElementById('resetSectionWeights').addEventListener('click', () => {
@@ -286,7 +306,7 @@ document.getElementById('resetSectionWeights').addEventListener('click', () => {
   renderSectionWeights();
 });
 function chooseWeightedQuestions(typeCounts, locked = []) {
-  return selectSectionQuestions({pool:scopeSelector.getQuestions(),sections:currentSections(),counts:Object.fromEntries(typeCounts.map(t => [t.code,t.count])),weights:sectionWeights,hardRatio:({easy:.3,medium:.5,hard:.7})[document.getElementById('cDifficulty').value] ?? .5,locked});
+  return selectSectionQuestions({pool:scopeSelector.getQuestions(),sections:currentSections(),counts:Object.fromEntries(typeCounts.map(t => [t.code,t.count])),weights:sectionWeights,hardRatio:difficultyHardRatio(),locked});
 }
 
 function renderExamSettings() {
@@ -530,7 +550,6 @@ window.recalcTotal = input => {
 window.doGenerate = async () => {
   const sc   = cSubject.value;
   const bc   = document.getElementById('cBook').value;
-  const diff = document.getElementById('cDifficulty').value;
 
   if (!sc) { UI.toast('請選擇科目', 'warning'); return; }
   if (!bc) { UI.toast('請選擇冊次', 'warning'); return; }
@@ -685,7 +704,6 @@ async function replaceResultQuestion(questionId, button) {
 async function regenerateType(typeCode) {
   const sc   = cSubject.value;
   const bc   = document.getElementById('cBook').value;
-  const diff = document.getElementById('cDifficulty').value;
   const cnt  = parseInt(document.getElementById('cnt-'+typeCode).value)||0;
   if (!cnt) return;
 

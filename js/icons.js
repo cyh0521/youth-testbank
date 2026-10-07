@@ -48,6 +48,8 @@
     sparkles:   '<path d="m12 3-1.9 5.8L4 10l5.8 1.9L12 18l1.9-5.8L20 10l-5.8-1.9z"/><path d="M5 18l-.7 1.4L3 20l1.3.6L5 22l.7-1.4L7 20l-1.3-.6z"/><path d="M19 16l-.7 1.4L17 18l1.3.6L19 20l.7-1.4L21 18l-1.3-.6z"/>',
     award:      '<circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/>',
     info:       '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>',
+    eye:        '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+    alert:      '<path d="M10.3 3.9 2.2 18a2 2 0 0 0 1.7 3h16.2a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4m0 4h.01"/>',
     tool:       '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>',
     menu:       '<line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>',
     more:       '<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',
@@ -81,4 +83,32 @@
     ICONS[name + '20'] = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${path}</svg>`;
   }
   window.ICONS = ICONS;
+
+  // 對話框可能在頁面載入後才建立，或重新設定標題文字。
+  const renderDialogTitle = title => {
+    if (!title.matches('.modal-header h3') || title.querySelector('.modal-title-icon')) return;
+    const modalId = title.closest('.modal-overlay')?.id;
+    const iconName = ['subjectModal', 'bookModal', 'chapterModal', 'chapterPickerModal'].includes(modalId) ? 'navTextbooks20'
+      : ['userModal', 'accountInfoModal', 'profileModal', 'avatarModal'].includes(modalId) ? 'user20'
+      : ['sectionWeightModal', 'epPaperSizeModal', 'hdModal', 'editTypeOrderModal'].includes(modalId) ? 'navSettings20'
+      : modalId === 'epModal' ? 'eye20'
+      : ['epPrintReminderTitle', 'logoutDialogTitle', 'deleteExamDialogTitle'].includes(title.id) ? 'alert20'
+      : 'test20';
+    title.insertAdjacentHTML('afterbegin', `<span class="modal-title-icon" aria-hidden="true">${ICONS[iconName]}</span>`);
+  };
+  const renderDialogTitles = root => {
+    if (root.matches?.('.modal-header h3')) renderDialogTitle(root);
+    root.querySelectorAll?.('.modal-header h3').forEach(renderDialogTitle);
+  };
+  const initDialogTitles = () => {
+    renderDialogTitles(document);
+    new MutationObserver(changes => {
+      for (const change of changes) {
+        if (change.target.matches?.('.modal-header h3')) renderDialogTitle(change.target);
+        change.addedNodes.forEach(node => { if (node.nodeType === 1) renderDialogTitles(node); });
+      }
+    }).observe(document.body, { childList: true, subtree: true });
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initDialogTitles);
+  else initDialogTitles();
 })();
