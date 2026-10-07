@@ -29,14 +29,16 @@ body.booklet-page{height:100vh;height:100dvh;overflow:hidden}
 .book-node:has(input:checked){background:#e2ebf4;color:#385b8a}
 .book-node:hover,.subject-node summary:hover{background:#f5f8fc}
 .book-node input{accent-color:#385b8a}
-.subject-node.is-disabled summary,.book-node.is-disabled,#chapterTree .chapter-item.is-disabled{color:var(--text-muted);cursor:not-allowed;opacity:.55}
+.subject-node.is-disabled summary,.book-node.is-disabled{color:var(--text-muted);cursor:not-allowed;opacity:.55}
+#chapterTree .chapter-item.is-disabled{color:var(--text-muted);cursor:not-allowed;opacity:.55}
 .subject-node.is-disabled summary:hover,.book-node.is-disabled:hover{background:none}
 #chapterTree .chapter-item.is-disabled label{cursor:not-allowed}
 .wizard-actions{display:flex;justify-content:flex-end;gap:10px;padding:16px 0}
 .card>.wizard-actions{padding:16px;border-top:1px solid var(--border-light)}
 #chapterTree.scope-tree{max-height:none;border:0;border-radius:0}
-#chapterTree .chapter-item{border-bottom:0;padding-top:6px;padding-bottom:6px;font-size:1rem;line-height:1.5}
-#chapterTree .chapter-item .ch-count{font-size:.94rem}
+#chapterTree .chapter-item{border-bottom:0;padding-top:6px;padding-bottom:6px;font-size:1rem;line-height:1.5;color:var(--text-primary)}
+#chapterTree .chapter-item .ch-count{font-size:.94rem;color:var(--text-primary)}
+#chapterTree .chapter-item.is-disabled .ch-count{color:var(--text-muted)}
 #chapterTree .chapter-children{margin-left:18px;border-left:1px dotted #b5c3d3}
 #chapterTree .chapter-item.section,#chapterTree .chapter-item.subsection{padding-left:12px}
 #chapterTree .chapter-item:has(input:checked){background:#eaf1f8}
