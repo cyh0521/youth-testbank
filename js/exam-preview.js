@@ -775,7 +775,8 @@ export function showExamPreview(examData, questions) {
 export function printExam(examData, questions) {
   ensurePreviewModal();
   const paper = document.createElement('div');
-  const display = window._epExamData === examData ? previewDisplay() : undefined;
+  const previewOptions = window._epExamData === examData ? previewDisplay() : undefined;
+  const display = examData.booklet ? previewOptions : { ...previewOptions, difficulty:false };
   paper.innerHTML = buildPaperHtml(examData, questions, display, false);
   const appearance = examAppearance(examData);
   const printContent = paper.firstElementChild;
