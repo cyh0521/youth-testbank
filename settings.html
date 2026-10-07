@@ -787,7 +787,6 @@ async function buildCatalogPanel() {
         <button class="btn btn-outline btn-sm" type="button" id="catalogSelectAll">全選</button>
         <button class="btn btn-outline btn-sm" type="button" id="catalogClearAll">全部取消</button>
         <button class="btn btn-primary" type="button" id="catalogSave">儲存變更</button>
-        <span id="catalogStatus" role="status" aria-live="polite"></span>
       </div>
     </div>
   </section>
@@ -796,7 +795,7 @@ async function buildCatalogPanel() {
     <div class="card-body card-body-with-description">
       <p style="font-size:.9rem;color:var(--text-secondary);margin:0 0 14px">拖曳欄位標籤可更改排序，上、下兩行之間可移動。</p>
       <div id="headerLayoutFields"></div>
-      <div class="catalog-actions"><button class="btn btn-primary" type="button" id="headerLayoutSave">儲存變更</button><button class="btn btn-outline" type="button" id="headerLayoutReset">恢復預設</button><span id="headerLayoutStatus" role="status" aria-live="polite"></span></div>
+      <div class="catalog-actions"><button class="btn btn-primary" type="button" id="headerLayoutSave">儲存變更</button><button class="btn btn-outline" type="button" id="headerLayoutReset">恢復預設</button></div>
     </div>
   </section>
   <section class="card catalog-section" data-section="appearance" style="margin-top:16px">
@@ -808,7 +807,7 @@ async function buildCatalogPanel() {
         <div class="form-group"><label class="form-label" for="defaultExamFontSize">字體大小（px）</label><select class="form-control" id="defaultExamFontSize" required></select></div>
         <div class="form-group"><label class="form-label" for="defaultExamLineHeight">行距</label><input class="form-control" id="defaultExamLineHeight" type="number" min="1.0" max="2.4" step="0.05" required></div>
       </div>
-      <div class="catalog-actions"><button class="btn btn-primary" type="button" id="appearanceSave">儲存變更</button><button class="btn btn-outline" type="button" id="appearanceReset">恢復預設</button><span id="appearanceStatus" role="status" aria-live="polite"></span></div>
+      <div class="catalog-actions"><button class="btn btn-primary" type="button" id="appearanceSave">儲存變更</button><button class="btn btn-outline" type="button" id="appearanceReset">恢復預設</button></div>
     </div>
   </section>
   <section class="card catalog-section" data-section="appearance" style="margin-top:16px">
@@ -821,7 +820,7 @@ async function buildCatalogPanel() {
         <div class="form-group"><label class="form-label" for="examMargin-left">左邊距（mm）</label><input class="form-control" id="examMargin-left" type="number" min="5" max="50" step="1" required></div>
         <div class="form-group"><label class="form-label" for="examMargin-right">右邊距（mm）</label><input class="form-control" id="examMargin-right" type="number" min="5" max="50" step="1" required></div>
       </div>
-      <div class="catalog-actions"><button class="btn btn-primary" type="button" id="examMarginsSave">儲存變更</button><button class="btn btn-outline" type="button" id="examMarginsReset">恢復預設</button><span id="examMarginsStatus" role="status" aria-live="polite"></span></div>
+      <div class="catalog-actions"><button class="btn btn-primary" type="button" id="examMarginsSave">儲存變更</button><button class="btn btn-outline" type="button" id="examMarginsReset">恢復預設</button></div>
     </div>
   </section>`;
   panel.querySelectorAll('.catalog-section').forEach(card => document.getElementById(`spanel-${card.dataset.section}`).append(card));
@@ -850,15 +849,12 @@ async function buildCatalogPanel() {
       const bookChecks = [...group.querySelectorAll('.catalog-book-check')];
       if (event.target === subjectCheck) bookChecks.forEach(input => { input.checked = subjectCheck.checked; });
       else subjectCheck.checked = bookChecks.some(input => input.checked);
-      document.getElementById('catalogStatus').textContent = '尚未儲存';
     });
     document.getElementById('catalogSelectAll').addEventListener('click', () => {
       choices.querySelectorAll('input[type="checkbox"]').forEach(input => { input.checked = true; });
-      document.getElementById('catalogStatus').textContent = '尚未儲存';
     });
     document.getElementById('catalogClearAll').addEventListener('click', () => {
       choices.querySelectorAll('input[type="checkbox"]').forEach(input => { input.checked = false; });
-      document.getElementById('catalogStatus').textContent = '尚未儲存';
     });
     save.disabled = false;
     save.addEventListener('click', async () => {
@@ -869,15 +865,12 @@ async function buildCatalogPanel() {
         }
       });
       save.disabled = true;
-      const status = document.getElementById('catalogStatus');
-      status.textContent = '儲存中…';
       try {
         await DataService.updateProfile(DataService.getCurrentUser().uid, { visibleCatalog:selected });
         window._tbCache = null;
-        status.textContent = '已儲存；切換頁面後依新設定顯示';
         UI.toast('常用科目設定已更新', 'success');
       } catch (error) {
-        status.textContent = `儲存失敗：${error.message || '請稍後再試'}`;
+        UI.toast(`儲存失敗：${error.message || '請稍後再試'}`, 'danger');
       } finally { save.disabled = false; }
     });
   } catch (error) {
@@ -900,15 +893,13 @@ function buildAppearanceSettings() {
   line.step = LINE_HEIGHT_RANGE.step;
   const fill = values => { font.value = values.font; size.value = values.fontSize; line.value = values.lineHeight; };
   fill(loadAppearance());
-  const status = document.getElementById('appearanceStatus');
   document.getElementById('appearanceSave').addEventListener('click', async () => {
     if (!size.reportValidity() || !line.reportValidity()) return;
     try {
       await DataService.preserveExamAppearances(loadAppearance());
       await saveAppearance({ font:font.value, fontSize:Number(size.value), lineHeight:Number(line.value) });
-      status.textContent = '已儲存';
       UI.toast('字體與行距已儲存', 'success');
-    } catch (error) { status.textContent = `儲存失敗：${error.message || '請稍後再試'}`; }
+    } catch (error) { UI.toast(`儲存失敗：${error.message || '請稍後再試'}`, 'danger'); }
   });
   document.getElementById('appearanceReset').addEventListener('click', async () => {
     const defaults = { font:'system', fontSize:FONT_SIZE_RANGE.default, lineHeight:LINE_HEIGHT_RANGE.default };
@@ -916,15 +907,14 @@ function buildAppearanceSettings() {
       await DataService.preserveExamAppearances(loadAppearance());
       await saveAppearance(defaults);
       fill(defaults);
-      status.textContent = '已恢復預設';
+      UI.toast('字體與行距已恢復預設', 'success');
     }
-    catch (error) { status.textContent = `重設失敗：${error.message || '請稍後再試'}`; }
+    catch (error) { UI.toast(`重設失敗：${error.message || '請稍後再試'}`, 'danger'); }
   });
   const fillMargins = values => {
     for (const [side, value] of Object.entries(values)) document.getElementById(`examMargin-${side}`).value = value;
   };
   fillMargins(loadWordMargins());
-  const marginStatus = document.getElementById('examMarginsStatus');
   document.getElementById('examMarginsSave').addEventListener('click', async () => {
     const margins = {};
     for (const side of Object.keys(DEFAULT_WORD_MARGINS)) {
@@ -934,16 +924,15 @@ function buildAppearanceSettings() {
     }
     try {
       await saveWordMargins(margins);
-      marginStatus.textContent = '已儲存';
       UI.toast('試卷邊距已儲存', 'success');
-    } catch (error) { marginStatus.textContent = `儲存失敗：${error.message || '請稍後再試'}`; }
+    } catch (error) { UI.toast(`儲存失敗：${error.message || '請稍後再試'}`, 'danger'); }
   });
   document.getElementById('examMarginsReset').addEventListener('click', async () => {
     try {
       await resetWordMargins();
       fillMargins(DEFAULT_WORD_MARGINS);
-      marginStatus.textContent = '已恢復預設';
-    } catch (error) { marginStatus.textContent = `重設失敗：${error.message || '請稍後再試'}`; }
+      UI.toast('試卷邊距已恢復預設', 'success');
+    } catch (error) { UI.toast(`重設失敗：${error.message || '請稍後再試'}`, 'danger'); }
   });
 }
 
@@ -1009,20 +998,19 @@ function buildHeaderSettings() {
     await DataService.preserveExamHeaders(loadHeader());
     await saveHeader(data);
   }
-  const layoutStatus = document.getElementById('headerLayoutStatus');
   document.getElementById('headerLayoutSave').addEventListener('click', async () => {
     const layout = Object.fromEntries([1,2].flatMap(row =>
       [...layoutZones[row].querySelectorAll('.header-layout-chip')].map((chip, index) =>
         [chip.dataset.field, { row, position:index+1 }])));
-    try { await saveHeaderDefaults({ layout }); layoutStatus.textContent = '已儲存'; UI.toast('欄位位置已儲存', 'success'); }
-    catch (error) { layoutStatus.textContent = `儲存失敗：${error.message || '請稍後再試'}`; }
+    try { await saveHeaderDefaults({ layout }); UI.toast('欄位位置已儲存', 'success'); }
+    catch (error) { UI.toast(`儲存失敗：${error.message || '請稍後再試'}`, 'danger'); }
   });
   document.getElementById('headerLayoutReset').addEventListener('click', async () => {
     try {
       await saveHeaderDefaults({ layout:DEFAULT_HEADER_LAYOUT });
       fillLayout({ layout:DEFAULT_HEADER_LAYOUT });
-      layoutStatus.textContent = '已恢復預設';
-    } catch (error) { layoutStatus.textContent = `重設失敗：${error.message || '請稍後再試'}`; }
+      UI.toast('欄位位置已恢復預設', 'success');
+    } catch (error) { UI.toast(`重設失敗：${error.message || '請稍後再試'}`, 'danger'); }
   });
 }
 

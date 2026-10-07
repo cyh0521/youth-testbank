@@ -398,7 +398,7 @@ export function mountInlineHeaderEditor(container, examData, onChange, onCancel)
   </div><button class="ep-header-layout-toggle" type="button" data-header-layout-toggle aria-expanded="false"><span class="ep-header-layout-toggle-icon" aria-hidden="true">↕</span><span class="ep-header-layout-toggle-copy"><strong>調整欄位位置</strong><small>點此展開，可拖曳欄位到第一行或第二行</small></span><span class="ep-header-layout-toggle-chevron" data-layout-chevron aria-hidden="true">▾</span></button>
   <div class="ep-header-layout-panel" data-header-layout-panel hidden><p>拖曳欄位到第一行或第二行，變更會立即顯示在表頭。</p>
     <div class="ep-header-layout-board">${[1,2].map(row => `<div class="ep-header-layout-line"><strong>第 ${row} 行</strong><div class="ep-header-layout-zone" data-row="${row}" aria-label="第 ${row} 行欄位"></div></div>`).join('')}</div>
-  </div><div class="ep-inline-header-actions"><button class="btn btn-primary btn-sm" type="button" data-header-save>儲存變更</button><button class="btn btn-outline btn-sm" type="button" data-header-clear>清除</button><button class="btn btn-ghost btn-sm" type="button" data-header-cancel>取消</button><span data-header-status role="status" aria-live="polite"></span></div>`;
+  </div><div class="ep-inline-header-actions"><button class="btn btn-primary btn-sm" type="button" data-header-save>儲存變更</button><button class="btn btn-outline btn-sm" type="button" data-header-clear>清除</button><button class="btn btn-ghost btn-sm" type="button" data-header-cancel>取消</button></div>`;
   for (const [key] of fields) container.querySelector(`[data-header-field="${key}"]`).value = key === 'yearSemesterText' ? headerYearSemesterText(header) : header[key] || '';
   for (const field of Object.keys(HEADER_BLANK_LABELS)) container.querySelector(`[data-header-length="${field}"]`).value = headerBlankParts(header, field).length;
   const layoutToggle = container.querySelector('[data-header-layout-toggle]');
@@ -461,8 +461,6 @@ export function mountInlineHeaderEditor(container, examData, onChange, onCancel)
       [...zones[row].querySelectorAll('.ep-header-layout-chip')].map((chip, index) =>
         [chip.dataset.field, { row, position:index+1 }])))};
     onChange?.();
-    const status = container.querySelector('[data-header-status]');
-    if (status) status.textContent = '尚未儲存';
   });
   board.addEventListener('dragend', finishDrag);
   const update = () => {
@@ -473,8 +471,6 @@ export function mountInlineHeaderEditor(container, examData, onChange, onCancel)
     }
     examData.header = { ...examData.header, ...data };
     onChange?.();
-    const status = container.querySelector('[data-header-status]');
-    if (status) status.textContent = '尚未儲存';
   };
   container.querySelectorAll('input').forEach(input => input.addEventListener('input', update));
   container.querySelectorAll('select').forEach(select => select.addEventListener('change', update));
@@ -502,9 +498,9 @@ export function mountInlineHeaderEditor(container, examData, onChange, onCancel)
       if (examData.id) document.dispatchEvent(new CustomEvent('exam-header-saved', {
         detail:{ id:examData.id, header:{ ...examData.header }, source:examData }
       }));
-      container.querySelector('[data-header-status]').textContent = examData.id ? '已儲存至此試卷' : '已套用至目前草稿';
+      UI.toast(examData.id ? '已儲存至此試卷' : '已套用至目前草稿', 'success');
       onCancel?.();
-    } catch (error) { container.querySelector('[data-header-status]').textContent = `儲存失敗：${error.message}`; }
+    } catch (error) { UI.toast(`儲存失敗：${error.message}`, 'danger'); }
     finally {
       save.disabled = clear.disabled = cancel.disabled = false;
       controls.forEach(control => { control.disabled = false; });

@@ -517,9 +517,23 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
   position: sticky; top: 0; background: white; z-index: 1;
 }
 .modal-header h3 {
-  font-family: var(--font-serif);
-  font-size: 1rem; font-weight: 600; color: var(--primary);
+  --dialog-icon: url("../img/dialog-document.svg");
+  display: inline-flex; align-items: center; gap: 9px; min-width: 0;
+  font-family: var(--font-sans); font-size: 1.2rem; font-weight: 700;
+  letter-spacing: .01em; line-height: 1.35; color: var(--primary);
 }
+.modal-header h3::before {
+  content: ''; display: inline-block; flex: none; align-self: center;
+  width: 21px; height: 21px; transform: translateY(1px);
+  background: currentColor;
+  -webkit-mask: var(--dialog-icon) center / contain no-repeat;
+  mask: var(--dialog-icon) center / contain no-repeat;
+}
+:is(#subjectModal,#bookModal,#chapterModal,#chapterPickerModal) .modal-header h3 { --dialog-icon: url("../img/dialog-book.svg"); }
+:is(#userModal,#accountInfoModal,#profileModal,#avatarModal) .modal-header h3 { --dialog-icon: url("../img/dialog-user.svg"); }
+:is(#sectionWeightModal,#epPaperSizeModal,#hdModal,#editTypeOrderModal) .modal-header h3 { --dialog-icon: url("../img/dialog-settings.svg"); }
+#epModal .modal-header h3 { --dialog-icon: url("../img/dialog-eye.svg"); }
+:is(#epPrintReminderTitle,#logoutDialogTitle,#deleteExamDialogTitle) { --dialog-icon: url("../img/dialog-alert.svg"); }
 .modal-close {
   background: none; border: none;
   color: var(--text-muted); font-size: 1.2rem;

@@ -4,7 +4,7 @@ import { filterComposePool } from './compose-selection.js';
 export function renderScopePanel({ nextAction, nextLabel }) {
   return `<div class="scope-layout">
             <section class="card"><div class="card-header"><h2>選擇命題科目</h2></div><div class="scope-tree" id="subjectTree"></div></section>
-            <section class="card"><div class="card-header"><div class="scope-title"><h2>選擇命題章節</h2><span class="scope-available" id="scopeAvailable">︱可選題數 0 題</span></div><div class="scope-header-actions"><div class="compose-action-tools" role="group" aria-label="範圍工具"><button class="btn btn-ghost btn-sm" onclick="clearAllChapters()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 3 5 5a2 2 0 0 1 0 3L11 21H6l-4-4a2 2 0 0 1 0-3L13 3a2 2 0 0 1 3 0zM8 8l8 8M11 21h11"/></svg>取消選取</button></div><button class="btn btn-primary btn-sm" onclick="${nextAction}"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m13.5 6 6 6-6 6"/><path d="m6 6 6 6-6 6" stroke-opacity=".5"/></svg>下一步：${nextLabel}</button></div></div><div class="chapter-tree scope-tree" id="chapterTree"><div class="scope-empty">請先選擇左側的科目與冊次</div></div></section>
+            <section class="card"><div class="card-header"><div class="scope-title"><h2>選擇命題章節</h2><span class="scope-available" id="scopeAvailable">︱可選題數 0 題</span></div><div class="scope-header-actions"><div class="compose-action-tools" id="scopeSelectionTools" role="group" aria-label="範圍工具" hidden><button class="btn btn-ghost btn-sm" onclick="clearAllChapters()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 3 5 5a2 2 0 0 1 0 3L11 21H6l-4-4a2 2 0 0 1 0-3L13 3a2 2 0 0 1 3 0zM8 8l8 8M11 21h11"/></svg>取消選取</button></div><button class="btn btn-primary btn-sm" onclick="${nextAction}"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m13.5 6 6 6-6 6"/><path d="m6 6 6 6-6 6" stroke-opacity=".5"/></svg>下一步：${nextLabel}</button></div></div><div class="chapter-tree scope-tree" id="chapterTree"><div class="scope-empty">請先選擇左側的科目與冊次</div></div></section>
           </div>
           <div hidden><select id="cSubject" onchange="onSubjectChange()"><option value="">請選擇科目</option></select><select id="cBook" disabled onchange="loadChapters()"><option value="">請先選科目</option></select></div>`;
 }
@@ -24,6 +24,7 @@ export function mountScopeSelector({ cache, dataService, onChange }) {
     chapters: getSelectedChapters()
   });
   function notify(reason = 'selection') {
+    document.getElementById('scopeSelectionTools').hidden = getSelectedChapters().length === 0;
     const questions = selectedQuestions();
     document.getElementById('scopeAvailable').textContent = `︱可選題數 ${questions.length} 題`;
     onChange(bookQuestions, questions, reason);
