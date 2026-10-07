@@ -33,7 +33,7 @@ assert.equal(pickedFills.reduce((sum,q)=>sum+blankCount(q),0),3);
 
 const page = await readFile(new URL('../compose.html',import.meta.url),'utf8');
 const scopeModule = await readFile(new URL('../js/exam-scope.js',import.meta.url),'utf8');
-assert.equal((scopeModule.match(/DataService\.getQuestions\(/g)||[]).length,1);
+assert.ok(scopeModule.includes('await DataService.getQuestionCount(opts)'));
 assert.ok(scopeModule.includes('await DataService.getQuestions({ subjectCode:sc, bookCode:bc })'));
 assert.ok(!page.includes('DataService.randomWithDifficulty'));
 assert.ok(!page.includes('subjectsWithQuestions'));

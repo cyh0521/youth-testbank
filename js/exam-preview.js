@@ -1,5 +1,5 @@
 import { DOWNLOAD_TYPES, buildDownloadVariants, downloadFilename } from './download-variants.js';
-import { createDocxBlob } from './docx-export.js?v=20261007-images-2';
+import { createDocxBlob } from './docx-export.js?v=20261007-images-block';
 
 /**
  * 幼獅題庫系統 — 試卷預覽 & Word 輸出模組 v3

@@ -54,7 +54,7 @@ test('題目文字保留跳脫與換段，圖片在原文字位置顯示且限�
   assert(html.endsWith('後文'));
   assert.match(html, /width="240"/);
   assert.match(html, /alt="地圖 &lt;甲&gt; &quot;乙&quot;"/);
-  assert.match(html, /max-width:100%;height:auto/);
+  assert.match(html, /display:block;max-width:100%;height:auto/);
   assert.equal(UI.questionSummary(`前${token}後`), '前［地圖 <甲> "乙"］後');
   assert.equal(UI.questionHtml('<img src=x onerror=alert(1)>'), '&lt;img src=x onerror=alert(1)&gt;');
   assert(!UI.questionHtml('[[圖片:https://evil/x.png|320|test]]').includes('<img'));
@@ -138,10 +138,15 @@ test('Word 有圖片的段落使用最小行高，文字段落仍維持原本固
   const docx={TextRun:entry,ImageRun:class extends entry{},Paragraph:entry,Document:entry,LineRuleType:{EXACT:'exact',AT_LEAST:'atLeast'},AlignmentType:{LEFT:'left'},TabStopType:{LEFT:'left'},Packer:{toBlob:async doc=>doc}};
   const picture={...image('images/a.png'),naturalWidth:600,naturalHeight:300,src:'https://example.test/a.png'};
   const plain={classList:{contains:name=>name==='ep-word-question'},style:{marginLeft:'50px'},dataset:{},childNodes:[{nodeType:3,textContent:'純文字'}]};
-  const illustrated={...plain,childNodes:[picture]};
+  const illustrated={...plain,childNodes:[{nodeType:3,textContent:'圖片上方文字'},picture,{nodeType:3,textContent:'圖片下方文字'}]};
   const content={querySelectorAll:()=>[],querySelector:selector=>selector==='.ep-question-columns'?{children:[plain,illustrated]}:null};
   const result=await word.createDocxBlob({docx,content,title:'測試',appearance:{font:'system',fontSize:16,lineHeight:1.3},margins:{top:10,right:10,bottom:10,left:10},paperSize:{width:210,height:297},columns:1});
-  const [text,imageParagraph]=result.options.sections[0].children;
+  const [text,before,imageParagraph,after]=result.options.sections[0].children;
+  assert.equal(result.options.sections[0].children.length,4);
+  assert.equal(before.options.children[0].options.text,'圖片上方文字');
+  assert.equal(after.options.children[0].options.text,'圖片下方文字');
+  assert.equal(imageParagraph.options.children.length,1);
+  assert(imageParagraph.options.children[0] instanceof docx.ImageRun);
   assert.equal(text.options.spacing.lineRule,'exact');
   assert.equal(imageParagraph.options.spacing.lineRule,'atLeast');
   assert.equal(text.options.spacing.line,imageParagraph.options.spacing.line);

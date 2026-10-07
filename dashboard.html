@@ -10,7 +10,7 @@
 </head>
 <body>
 <script src="js/icons.js"></script>
-<script src="js/core.js?v=20261007-images-dir"></script>
+<script src="js/core.js?v=20261007-images-block"></script>
 <div class="layout">
   <aside class="sidebar" id="sidebar"></aside>
   <script src="js/shell.js?v=20261007-images-dir"></script>
@@ -29,7 +29,7 @@
 </div>
 <script type="module">
 import { guardPage } from './js/auth-guard.js';
-import { openDashboardExamEditor } from './js/dashboard-exam-editor.js?v=20261007-images';
+import { openDashboardExamEditor } from './js/dashboard-exam-editor.js?v=20261007-images-block';
 import { confirmExamDeletion } from './js/confirm-exam-deletion.js';
 window._activeNav = 'dashboard';
 const user = await guardPage();
@@ -98,7 +98,7 @@ async function handleRecentExamAction(event) {
     const byId = new Map(questions.map(q => [q.id, q]));
     const ordered = (exam.questionIds || []).map(id => byId.get(id)).filter(Boolean);
     if (!ordered.length) { UI.toast('此試卷無法載入題目', 'warning'); return; }
-    const { showExamPreview, printWithPaperChoice, downloadExam } = await import('./js/exam-preview.js?v=20261007-images-2');
+    const { showExamPreview, printWithPaperChoice, downloadExam } = await import('./js/exam-preview.js?v=20261007-images-block');
     if (action === 'preview') showExamPreview(exam, ordered);
     else if (action === 'print') await printWithPaperChoice(exam, ordered);
     else if (action === 'word') await downloadExam(exam, ordered, 'Word');

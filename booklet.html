@@ -10,7 +10,7 @@
 </head>
 <body class="booklet-page">
 <script src="js/icons.js"></script>
-<script src="js/core.js?v=20261007-images-dir"></script>
+<script src="js/core.js?v=20261007-images-block"></script>
 <div class="layout">
   <aside class="sidebar" id="sidebar"></aside>
   <script src="js/shell.js?v=20261007-images-dir"></script>
@@ -32,8 +32,8 @@
   </div>
 </div>
 <script type="module">
-import { renderScopePanel, mountScopeSelector } from './js/exam-scope.js';
-import { showExamPreview, loadAppearance } from './js/exam-preview.js?v=20261007-images-2';
+import { renderScopePanel, mountScopeSelector } from './js/exam-scope.js?v=20261007-disabled-scope';
+import { showExamPreview, loadAppearance } from './js/exam-preview.js?v=20261007-images-block';
 import { guardPage } from './js/auth-guard.js';
 window._activeNav = 'booklet';
 const user = await guardPage(['admin','manager','teacher']);

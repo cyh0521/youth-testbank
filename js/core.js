@@ -135,7 +135,7 @@ const UI = {
 
   questionInlineHtml(value) {
     return this.questionImageParts(value).map(part => part.path
-      ? `<img class="question-image" data-question-image="${this.escapeHtml(part.path)}" src="${this.escapeHtml(window.questionImagePreviews?.get(part.path) || part.path)}" width="${part.width}" alt="${this.escapeHtml(part.alt)}" style="max-width:100%;height:auto;vertical-align:middle;object-fit:contain">`
+      ? `<img class="question-image" data-question-image="${this.escapeHtml(part.path)}" src="${this.escapeHtml(window.questionImagePreviews?.get(part.path) || part.path)}" width="${part.width}" alt="${this.escapeHtml(part.alt)}" style="display:block;max-width:100%;height:auto;margin:6px 0;object-fit:contain">`
       : this.escapeHtml(part.text)).join('');
   },
 

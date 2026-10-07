@@ -5,6 +5,7 @@ const HEADER_LINE_HEIGHT = 1.6;
 const QUESTION_PARAGRAPH_BREAK = Symbol('questionParagraphBreak');
 const QUESTION_ANALYSIS_BREAK = Symbol('questionAnalysisBreak');
 const QUESTION_ANSWER_BREAK = Symbol('questionAnswerBreak');
+const QUESTION_IMAGE_BREAK = Symbol('questionImageBreak');
 
 function wordFont(fontId) {
   if (fontId === 'serif') return 'Noto Serif TC';
@@ -59,19 +60,27 @@ async function nodeRuns(node, docx, base, imageWidthLimit = 500) {
   const runs = [];
   if (node.classList?.contains('ep-q-analysis')) runs.push(QUESTION_ANALYSIS_BREAK);
   else if (node.classList?.contains('ep-answer-blank') || node.classList?.contains('ep-essay-blank')) runs.push(QUESTION_ANSWER_BREAK);
-  for (const child of node.childNodes) runs.push(...await nodeRuns(child, docx, style, imageWidthLimit));
+  for (const child of node.childNodes) await appendNodeRuns(runs, child, docx, style, imageWidthLimit);
   return runs;
+}
+
+async function appendNodeRuns(runs, node, docx, base, imageWidthLimit) {
+  const next = await nodeRuns(node, docx, base, imageWidthLimit);
+  if (node.tagName === 'IMG' && node.dataset?.questionImage) runs.push(QUESTION_IMAGE_BREAK, ...next, QUESTION_IMAGE_BREAK);
+  else runs.push(...next);
 }
 
 async function runsFromNodes(nodes, docx, base, imageWidthLimit = 500) {
   const runs = [];
-  for (const node of nodes) runs.push(...await nodeRuns(node, docx, base, imageWidthLimit));
+  for (const node of nodes) await appendNodeRuns(runs, node, docx, base, imageWidthLimit);
   return runs;
 }
 
 function splitQuestionParagraphs(runs) {
   const parts = [[]];
+  let imageBreakPending = false;
   for (const run of runs) {
+    if (run === QUESTION_IMAGE_BREAK) { imageBreakPending = true; continue; }
     if (run === QUESTION_ANALYSIS_BREAK) {
       const analysis = [];
       analysis.isAnalysis = true;
@@ -83,7 +92,16 @@ function splitQuestionParagraphs(runs) {
       parts.push(answer);
     }
     else if (run === QUESTION_PARAGRAPH_BREAK) parts.push([]);
-    else parts.at(-1).push(run);
+    else {
+      if (imageBreakPending && parts.at(-1).length) {
+        const next = [];
+        if (parts.at(-1).isAnalysis) next.isAnalysis = true;
+        if (parts.at(-1).isAnswer) next.isAnswer = true;
+        parts.push(next);
+      }
+      parts.at(-1).push(run);
+    }
+    imageBreakPending = false;
   }
   return parts;
 }

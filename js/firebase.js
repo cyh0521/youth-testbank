@@ -295,6 +295,13 @@ window.DataService = {
   // ══════════════════════════════════════════════
 
   // ── 查詢題目（含篩選）────────────────────────
+  async getQuestionCount({ subjectCode, bookCode }) {
+    if (!DataService.isCatalogItemVisible({ subjectCode, bookCode })) return 0;
+    const source = query(collection(db, 'questions'),
+      where('subjectCode', '==', subjectCode), where('bookCode', '==', bookCode));
+    return (await getCountFromServer(source)).data().count;
+  },
+
   async getQuestions(opts = {}) {
     let q = collection(db, 'questions');
     const constraints = [];

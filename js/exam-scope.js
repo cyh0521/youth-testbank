@@ -17,6 +17,37 @@ export function mountScopeSelector({ cache, dataService, onChange }) {
   let bookQuestions = [];
   let chapterData = {};
   let chapterCatalog = { labels: ['章', '節', ''], chapters: [] };
+  const bookCounts = new Map();
+  const bookKey = (subject, book) => JSON.stringify([subject, book]);
+  function applyBookState(input, count, title) {
+    input.disabled = count === undefined || count === 0;
+    const row = input.closest('.book-node');
+    row.classList.toggle('is-disabled', input.disabled);
+    row.title = title || (count === 0 ? '尚無題目' : '');
+    if (cSubject.value === input.dataset.subject) {
+      const option = [...document.getElementById('cBook').options].find(option => option.value === input.value);
+      if (option) option.disabled = input.disabled;
+    }
+  }
+  async function checkBookCounts(node) {
+    await Promise.allSettled([...node.querySelectorAll('input[name="scopeBook"]')].map(async input => {
+      const key = bookKey(input.dataset.subject, input.value);
+      if (bookCounts.has(key)) return;
+      bookCounts.set(key, undefined);
+      try {
+        const opts = { subjectCode:input.dataset.subject, bookCode:input.value };
+        // 相容已快取的舊資料層；新版以聚合查詢取得題數，不下載全部題目。
+        const count = typeof DataService.getQuestionCount === 'function'
+          ? await DataService.getQuestionCount(opts) : (await DataService.getQuestions(opts)).length;
+        bookCounts.set(key, count);
+        applyBookState(input, count);
+      } catch (error) {
+        bookCounts.delete(key);
+        applyBookState(input, undefined, '題數載入失敗，請收合後重新展開科目');
+        console.warn('載入冊別題數失敗', error);
+      }
+    }));
+  }
   const getSelectedChapters = () => [...document.querySelectorAll('.chap-cb:checked:not(:disabled)')]
     .map(cb => cb.dataset.sub ? `${cb.dataset.ch}-${cb.dataset.sec}-${cb.dataset.sub}` : cb.dataset.sec ? `${cb.dataset.ch}-${cb.dataset.sec}` : cb.dataset.ch);
   const selectedQuestions = () => filterComposePool(bookQuestions, {
@@ -34,10 +65,13 @@ export function mountScopeSelector({ cache, dataService, onChange }) {
     tree.innerHTML = (_tbCache?.subjects || []).map(subject => {
       const books = _tbCache.booksBySubject[subject.id] || [];
       return `<details class="subject-node"><summary>${escapeTreeText(subject.name)}</summary>${books.length ? books.map(book =>
-        `<label class="book-node"><input type="radio" name="scopeBook" data-subject="${escapeTreeText(subject.code)}" value="${escapeTreeText(book.code)}"><span>${escapeTreeText(book.name)}</span></label>`
+        `<label class="book-node is-disabled" title="題數載入中"><input type="radio" name="scopeBook" data-subject="${escapeTreeText(subject.code)}" value="${escapeTreeText(book.code)}" disabled><span>${escapeTreeText(book.name)}</span></label>`
       ).join('') : '<div class="scope-empty">尚無冊次</div>'}</details>`;
     }).join('') || '<div class="scope-empty">尚無科目</div>';
   }
+  document.getElementById('subjectTree').addEventListener('toggle', event => {
+    if (event.target.matches('.subject-node') && event.target.open) checkBookCounts(event.target);
+  }, true);
   let bookLoadRevision = 0;
   document.getElementById('subjectTree').addEventListener('change', async event => {
     const input = event.target;
@@ -103,7 +137,7 @@ export function mountScopeSelector({ cache, dataService, onChange }) {
     if (sc) {
       const subject = _tbCache.subjectByCode[sc];
       const books = subject ? _tbCache.booksBySubject[subject.id] || [] : [];
-      bk.innerHTML = '<option value="">請選擇冊次</option>' + books.map(book => `<option value="${escapeTreeText(book.code)}">${escapeTreeText(book.name)}</option>`).join('');
+      bk.innerHTML = '<option value="">請選擇冊次</option>' + books.map(book => `<option value="${escapeTreeText(book.code)}" ${bookCounts.get(bookKey(sc, book.code)) > 0 ? '' : 'disabled'}>${escapeTreeText(book.name)}</option>`).join('');
       bk.disabled = false;
     } else {
       bk.disabled = true;
@@ -121,6 +155,11 @@ export function mountScopeSelector({ cache, dataService, onChange }) {
     bookQuestions = [];
     notify('book');
     if (!sc || !bc) { document.getElementById('chapterTree').innerHTML = '<div class="scope-empty">請先選擇冊次</div>'; return; }
+    if (bookCounts.get(bookKey(sc, bc)) === 0) {
+      document.getElementById('cBook').value = '';
+      document.getElementById('chapterTree').innerHTML = '<div class="scope-empty">此冊次尚無題目</div>';
+      return;
+    }
     const tree = document.getElementById('chapterTree');
     tree.innerHTML = '<div style="padding:12px;text-align:center;color:var(--text-muted);font-size:.88rem">載入中…</div>';
     document.getElementById('scopeAvailable').textContent = '︱可選題數 0 題';
@@ -134,17 +173,29 @@ export function mountScopeSelector({ cache, dataService, onChange }) {
       return;
     }
     if (!isCurrentBook()) return;
-    if (!qs.length) { tree.innerHTML = '<div class="scope-empty">此冊次尚無題目</div>'; return; }
+    bookCounts.set(bookKey(sc, bc), qs.length);
+    document.querySelectorAll('input[name="scopeBook"]').forEach(input => {
+      if (input.dataset.subject === sc && input.value === bc) {
+        applyBookState(input, qs.length);
+        if (!qs.length) input.checked = false;
+      }
+    });
+    if (!qs.length) {
+      document.getElementById('cBook').value = '';
+      tree.innerHTML = '<div class="scope-empty">此冊次尚無題目</div>';
+      return;
+    }
     // 統計每章每節的題目數量
     const countMap = {};
     qs.forEach(q => {
-      const ch = q.chapterNum; if (!ch) return;
+      const ch = Number(q.chapterNum); if (!ch) return;
       if (!countMap[ch]) countMap[ch] = { count: 0, sections: {}, subsections: {} };
       countMap[ch].count++;
-      if (q.sectionNum) {
-        countMap[ch].sections[q.sectionNum] = (countMap[ch].sections[q.sectionNum]||0) + 1;
-        if (q.subsectionNum) {
-          const key = `${q.sectionNum}-${q.subsectionNum}`;
+      const sec = Number(q.sectionNum), sub = Number(q.subsectionNum);
+      if (sec) {
+        countMap[ch].sections[sec] = (countMap[ch].sections[sec]||0) + 1;
+        if (sub) {
+          const key = `${sec}-${sub}`;
           countMap[ch].subsections[key] = (countMap[ch].subsections[key]||0) + 1;
         }
       }
@@ -170,7 +221,7 @@ export function mountScopeSelector({ cache, dataService, onChange }) {
 
     // 合併課本定義與題目統計
     const allChNums = new Set([
-      ...tbChapters.map(c => String(c.chapterNum)),
+      ...tbChapters.map(c => String(Number(c.chapterNum))),
       ...Object.keys(countMap)
     ]);
     if (!allChNums.size) {
@@ -185,13 +236,15 @@ export function mountScopeSelector({ cache, dataService, onChange }) {
     const l3 = bookObj?.l3 || '';
     chapterCatalog = { labels: [l1, l2, l3], chapters: tbChapters };
     tbChapters.forEach(c => {
-      chTitles[String(c.chapterNum)] = c.title || '';
+      const ch = String(Number(c.chapterNum));
+      chTitles[ch] = c.title || '';
       (c.sections||[]).forEach(s => {
-        if (!secTitles[String(c.chapterNum)]) secTitles[String(c.chapterNum)] = {};
-        secTitles[String(c.chapterNum)][String(s.sectionNum)] = s.title || '';
+        const sec = String(Number(s.sectionNum));
+        if (!secTitles[ch]) secTitles[ch] = {};
+        secTitles[ch][sec] = s.title || '';
         if (l3 && (s.subsections||[]).length) {
-          if (!subsecTitles[String(c.chapterNum)]) subsecTitles[String(c.chapterNum)] = {};
-          subsecTitles[String(c.chapterNum)][String(s.sectionNum)] = s.subsections;
+          if (!subsecTitles[ch]) subsecTitles[ch] = {};
+          subsecTitles[ch][sec] = s.subsections.map(ss => ({...ss, num:Number(ss.num)}));
         }
       });
     });

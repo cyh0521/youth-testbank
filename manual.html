@@ -50,7 +50,7 @@
 </head>
 <body>
 <script src="js/icons.js"></script>
-<script src="js/core.js?v=20261007-images-dir"></script>
+<script src="js/core.js?v=20261007-images-block"></script>
 <div class="layout">
   <aside class="sidebar" id="sidebar"></aside>
   <script src="js/shell.js?v=20261007-images-dir"></script>
@@ -129,9 +129,9 @@
 </div>
 
 <script type="module">
-import { renderScopePanel, mountScopeSelector } from './js/exam-scope.js';
+import { renderScopePanel, mountScopeSelector } from './js/exam-scope.js?v=20261007-disabled-scope';
 import { guardPage } from './js/auth-guard.js';
-import { showExamPreview, showHeaderSettings, newExamHeader, loadAppearance, mountInlineHeaderEditor, buildHeaderHtml, fontStackById } from './js/exam-preview.js?v=20261007-images-2';
+import { showExamPreview, showHeaderSettings, newExamHeader, loadAppearance, mountInlineHeaderEditor, buildHeaderHtml, fontStackById } from './js/exam-preview.js?v=20261007-images-block';
 import { allocateTypeScores, AUTO_SCORE_WEIGHTS } from './js/score-allocation.js?v=20261007-weighted-scores';
 import { blankCount } from './js/blank-selection.js';
 window._activeNav = 'manual';
