@@ -92,6 +92,7 @@ test('資訊以標籤及分隔線呈現，並保留內容跳脫', () => {
 });
 
 test('資訊列與題目同字級；是非及單選解析在表格下方並以標籤寬度縮排', () => {
+  assert.match(source, /#epBody \.ep-q-analysis\{[^}]*font-size:1em/);
   for (const type of ['T1','T2']) {
     const html = context.buildBookletHtml({}, [question('題目', 1, {type, analysis:'長篇解析內容'})], {analysis:true});
     assert(html.includes('margin-bottom:6px;font-size:1em'));

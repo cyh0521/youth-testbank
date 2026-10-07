@@ -101,6 +101,22 @@
 @media(max-width:1000px){.import-intro{grid-template-columns:1fr}}
 
 @media(max-width:600px){.import-card .section-heading,.import-card-body{padding-left:14px;padding-right:14px}.import-fields{grid-template-columns:1fr}}
+#importedFilesModal .modal{display:flex;flex-direction:column;max-height:90vh;overflow:hidden}
+#importedFilesModal .modal-header,#importedFilesModal .modal-footer{flex:none;position:static}
+#importedFilesModal .imported-files-heading{display:flex;align-items:baseline;gap:8px;min-width:0;flex-wrap:wrap}
+#importedFilesModal .imported-files-heading h3{font-size:1.2rem;font-weight:700;letter-spacing:.01em}
+#importedFilesModal .imported-files-note{font-size:.84rem;font-weight:400;color:var(--text-secondary)}
+#importedFilesModal .modal-body{flex:1;min-height:0;max-height:none;overflow-y:auto}
+#importedFilesModal .table-wrapper{overflow:visible}
+#importedFilesModal tr[data-file-index]{cursor:pointer;user-select:none}
+#importedFilesModal tr.file-selected{background:#e4eeff}
+#importedFilesModal .data-table td:first-child{width:36px}
+#importedFilesModal .data-table th,#importedFilesModal .data-table td{padding:8px 12px;vertical-align:middle}
+#importedFilesModal .data-table th:first-child,#importedFilesModal .data-table td:first-child{width:44px;text-align:center}
+#importedFilesModal .data-table input[type=checkbox]{display:block;width:18px;height:18px;margin:0 auto;cursor:pointer}
+#importedFilesModal .btn-danger{padding:4px 8px;display:inline-flex;align-items:center;justify-content:center;gap:4px;font-size:.88rem;line-height:1;white-space:nowrap}
+#importedFilesModal .btn-danger svg{display:block;width:16px;height:16px}
+#importedFilesModal .data-table th:last-child,#importedFilesModal .data-table td:last-child{width:88px;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -136,7 +152,7 @@
 
         <!-- 格式說明 -->
         <section class="card import-card">
-          <div class="card-header section-heading"><div><h2>入題檔格式說明</h2><p>上傳前確認 Word 表格欄位</p></div><div class="import-header-actions"><button class="btn btn-primary btn-sm" onclick="goStep2()"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m13.5 6 6 6-6 6"/><path d="m6 6 6 6-6 6" stroke-opacity=".5"/></svg>下一步：上傳檔案</button></div></div><div class="card-body import-card-body">
+          <div class="card-header section-heading"><div><h2>入題檔格式說明</h2><p>上傳前確認 Word 表格欄位</p></div><div class="import-header-actions"><button class="btn btn-outline btn-sm" onclick="openImportedFiles()"><span id="importedFilesButtonIcon"></span>已匯入檔案列表</button><button class="btn btn-primary btn-sm" onclick="goStep2()"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m13.5 6 6 6-6 6"/><path d="m6 6 6 6-6 6" stroke-opacity=".5"/></svg>下一步：上傳檔案</button></div></div><div class="card-body import-card-body">
             <div class="table-wrapper">
               <table class="data-table" style="font-size:.88rem">
                 <thead><tr><th>欄位</th><th>說明</th><th>範例</th><th>必填</th></tr></thead>
@@ -242,21 +258,102 @@
   </div>
 </div>
 
+<div class="modal-overlay hidden" id="importedFilesModal" role="dialog" aria-modal="true" aria-labelledby="importedFilesTitle">
+  <div class="modal modal-lg">
+    <div class="modal-header"><div class="imported-files-heading"><h3 id="importedFilesTitle">已匯入檔案列表</h3><span class="imported-files-note">︱同檔名合併顯示 ，刪除可移除已匯入題目</span></div><button class="modal-close" onclick="document.getElementById('importedFilesModal').classList.add('hidden')" aria-label="關閉">✕</button></div>
+    <div class="modal-body" id="importedFilesBody"></div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="document.getElementById('importedFilesModal').classList.add('hidden')">關閉</button></div>
+  </div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 
 <script type="module">
 import { guardPage } from './js/auth-guard.js';
+import { confirmDeletion } from './js/confirm-exam-deletion.js';
 window._activeNav = 'import';
 const user = await guardPage(['admin','manager']);
 if (!user) throw new Error('not auth');
 const I = window.ICONS;
+const canEdit = DataService.isAdmin();
 document.getElementById('uploadIcon').innerHTML = I.upload;
+document.getElementById('importedFilesButtonIcon').innerHTML = I.list16;
 const nextStepIcon = '<svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m13.5 6 6 6-6 6"/><path d="m6 6 6 6-6 6" stroke-opacity=".5"/></svg>';
 document.getElementById('parseBtnIcon').innerHTML = nextStepIcon;
 document.getElementById('importBtnIcon').innerHTML = nextStepIcon;
 document.getElementById('completeIcon').innerHTML = I.check;
 document.getElementById('continueImportIcon').innerHTML = I.refresh16;
 document.getElementById('homeIcon').innerHTML = I.home16;
+
+let importedFileQuestions = [], importedFileRows = [], importedFileSelection = new Set(), importedFileAnchor = null, importedFilesBusy = false;
+function renderImportedFiles() {
+  const files = new Map();
+  importedFileQuestions.forEach(q => {
+    if (q._srcFile) files.set(q._srcFile, (files.get(q._srcFile) || 0) + 1);
+  });
+  importedFileRows = [...files].sort(([a],[b]) => a.localeCompare(b,'zh-Hant'));
+  importedFileSelection = new Set([...importedFileSelection].filter(name => files.has(name)));
+  document.getElementById('importedFilesBody').innerHTML = files.size ? `<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px"><button class="btn btn-danger btn-sm" id="deleteImportedFilesBtn" style="${importedFileSelection.size < 2 ? 'display:none' : ''}" onclick="deleteImportedFiles()" ${!importedFileSelection.size || importedFilesBusy ? 'disabled' : ''}>${ICONS.trash16}批次刪除</button><span>已選 ${importedFileSelection.size} 個檔案</span></div><table class="data-table"><thead><tr><th><input type="checkbox" aria-label="全選檔案" ${importedFileSelection.size === files.size ? 'checked' : ''} ${importedFilesBusy ? 'disabled' : ''} onchange="selectAllImportedFiles(this.checked)"></th><th>Word 檔名</th><th>題目數</th><th>操作</th></tr></thead><tbody>${importedFileRows.map(([name,count],i) => `<tr data-file-index="${i}" class="${importedFileSelection.has(name) ? 'file-selected' : ''}" onclick="selectImportedFile(event,${i})"><td><input type="checkbox" aria-label="${UI.escapeHtml('選取 '+name)}" ${importedFileSelection.has(name) ? 'checked' : ''} ${importedFilesBusy ? 'disabled' : ''}></td><td>${UI.escapeHtml(name)}</td><td>${count}</td><td><button class="btn btn-danger btn-sm" ${importedFilesBusy ? 'disabled' : ''} onclick="event.stopPropagation();deleteImportedFiles(${i})">${ICONS.trash16}刪除</button></td></tr>`).join('')}</tbody></table>` : '<div class="empty-state">尚無已記錄來源檔名的題目</div>';
+}
+window.selectImportedFile = (event,index) => {
+  if (importedFilesBusy) return;
+  const name = importedFileRows[index][0];
+  const checked = !importedFileSelection.has(name);
+  const start = event.shiftKey && importedFileAnchor !== null ? Math.min(index,importedFileAnchor) : index;
+  const end = event.shiftKey && importedFileAnchor !== null ? Math.max(index,importedFileAnchor) : index;
+  for (let i=start;i<=end;i++) {
+    if (checked) importedFileSelection.add(importedFileRows[i][0]);
+    else importedFileSelection.delete(importedFileRows[i][0]);
+  }
+  importedFileAnchor = index;
+  renderImportedFiles();
+};
+window.selectAllImportedFiles = checked => {
+  if (importedFilesBusy) return;
+  importedFileSelection = new Set(checked ? importedFileRows.map(([name]) => name) : []);
+  importedFileAnchor = null;
+  renderImportedFiles();
+};
+window.deleteImportedFiles = async index => {
+  if (importedFilesBusy || !canEdit) return;
+  const names = index === undefined ? [...importedFileSelection] : [importedFileRows[index][0]];
+  if (!names.length) return;
+  const count = importedFileQuestions.filter(q => names.includes(q._srcFile)).length;
+  if (!await confirmDeletion({title:'刪除匯入檔案題目',message:`確定刪除 ${names.length} 個檔案所匯入的 ${count} 題？同名檔案的題目會一併刪除，電腦上的 Word 檔案不受影響。`,actionLabel:'刪除題目'})) return;
+  importedFilesBusy = true;
+  renderImportedFiles();
+  let removed = 0;
+  try {
+    await DataService.deleteImportedFiles(names, ids => {
+      const deleted = new Set(ids);
+      removed += ids.length;
+      importedFileQuestions = importedFileQuestions.filter(q => !deleted.has(q.id));
+    });
+    names.forEach(name => importedFileSelection.delete(name));
+    UI.toast(`已刪除 ${removed} 題`,'success');
+  } catch(error) {
+    UI.toast(`已刪除 ${removed} 題，其餘刪除失敗：${error.message}`,'danger');
+  } finally {
+    importedFilesBusy = false;
+    importedFileAnchor = null;
+    renderImportedFiles();
+  }
+};
+window.openImportedFiles = async () => {
+  if (importedFilesBusy) return;
+  document.getElementById('importedFilesModal').classList.remove('hidden');
+  const body = document.getElementById('importedFilesBody');
+  body.textContent = '載入中…';
+  try {
+    importedFileQuestions = await DataService.getQuestions();
+    importedFileSelection.clear();
+    importedFileAnchor = null;
+    renderImportedFiles();
+  } catch (error) {
+    body.textContent = `載入失敗：${error.message}`;
+  }
+};
+
 
 // ── 初始化科目下拉（從課本管理系統讀取）─────────
 const subjectSel = document.getElementById('subjectSel');

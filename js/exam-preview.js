@@ -574,7 +574,7 @@ function ensurePreviewModal() {
 #epBody .ep-q-difficulty.is-hard{background:#fff0e5;color:#a34d17}
 #epBody .ep-q-difficulty.is-easy{background:#e3f3ec;color:#237553}
 #epBody .ep-q-source{color:#27734c;white-space:nowrap}
-#epBody .ep-q-analysis{display:flex;margin:2px 0 0;color:#245fa5;font-size:.9em;text-align:left}
+#epBody .ep-q-analysis{display:flex;margin:2px 0 0;color:#245fa5;font-size:1em;text-align:left}
 #epBody .ep-analysis-label{flex:none}
 #epBody .ep-analysis-text{min-width:0}
 </style>
@@ -916,13 +916,13 @@ function buildPaperHtml(examData, questions, previewOptions, includeAnswerSheet 
         qs.forEach((q,i) => {
           if (!display.answers && !q.analysis) return;
           html += `<div style="margin-bottom:4px">${i+1}.${display.answers ? ` ${q.answer||'—'}` : ''}`;
-          if (display.analysis && q.analysis) html += `<div style="margin-left:1.5em;color:#555;font-size:.86em">【解析】${q.analysis}</div>`;
+          if (display.analysis && q.analysis) html += `<div style="margin-left:1.5em;color:#555;font-size:1em">【解析】${q.analysis}</div>`;
           html += '</div>';
         });
       } else {
         html += (display.answers ? qs.map((q,i) => `${i+1}.${q.answer||'—'}`).join('　　') : '') + '</div>';
         if (display.analysis) qs.forEach((q,i) => {
-          if (q.analysis) html += `<div style="margin-left:1.5em;color:#555;font-size:.86em;margin-bottom:3px">${i+1}.【解析】${q.analysis}</div>`;
+          if (q.analysis) html += `<div style="margin-left:1.5em;color:#555;font-size:1em;margin-bottom:3px">${i+1}.【解析】${q.analysis}</div>`;
         });
       }
     });
@@ -1144,7 +1144,7 @@ export async function exportToWord(examData, questions, paperKey = 'A4', columns
     const analysis = externalAnalyses[0] || paragraph.querySelector('.ep-q-analysis');
     if (analysis) {
       const label = analysis.querySelector('.ep-analysis-label')?.textContent || '【解析】';
-      measure.font = `${a.fontSize * .9}px ${fontStack}`;
+      measure.font = `${a.fontSize}px ${fontStack}`;
       paragraph.dataset.analysisIndent = String(Math.ceil(measure.measureText(label).width));
       paragraph.dataset.analysisOffset = externalAnalyses.length ? '0' : String(indent);
       paragraph.dataset.analysisGap = externalAnalyses.length ? '6' : '2';

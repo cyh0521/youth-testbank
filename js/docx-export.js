@@ -35,7 +35,7 @@ async function nodeRuns(node, docx, base) {
   }
   const style = { ...base };
   if (node.classList?.contains('ep-answer-value') || node.classList?.contains('ep-answer-label')) style.color = 'B4232C';
-  if (node.classList?.contains('ep-q-analysis')) { style.color = '245FA5'; style.size = Math.round(base.size * .9); }
+  if (node.classList?.contains('ep-q-analysis')) style.color = '245FA5';
   if (node.classList?.contains('ep-q-source')) style.color = '27734C';
   if (node.classList?.contains('ep-q-difficulty')) {
     style.size = Math.round(base.size * .75);
@@ -173,7 +173,7 @@ export async function createDocxBlob({ docx, content, title, appearance, margins
       parts.forEach((runs, index) => questions.push(paragraph(runs, {
         alignment:docx.AlignmentType.LEFT,
         indent:runs.isAnalysis && Number.isFinite(analysisIndent) ? { left:pxToTwips(analysisOffset + analysisIndent), hanging:pxToTwips(analysisIndent) } : runs.isAnswer && Number.isFinite(answerIndent) ? {left:indent + pxToTwips(answerIndent), hanging:pxToTwips(answerIndent)} : index ? { left:indent } : { left:indent, hanging:indent },
-        spacing:{ ...spacing, line:runs.isAnalysis ? Math.round(line * .9) : line, before:runs.isAnalysis ? pxToTwips(Number.isFinite(analysisIndent) ? analysisGap : 2) : runs.isAnswer ? pxToTwips(4) : index ? pxToTwips(appearance.fontSize * .45) : 0, after:index === parts.length - 1 ? pxToTwips(questionGap) : 0 },
+        spacing:{ ...spacing, before:runs.isAnalysis ? pxToTwips(Number.isFinite(analysisIndent) ? analysisGap : 2) : runs.isAnswer ? pxToTwips(4) : index ? pxToTwips(appearance.fontSize * .45) : 0, after:index === parts.length - 1 ? pxToTwips(questionGap) : 0 },
       })));
       continue;
     }

@@ -11,7 +11,6 @@
 .filter-bar{flex-wrap:nowrap;overflow-x:auto}
 .filter-bar .filter-group,.filter-bar .filter-actions{flex-shrink:0}
 .filter-bar .filter-actions{margin-left:0}
-.filter-bar .imported-files-action{margin-left:auto}
 .filter-bar #fChapter,.filter-bar #fSection,.filter-bar #fSubsection{width:150px;max-width:150px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .filter-bar #fChapter option,.filter-bar #fSection option,.filter-bar #fSubsection option{padding-right:16px}
 .filter-bar .keyword-filter{width:120px;flex:0 0 120px}
@@ -55,22 +54,6 @@
 .q-search-empty-icon svg{width:32px;height:32px}
 .question-section #tableView,.question-section #cardView{box-shadow:none;border:0;border-radius:0;background:transparent}
 #qModal .modal{display:flex;flex-direction:column;max-height:90vh;overflow:hidden}
-#importedFilesModal .modal{display:flex;flex-direction:column;max-height:90vh;overflow:hidden}
-#importedFilesModal .modal-header,#importedFilesModal .modal-footer{flex:none;position:static}
-#importedFilesModal .imported-files-heading{display:flex;align-items:baseline;gap:8px;min-width:0;flex-wrap:wrap}
-#importedFilesModal .imported-files-heading h3{font-size:1.2rem;font-weight:700;letter-spacing:.01em}
-#importedFilesModal .imported-files-note{font-size:.84rem;font-weight:400;color:var(--text-secondary)}
-#importedFilesModal .modal-body{flex:1;min-height:0;max-height:none;overflow-y:auto}
-#importedFilesModal .table-wrapper{overflow:visible}
-#importedFilesModal tr[data-file-index]{cursor:pointer;user-select:none}
-#importedFilesModal tr.file-selected{background:#e4eeff}
-#importedFilesModal .data-table td:first-child{width:36px}
-#importedFilesModal .data-table th,#importedFilesModal .data-table td{padding:8px 12px;vertical-align:middle}
-#importedFilesModal .data-table th:first-child,#importedFilesModal .data-table td:first-child{width:44px;text-align:center}
-#importedFilesModal .data-table input[type=checkbox]{display:block;width:18px;height:18px;margin:0 auto;cursor:pointer}
-#importedFilesModal .btn-danger{padding:4px 8px;display:inline-flex;align-items:center;justify-content:center;gap:4px;font-size:.88rem;line-height:1;white-space:nowrap}
-#importedFilesModal .btn-danger svg{display:block;width:16px;height:16px}
-#importedFilesModal .data-table th:last-child,#importedFilesModal .data-table td:last-child{width:88px;white-space:nowrap}
 #qModal .modal-header,#qModal .modal-footer{flex:none;position:relative}
 #qModal .modal-body{flex:1;min-height:0;max-height:none;overflow-y:auto;padding:22px 24px}
 #qModal .edit-grid{gap:16px 18px}
@@ -163,6 +146,14 @@
   .q-card-actions{grid-column:1/-1;flex-direction:row;justify-content:flex-end;padding-top:4px;border-top:1px dashed var(--border-light);min-width:0}
   .q-card-opts{grid-template-columns:1fr}
 }
+.q-card-meta{gap:8px;line-height:1.6;margin-bottom:6px}
+.q-card-meta .qnum,.q-card-meta .page-source,.q-card-meta .badge{padding:2px 8px;border-radius:6px;font-size:.82rem;line-height:1.5}
+.q-card-meta .qnum{margin-left:0;background:#e8eef6;color:var(--primary)}
+.q-card-meta .page-source{background:#f1edfa;color:#68518f;overflow-wrap:anywhere}
+.q-card-text{white-space:pre-wrap;line-height:1.65;overflow-wrap:anywhere;margin-bottom:0}
+.q-card-answer{align-items:flex-start;margin-top:9px;padding:7px 10px;border:0;border-radius:6px;background:#eef7f2;color:#176d49;line-height:1.6}
+.q-card-answer .ans-label{flex:none;font-size:.82rem;color:inherit;font-weight:400}
+.q-card-answer .ans-val{min-width:0;white-space:pre-wrap;overflow-wrap:anywhere;color:inherit;font-weight:400;font-family:inherit}
 </style>
 </head>
 <body>
@@ -224,19 +215,16 @@
         <div class="filter-actions">
           <button class="btn btn-primary btn-sm" onclick="doSearch()"><span data-icon="search20"></span> 搜尋</button>
         </div>
-        <div class="filter-actions imported-files-action">
-          <button class="btn btn-outline btn-sm" onclick="openImportedFiles()"><span data-icon="list16"></span>已匯入檔案列表</button>
-        </div>
       </div>
 
       <!-- 結果列 -->
       <div class="result-bar">
         <div class="view-toggle" role="tablist" aria-label="檢視模式">
-          <button id="viewTableBtn" class="active" onclick="setView('table')" title="表格檢視">
-            <span data-icon="list16"></span>表格
+          <button id="viewTableBtn" class="active" onclick="setView('table')" title="精簡顯示">
+            <span data-icon="list16"></span>精簡顯示
           </button>
-          <button id="viewCardBtn" onclick="setView('card')" title="卡片檢視">
-            <span data-icon="layers16"></span>卡片
+          <button id="viewCardBtn" onclick="setView('card')" title="完整顯示">
+            <span data-icon="layers16"></span>完整顯示
           </button>
         </div>
         <span class="result-count" id="resultCount"></span>
@@ -305,13 +293,6 @@
   </div>
 </div>
 
-<div class="modal-overlay hidden" id="importedFilesModal" role="dialog" aria-modal="true" aria-labelledby="importedFilesTitle">
-  <div class="modal modal-lg">
-    <div class="modal-header"><div class="imported-files-heading"><h3 id="importedFilesTitle">已匯入檔案列表</h3><span class="imported-files-note">︱同檔名合併顯示 ，刪除可移除已匯入題目</span></div><button class="modal-close" onclick="document.getElementById('importedFilesModal').classList.add('hidden')" aria-label="關閉">✕</button></div>
-    <div class="modal-body" id="importedFilesBody"></div>
-    <div class="modal-footer"><button class="btn btn-ghost" onclick="document.getElementById('importedFilesModal').classList.add('hidden')">關閉</button></div>
-  </div>
-</div>
 <!-- 題目詳情/編輯 Modal -->
 <div class="modal-overlay hidden" id="qModal">
   <div class="modal modal-lg">
@@ -507,79 +488,6 @@ let viewMode     = localStorage.getItem('qViewMode') || 'table';  // 'table' | '
 let selected     = new Set();
 let selectionAnchorId = null;
 
-let importedFileQuestions = [], importedFileRows = [], importedFileSelection = new Set(), importedFileAnchor = null, importedFilesBusy = false;
-function renderImportedFiles() {
-  const files = new Map();
-  importedFileQuestions.forEach(q => {
-    if (q._srcFile) files.set(q._srcFile, (files.get(q._srcFile) || 0) + 1);
-  });
-  importedFileRows = [...files].sort(([a],[b]) => a.localeCompare(b,'zh-Hant'));
-  importedFileSelection = new Set([...importedFileSelection].filter(name => files.has(name)));
-  document.getElementById('importedFilesBody').innerHTML = files.size ? `<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px"><button class="btn btn-danger btn-sm" id="deleteImportedFilesBtn" style="${importedFileSelection.size < 2 ? 'display:none' : ''}" onclick="deleteImportedFiles()" ${!importedFileSelection.size || importedFilesBusy ? 'disabled' : ''}>${ICONS.trash16}批次刪除</button><span>已選 ${importedFileSelection.size} 個檔案</span></div><table class="data-table"><thead><tr><th><input type="checkbox" aria-label="全選檔案" ${importedFileSelection.size === files.size ? 'checked' : ''} ${importedFilesBusy ? 'disabled' : ''} onchange="selectAllImportedFiles(this.checked)"></th><th>Word 檔名</th><th>題目數</th><th>操作</th></tr></thead><tbody>${importedFileRows.map(([name,count],i) => `<tr data-file-index="${i}" class="${importedFileSelection.has(name) ? 'file-selected' : ''}" onclick="selectImportedFile(event,${i})"><td><input type="checkbox" aria-label="${UI.escapeHtml('選取 '+name)}" ${importedFileSelection.has(name) ? 'checked' : ''} ${importedFilesBusy ? 'disabled' : ''}></td><td>${UI.escapeHtml(name)}</td><td>${count}</td><td><button class="btn btn-danger btn-sm" ${importedFilesBusy ? 'disabled' : ''} onclick="event.stopPropagation();deleteImportedFiles(${i})">${ICONS.trash16}刪除</button></td></tr>`).join('')}</tbody></table>` : '<div class="empty-state">尚無已記錄來源檔名的題目</div>';
-}
-window.selectImportedFile = (event,index) => {
-  if (importedFilesBusy) return;
-  const name = importedFileRows[index][0];
-  const checked = !importedFileSelection.has(name);
-  const start = event.shiftKey && importedFileAnchor !== null ? Math.min(index,importedFileAnchor) : index;
-  const end = event.shiftKey && importedFileAnchor !== null ? Math.max(index,importedFileAnchor) : index;
-  for (let i=start;i<=end;i++) {
-    if (checked) importedFileSelection.add(importedFileRows[i][0]);
-    else importedFileSelection.delete(importedFileRows[i][0]);
-  }
-  importedFileAnchor = index;
-  renderImportedFiles();
-};
-window.selectAllImportedFiles = checked => {
-  if (importedFilesBusy) return;
-  importedFileSelection = new Set(checked ? importedFileRows.map(([name]) => name) : []);
-  importedFileAnchor = null;
-  renderImportedFiles();
-};
-window.deleteImportedFiles = async index => {
-  if (importedFilesBusy || !canEdit) return;
-  const names = index === undefined ? [...importedFileSelection] : [importedFileRows[index][0]];
-  if (!names.length) return;
-  const count = importedFileQuestions.filter(q => names.includes(q._srcFile)).length;
-  if (!await confirmDeletion({title:'刪除匯入檔案題目',message:`確定刪除 ${names.length} 個檔案所匯入的 ${count} 題？同名檔案的題目會一併刪除，電腦上的 Word 檔案不受影響。`,actionLabel:'刪除題目'})) return;
-  importedFilesBusy = true;
-  renderImportedFiles();
-  let removed = 0;
-  try {
-    await DataService.deleteImportedFiles(names, ids => {
-      const deleted = new Set(ids);
-      removed += ids.length;
-      importedFileQuestions = importedFileQuestions.filter(q => !deleted.has(q.id));
-      allQuestions = allQuestions.filter(q => !deleted.has(q.id));
-      filtered = filtered.filter(q => !deleted.has(q.id));
-      ids.forEach(id => selected.delete(id));
-    });
-    names.forEach(name => importedFileSelection.delete(name));
-    UI.toast(`已刪除 ${removed} 題`,'success');
-  } catch(error) {
-    UI.toast(`已刪除 ${removed} 題，其餘刪除失敗：${error.message}`,'danger');
-  } finally {
-    importedFilesBusy = false;
-    importedFileAnchor = null;
-    renderImportedFiles();
-    renderTable();
-  }
-};
-window.openImportedFiles = async () => {
-  if (importedFilesBusy) return;
-  document.getElementById('importedFilesModal').classList.remove('hidden');
-  const body = document.getElementById('importedFilesBody');
-  body.textContent = '載入中…';
-  try {
-    importedFileQuestions = await DataService.getQuestions();
-    importedFileSelection.clear();
-    importedFileAnchor = null;
-    renderImportedFiles();
-  } catch (error) {
-    body.textContent = `載入失敗：${error.message}`;
-  }
-};
-
 async function loadAll() {
   // 不預先載入全部題目，等使用者選擇科目+冊次後再查詢
   document.getElementById('resultCount').textContent = '';
@@ -625,8 +533,11 @@ window.doSearch = async () => {
                qnumOk)
     );
   });
-  // Sort by qnum ascending; no-qnum entries go last
+  // 依題型排序，同題型內依題目編號遞增。
+  const typeOrder = { T1:0, T2:1, T3:2, T4:3, T5:4, T6:5 };
   filtered.sort((a,b) => {
+    const typeDifference = (typeOrder[a.type] ?? 6) - (typeOrder[b.type] ?? 6);
+    if (typeDifference) return typeDifference;
     const an = a.qnum ? parseInt(a.qnum) : 999999;
     const bn = b.qnum ? parseInt(b.qnum) : 999999;
     return an - bn;
@@ -708,7 +619,7 @@ function renderTableMode(pageItems) {
       <td class="exam-date">${escapeHtml(chap||'—')}</td>
       <td>${UI.diffBadge(q.difficulty)}</td>
       <td><div class="q-text" title="${escapeHtml(questionLine)}">${escapeHtml(questionLine)}</div></td>
-      <td><span class="q-answer" title="${escapeHtml(q.answer||'—')}">${escapeHtml(ans||'—')}</span></td>
+      <td><span class="q-answer" title="${UI.questionHtml(q.answer||'—')}">${escapeHtml(ans||'—')}</span></td>
       <td>
         <div class="q-actions">
           <button class="btn btn-sm btn-outline" onclick="openEdit('${q.id}')">${ICONS.edit16}編輯</button>
@@ -725,45 +636,27 @@ function renderCardMode(pageItems) {
     grid.innerHTML=`<div style="text-align:center;padding:40px;color:var(--text-muted)">無符合條件的題目</div>`;
     return;
   }
-  // 解析正解（單選/複選 → 對應選項用粗體、綠色標示）
-  const isCorrectOpt = (q, idx) => {
-    if (!q.answer) return false;
-    const letter = String.fromCharCode(65 + idx); // A B C D
-    // 全形字母也要對應
-    const fullLetter = String.fromCharCode(0xFF21 + idx); // Ａ Ｂ Ｃ Ｄ
-    return q.answer.includes(letter) || q.answer.includes(fullLetter);
-  };
   grid.innerHTML = pageItems.map(q => {
     const chap = [q.chapterNum,q.sectionNum,q.subsectionNum].filter(Boolean).join('-');
 
-    // 選項區塊（僅單選/複選有）
-    let optsHtml = '';
-    if ((q.type==='T2' || q.type==='T3') && q.options?.length) {
-      optsHtml = `<div class="q-card-opts">${q.options.map((o,i) => {
-        const correct = isCorrectOpt(q, i);
-        const letter = String.fromCharCode(65+i);
-        return `<div class="opt${correct?' correct':''}">(${letter}) ${escapeHtml(o)}</div>`;
-      }).join('')}</div>`;
-    }
-
+    const fullQuestion = `${q.type === 'T5' ? UI.matchingQuestionHtml(q.text) : UI.questionHtml(q.text || '—')}${(q.type === 'T2' || q.type === 'T3') && q.options?.length ? ' ' + q.options.map((option,index) => `(${String.fromCharCode(65+index)})${UI.questionHtml(option)}`).join(' ') : ''}${(q.type === 'T2' || q.type === 'T3') && q.tail ? (String(q.tail).trim() === '。' ? '' : ' ') + UI.questionHtml(q.tail) : ''}`;
     return `<div class="q-card-item${selected.has(q.id)?' selected':''}" data-qid="${q.id}">
       <div class="q-card-check">
         <input type="checkbox" class="q-cb" data-id="${q.id}" ${selected.has(q.id)?'checked':''} onclick="onCbClick(event,'${q.id}')" title="按住 Shift 可選取範圍">
       </div>
       <div class="q-card-body">
         <div class="q-card-meta">
-          ${UI.typeBadge(q.type)}
+          <span class="qnum">${UI.escapeHtml(q.qnum||'—')}</span>${UI.typeBadge(q.type)}
           ${UI.diffBadge(q.difficulty)}
           ${chap?`<span class="chapter">章節 ${chap}</span>`:''}
-          <span class="qnum">#${q.qnum||'—'}</span>
+          <span class="page-source">頁數 ${UI.escapeHtml(q.source||'未註明')}</span>
         </div>
-        <div class="q-card-text">${UI.questionHtml(q.text||'—')}</div>
-        ${optsHtml}
-        ${q.tail?`<div style="font-size:.9rem;color:var(--text-secondary);margin-bottom:8px">${escapeHtml(q.tail)}</div>`:''}
+        <div class="q-card-text">${fullQuestion}</div>
+
+        ${q.type !== 'T2' && q.type !== 'T3' && q.tail ? `<div>${UI.questionHtml(q.tail)}</div>` : ''}
         <div class="q-card-answer">
           <span class="ans-label">答案</span>
-          <span class="ans-val">${escapeHtml(q.answer||'—')}</span>
-          ${q.source?`<span style="margin-left:auto;font-size:.84rem;color:var(--text-muted)">出處：${escapeHtml(q.source)}</span>`:''}
+          <span class="ans-val">${UI.questionHtml(q.answer||'—')}</span>
         </div>
       </div>
       <div class="q-card-actions">
@@ -1053,7 +946,12 @@ window.openEdit = async id => {
         <input class="form-control" id="eq-tail" value="${(q.tail||'').replace(/"/g,'&quot;')}">
       </div>
       <div class="form-group"><label class="form-label">答案 <span class="required">*</span></label>
-        <input class="form-control" id="eq-answer" value="${(q.answer||'').replace(/"/g,'&quot;')}">
+        <div style="display:flex;gap:8px">
+          <input class="form-control" id="eq-answer" style="flex:1;min-width:0;${q.type === 'T1' ? 'display:none' : ''}" value="${UI.escapeHtml(q.answer||'')}">
+          <select class="form-control" id="eq-truefalse-answers" aria-label="選擇是非題答案" style="width:100%;${q.type === 'T1' ? '' : 'display:none'}">
+            <option value="">選答案</option><option value="○" ${q.answer === '○' ? 'selected' : ''}>○</option><option value="Ｘ" ${q.answer === 'Ｘ' ? 'selected' : ''}>Ｘ</option>
+          </select>
+        </div>
       </div>
       <div class="edit-full form-group"><label class="form-label">解析</label>
         <textarea class="form-control" id="eq-analysis" rows="3">${q.analysis||''}</textarea>
@@ -1061,6 +959,16 @@ window.openEdit = async id => {
     </div>`;
 
   updateEditLocationLabel();
+  document.getElementById('eq-type').addEventListener('change', event => {
+    document.getElementById('eq-truefalse-answers').style.display = event.target.value === 'T1' ? '' : 'none';
+    document.getElementById('eq-answer').style.display = event.target.value === 'T1' ? 'none' : '';
+  });
+  document.getElementById('eq-truefalse-answers').addEventListener('change', event => {
+    if (event.target.value) document.getElementById('eq-answer').value = event.target.value;
+  });
+  document.getElementById('eq-answer').addEventListener('input', event => {
+    document.getElementById('eq-truefalse-answers').value = ['○','Ｘ'].includes(event.target.value) ? event.target.value : '';
+  });
 
   document.getElementById('qModalFooter').innerHTML = `
     <button class="btn btn-ghost" onclick="closeQModal()">取消</button>
@@ -1073,7 +981,9 @@ window.saveEdit = async () => {
   const id = document.getElementById('qModal').dataset.editId;
   const q  = allQuestions.find(x=>x.id===id); if(!q) return;
   const text = questionEditorText(document.getElementById('eq-text'));
-  const answer = document.getElementById('eq-answer').value.trim();
+  const answer = document.getElementById('eq-type').value === 'T1'
+    ? document.getElementById('eq-truefalse-answers').value
+    : document.getElementById('eq-answer').value.trim();
   if (!text || !answer) { UI.toast('題目與答案為必填','warning'); return; }
   const {chapterNum, sectionNum, subsectionNum} = editLocation;
   if (!chapterNum) { UI.toast(`請選擇${editBook?.l1 || '章'}`, 'warning'); return; }

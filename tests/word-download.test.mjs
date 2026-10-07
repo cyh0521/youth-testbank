@@ -14,12 +14,13 @@ test('Word 題目與解析分成不同段落', async () => {
   const text = value => ({nodeType:3, textContent:value});
   const analysis = {nodeType:1, tagName:'DIV', classList:{contains: name => name === 'ep-q-analysis'}, childNodes:[text('【解析】說明')]};
   const docx = {TextRun:class {constructor(options) {this.options = options;}}};
-  const runs = await context.runsFromNodes([text('題目正文'), analysis], docx, {});
+  const runs = await context.runsFromNodes([text('題目正文'), analysis], docx, {size:30});
   const parts = context.splitQuestionParagraphs(runs);
   assert.equal(parts.length, 2);
   assert.equal(parts[0][0].options.text, '題目正文');
   assert.equal(parts[1][0].options.text, '【解析】說明');
   assert.equal(parts[1][0].options.color, '245FA5');
+  assert.equal(parts[1][0].options.size, parts[0][0].options.size);
   for (const name of ['ep-answer-value', 'ep-answer-label']) {
     const answer = {nodeType:1, tagName:'SPAN', classList:{contains: value => value === name}, childNodes:[text('答案')]};
     const answerRuns = await context.runsFromNodes([answer], docx, {});
@@ -32,6 +33,7 @@ test('Word 匯出完成題號寬度計算並觸發下載', async () => {
   const display = {answers:false,analysis:true,source:false,difficulty:true};
   let downloaded = false;
   let measured = false;
+  let analysisFont;
   let replacement;
   const node = () => ({ style:{}, dataset:{}, children:[], appendChild(child) {this.children.push(child);}, querySelector:() => null });
   const prefix = {textContent:'（Ｏ）1.'};
@@ -39,11 +41,11 @@ test('Word 匯出完成題號寬度計算並觸發下載', async () => {
   const table = {querySelector: selector => selector === '.ep-answer-prefix' ? prefix : content};
   const externalAnalysis = {classList:{contains:name => name === 'ep-q-analysis'}, querySelector:()=>({textContent:'【解析】'})};
   const question = {children:[externalAnalysis], querySelector: selector => selector === '.ep-answer-table' ? table : null, replaceWith: value => { replacement = value; }};
-  const paper = {firstElementChild:{}, querySelectorAll:() => [question]};
+  const paper = {firstElementChild:{}, querySelectorAll:selector => selector === '.ep-q' ? [question] : []};
   const context = {
     Math, console, downloadFilename, window:{_epExamData:exam}, previewDisplay:()=>display, setTimeout() {},
     examAppearance:() => ({font:'serif', fontSize:16, lineHeight:1.6}),
-    loadWordMargins:() => ({}), PAPER_SIZES:{A4:{}}, fontStackById:() => 'serif', buildPaperHtml:(data,questions,options) => {assert.equal(options,display); return '';},
+    loadWordMargins:() => ({}), PAPER_SIZES:{A4:{}}, fontStackById:() => 'serif', buildPaperHtml:(data,questions,options) => {assert.deepEqual(JSON.parse(JSON.stringify(options)),display); return '';},
     loadDocxLibrary:async () => ({}), createDocxBlob:async () => ({}),
     URL:{createObjectURL:() => 'blob:test', revokeObjectURL() {}},
     UI:{toast: message => { throw new Error(message); }},
@@ -51,7 +53,7 @@ test('Word 匯出完成題號寬度計算並觸發下載', async () => {
       body:{appendChild() {}},
       createTextNode:text => ({textContent:text}),
       createElement:tag => tag === 'div' ? paper : tag === 'canvas' ? {
-        getContext:() => ({measureText:text => { if (text === prefix.textContent) measured = true; return {width:text === '【解析】' ? 64 : 60}; }})
+        getContext:() => ({measureText(text) { if (text === prefix.textContent) measured = true; if (text === '【解析】') analysisFont = this.font; return {width:text === '【解析】' ? 64 : 60}; }})
       } : tag === 'a' ? {click:() => { downloaded = true; }, remove() {}} : node()
     }
   };
@@ -62,6 +64,7 @@ test('Word 匯出完成題號寬度計算並觸發下載', async () => {
   assert.equal(replacement.style.margin, '0 0 8px 64px');
   assert(replacement.children.includes(externalAnalysis));
   assert.equal(replacement.dataset.analysisIndent,'64');
+  assert.equal(analysisFont,'16px serif');
 });
 
 test('Word 資訊列同字級，解析首行對齊括號、續行對齊標籤後文字並留 6px 間距', async () => {
@@ -87,8 +90,8 @@ test('Word 資訊列同字級，解析首行對齊括號、續行對齊標籤後
   assert.equal(explanation.spacing.before,90);
   assert.equal(body.spacing.after,0);
   assert.equal(explanation.spacing.after,270);
-  assert.equal(explanation.children[0].options.size,22);
-  assert.equal(explanation.spacing.line,281);
+  for (const run of explanation.children) assert.equal(run.options.size,body.children[0].options.size);
+  assert.equal(explanation.spacing.line,body.spacing.line);
   assert.equal(meta.keepNext,undefined);
   assert.equal(body.keepNext,undefined);
   assert.equal(explanation.keepNext,undefined);
