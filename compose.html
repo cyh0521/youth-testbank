@@ -96,7 +96,7 @@
 import { renderScopePanel, mountScopeSelector } from './js/exam-scope.js';
 import { guardPage } from './js/auth-guard.js';
 import { showExamPreview, showHeaderSettings, newExamHeader, loadAppearance, mountInlineHeaderEditor, buildHeaderHtml, fontStackById } from './js/exam-preview.js';
-import { allocateTypeScores } from './js/score-allocation.js';
+import { allocateTypeScores, AUTO_SCORE_WEIGHTS } from './js/score-allocation.js?v=20261007-weighted-scores';
 import { blankCount, reachableBlankCounts } from './js/blank-selection.js';
 import { filterComposePool } from './js/compose-selection.js';
 import { selectedSections, questionInSection, selectSectionQuestions } from './js/section-selection.js';
@@ -460,7 +460,7 @@ function renderComposeExamPreview() {
 
 const scoreOverrides = {};
 let defaultScoreSignature = '';
-const scoreWeights = { T1:1, T2:1, T3:2, T4:1, T5:3, T6:5 };
+const scoreWeights = AUTO_SCORE_WEIGHTS;
 window.autoAllocateScores = () => {
   Object.keys(scoreOverrides).forEach(code => delete scoreOverrides[code]);
   updateScoreRows();
@@ -498,8 +498,8 @@ window.updateScoreRows = () => {
   }
 
   const scoreStep = document.getElementById('integerScores').checked ? 1 : 0.5;
-  // 優先湊足 100 分並盡量採用整數配分，再依題型權重選擇組合。
-  // 填空題以格為計分單位；配合、問答採較高權重。
+  // 優先湊足 100 分，再盡量採用整數並貼近各題型參考權重。
+  // 填空題以格為計分單位；不強制任何題型同分。
   const suggestedScores = allocateTypeScores(typeCounts, scoreWeights, 100, scoreStep);
 
   const rows = typeCounts.map(t => {

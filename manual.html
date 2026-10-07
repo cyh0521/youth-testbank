@@ -132,7 +132,8 @@
 import { renderScopePanel, mountScopeSelector } from './js/exam-scope.js';
 import { guardPage } from './js/auth-guard.js';
 import { showExamPreview, showHeaderSettings, newExamHeader, loadAppearance, mountInlineHeaderEditor, buildHeaderHtml, fontStackById } from './js/exam-preview.js';
-import { allocateTypeScores } from './js/score-allocation.js';
+import { allocateTypeScores, AUTO_SCORE_WEIGHTS } from './js/score-allocation.js?v=20261007-weighted-scores';
+import { blankCount } from './js/blank-selection.js';
 window._activeNav = 'manual';
 const user = await guardPage(['admin','manager','teacher']);
 if (!user) throw new Error('not auth');
@@ -279,6 +280,7 @@ window.toggleQ = (id, add, silent=false) => {
 
 // ── 已選面板 ─────────────────────────────────────
 let defaultScoreSignature = '';
+function selectedScoreUnits(question) { return question.type === 'T4' ? blankCount(question) : 1; }
 const TYPE_SCORES = {T1:2,T2:2,T3:4,T4:2,T5:2,T6:10};
 function renderSelected() {
   const count = selectedOrder.length;
@@ -305,7 +307,7 @@ function renderSelected() {
     if (!items.length) continue;
     const tLabel = QUESTION_TYPES[tCode] || tCode;
     selHTML += `<div class="result-section${collapsedManualTypes.selected.has(tCode) ? ' is-collapsed' : ''}">
-      <div class="result-section-title">${manualTypeToggle('selected', tCode, `${tLabel}（${items.length} 題）`)}</div>
+      <div class="result-section-title">${manualTypeToggle('selected', tCode, `${tLabel}（${items.length} 題${tCode === 'T4' ? `，共 ${items.reduce((sum,{q})=>sum+blankCount(q),0)} 格` : ''}）`)}</div>
       <div class="result-list" id="manual-selected-${tCode}"${collapsedManualTypes.selected.has(tCode) ? ' hidden' : ''}>
         ${items.map(({q, id, idx}) => {
           return `<div class="result-q" data-id="${id}"
@@ -322,18 +324,19 @@ function renderSelected() {
   }
   list.innerHTML = selHTML;
   const typeGroups = {};
-  selectedOrder.forEach(id => { const q=selQuestions[id]; if(q){ typeGroups[q.type]=(typeGroups[q.type]||0)+1; } });
+  const typeUnits = {};
+  selectedOrder.forEach(id => { const q=selQuestions[id]; if(q){ typeGroups[q.type]=(typeGroups[q.type]||0)+1; typeUnits[q.type]=(typeUnits[q.type]||0)+selectedScoreUnits(q); } });
   document.getElementById('scoreCfg').style.display = 'block';
   document.getElementById('scoreCfg').innerHTML = TYPE_ORDER_SEL.filter(t => typeGroups[t] > 0).map(t => [t, typeGroups[t]]).map(([t,c]) =>
-    `<div class="score-config-row"><span class="score-label">${QUESTION_TYPES[t]||t}<span class="type-title-note">（${c} 題）</span></span>
-      <div class="number-stepper"><input class="form-control" type="number" id="sc-${t}" value="${TYPE_SCORES[t] ?? 2}" min="${document.getElementById('manualIntegerScores').checked ? 1 : 0.5}" max="100" step="${document.getElementById('manualIntegerScores').checked ? 1 : 0.5}" aria-label="${QUESTION_TYPES[t]}每題配分" oninput="updateManualScore('${t}',this)"><div class="number-stepper-buttons"><button type="button" tabindex="-1" aria-label="增加配分" onclick="adjustManualScore('${t}',1)">▲</button><button type="button" tabindex="-1" aria-label="減少配分" onclick="adjustManualScore('${t}',-1)">▼</button></div></div><span class="row-unit">分／題</span>
+    `<div class="score-config-row"><span class="score-label">${QUESTION_TYPES[t]||t}<span class="type-title-note">（${c} 題${t === 'T4' ? `，共 ${typeUnits[t]} 格` : ''}）</span></span>
+      <div class="number-stepper"><input class="form-control" type="number" id="sc-${t}" value="${TYPE_SCORES[t] ?? 2}" min="${document.getElementById('manualIntegerScores').checked ? 1 : 0.5}" max="100" step="${document.getElementById('manualIntegerScores').checked ? 1 : 0.5}" aria-label="${QUESTION_TYPES[t]}每${t === 'T4' ? '格' : '題'}配分" oninput="updateManualScore('${t}',this)"><div class="number-stepper-buttons"><button type="button" tabindex="-1" aria-label="增加配分" onclick="adjustManualScore('${t}',1)">▲</button><button type="button" tabindex="-1" aria-label="減少配分" onclick="adjustManualScore('${t}',-1)">▼</button></div></div><span class="row-unit">分／${t === 'T4' ? '格' : '題'}</span>
     </div>`).join('');
   calcTotal();
   document.getElementById('totalScoreBar').style.display = 'flex';
 }
 function calcTotal() {
   let total=0;
-  selectedOrder.forEach(id => { const q=selQuestions[id]; if(!q) return; const inp=document.getElementById('sc-'+q.type); total += inp?Number(inp.value)||0:(TYPE_SCORES[q.type]||2); });
+  selectedOrder.forEach(id => { const q=selQuestions[id]; if(!q) return; const inp=document.getElementById('sc-'+q.type); total += (inp?Number(inp.value)||0:(TYPE_SCORES[q.type]||2)) * selectedScoreUnits(q); });
   document.getElementById('totalScoreVal').textContent = `總計：${total} 分`;
 }
 window.calcTotal = calcTotal;
@@ -360,7 +363,7 @@ window.previewSelected = () => {
   Object.keys(TYPE_SCORES).forEach(t=>{const el=document.getElementById('sc-'+t);typeScores[t]=el?Number(el.value)||TYPE_SCORES[t]:TYPE_SCORES[t];});
   const qs = selectedOrder.map(id=>selQuestions[id]).filter(Boolean);
   const firstQ = qs[0];
-  draftPreviewData = { typeOrder:[...settingsTypeOrder], title:'（預覽）', typeScores, subjectCode:firstQ?.subjectCode||'', bookCode:firstQ?.bookCode||'',
+  draftPreviewData = { typeOrder:[...settingsTypeOrder], title:'（預覽）', typeScores, scoreUnits:{T4:'blank'}, subjectCode:firstQ?.subjectCode||'', bookCode:firstQ?.bookCode||'',
     header:draftPreviewData?.header ?? newExamHeader(), appearance:draftPreviewData?.appearance ?? loadAppearance() };
   showExamPreview(draftPreviewData, qs);
 };
@@ -373,12 +376,12 @@ window.doSaveExam = async () => {
   const title = document.getElementById('examTitle').value.trim();
   if (!title) { document.getElementById('saveErr').textContent='請填寫試卷名稱'; document.getElementById('saveErr').classList.remove('hidden'); return; }
   let totalScore=0; const typeScores={};
-  selectedOrder.forEach(id=>{const q=selQuestions[id];if(!q)return;const inp=document.getElementById('sc-'+q.type);const score=inp?Number(inp.value)||2:2;typeScores[q.type]=score;totalScore+=score;});
+  selectedOrder.forEach(id=>{const q=selQuestions[id];if(!q)return;const inp=document.getElementById('sc-'+q.type);const score=inp?Number(inp.value)||2:2;typeScores[q.type]=score;totalScore+=score * selectedScoreUnits(q);});
   const firstQ = selQuestions[selectedOrder[0]];
   const exam = {
     title, typeOrder:[...settingsTypeOrder], header: draftPreviewData?.header ?? newExamHeader(), appearance: draftPreviewData?.appearance ?? loadAppearance(), description: document.getElementById('examDesc').value.trim(),
     subjectCode: firstQ?.subjectCode||'', bookCode: firstQ?.bookCode||'',
-    totalScore, typeScores, questionIds:[...selectedOrder],
+    totalScore, typeScores, scoreUnits:{T4:'blank'}, questionIds:[...selectedOrder],
     questionCount: selectedOrder.length, composeMode:'manual',
     scopeChapters: scopeSelector.getSelectedChapters(),
   };
@@ -406,8 +409,8 @@ window.toggleManualIntegerScores = () => {
 };
 window.autoManualScores = () => {
   const counts = {};
-  selectedOrder.forEach(id => { const q=selQuestions[id]; counts[q.type]=(counts[q.type]||0)+1; });
-  Object.assign(TYPE_SCORES, allocateTypeScores(Object.entries(counts).map(([code,cnt])=>({code,cnt})), {T1:1,T2:1,T3:2,T4:1,T5:3,T6:5},100,document.getElementById('manualIntegerScores').checked ? 1 : 0.5));
+  selectedOrder.forEach(id => { const q=selQuestions[id]; counts[q.type]=(counts[q.type]||0)+selectedScoreUnits(q); });
+  Object.assign(TYPE_SCORES, allocateTypeScores(Object.entries(counts).map(([code,cnt])=>({code,cnt})), AUTO_SCORE_WEIGHTS,100,document.getElementById('manualIntegerScores').checked ? 1 : 0.5));
   renderSelected();
 };
 window.adjustManualScore = (type,direction) => {
@@ -431,14 +434,14 @@ function renderExamSummary() {
   const colors = { T1:'#4b84cf', T2:'#3ca6a1', T3:'#cb9d36', T4:'#9670bf', T5:'#da8260', T6:'#6d819e' };
   const rows = settingsTypeOrder.map(code => ({code,label:QUESTION_TYPES[code],defaultScore:TYPE_SCORES[code]})).map(type => {
     const questions = selectedOrder.map(id=>selQuestions[id]).filter(q=>q?.type === type.code);
-    const units = questions.length;
+    const units = type.code === 'T4' ? questions.reduce((sum,q)=>sum+blankCount(q),0) : questions.length;
     const score = Number(document.getElementById('sc-' + type.code)?.value) || type.defaultScore;
     return { ...type, count:questions.length, units, score, total:Math.round(units * score * 10) / 10 };
   }).filter(type => type.count > 0);
   const total = Math.round(rows.reduce((sum, type) => sum + type.total, 0) * 10) / 10;
   document.getElementById('manualSummary').innerHTML = `
     <div class="exam-score-chart" role="img" aria-label="各題型配分分布：${rows.map(type => `${type.label} ${type.total} 分`).join('、')}">${rows.map(type => `<span style="width:${total ? type.total / total * 100 : 0}%;background:${colors[type.code]}" title="${type.label}：${type.total} 分"></span>`).join('')}</div>
-    <div class="exam-summary-table-wrap"><table class="exam-summary-table"><thead><tr><th scope="col">題型</th><th scope="col">題數</th><th scope="col">配分</th><th scope="col">小計</th></tr></thead><tbody>${rows.map(type => `<tr draggable="true" data-type="${type.code}"><td><span class="exam-type-drag" aria-hidden="true">⠿</span><span class="exam-type-dot" style="background:${colors[type.code]}"></span>${type.label}</td><td>${type.count} 題</td><td>${type.score} 分／題</td><td>${type.total} 分</td></tr>`).join('')}</tbody><tfoot><tr><td colspan="4">總分：${total} 分</td></tr></tfoot></table></div>`;
+    <div class="exam-summary-table-wrap"><table class="exam-summary-table"><thead><tr><th scope="col">題型</th><th scope="col">題數</th><th scope="col">配分</th><th scope="col">小計</th></tr></thead><tbody>${rows.map(type => `<tr draggable="true" data-type="${type.code}"><td><span class="exam-type-drag" aria-hidden="true">⠿</span><span class="exam-type-dot" style="background:${colors[type.code]}"></span>${type.label}</td><td>${type.count} 題${type.code === 'T4' ? `<small>共 ${type.units} 格</small>` : ''}</td><td>${type.score} 分／${type.code === 'T4' ? '格' : '題'}</td><td>${type.total} 分</td></tr>`).join('')}</tbody><tfoot><tr><td colspan="4">總分：${total} 分</td></tr></tfoot></table></div>`;
   const table = document.querySelector('#manualSummary tbody');
   let draggedType = null;
   table.addEventListener('dragstart', event => {
@@ -555,7 +558,7 @@ window.goManualStep = n => {
   }
   if (n===3) {
     const counts = {};
-    selectedOrder.forEach(id => { const q = selQuestions[id]; if (q) counts[q.type] = (counts[q.type] || 0) + 1; });
+    selectedOrder.forEach(id => { const q = selQuestions[id]; if (q) counts[q.type] = (counts[q.type] || 0) + selectedScoreUnits(q); });
     const signature = JSON.stringify([Object.entries(counts).sort(([a],[b]) => a.localeCompare(b)), document.getElementById('manualIntegerScores').checked]);
     if (signature !== defaultScoreSignature) {
       autoManualScores();
