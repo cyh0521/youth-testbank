@@ -96,15 +96,16 @@
 .password-field{display:grid;gap:6px}
 .password-field label{color:var(--text-secondary);font-size:.88rem;font-weight:600}
 .password-input{position:relative}
-.password-input .form-control{width:100%;padding-right:58px}
-.password-toggle{position:absolute;right:9px;top:50%;transform:translateY(-50%);border:0;background:transparent;color:var(--primary-light);font-size:.84rem;padding:4px}
+.password-input .form-control{width:100%;padding-right:42px}
 .password-message{display:none;padding:10px 12px;border-radius:8px;font-size:.88rem}
 .password-message.is-error{display:block;background:#fef0ef;color:#9c3535}
 .password-message.is-success{display:block;background:#e7f7ed;color:#267656}
 .password-actions{display:flex;justify-content:flex-end}
 .pw-toggle{position:relative}
 .pw-toggle .form-control{padding-right:42px}
-.pw-eye{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:1rem;padding:2px 4px}
+.pw-eye,.password-toggle{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:1rem;padding:2px 4px}
+.pw-toggle input::-ms-reveal,.pw-toggle input::-ms-clear,
+.password-input input::-ms-reveal,.password-input input::-ms-clear{display:none}
 .field-hint{font-size:.84rem;color:var(--text-muted);margin-top:3px}
 .required{color:var(--danger)}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -172,14 +173,14 @@
           <label class="form-label" id="umPwLabel">密碼 <span class="required">*</span></label>
           <div class="pw-toggle">
             <input class="form-control" type="password" id="umPw" placeholder="至少 6 字元">
-            <button class="pw-eye" type="button" onclick="togglePw('umPw',this)">👁</button>
+            <button class="pw-eye" type="button" onclick="togglePw('umPw',this)" aria-label="顯示密碼" aria-pressed="false"></button>
           </div>
         </div>
         <div class="form-group">
           <label class="form-label">確認密碼</label>
           <div class="pw-toggle">
             <input class="form-control" type="password" id="umPw2" placeholder="再次輸入">
-            <button class="pw-eye" type="button" onclick="togglePw('umPw2',this)">👁</button>
+            <button class="pw-eye" type="button" onclick="togglePw('umPw2',this)" aria-label="顯示確認密碼" aria-pressed="false"></button>
           </div>
         </div>
       </div>
@@ -481,6 +482,11 @@ window.openUserModal = (uid) => {
   // 清空
   ['umUid','umEmail','umName','umSchool','umPw','umPw2'].forEach(id => {
     const el = document.getElementById(id); if(el) el.value = '';
+  });
+  ['umPw', 'umPw2'].forEach(id => {
+    const input = document.getElementById(id);
+    input.type = 'password';
+    updatePasswordToggle(input, input.parentElement.querySelector('button'));
   });
   document.getElementById('umErr').style.display = 'none';
   document.getElementById('umPasswordFields').classList.toggle('hidden', !!uid);
@@ -1037,12 +1043,12 @@ function buildPasswordPanel() {
   };
 
   form.querySelectorAll('[data-toggle]').forEach(button => {
+    updatePasswordToggle(document.getElementById(button.dataset.toggle), button);
     button.addEventListener('click', () => {
       const input = document.getElementById(button.dataset.toggle);
       const visible = input.type === 'password';
       input.type = visible ? 'text' : 'password';
-      button.textContent = visible ? '隱藏' : '顯示';
-      button.setAttribute('aria-label', `${visible ? '隱藏' : '顯示'}${input.labels[0].textContent}`);
+      updatePasswordToggle(input, button);
     });
   });
 
@@ -1080,10 +1086,19 @@ function buildPasswordPanel() {
 // ══════════════════════════════════════════════════
 //  共用工具
 // ══════════════════════════════════════════════════
+function updatePasswordToggle(input, button) {
+  const visible = input.type === 'text';
+  button.innerHTML = visible ? ICONS.eyeOff16 : ICONS.eye16;
+  button.setAttribute('aria-label', `${visible ? '隱藏' : '顯示'}${input.labels?.[0]?.textContent || (input.id === 'umPw2' ? '確認密碼' : '密碼')}`);
+  button.setAttribute('aria-pressed', String(visible));
+}
+document.querySelectorAll('.pw-eye').forEach(button => {
+  updatePasswordToggle(button.parentElement.querySelector('input'), button);
+});
 window.togglePw = (id, btn) => {
   const inp = document.getElementById(id);
   inp.type = inp.type==='password' ? 'text' : 'password';
-  btn.textContent = inp.type==='password' ? '👁' : '🙈';
+  updatePasswordToggle(inp, btn);
 };
 
 
