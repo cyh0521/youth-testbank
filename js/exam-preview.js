@@ -1056,10 +1056,7 @@ function renderQPreview(q, num, type, previewOptions) {
   if (type === 'T1') {
     body = `<table class="ep-answer-table" role="presentation"><tr><td class="ep-answer-prefix">${difficultyTag}${answerSlot}${numberLabel}</td><td>${UI.questionHtml(q.text)}${sourceTag}</td></tr></table>`;
   } else if (type === 'T2' || type === 'T3') {
-    const opts = q.options?.length
-      ? ` ${q.options.map((o,i)=>`(${String.fromCharCode(65+i)})${o}`).join(' ')}` : '';
-    const tail = q.tail?.trim() || '';
-    body = `<table class="ep-answer-table" role="presentation"><tr><td class="ep-answer-prefix">${difficultyTag}${answerSlot}${numberLabel}</td><td>${UI.questionHtml(q.text)}${opts}${tail ? `${tail === '。' ? '' : ' '}${tail}` : ''}${sourceTag}</td></tr></table>`;
+    body = `<table class="ep-answer-table" role="presentation"><tr><td class="ep-answer-prefix">${difficultyTag}${answerSlot}${numberLabel}</td><td>${UI.choiceQuestionHtml(q)}${sourceTag}</td></tr></table>`;
   } else if (type === 'T4' || type === 'T5' || type === 'T6') {
     const questionText = type === 'T5' ? UI.matchingQuestionHtml(q.text)
       : UI.questionHtml(q.text);

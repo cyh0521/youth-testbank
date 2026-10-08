@@ -45,7 +45,7 @@ test('附答案的兩種題目卷即使預覽關閉頁數，Word 仍包含各題
   for (const variant of buildDownloadVariants(questions,['answers','analysis'])) {
     const paper = {firstElementChild:{},querySelectorAll:()=>[]};
     const context = {
-      window:{},console,Math,UI:{questionHtml:text=>text,toast(){}},
+      window:{},console,Math,UI:{questionHtml:text=>text,choiceQuestionHtml:q=>q.text,toast(){}},
       examAppearance:()=>({font:'system',fontSize:16,lineHeight:1.3}),loadWordMargins:()=>({}),PAPER_SIZES:{A4:{}},fontStackById:()=> 'sans-serif',
       loadDocxLibrary:async()=>({}),createDocxBlob:async()=>({}),
       document:{createElement:tag=>tag==='div'?paper:{getContext:()=>({})}},

@@ -4,7 +4,9 @@ import { runInNewContext } from 'node:vm';
 import test from 'node:test';
 
 const source = readFileSync(new URL('../js/exam-preview.js', import.meta.url), 'utf8');
-const context = { UI: { questionHtml: value => value, matchingQuestionHtml: value => value } };
+const context = {window:{},document:{addEventListener(){}}};
+runInNewContext(readFileSync(new URL('../js/core.js',import.meta.url),'utf8') + '\nwindow.testUI=UI;',context);
+context.UI=context.window.testUI;
 runInNewContext(
   source.slice(source.indexOf('const TYPE_ORDER'), source.indexOf('// ── 字型')) +
   source.slice(source.indexOf('function groupByType('), source.indexOf('// ═', source.indexOf('function groupByType('))) +

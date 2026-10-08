@@ -143,6 +143,15 @@ const UI = {
     return this.questionImageParts(value).map(part => part.path ? `［${part.alt || '圖片'}］` : part.text).join('');
   },
 
+  choiceQuestionHtml(q, emptyText = '') {
+    const parts = this.questionImageParts(this.questionText(q.text || emptyText));
+    const text = parts.filter(part => !part.path).map(part => part.text).join('');
+    const images = parts.filter(part => part.path).map(part => this.imageMarker(part.path, part.width, part.alt)).join('');
+    const options = q.options?.length ? ' ' + q.options.map((option, index) => `(${String.fromCharCode(65 + index)})${this.questionHtml(option)}`).join(' ') : '';
+    const tail = String(q.tail || '').trim();
+    return this.questionHtml(text) + options + (tail ? (tail === '。' ? '' : ' ') + this.questionHtml(tail) : '') + this.questionHtml(images);
+  },
+
   matchingQuestionHtml(value) {
     let text = this.questionText(value);
     // 只為完全失去換行的舊資料補排版；有換行的匯入內容依原檔呈現。

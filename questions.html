@@ -170,7 +170,7 @@
 </head>
 <body>
 <script src="js/icons.js"></script>
-<script src="js/core.js?v=20261007-images-block"></script>
+<script src="js/core.js?v=20261008-choice-images"></script>
 <div class="layout">
   <aside class="sidebar" id="sidebar"></aside>
   <script src="js/shell.js?v=20261007-images-dir"></script>
@@ -652,7 +652,7 @@ function renderCardMode(pageItems) {
   grid.innerHTML = pageItems.map(q => {
     const chap = [q.chapterNum,q.sectionNum,q.subsectionNum].filter(Boolean).join('-');
 
-    const fullQuestion = `${q.type === 'T5' ? UI.matchingQuestionHtml(q.text) : UI.questionHtml(q.text || '—')}${(q.type === 'T2' || q.type === 'T3') && q.options?.length ? ' ' + q.options.map((option,index) => `(${String.fromCharCode(65+index)})${UI.questionHtml(option)}`).join(' ') : ''}${(q.type === 'T2' || q.type === 'T3') && q.tail ? (String(q.tail).trim() === '。' ? '' : ' ') + UI.questionHtml(q.tail) : ''}`;
+    const fullQuestion = q.type === 'T2' || q.type === 'T3' ? UI.choiceQuestionHtml(q, '—') : q.type === 'T5' ? UI.matchingQuestionHtml(q.text) : UI.questionHtml(q.text || '—');
     return `<div class="q-card-item${selected.has(q.id)?' selected':''}" data-qid="${q.id}">
       <div class="q-card-check">
         <input type="checkbox" class="q-cb" data-id="${q.id}" ${selected.has(q.id)?'checked':''} onclick="onCbClick(event,'${q.id}')" title="按住 Shift 可選取範圍">

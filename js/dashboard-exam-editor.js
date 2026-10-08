@@ -1,4 +1,4 @@
-import { showExamPreview, loadHeader, loadAppearance, mountInlineHeaderEditor, buildHeaderHtml, fontStackById } from './exam-preview.js?v=20261007-images-block';
+import { showExamPreview, loadHeader, loadAppearance, mountInlineHeaderEditor, buildHeaderHtml, fontStackById } from './exam-preview.js?v=20261008-choice-images';
 import { chooseExamReplacement } from './exam-question-replacement.js';
 import { examScopeSummaryHtml } from './exam-scope-summary.js';
 

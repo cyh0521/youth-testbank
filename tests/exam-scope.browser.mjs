@@ -17,6 +17,7 @@ window.UI={toast:message=>(window.messages??=[]).push(message),escapeHtml:x=>Str
 window.DataService={getQuestionCount:async({bookCode})=>bookCode==='E'?0:1,getQuestions:async({bookCode})=>{if(bookCode==='S')await new Promise(r=>setTimeout(r,200));return bookCode==='E'?[]:[{id:'q1',qnum:'00042',subjectCode:'A',bookCode,chapterNum:'01',sectionNum:'01',subsectionNum:'01',type:'T1',text:'測試題目',answer:'O'}]},getChapterDefs:async()=>[{chapterNum:1,title:'有題目章',sections:[{sectionNum:1,title:'有題目節',subsections:[{num:1,title:'有題目小節'},{num:2,title:'空小節'}]},{sectionNum:2,title:'空節'}]},{chapterNum:2,title:'空章'}]};
 window._tbCache.booksBySubject.s.forEach(b=>Object.assign(b,{l1:'章',l2:'節',l3:'小節'}));
 window.DataService.getExamPreferences=()=>({});
+window.UI.choiceQuestionHtml=q=>q.text;
 document.addEventListener('DOMContentLoaded',()=>document.querySelector('.main')?.removeAttribute('inert'));
 `;
 const server=createServer(async(req,res)=>{

@@ -71,6 +71,23 @@ test('僅在目前頁面使用本地預覽網址，保存內容保持相對路�
   context.window.questionImagePreviews.clear();
 });
 
+test('選擇題正文圖片移至選項與題尾之後，保留圖片順序、尺寸與原始資料', () => {
+  const q = {text:'前文'+UI.imageMarker('images/a.png',240,'圖一')+'後文'+UI.imageMarker('images/b.jpg',300,'圖二'),options:['甲<乙>','丙'],tail:'。'};
+  const original=JSON.stringify(q);
+  const html=UI.choiceQuestionHtml(q);
+  assert(html.indexOf('前文後文') < html.indexOf('(A)'));
+  assert(html.indexOf('(B)丙。') < html.indexOf('data-question-image="images/a.png"'));
+  assert(html.indexOf('images/a.png') < html.indexOf('images/b.jpg'));
+  assert(html.includes('width="240"') && html.includes('width="300"'));
+  assert(html.includes('甲&lt;乙&gt;'));
+  assert.equal(JSON.stringify(q),original);
+  const preview=readFileSync(new URL('../js/exam-preview.js',import.meta.url),'utf8');
+  const render=preview.slice(preview.indexOf('function renderQPreview('),preview.indexOf('// ═',preview.indexOf('function renderQPreview(')));
+  const view={UI};runInNewContext(render,view);
+  const rendered=view.renderQPreview(q,1,'T2',{});
+  assert(rendered.indexOf('(B)丙。') < rendered.indexOf('data-question-image="images/a.png"'));
+});
+
 const text = value => ({nodeType:3,nodeValue:value});
 const br = () => ({nodeType:1,tagName:'BR',nodeName:'BR',childNodes:[]});
 const image = (path, width=320, alt='圖片') => ({nodeType:1,tagName:'IMG',nodeName:'IMG',dataset:{questionImage:path},alt,getAttribute:()=>String(width)});
