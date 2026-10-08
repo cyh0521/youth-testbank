@@ -424,7 +424,7 @@ window.onBookFilter = async () => {
   const subj = _tbCache?.subjectByCode?.[sc];
   const bookObj = subj ? (_tbCache?.booksBySubject?.[subj.id]||[]).find(b=>b.code===bc) : null;
   if (subj && bookObj) {
-    const chapters = await DataService.getChapterDefs(subj.id, bookObj.id);
+    const chapters = await DataService.getChapterDefs(subj.id, bookObj.id, { firestore:true });
     if (fSubject.value !== sc || document.getElementById('fBook').value !== bc) return;
     const l1 = bookObj.l1 || '章';
     chapters.forEach(c => addChapterOption(fc, c.chapterNum, c.title || l1 + c.chapterNum));
@@ -876,7 +876,7 @@ window.openEdit = async id => {
   if (q.subsectionNum && !editBook.l3) editBook = {...editBook, l3:'小節'};
   try {
     editChapters = editBook.id && subject
-      ? await DataService.getChapterDefs(subject.id, editBook.id) : [];
+      ? await DataService.getChapterDefs(subject.id, editBook.id, { firestore:true }) : [];
   } catch (e) { UI.toast('章節載入失敗：' + e.message, 'danger'); return; }
   if (!editChapters.length) {
     editChapters = chaptersFromQuestions(allQuestions, editBook);

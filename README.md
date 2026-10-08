@@ -1,18 +1,18 @@
 # 幼獅題庫系統 v2（出題列印版）
 
-## static-textbank 分支：靜態題庫試行
+## static-testbank 分支：靜態題庫試行
 
-此分支正在試行以 GitHub Pages 的 JSON 檔供應題目。正式題庫已匯出至 `data/textbank`，`js/textbank-mode.js` 目前設為 `static`，僅影響此分支的本機預覽；線上網站仍須由 GitHub Desktop 發布後才會更新。
+此分支正在試行以 GitHub Pages 的 JSON 檔供應題目。正式題庫已匯出至 `data/testbank`，`js/textbank-mode.js` 目前設為 `static`，僅影響此分支的本機預覽；線上網站仍須由 GitHub Desktop 發布後才會更新。
 
-1. 管理員在「題目匯入」第一步按「匯出靜態題庫」。此操作會從 Firestore 伺服器讀取全部題目一次並下載 ZIP；請在讀取配額足夠時操作。匯出內容只包含出題所需欄位，不包含匯入檔名、建立者或時間戳記。
-2. 將 ZIP 內的 `data/textbank` 解壓至專案根目錄，保留 `manifest.json` 與 `books` 子目錄。原 Firestore 題目不要刪除。
+1. 管理員在「題目匯入」第一步按「匯出靜態題庫」。此操作會從 Firestore 伺服器讀取全部題目、科目、冊別與章節目錄並下載 ZIP；請在讀取配額足夠時操作。匯出內容只包含出題所需欄位，不包含匯入檔名、建立者或時間戳記。
+2. 將 ZIP 內的 `data/testbank` 解壓至專案根目錄，保留 `manifest.json` 與 `books` 子目錄。原 Firestore 題目不要刪除。
 3. 在專案根目錄執行 `node scripts/verify-textbank.mjs`，核對每冊題數、題目 ID 與索引。再執行 `node --test tests/static-textbank.test.mjs`。
-4. 在測試分支以 `static` 模式測試各冊出題、題目搜尋、舊試卷預覽、圖片及匯出。畫面右下角會顯示題庫來源；靜態檔載入失敗會顯示錯誤並中止該次讀題，不會悄悄改讀 Firestore。可在瀏覽器開發者工具的「網路」分頁確認題目請求指向 `data/textbank/books/*.json`，且出題期間沒有 `questions` 的 Firestore 讀取請求。
-5. 題目新增、編輯與刪除仍發生在 Firestore；每次變更後需要重新匯出、驗證，並透過 GitHub Desktop 發布 JSON。發布前，普通出題頁面仍會讀取上一版靜態題庫；管理員的題目維護頁面直接讀 Firestore，以便檢查變更。
+4. 在測試分支以 `static` 模式測試各冊出題、題目搜尋、舊試卷預覽、圖片及匯出。畫面右下角會顯示題庫來源；靜態檔載入失敗會顯示錯誤並中止該次讀題，不會悄悄改讀 Firestore。可在瀏覽器開發者工具的「網路」分頁確認題目請求指向 `data/testbank/books/*.json`，且出題期間沒有 `questions` 的 Firestore 讀取請求。
+5. 題目新增、編輯與刪除仍發生在 Firestore；題目或課本目錄每次變更後需要重新匯出、驗證，並透過 GitHub Desktop 發布 JSON。發布前，普通出題頁面仍會讀取上一版靜態題庫；管理員的題目維護、課本管理及匯入頁面直接讀 Firestore，以便檢查尚未發布的變更。靜態模式的出題頁則從同一份 manifest 引用的 `catalog-*.json` 讀取科目、冊別與章節，目錄保留原 ID 與空冊。
 
 管理員可到「進階設定 → 題庫來源」將全站讀題來源切換為 Firestore 備用模式，所有使用者的新讀題請求會採用新來源；已載入題目的頁面需重新整理。右下角狀態提示預設關閉，僅主要管理員可在同頁開啟，選項儲存在自己的帳號。此設定儲存在 Firestore 的 `settings/textbankMode`，每個登入頁面以一筆設定監聽取得，題目匯入與編輯仍寫入 Firestore。若設定文件不存在或讀取失敗，網站使用 `js/textbank-mode.js` 的預設值。Firestore 的原題目資料在整個試行期保留。切換版本前先確認 GitHub Pages 發布來源及快取；舊頁面可能短暫留在瀏覽器快取中。
 
-若 GitHub Pages 的發布來源仍是 `main`，在 GitHub Desktop 先於 `static-textbank` 提交並推送變更；確認本機測試後再切到 `main`，將 `static-textbank` 合併進 `main` 並推送。僅推送 `static-textbank` 不會更新目前由 `main` 發布的網站。上線後先在正式網址確認出題頁顯示「題目讀取成功」，再測試一份舊試卷。遇到靜態題庫故障時，管理員可在「進階設定 → 題庫來源」即時切換全站至 Firestore，待靜態題庫修復後再切回。
+若 GitHub Pages 的發布來源仍是 `main`，在 GitHub Desktop 先於 `static-testbank` 提交並推送變更；確認本機測試後再切到 `main`，將 `static-testbank` 合併進 `main` 並推送。僅推送 `static-testbank` 不會更新目前由 `main` 發布的網站。上線後先在正式網址確認出題頁顯示「題目讀取成功」，再測試一份舊試卷。遇到靜態題庫故障時，管理員可在「進階設定 → 題庫來源」即時切換全站至 Firestore，待靜態題庫修復後再切回。
 
 ## 系統定位
 
@@ -338,3 +338,9 @@ git diff --check
 - 主要管理員可新增、編輯及刪除管理員與教師，但不能刪除自己或從網站改變自己的角色；管理員只能管理教師，不能管理主要管理員或其他管理員。網站不可建立或刪除主要管理員。
 - 管理員新增工作人員時使用獨立 Firebase Auth instance，不會切換目前管理員的登入帳號。
 - 前端只能讓使用者修改自己的 Firebase Authentication 密碼；若要由管理員重設或完整刪除其他人的 Auth 帳號，需要 Firebase Admin SDK 或 Cloud Functions。
+
+### 靜態目錄版本更新
+
+首次使用靜態目錄功能前，必須在「題目匯入」重新執行「匯出靜態題庫」，將壓縮檔中完整的 `data/testbank/` 發布到 GitHub。先上傳題目檔與 `catalog-*.json`，最後更新 `manifest.json`；檔案須與程式在同一部署版本中提供。既有發布資料沒有目錄，不能從題目推回完整課本結構，程式會明確提示重新匯出，不自動轉讀 Firestore。目錄檔名包含內容雜湊，重新載入頁面會取得最新索引；已開啟頁面維持當次版本，發布後請重新整理。
+
+修改名稱、排序或章節後仍在課本管理儲存，再匯出與發布。調整科目／冊別代碼或章節編號時，須先同步題目歸屬；發布本身不會自動搬移題目。登入、來源設定及個人試卷仍使用 Firebase，因此 Firestore 讀取不會完全歸零。

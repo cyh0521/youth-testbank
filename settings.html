@@ -900,8 +900,8 @@ async function buildCatalogPanel() {
   const save = document.getElementById('catalogSave');
   save.disabled = true;
   try {
-    const subjects = await DataService.getSubjects();
-    const bookResults = await Promise.all(subjects.map(s => DataService.getBooks(s.id)));
+    const subjects = await DataService.getSubjects({ firestore:true });
+    const bookResults = await Promise.all(subjects.map(s => DataService.getBooks(s.id, { firestore:true })));
     const visible = DataService.getVisibleCatalog();
     choices.innerHTML = subjects.map((subject, index) => {
       const books = [...new Map(bookResults[index].filter(b => b.code).map(b => [b.code, b])).values()];

@@ -128,7 +128,7 @@ window.clearAll = async () => {
   document.getElementById('clearBtn').disabled = true;
   log('清除現有資料...', 'info');
   try {
-    const subjects = await DataService.getSubjects();
+    const subjects = await DataService.getSubjects({ firestore:true });
     for (const s of subjects) {
       await DataService.deleteSubject(s.id);
       log(`  已刪除：${s.name}`, 'ok');

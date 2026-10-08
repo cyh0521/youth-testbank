@@ -231,7 +231,7 @@ function lvl() {
 // ── 科目 ───────────────────────────────────────────
 async function loadSubjects() {
   closeActionMenu();
-  _subjects = await DataService.getSubjects();
+  _subjects = await DataService.getSubjects({ firestore:true });
   const el = document.getElementById('subjectList');
   if (!_subjects.length) { el.innerHTML = '<div class="empty-state" style="padding:24px 12px"><p>尚無科目</p></div>'; return; }
   el.innerHTML = `<table class="data-table tb-table"><colgroup><col><col style="width:48px"></colgroup><tbody>${_subjects.map(s => `
@@ -249,7 +249,7 @@ window.selectSubject = async (id) => {
   loadSubjects();
   document.getElementById('bookList').innerHTML = '<div class="empty-state" style="padding:24px 12px"><p>載入中...</p></div>';
   document.getElementById('chapterList').innerHTML = '<div class="empty-state" style="padding:24px 12px"><div class="empty-icon" style="font-size:1.5rem">←</div><p>請先選擇冊別</p></div>';
-  _books = await DataService.getBooks(id);
+  _books = await DataService.getBooks(id, { firestore:true });
   renderBookList();
 };
 
@@ -297,7 +297,7 @@ window.selectBook = async (id) => {
   document.getElementById('addChapterLabel').textContent = `新增${l.l1}`;
   renderBookList();
   document.getElementById('chapterList').innerHTML = '<div class="empty-state" style="padding:24px 12px"><p>載入中...</p></div>';
-  _chapters = await DataService.getChapterDefs(_selSubject, id);
+  _chapters = await DataService.getChapterDefs(_selSubject, id, { firestore:true });
   renderChapterList();
 };
 
@@ -322,7 +322,7 @@ window.saveBook = async () => {
   try {
     const savedId = await DataService.saveBook(_selSubject, {...id?{id}:{},name,code,order,l1,l2,l3});
     closeModal('bookModal');
-    _books = await DataService.getBooks(_selSubject);
+    _books = await DataService.getBooks(_selSubject, { firestore:true });
     const targetId = id || savedId;
     if (_selBook === targetId) _selBookObj = _books.find(b=>b.id===targetId)||null;
     renderBookList();
@@ -334,7 +334,7 @@ window.deleteBook = async (id, name) => {
   try {
     await DataService.deleteBook(_selSubject, id);
     if (_selBook===id) { _selBook=null; _selBookObj=null; _chapters=[]; document.getElementById('addChapterBtn').disabled=true; document.getElementById('addChapterLabel').textContent='新增'; document.getElementById('chapterList').innerHTML='<div class="empty-state" style="padding:24px 12px"><div class="empty-icon" style="font-size:1.5rem">←</div><p>請先選擇冊別</p></div>'; }
-    _books = await DataService.getBooks(_selSubject); renderBookList(); UI.toast('已刪除','success');
+    _books = await DataService.getBooks(_selSubject, { firestore:true }); renderBookList(); UI.toast('已刪除','success');
   } catch(e) { UI.toast('刪除失敗：'+e.message,'danger'); }
 };
 
@@ -465,7 +465,7 @@ window.saveChapter = async () => {
   try {
     await DataService.saveChapter(_selSubject, _selBook, {id:id, chapterNum, title, sections});
     closeModal('chapterModal');
-    _chapters = await DataService.getChapterDefs(_selSubject, _selBook);
+    _chapters = await DataService.getChapterDefs(_selSubject, _selBook, { firestore:true });
     renderChapterList();
     UI.toast('已儲存','success');
   } catch(e) { UI.toast('儲存失敗：'+e.message,'danger'); }
@@ -475,7 +475,7 @@ window.deleteChapter = async (id, title) => {
   if (!await confirmDeletion({title:`刪除${lvl().l1}`,message:`確定要刪除${lvl().l1}「${title}」及其所有下層設定？`,actionLabel:`刪除${lvl().l1}`})) return;
   try {
     await DataService.deleteChapter(_selSubject, _selBook, id);
-    _chapters = await DataService.getChapterDefs(_selSubject, _selBook);
+    _chapters = await DataService.getChapterDefs(_selSubject, _selBook, { firestore:true });
     renderChapterList();
     UI.toast('已刪除','success');
   } catch(e) { UI.toast('刪除失敗：'+e.message,'danger'); }

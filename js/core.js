@@ -252,7 +252,7 @@ window._tbCache = null;
 window.initTextbookCache = async function() {
   if (window._tbCache) return window._tbCache;
   await window._dsReady;
-  window._tbCache = await DataService.loadTextbookCache();
+  window._tbCache = await DataService.loadTextbookCache({ firestore:['import', 'questions', 'textbooks', 'settings'].includes(window._activeNav) });
   return window._tbCache;
 };
 

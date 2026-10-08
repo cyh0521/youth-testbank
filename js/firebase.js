@@ -398,11 +398,11 @@ window.DataService = {
     if (!DataService.isSubjectVisible(item.subjectCode)) return false;
     return !item.bookCode || DataService.isBookVisible(item.subjectCode, item.bookCode);
   },
-  async getVisibleSubjects() {
-    return (await DataService.getSubjects()).filter(s => DataService.isSubjectVisible(s.code));
+  async getVisibleSubjects(options = {}) {
+    return (await DataService.getSubjects(options)).filter(s => DataService.isSubjectVisible(s.code));
   },
-  async getVisibleBooks(subjectId, subjectCode) {
-    const books = await DataService.getBooks(subjectId);
+  async getVisibleBooks(subjectId, subjectCode, options = {}) {
+    const books = await DataService.getBooks(subjectId, options);
     return subjectCode ? books.filter(b => DataService.isBookVisible(subjectCode, b.code)) : books;
   },
 
@@ -869,8 +869,21 @@ window.DataService = {
 
   // ── 科目 ──────────────────────────────────────────
   // ── 課本快取：一次讀取所有科目與冊別（供各頁面下拉選單使用）──
-  async loadTextbookCache() {
-    const subjects = await DataService.getVisibleSubjects();
+  async getCatalogForExport() {
+    if (!DataService.isAdmin()) throw new Error('只有管理員可以匯出目錄');
+    const subjects = docsToArr(await getDocsFromServer(collection(db, 'textbooks')));
+    subjects.sort((a, b) => (a.order || 0) - (b.order || 0));
+    return Promise.all(subjects.map(async subject => {
+      const books = docsToArr(await getDocsFromServer(collection(db, 'textbooks', subject.id, 'books')));
+      books.sort((a, b) => (a.order || 0) - (b.order || 0));
+      return { ...subject, books:await Promise.all(books.map(async book => ({
+        ...book, chapters:await DataService.getChapterDefs(subject.id, book.id, { firestore:true })
+      }))) };
+    }));
+  },
+
+  async loadTextbookCache(options = {}) {
+    const subjects = await DataService.getVisibleSubjects(options);
     const cache = {
       subjects: [],          // [{id, code, name, order}]
       books: {},             // bookCode -> {id, subjectId, code, name, order, l1, l2, l3}
@@ -883,7 +896,7 @@ window.DataService = {
       cache.subjectByCode[s.code] = s;
       cache.subjectById[s.id]     = s;
       cache.booksBySubject[s.id]  = [];
-      const books = await DataService.getVisibleBooks(s.id, s.code);
+      const books = await DataService.getVisibleBooks(s.id, s.code, options);
       for (const b of books) {
         const entry = { ...b, subjectId: s.id };
         cache.books[b.code] = entry;
@@ -893,7 +906,10 @@ window.DataService = {
     return cache;
   },
 
-    async getSubjects() {
+    async getSubjects(options = {}) {
+    if (activeTextbankMode === 'static' && !options.firestore) {
+      return readStaticTextbank('科目目錄讀取', () => staticTextbank.subjects());
+    }
     const snap = await getDocs(collection(db, 'textbooks'));
     return snap.docs.map(d => ({ id: d.id, ...d.data() }))
       .sort((a, b) => (a.order||0) - (b.order||0));
@@ -914,13 +930,16 @@ window.DataService = {
 
   async deleteSubject(subjectId) {
     // 刪除前先刪所有冊別（及其章節）
-    const books = await DataService.getBooks(subjectId);
+    const books = await DataService.getBooks(subjectId, { firestore:true });
     for (const b of books) await DataService.deleteBook(subjectId, b.id);
     await deleteDoc(doc(db, 'textbooks', subjectId));
   },
 
   // ── 冊別 ──────────────────────────────────────────
-  async getBooks(subjectId) {
+  async getBooks(subjectId, options = {}) {
+    if (activeTextbankMode === 'static' && !options.firestore) {
+      return readStaticTextbank('冊別目錄讀取', () => staticTextbank.books(subjectId));
+    }
     const snap = await getDocs(collection(db, 'textbooks', subjectId, 'books'));
     return snap.docs.map(d => ({ id: d.id, ...d.data() }))
       .sort((a, b) => (a.order||0) - (b.order||0));
@@ -941,7 +960,7 @@ window.DataService = {
 
   async deleteBook(subjectId, bookId) {
     // 刪除前先刪所有章節
-    const chapters = await DataService.getChapterDefs(subjectId, bookId);
+    const chapters = await DataService.getChapterDefs(subjectId, bookId, { firestore:true });
     for (const c of chapters) await deleteDoc(doc(db, 'textbooks', subjectId, 'books', bookId, 'chapters', c.id));
     await deleteDoc(doc(db, 'textbooks', subjectId, 'books', bookId));
   },
@@ -949,7 +968,10 @@ window.DataService = {
   // ── 章節定義 ─────────────────────────────────────
   // 章節以 JSON 陣列方式儲存在 book 文件的 chapters 欄位，結構：
   // [ { num, title, sections: [ { num, title, subsections: [ { num, title } ] } ] } ]
-  async getChapterDefs(subjectId, bookId) {
+  async getChapterDefs(subjectId, bookId, options = {}) {
+    if (activeTextbankMode === 'static' && !options.firestore) {
+      return readStaticTextbank('章節目錄讀取', () => staticTextbank.chapters(subjectId, bookId));
+    }
     const snap = await getDocsFromServer(collection(db, 'textbooks', subjectId, 'books', bookId, 'chapters'));
     return snap.docs.map(d => ({ id: d.id, ...d.data() }))
       .sort((a, b) => (a.chapterNum||0) - (b.chapterNum||0));
@@ -979,6 +1001,12 @@ window.DataService = {
 
   // ── 快取：取得完整課本結構（供出題頁面使用）──────
   async getFullTextbook(subjectId, bookId) {
+    if (activeTextbankMode === 'static') {
+      const subject = (await DataService.getSubjects()).find(item => item.id === subjectId);
+      const book = (await DataService.getBooks(subjectId)).find(item => item.id === bookId);
+      if (!subject || !book) return null;
+      return { subject, book, chapters:await DataService.getChapterDefs(subjectId, bookId) };
+    }
     const [subSnap, bookSnap, chapters] = await Promise.all([
       getDoc(doc(db, 'textbooks', subjectId)),
       getDoc(doc(db, 'textbooks', subjectId, 'books', bookId)),

@@ -17,7 +17,7 @@ async function digest(value) {
   return [...new Uint8Array(bytes)].map(byte => byte.toString(16).padStart(2, '0')).join('');
 }
 
-export async function buildTextbankFiles(questions, exportedAt = new Date().toISOString()) {
+export async function buildTextbankFiles(questions, exportedAt = new Date().toISOString(), catalog = null) {
   if (!Array.isArray(questions)) throw new Error('題庫資料格式不正確');
   if (!questions.length) throw new Error('Firestore 題庫沒有題目，已停止匯出');
   const groups = new Map();
@@ -44,9 +44,15 @@ export async function buildTextbankFiles(questions, exportedAt = new Date().toIS
     const path = `books/${(await digest(key)).slice(0, 16)}-${(await digest(content)).slice(0, 16)}.json`;
     manifest.books.push({ subjectCode: group.subjectCode, bookCode: group.bookCode, count: group.questions.length, path });
     group.questions.forEach(question => { manifest.byId[question.id] = path; });
-    files.push([`data/textbank/${path}`, content]);
+    files.push([`data/testbank/${path}`, content]);
   }
-  files.push(['data/textbank/manifest.json', JSON.stringify(manifest)]);
+  if (catalog !== null) {
+    if (!Array.isArray(catalog)) throw new Error('目錄資料格式不正確');
+    const content = JSON.stringify(catalog);
+    manifest.catalog = `catalog-${(await digest(content)).slice(0, 16)}.json`;
+    files.push([`data/testbank/${manifest.catalog}`, content]);
+  }
+  files.push(['data/testbank/manifest.json', JSON.stringify(manifest)]);
   return { files, manifest };
 }
 

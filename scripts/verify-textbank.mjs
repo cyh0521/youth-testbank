@@ -2,10 +2,21 @@ import { readFile, readdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { createHash } from 'node:crypto';
 
-const root = resolve(process.argv[2] || 'data/textbank');
+const root = resolve(process.argv[2] || 'data/testbank');
 const manifest = JSON.parse(await readFile(resolve(root, 'manifest.json'), 'utf8'));
 if (manifest.schema !== 1 || !Array.isArray(manifest.books) || !manifest.byId) {
   throw new Error('manifest.json 格式不正確');
+}
+if (manifest.catalog) {
+  if (!/^catalog-[a-f0-9]{16}\.json$/.test(manifest.catalog)) throw new Error('目錄路徑不正確');
+  const raw = await readFile(resolve(root, manifest.catalog), 'utf8');
+  const expected = `catalog-${createHash('sha256').update(raw).digest('hex').slice(0, 16)}.json`;
+  if (expected !== manifest.catalog) throw new Error('目錄內容雜湊不符');
+  const catalog = JSON.parse(raw);
+  if (!Array.isArray(catalog) || catalog.some(subject => !subject.id || !Array.isArray(subject.books) ||
+    subject.books.some(book => !book.id || !Array.isArray(book.chapters)))) throw new Error('目錄格式不正確');
+} else {
+  console.warn('此版本缺少靜態目錄，請重新匯出並發布，才能使用靜態目錄讀取。');
 }
 const seen = new Set();
 let count = 0;

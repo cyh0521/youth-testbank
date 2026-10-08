@@ -274,7 +274,7 @@
 <script type="module">
 import { guardPage } from './js/auth-guard.js';
 import { confirmDeletion } from './js/confirm-exam-deletion.js';
-import { buildTextbankFiles, createTextbankZip } from './js/textbank-export.js';
+import { buildTextbankFiles, createTextbankZip } from './js/textbank-export.js?v=testbank-catalog-1';
 window._activeNav = 'import';
 const user = await guardPage(['admin','manager']);
 if (!user) throw new Error('not auth');
@@ -283,11 +283,11 @@ const canEdit = DataService.isAdmin();
 window.exportStaticTextbank = async () => {
   const button = document.getElementById('exportTextbankBtn');
   button.disabled = true;
-  button.textContent = '讀取題目中…';
+  button.textContent = '讀取題庫與目錄中…';
   try {
-    const questions = await DataService.getAllQuestionsForExport();
+    const [questions, catalog] = await Promise.all([DataService.getAllQuestionsForExport(), DataService.getCatalogForExport()]);
     button.textContent = '產生檔案中…';
-    const { files, manifest } = await buildTextbankFiles(questions);
+    const { files, manifest } = await buildTextbankFiles(questions, new Date().toISOString(), catalog);
     const archive = createTextbankZip(files);
     const url = URL.createObjectURL(archive);
     const link = document.createElement('a');
@@ -297,7 +297,7 @@ window.exportStaticTextbank = async () => {
     link.click();
     link.remove();
     setTimeout(() => URL.revokeObjectURL(url), 60000);
-    UI.toast(`已匯出 ${manifest.count} 題、${manifest.books.length} 冊；解壓後再由 GitHub Desktop 發布`, 'success', 8000);
+    UI.toast(`已匯出 ${manifest.count} 題、${manifest.books.length} 冊及課本目錄；解壓後再由 GitHub Desktop 發布`, 'success', 8000);
   } catch (error) {
     UI.toast(`匯出失敗：${error.message}`, 'danger', 8000);
   } finally {

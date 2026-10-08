@@ -1,10 +1,11 @@
-const ROOT = new URL('../data/textbank/', import.meta.url);
+const ROOT = new URL('../data/testbank/', import.meta.url);
 
 export class StaticTextbank {
   constructor(fetcher = (url, options) => globalThis.fetch(url, options)) {
     this.fetcher = fetcher;
     this.manifestPromise = null;
     this.shards = new Map();
+    this.catalogPromise = null;
   }
 
   async manifest() {
@@ -41,6 +42,37 @@ export class StaticTextbank {
       }));
     }
     return this.shards.get(entry.path);
+  }
+
+  async catalog() {
+    if (!this.catalogPromise) {
+      this.catalogPromise = this.manifest().then(async manifest => {
+        if (!/^catalog-[a-f0-9]{16}\.json$/.test(manifest.catalog || '')) {
+          throw new Error('靜態題庫缺少目錄，請重新匯出靜態題庫並發布');
+        }
+        const catalog = await this.fetchJson(manifest.catalog);
+        if (!Array.isArray(catalog) || catalog.some(subject => !subject.id || !Array.isArray(subject.books) ||
+          subject.books.some(book => !book.id || !Array.isArray(book.chapters)))) {
+          throw new Error('靜態目錄格式不正確');
+        }
+        return catalog;
+      }).catch(error => { this.catalogPromise = null; throw error; });
+    }
+    return this.catalogPromise;
+  }
+
+  async subjects() {
+    return (await this.catalog()).map(({ books, ...subject }) => subject);
+  }
+
+  async books(subjectId) {
+    return ((await this.catalog()).find(subject => subject.id === subjectId)?.books || [])
+      .map(({ chapters, ...book }) => book);
+  }
+
+  async chapters(subjectId, bookId) {
+    return (await this.catalog()).find(subject => subject.id === subjectId)
+      ?.books.find(book => book.id === bookId)?.chapters || [];
   }
 
   async questions(options = {}) {
