@@ -286,7 +286,7 @@
 
 <script type="module">
 import { guardPage } from './js/auth-guard.js';
-import { confirmDeletion } from './js/confirm-exam-deletion.js';
+import { confirmAction, confirmDeletion } from './js/confirm-exam-deletion.js';
 import { DEFAULT_WORD_MARGINS, loadWordMargins, saveWordMargins, resetWordMargins, FONT_OPTIONS, FONT_SIZE_RANGE, LINE_HEIGHT_RANGE, loadAppearance, saveAppearance, loadHeader, saveHeader, HEADER_FIELDS, DEFAULT_HEADER_LAYOUT, normalizeHeaderLayout } from './js/exam-preview.js?v=20261008-choice-images';
 
 const settingsView = new URLSearchParams(location.search).get('view');
@@ -310,6 +310,7 @@ function buildTabs() {
     tabs.push({ id:'profile', label:'個人資料', icon:ICONS.user16 });
     tabs.push({ id:'subjects', label:'常用科目', icon:ICONS.navTextbooks20 });
     tabs.push({ id:'appearance', label:'試卷版面設定', icon:ICONS.navSettings20 });
+    if (isAdmin) tabs.push({ id:'textbank', label:'題庫來源', icon:ICONS.navTextbooks20 });
   }
 
   const tabsHTML = `${tabs.length > 1 ? `<div class="settings-tabs" aria-label="進階設定">
@@ -324,9 +325,10 @@ function buildTabs() {
   else {
     buildProfilePanel();
     buildCatalogPanel();
+    if (isAdmin) buildTextbankPanel();
     const requested = new URLSearchParams(location.search).get('section');
     if (settingsView === 'catalog') switchTab(requested === 'appearance' || requested === 'margins' || requested === 'header' ? 'appearance' : 'subjects');
-    else if (requested === 'subjects' || requested === 'appearance') switchTab(requested);
+    else if (requested === 'subjects' || requested === 'appearance' || (requested === 'textbank' && isAdmin)) switchTab(requested);
   }
 }
 
@@ -336,6 +338,68 @@ window.switchTab = id => {
   document.getElementById('stab-'+id)?.classList.add('active');
   document.getElementById('spanel-'+id)?.classList.add('active');
 };
+
+function buildTextbankPanel() {
+  const panel = document.getElementById('spanel-textbank');
+  panel.innerHTML = `<div class="card">
+    <div class="card-header"><h2>全站題庫來源</h2></div>
+    <div class="card-body">
+      <p class="password-hint">此設定適用所有管理員與教師。切換後，新的讀題請求會使用所選來源；已載入題目的頁面須重新整理。</p>
+      <p id="textbankModeStatus" role="status" style="margin:16px 0;font-weight:700"></p>
+      <div class="import-action" style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-outline" type="button" data-textbank-mode="static">使用 GitHub 靜態題庫</button>
+        <button class="btn btn-outline" type="button" data-textbank-mode="firestore">緊急改用 Firestore</button>
+      </div>
+      <p class="field-hint" style="margin-top:14px">Firestore 模式會增加題目讀取次數；靜態檔有問題時可暫時啟用。題目匯入與編輯始終寫入 Firestore。</p>
+      ${isPrimaryAdmin ? `<div style="margin-top:22px;padding-top:16px;border-top:1px solid var(--border-light)">
+        <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="textbankStatusVisible" ${DataService.isTextbankStatusVisible() ? 'checked' : ''}>顯示右下角題庫狀態提示</label>
+        <p class="field-hint">僅主要管理員可見，預設關閉。此選項會儲存在你的帳號，下次登入仍適用。</p>
+      </div>` : ''}
+    </div>
+  </div>`;
+  const render = () => {
+    const mode = DataService.getTextbankMode();
+    panel.querySelector('#textbankModeStatus').textContent = `目前全站來源：${mode === 'static' ? 'GitHub 靜態題庫' : 'Firestore 備用模式'}`;
+    panel.querySelectorAll('[data-textbank-mode]').forEach(button => {
+      button.disabled = button.dataset.textbankMode === mode;
+    });
+  };
+  panel.addEventListener('click', async event => {
+    const button = event.target.closest('[data-textbank-mode]');
+    if (!button || button.disabled) return;
+    const mode = button.dataset.textbankMode;
+    const label = mode === 'static' ? 'GitHub 靜態題庫' : 'Firestore';
+    if (!await confirmAction({
+      title: '切換全站題庫來源',
+      message: `確定要讓所有使用者改用 ${label} 讀取題目嗎？已開啟的出題畫面須重新整理。`,
+      actionLabel: `切換至 ${label}`
+    })) return;
+    panel.querySelectorAll('[data-textbank-mode]').forEach(item => { item.disabled = true; });
+    try {
+      await DataService.setGlobalTextbankMode(mode);
+      UI.toast(`全站題庫來源已切換至 ${label}`, 'success');
+    } catch (error) {
+      UI.toast(`切換失敗：${error.message}`, 'danger', 8000);
+    } finally {
+      render();
+    }
+  });
+  window.addEventListener('textbankmodechange', render);
+  panel.querySelector('#textbankStatusVisible')?.addEventListener('change', async event => {
+    const checkbox = event.target;
+    const visible = checkbox.checked;
+    checkbox.disabled = true;
+    try {
+      await DataService.setTextbankStatusVisible(visible);
+    } catch (error) {
+      checkbox.checked = !visible;
+      UI.toast(`設定失敗：${error.message}`, 'danger');
+    } finally {
+      checkbox.disabled = false;
+    }
+  });
+  render();
+}
 
 // ══════════════════════════════════════════════════
 //  帳號管理 Panel

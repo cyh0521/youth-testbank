@@ -435,7 +435,7 @@ window.onBookFilter = async () => {
     // 沒有課本章節定義時，待題目載入後建立章節選項。
   }
   try {
-    const questions = await DataService.getQuestions({ subjectCode: sc, bookCode: bc });
+    const questions = await DataService.getQuestionsFromFirestore({ subjectCode: sc, bookCode: bc });
     if (fSubject.value !== sc || document.getElementById('fBook').value !== bc) return;
     allQuestions = questions;
     if (!window._currentChapters?.length) {
@@ -518,7 +518,7 @@ window.doSearch = async () => {
   if (!sc || !bc) { UI.toast('請先選擇科目與冊次', 'warning'); return; }
   try {
     document.getElementById('resultCount').textContent = '搜尋中…';
-    allQuestions = await DataService.getQuestions({ subjectCode: sc, bookCode: bc });
+    allQuestions = await DataService.getQuestionsFromFirestore({ subjectCode: sc, bookCode: bc });
     updateTypeOptions();
   } catch(e) {
     document.getElementById('qTbody').innerHTML =

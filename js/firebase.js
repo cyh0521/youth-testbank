@@ -11,7 +11,7 @@ import {
   getFirestore, collection, doc, getDoc, getDocs, addDoc, setDoc,
   getDocFromServer, getDocsFromServer, getCountFromServer,
   updateDoc, deleteDoc, query, where,
-  serverTimestamp, writeBatch, Timestamp,
+  serverTimestamp, writeBatch, Timestamp, onSnapshot,
   runTransaction, increment
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 import {
@@ -23,6 +23,9 @@ import {
 import {
   getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
+import { StaticTextbank } from './static-textbank.js';
+import { TEXTBANK_MODE } from './textbank-mode.js';
+import { resolveTextbankSource, TEXTBANK_SOURCES } from './textbank-source.js';
 
 // ── Firebase 設定 ──────────────────────────────────
 const firebaseConfig = {
@@ -41,6 +44,94 @@ const auth    = getAuth(app);
 const storage = getStorage(app);
 const accountCreationApp  = initializeApp(firebaseConfig, 'accountCreation');
 const accountCreationAuth = getAuth(accountCreationApp);
+const staticTextbank = new StaticTextbank();
+let staticTextbankFailed = false;
+let activeTextbankMode = TEXTBANK_MODE;
+let stopTextbankModeListener = null;
+let latestTextbankStatus = null;
+
+function showTextbankStatus(message, failed = false) {
+  if (typeof document === 'undefined') return;
+  if (failed) staticTextbankFailed = true;
+  else if (staticTextbankFailed) return;
+  latestTextbankStatus = { message, failed };
+  const render = () => {
+    if (!DataService.isTextbankStatusVisible()) {
+      document.getElementById('textbankSourceStatus')?.remove();
+      return;
+    }
+    let banner = document.getElementById('textbankSourceStatus');
+    if (!banner) {
+      banner = document.createElement('div');
+      banner.id = 'textbankSourceStatus';
+      banner.style.cssText = 'position:fixed;bottom:12px;right:12px;z-index:9999;padding:8px 12px;border-radius:8px;font:13px sans-serif;box-shadow:0 2px 8px #0002';
+      document.body.appendChild(banner);
+    }
+    banner.style.background = failed ? '#fee2e2' : '#dcfce7';
+    banner.style.color = failed ? '#991b1b' : '#166534';
+    banner.textContent = message;
+  };
+  if (document.body) render();
+  else document.addEventListener('DOMContentLoaded', render, { once: true });
+}
+
+async function readStaticTextbank(label, operation) {
+  try {
+    const result = await operation();
+    if (activeTextbankMode === 'static') showTextbankStatus(`題庫來源：GitHub 靜態檔（${label}成功）`);
+    return result;
+  } catch (error) {
+    if (activeTextbankMode === 'static') showTextbankStatus(`靜態題庫讀取失敗：${error.message}`, true);
+    throw error;
+  }
+}
+
+async function readFirestoreTextbank(label, operation) {
+  try {
+    const result = await operation();
+    if (activeTextbankMode === 'firestore') showTextbankStatus(`題庫來源：Firestore（${label}成功）`);
+    return result;
+  } catch (error) {
+    if (activeTextbankMode === 'firestore') showTextbankStatus(`Firestore 題庫讀取失敗：${error.message}`, true);
+    throw error;
+  }
+}
+
+function applyTextbankMode(mode) {
+  const previous = activeTextbankMode;
+  activeTextbankMode = mode;
+  if (previous === mode) return;
+  staticTextbankFailed = false;
+  showTextbankStatus(mode === 'firestore'
+    ? '全站題庫來源已切換至 Firestore；重新整理可更新目前畫面'
+    : '全站題庫來源已切換至靜態檔；重新整理可更新目前畫面');
+  window.dispatchEvent(new CustomEvent('textbankmodechange', { detail: { mode, previous } }));
+}
+
+function watchTextbankMode() {
+  return new Promise(resolve => {
+    let settled = false;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timeout);
+      resolve();
+    };
+    const timeout = setTimeout(finish, 3000);
+    try {
+      stopTextbankModeListener = onSnapshot(doc(db, 'settings', 'textbankMode'), { includeMetadataChanges: true }, snapshot => {
+        applyTextbankMode(resolveTextbankSource(snapshot.exists() ? snapshot.data() : null, TEXTBANK_MODE));
+        if (!snapshot.metadata.fromCache) finish();
+      }, error => {
+        console.warn('讀取全站題庫來源失敗，使用網站預設值', error);
+        finish();
+      });
+    } catch (error) {
+      console.warn('監聽全站題庫來源失敗，使用網站預設值', error);
+      finish();
+    }
+  });
+}
 
 // 設定 Session 持久性：關閉瀏覽器分頁後登入狀態失效
 setPersistence(auth, browserSessionPersistence).catch(e => console.warn('Auth persistence error:', e));
@@ -106,6 +197,7 @@ window.DataService = {
             if (snap.exists()) {
               DataService._currentUser = { uid: firebaseUser.uid, ...snap.data() };
               await migrateLegacyExamPreferences();
+              await watchTextbankMode();
               if (DataService._currentUser.examCurrentCount == null) {
                 await DataService.syncExamInventory().catch(e => console.warn('試卷數量同步失敗', e));
               }
@@ -131,6 +223,28 @@ window.DataService = {
   isAdmin()        { return ['admin', 'manager'].includes(DataService._currentUser?.role); },
   isPrimaryAdmin() { return DataService._currentUser?.role === 'admin'; },
   isTeacher()      { return DataService._currentUser?.role === 'teacher'; },
+  getTextbankMode() { return activeTextbankMode; },
+  isTextbankStatusVisible() {
+    return DataService.isPrimaryAdmin() && DataService._currentUser?.textbankStatusVisible === true;
+  },
+  async setTextbankStatusVisible(visible) {
+    if (!DataService.isPrimaryAdmin()) throw new Error('只有主要管理員可以設定狀態提示');
+    await DataService.updateProfile(DataService._currentUser.uid, { textbankStatusVisible: visible === true });
+    if (!visible) document.getElementById('textbankSourceStatus')?.remove();
+    else {
+      const status = latestTextbankStatus || { message: `目前題庫來源：${activeTextbankMode === 'static' ? 'GitHub 靜態題庫' : 'Firestore'}`, failed: false };
+      staticTextbankFailed = false;
+      showTextbankStatus(status.message, status.failed);
+    }
+  },
+  async setGlobalTextbankMode(mode) {
+    if (!DataService.isAdmin()) throw new Error('只有管理員可以切換全站題庫來源');
+    if (!TEXTBANK_SOURCES.includes(mode)) throw new Error('題庫來源不正確');
+    await setDoc(doc(db, 'settings', 'textbankMode'), {
+      mode, updatedAt: serverTimestamp(), updatedBy: DataService._currentUser.uid
+    }, { merge: true });
+    applyTextbankMode(mode);
+  },
 
   async syncExamInventory() {
     const uid = DataService._currentUser?.uid;
@@ -169,6 +283,8 @@ window.DataService = {
 
   // ── 帳號：登出 ────────────────────────────────
   async logout() {
+    stopTextbankModeListener?.();
+    stopTextbankModeListener = null;
     await signOut(auth);
     DataService._currentUser = null;
     window.AppShell?.clear();
@@ -297,12 +413,30 @@ window.DataService = {
   // ── 查詢題目（含篩選）────────────────────────
   async getQuestionCount({ subjectCode, bookCode }) {
     if (!DataService.isCatalogItemVisible({ subjectCode, bookCode })) return 0;
-    const source = query(collection(db, 'questions'),
-      where('subjectCode', '==', subjectCode), where('bookCode', '==', bookCode));
-    return (await getCountFromServer(source)).data().count;
+    if (activeTextbankMode === 'static') {
+      return readStaticTextbank('題數讀取', () => staticTextbank.count({ subjectCode, bookCode }));
+    }
+    return readFirestoreTextbank('題數讀取', async () => {
+      const source = query(collection(db, 'questions'),
+        where('subjectCode', '==', subjectCode), where('bookCode', '==', bookCode));
+      return (await getCountFromServer(source)).data().count;
+    });
   },
 
   async getQuestions(opts = {}) {
+    if (activeTextbankMode === 'static') {
+      return readStaticTextbank('題目讀取', async () =>
+        (await staticTextbank.questions(opts)).filter(item => DataService.isCatalogItemVisible(item)));
+    }
+    return readFirestoreTextbank('題目讀取', () => DataService.getQuestionsFromFirestore(opts));
+  },
+
+  async getAllQuestionsForExport() {
+    if (!DataService.isAdmin()) throw new Error('權限不足');
+    return docsToArr(await getDocsFromServer(collection(db, 'questions')));
+  },
+
+  async getQuestionsFromFirestore(opts = {}) {
     let q = collection(db, 'questions');
     const constraints = [];
     if (opts.subjectCode) constraints.push(where('subjectCode', '==', opts.subjectCode));
@@ -335,6 +469,18 @@ window.DataService = {
 
   // ── 依 ID 陣列取得題目（並行讀取，節省 round-trip）──
   async getQuestionsByIds(ids = []) {
+    if (!ids.length) return [];
+    if (activeTextbankMode === 'static') {
+      return readStaticTextbank('試卷題目讀取', async () => {
+        const { found, missing } = await staticTextbank.byIds(ids);
+        if (missing.length) throw new Error(`靜態題庫缺少 ${missing.length} 題`);
+        return found.filter(item => DataService.isCatalogItemVisible(item));
+      });
+    }
+    return readFirestoreTextbank('試卷題目讀取', () => DataService.getQuestionsByIdsFromFirestore(ids));
+  },
+
+  async getQuestionsByIdsFromFirestore(ids = []) {
     if (!ids.length) return [];
     const docs = await Promise.all(
       ids.map(id => getDoc(doc(db, 'questions', id)))
@@ -431,7 +577,7 @@ window.DataService = {
 
   async deleteImportedFiles(names, onDeleted) {
     for (const name of new Set(names)) {
-      const questions = await DataService.getQuestions({ sourceFile:name });
+      const questions = await DataService.getQuestionsFromFirestore({ sourceFile:name });
       for (let i = 0; i < questions.length; i += 400) {
         const chunk = questions.slice(i, i + 400);
         const batch = writeBatch(db);
@@ -495,6 +641,9 @@ window.DataService = {
 
   // ── 取得題目統計（從 aggregation 文件，1 次讀取）──
   async getQuestionStats() {
+    if (activeTextbankMode === 'static') {
+      return readStaticTextbank('統計讀取', () => staticTextbank.stats());
+    }
     try {
       const snap = await getDoc(doc(db, 'settings', 'questionStats'));
       if (snap.exists()) {
