@@ -218,3 +218,10 @@ body.booklet-page{height:100vh;height:100dvh;overflow:hidden}
 #sectionWeightError{margin-top:12px}
 @media(max-width:680px){.section-weight-row{align-items:flex-start;flex-direction:column;gap:8px}.section-weight-slider{align-self:flex-end;max-width:100%}}
 @media(pointer:coarse){:is(.section-weight-range,.difficulty-range){height:44px}}
+
+.compose-preview-layout{grid-template-columns:260px minmax(0,1fr)}
+.compose-preview-layout.is-scope-collapsed{grid-template-columns:minmax(0,1fr)}
+.compose-preview-layout.is-scope-collapsed #composeScopePreview{display:none}
+#composeScopePreview{position:static;min-width:0}
+#composeScopePreview #epScopePanel{position:static;max-height:none;overflow:visible}
+@media(max-width:1000px){.compose-preview-layout{grid-template-columns:minmax(0,1fr)}#composeScopePreview{position:static}#composeScopePreview #epScopePanel{max-height:none}}

@@ -1,3 +1,4 @@
+import { mountPreviewScope, loadPreviewScopeCatalog, applyScopeHighlight, questionScopeCode } from './preview-scope.js';
 import { DOWNLOAD_TYPES, buildDownloadVariants, downloadFilename } from './download-variants.js';
 import { createDocxBlob } from './docx-export.js?v=20261007-images-block';
 
@@ -512,6 +513,9 @@ export function mountInlineHeaderEditor(container, examData, onChange, onCancel)
 // ══════════════════════════════════════════════════════════
 //  ❷  Modal：試卷預覽（含外觀調整）
 // ══════════════════════════════════════════════════════════
+let previewScopeView = null;
+let previewScopeSession = 0;
+
 function ensurePreviewModal() {
   if (document.getElementById('epModal')) return;
   document.body.insertAdjacentHTML('beforeend', `
@@ -524,6 +528,52 @@ function ensurePreviewModal() {
 #epModal .ep-fullscreen-icon-restore{display:none}
 #epModal.is-fullscreen .ep-fullscreen-icon-expand{display:none}
 #epModal.is-fullscreen .ep-fullscreen-icon-restore{display:block}
+
+#epModal.ep-with-scope:not(.compose-inline-preview) .ep-preview-modal{max-width:1200px}
+#epModal.is-fullscreen.ep-with-scope .ep-preview-modal{max-width:none}
+.ep-scope-layout{display:grid;grid-template-columns:240px minmax(0,1fr);gap:20px;align-items:start}
+#epScopePaperHost{min-width:0}
+#epScopePanel{position:static;min-width:0;max-height:none;overflow:visible;font:14px/1.5 var(--font-sans);color:var(--text-primary)}
+.ep-scope-card{border:1px solid var(--border-light);border-radius:var(--radius-lg,14px);background:#fff;overflow:hidden}
+.ep-scope-card .ep-scope-heading{min-height:60px;padding:10px 20px}
+.ep-scope-toggle{display:inline-flex;align-items:center;justify-content:center;flex:none;width:28px;height:28px;padding:0;border:0;border-radius:6px;background:#e8eef6;color:#36516f}
+.ep-scope-toggle:hover{background:#d9e5f4}
+.ep-scope-toggle:focus-visible{outline:2px solid #3478f6;outline-offset:2px}
+.ep-scope-toggle svg{display:block;transition:transform .15s}
+.ep-scope-toggle[aria-expanded="false"] svg{transform:rotate(180deg)}
+.ep-scope-card.is-collapsed .ep-scope-heading{border-bottom:0}
+.ep-scope-content[hidden]{display:none}
+.ep-scope-heading h2{font-size:1.2rem;font-weight:700;color:var(--primary)}
+.ep-scope-layout.ep-scope-detached{grid-template-columns:minmax(0,1fr)}
+.ep-scope-layout.is-scope-collapsed{grid-template-columns:minmax(0,1fr);gap:10px}
+#epScopePanel.is-collapsed{display:none}
+.ep-scope-reopen{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border:1px solid var(--border-light);border-radius:8px;background:#fff;color:var(--primary);font:600 .88rem/1.4 var(--font-sans);box-shadow:var(--shadow-sm)}
+.ep-scope-reopen svg{display:block;flex:none}
+.ep-scope-reopen.is-header-toggle{width:28px;height:28px;padding:0;justify-content:center;align-self:center;flex:none;background:#e8eef6;border:0;box-shadow:none}
+.ep-scope-reopen.is-header-toggle>span{display:none}
+.ep-scope-reopen:hover{background:#e8eef6}
+.ep-scope-reopen:focus-visible{outline:2px solid #3478f6;outline-offset:2px}
+.ep-scope-reopen[hidden],.ep-scope-card[hidden]{display:none}
+.ep-scope-content{padding:0 8px 10px}
+.ep-scope-actions{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;padding:4px 12px 10px;font-size:.78rem;color:var(--text-secondary)}
+.ep-scope-branch>summary{display:flex;align-items:flex-start;gap:2px;list-style:none;cursor:pointer}
+.ep-scope-branch>summary::-webkit-details-marker{display:none}
+.ep-scope-branch>summary:before{content:'▸';flex:none;width:12px;padding-top:7px;line-height:1.5;color:#6683a7}
+.ep-scope-branch[open]>summary:before{content:'▾'}
+.ep-scope-children{margin-left:12px;border-left:1px solid #dce5f0;padding-left:4px}
+.ep-scope-leaf{padding-left:12px}
+.ep-scope-select{display:flex;align-items:flex-start;justify-content:space-between;gap:6px;width:100%;min-width:0;border:0;border-radius:6px;padding:7px 6px;background:transparent;color:inherit;font:inherit;text-align:left}
+.ep-scope-label{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:6px;flex:1;min-width:0}
+.ep-scope-prefix{white-space:nowrap}
+.ep-scope-name{min-width:0;overflow-wrap:anywhere}
+.ep-scope-select small{flex:none;color:#687f9b;font-size:.76rem}
+.ep-scope-select:hover{background:#e8eff9}
+.ep-scope-select[aria-pressed="true"]{background:#dbe9ff;color:#174f9f;box-shadow:inset 0 0 0 1px #abc7ef}
+.ep-scope-select:focus-visible{outline:2px solid #3478f6;outline-offset:1px}
+.ep-scope-note{margin:4px;font-size:.8rem;color:var(--text-muted)}
+#epBody .ep-q.ep-scope-highlight{background:#fff4cf;border-radius:6px}
+@media(max-width:850px){.ep-scope-layout{grid-template-columns:minmax(0,1fr)}#epScopePanel,#epModal.compose-inline-preview #epScopePanel{position:static;max-height:none}}
+
 /* 外觀調整工具列 */
 .ep-toolbar{
   display:flex;align-items:center;gap:14px;flex-wrap:wrap;
@@ -737,6 +787,10 @@ function applyAppearance() {
 // ══════════════════════════════════════════════════════════
 export function showExamPreview(examData, questions) {
   ensurePreviewModal();
+  previewScopeView?.destroy();
+  previewScopeView = null;
+  const scopeSession = ++previewScopeSession;
+  document.getElementById('epModal').classList.toggle('ep-with-scope', !examData.booklet);
   setPreviewFullscreen(false);
   if (!examData.booklet) examData.header ??= loadHeader();
   document.getElementById('epHeaderToggle').classList.toggle('hidden', !!examData.booklet);
@@ -765,6 +819,14 @@ export function showExamPreview(examData, questions) {
   };
 
   renderPaper(examData, questions, previewDisplay());
+  if (!examData.booklet) {
+    const scopeView = previewScopeView;
+    loadPreviewScopeCatalog(examData).then(catalog => {
+      if (scopeSession === previewScopeSession) scopeView.setCatalog(catalog);
+    }).catch(() => {
+      if (scopeSession === previewScopeSession) scopeView.showCatalogError();
+    });
+  }
   applyAppearance();
   document.getElementById('epModal').classList.remove('hidden');
 }
@@ -837,7 +899,23 @@ export function printExam(examData, questions) {
 //  渲染試卷 HTML
 // ══════════════════════════════════════════════════════════
 function renderPaper(examData, questions, display) {
-  document.getElementById('epBody').innerHTML = buildPaperHtml(examData, questions, display);
+  const body = document.getElementById('epBody');
+  if (examData.booklet) {
+    body.innerHTML = buildPaperHtml(examData, questions, display);
+    return;
+  }
+  if (!previewScopeView || !body.querySelector('#epScopePaperHost')) {
+    body.innerHTML = '<div class="ep-scope-layout"><aside id="epScopePanel" aria-label="命題範圍"></aside><div id="epScopePaperHost"></div></div>';
+    // Mounting invokes the callback before returning; use its argument here.
+    previewScopeView = mountPreviewScope(body.querySelector('#epScopePanel'),examData,questions,code => applyScopeHighlight(body.querySelector('#epScopePaperHost'),code),{toggleHost:document.getElementById('epTitle').parentElement});
+  }
+  const paper = body.querySelector('#epScopePaperHost');
+  paper.innerHTML = buildPaperHtml(examData,questions,{...display,scopeHighlightMetadata:true});
+  applyScopeHighlight(paper,previewScopeView.activeCode);
+}
+
+export function attachPreviewScopeToggle(host) {
+  previewScopeView?.attachToggleHost(host);
 }
 
 export function buildHeaderHtml(h) {
@@ -1078,7 +1156,8 @@ function renderQPreview(q, num, type, previewOptions) {
       ? body.slice(0, -tableEnd.length) + analysis + tableEnd
       : body + analysis;
   }
-  return `<div class="ep-q">${body}</div>`;
+  const scopeAttribute = previewOptions?.scopeHighlightMetadata ? ` data-ep-scope="${escapeText(questionScopeCode(q))}"` : '';
+  return `<div class="ep-q"${scopeAttribute}>${body}</div>`;
 }
 
 
