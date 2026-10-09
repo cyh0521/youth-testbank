@@ -4,7 +4,7 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>首頁總覽 — 幼獅題庫系統</title>
 <link rel="stylesheet" href="css/theme.css?v=20261005-tight-labels">
-<link rel="stylesheet" href="css/dashboard.css">
+<link rel="stylesheet" href="css/dashboard.css?v=20261009-actions">
 <link rel="stylesheet" href="css/dashboard-exam-editor.css">
 <script>if(localStorage.getItem("sidebarCollapsed")==="1")document.documentElement.classList.add("sidebar-collapsed");</script>
 </head>
@@ -278,10 +278,7 @@ async function renderStaff() {
           ${action('compose', I.navAuto20, '電腦選題','依範圍與條件，快速生成試卷','auto-action')}
           ${action('manual', I.navManual20, '手動選題','從題庫中挑選，彈性組卷','manual-action')}
           ${action('coded', I.navNumber20, '編碼選題','輸入題目編號，精準加入試卷','coded-action')}
-          <button class="create-action print-action" type="button" disabled aria-label="題本列印，即將推出">
-            <span class="create-icon">${I.navBooklet20}</span>
-            <span><strong>題本列印 <span class="coming-soon">即將推出</span></strong><small>列印整冊題庫，方便教學使用</small></span>
-          </button>
+          ${action('booklet', I.navBooklet20, '題本列印','依科目與章節製作題本，快速檢視','print-action')}
         </div>
       </section>
       <section class="card overview-card">

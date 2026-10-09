@@ -6,20 +6,17 @@
 .overview-heading p, .section-heading p { color: var(--text-light); font-size: .9rem; margin-top: 2px; }
 .create-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 18px; }
 .create-action { display: flex; align-items: center; gap: 14px; padding: 21px 16px; border: 1px solid transparent; border-radius: 11px; transition: background-color .15s ease, border-color .15s ease; min-width: 0; }
-.create-action:hover:not(:disabled) { background-color: #e7f0ff; }
+.create-action:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
 .create-action strong { display: block; color: var(--text-primary); font-size: 1.05rem; margin-bottom: 5px; }
 .create-action small { display: block; color: #78869d; font-size: .84rem; line-height: 1.7; }
 .auto-action { background: #edf4ff; color: #3478f6; }
 .manual-action { background: #fff0ef; color: #d66a5d; }
 .coded-action { background: #edf8f3; color: #329775; }
-.coded-action:hover { color: #258362; border-color: #cce9dc; }
-.print-action { background: #f3f0fb; color: #9b8dbc; text-align: left; cursor: not-allowed; }
-.print-action:disabled:hover { background: #f3f0fb; border-color: transparent; }
-.print-action strong { color: #6f6980; }
-.coming-soon { display: inline-block; font-size: .76rem; font-weight: 500; color: #8a7da5; background: #eae5f3; border-radius: 5px; padding: 2px 5px; vertical-align: middle; white-space: nowrap; }
-.auto-action:hover { color: #246cec; border-color: #bcd4fa; }
-.manual-action:hover { color: #c9564b; border-color: #f0c4bd; background: #ffe7e3; }
-.coded-action:hover { background: #e1f4eb; }
+.print-action { background: #f3f0fb; color: #8b70b6; }
+.auto-action:hover, .auto-action:focus-visible { color: #246cec; border-color: #bcd4fa; background: #e7f0ff; }
+.manual-action:hover, .manual-action:focus-visible { color: #c9564b; border-color: #f0c4bd; background: #ffe7e3; }
+.coded-action:hover, .coded-action:focus-visible { color: #258362; border-color: #cce9dc; background: #e1f4eb; }
+.print-action:hover, .print-action:focus-visible { color: #7655a5; border-color: #d8c9ef; background: #eae3f6; }
 .create-icon { display: flex; flex-shrink: 0; }
 .create-icon svg { width: 39px; height: 39px; stroke-width: 1.6; }
 .action-arrow { margin-left: auto; font-size: 1.8rem; font-weight: 300; }
