@@ -5,6 +5,7 @@
 <title>試卷管理 — 幼獅題庫系統</title>
 <link rel="stylesheet" href="css/theme.css?v=20261005-tight-labels">
 <link rel="stylesheet" href="css/dashboard.css">
+<link rel="stylesheet" href="css/exam-compose.css?v=20261011-management-preview-sync">
 <script>if(localStorage.getItem("sidebarCollapsed")==="1")document.documentElement.classList.add("sidebar-collapsed");</script>
 <style>
 .filter-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
@@ -13,7 +14,13 @@
 .exam-sort-heading:hover{color:var(--primary)}
 .exam-sort-heading:focus-visible{outline:2px solid var(--primary);outline-offset:3px;border-radius:2px}
 .exam-sort-indicator{min-width:1em;color:inherit;font-size:.72em;line-height:1}
-
+/* 試卷管理預覽：標題工具列橫跨命題範圍與試卷兩欄。 */
+#epModal.ep-management-preview #epBody{padding:0!important}
+#epModal.ep-management-preview .ep-management-paper{min-width:0}
+#epModal.ep-management-preview .modal-header{flex-wrap:wrap;gap:10px}
+#epModal.ep-management-preview .modal-header>div{flex-wrap:wrap}
+#epModal.ep-management-preview #epTitle .modal-title-icon{display:none}
+#epModal.ep-management-preview .ep-scope-reopen{display:none!important}
 /* 試卷編輯 Modal */
 .edit-basic-fields{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
 .edit-basic-fields .form-group{margin-bottom:0}
@@ -168,7 +175,7 @@ import { guardPage } from './js/auth-guard.js';
 import { confirmExamDeletion } from './js/confirm-exam-deletion.js';
 import { chooseExamReplacement } from './js/exam-question-replacement.js';
 import { examScopeSummaryHtml } from './js/exam-scope-summary.js';
-import { showExamPreview, downloadExam, printWithPaperChoice, showHeaderSettings, loadHeader, loadAppearance, mountInlineHeaderEditor, buildHeaderHtml, fontStackById } from './js/exam-preview.js?v=20261008-choice-images';
+import { showExamPreview, downloadExam, printWithPaperChoice, showHeaderSettings, loadHeader, loadAppearance, mountInlineHeaderEditor, buildHeaderHtml, fontStackById, togglePreviewPanel } from './js/exam-preview.js?v=20261011-difficulty-line-alignment';
 window.openHeaderSettings = showHeaderSettings;
 window._activeNav = 'exams';
 const user = await guardPage(['admin','manager','teacher']);
@@ -321,12 +328,49 @@ function getExamQuestions(e) {
 }
 
 // ── 預覽 ─────────────────────────────────────────
+function showManagementPreview(exam, questions) {
+  const existingModal = document.getElementById('epModal');
+  if (existingModal) {
+    // Preserve control nodes and listeners before rebuilding the paper layout.
+    const shell = existingModal.querySelector('.ep-preview-modal');
+    const body = existingModal.querySelector('#epBody');
+    const controls = existingModal.querySelector('.ep-preview-controls');
+    shell.insertBefore(controls, body);
+  }
+  showExamPreview(exam, questions, { scopeDisplay: 'grouped' });
+  const modal = document.getElementById('epModal');
+  modal.classList.add('ep-management-preview');
+  const paper = modal.querySelector('#epScopePaperHost');
+  if (!paper) return;
+  const layout = paper.closest('.ep-scope-layout');
+  layout.classList.add('selection-preview-body', 'compose-preview-layout');
+  const paperColumn = document.createElement('div');
+  paperColumn.className = 'ep-management-paper';
+  paper.before(paperColumn);
+  paperColumn.append(modal.querySelector('.ep-preview-controls'), paper);
+
+  const headerToggle = document.getElementById('epHeaderToggle');
+  const tools = headerToggle.parentElement;
+  const infoToggle = tools.querySelector('[data-display-info-toggle]') || document.createElement('button');
+  infoToggle.type = 'button';
+  infoToggle.className = 'btn btn-ghost btn-sm ep-panel-toggle';
+  infoToggle.setAttribute('data-display-info-toggle', '');
+  infoToggle.setAttribute('aria-controls', 'epPreviewOptions');
+  infoToggle.setAttribute('aria-expanded', 'false');
+  infoToggle.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>顯示資訊';
+  tools.insertBefore(infoToggle, headerToggle);
+  const previewOptions = modal.querySelector('.ep-preview-options');
+  previewOptions.id = 'epPreviewOptions';
+  previewOptions.hidden = true;
+  infoToggle.onclick = () => togglePreviewPanel('epPreviewOptions');
+}
+
 window.previewExam = async (id) => {
   const e = allExams.find(x => x.id===id); if (!e) return;
   await loadExamQuestions(e);
   const qs = getExamQuestions(e);
   if (!qs.length) { UI.toast('此試卷無法載入題目', 'warning'); return; }
-  showExamPreview(e, qs);
+  showManagementPreview(e, qs);
 };
 
 // ── 輸出 Word ────────────────────────────────────
@@ -698,7 +742,7 @@ window.previewEdit = () => {
       });
     }
   };
-  showExamPreview(editDraftExam, qs);
+  showManagementPreview(editDraftExam, qs);
 };
 
 // Save edit

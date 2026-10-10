@@ -98,7 +98,7 @@ async function handleRecentExamAction(event) {
     const byId = new Map(questions.map(q => [q.id, q]));
     const ordered = (exam.questionIds || []).map(id => byId.get(id)).filter(Boolean);
     if (!ordered.length) { UI.toast('此試卷無法載入題目', 'warning'); return; }
-    const { showExamPreview, printWithPaperChoice, downloadExam } = await import('./js/exam-preview.js?v=20261008-choice-images');
+    const { showExamPreview, printWithPaperChoice, downloadExam } = await import('./js/exam-preview.js?v=20261011-difficulty-line-alignment');
     if (action === 'preview') showExamPreview(exam, ordered);
     else if (action === 'print') await printWithPaperChoice(exam, ordered);
     else if (action === 'word') await downloadExam(exam, ordered, 'Word');

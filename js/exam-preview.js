@@ -1,4 +1,4 @@
-import { mountPreviewScope, loadPreviewScopeCatalog, applyScopeHighlight, questionScopeCode } from './preview-scope.js';
+import { mountPreviewScope, loadPreviewScopeCatalog, applyScopeHighlight, questionScopeCode } from './preview-scope.js?v=20261010-scope-without-hints';
 import { DOWNLOAD_TYPES, buildDownloadVariants, downloadFilename } from './download-variants.js';
 import { createDocxBlob } from './docx-export.js?v=20261007-images-block';
 
@@ -514,6 +514,7 @@ export function mountInlineHeaderEditor(container, examData, onChange, onCancel)
 //  ❷  Modal：試卷預覽（含外觀調整）
 // ══════════════════════════════════════════════════════════
 let previewScopeView = null;
+let previewScopeDisplay = 'tree';
 let previewScopeSession = 0;
 
 function ensurePreviewModal() {
@@ -555,7 +556,6 @@ function ensurePreviewModal() {
 .ep-scope-reopen:focus-visible{outline:2px solid #3478f6;outline-offset:2px}
 .ep-scope-reopen[hidden],.ep-scope-card[hidden]{display:none}
 .ep-scope-content{padding:0 8px 10px}
-.ep-scope-actions{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;padding:4px 12px 10px;font-size:.78rem;color:var(--text-secondary)}
 .ep-scope-branch>summary{display:flex;align-items:flex-start;gap:2px;list-style:none;cursor:pointer}
 .ep-scope-branch>summary::-webkit-details-marker{display:none}
 .ep-scope-branch>summary:before{content:'▸';flex:none;width:12px;padding-top:7px;line-height:1.5;color:#6683a7}
@@ -570,8 +570,15 @@ function ensurePreviewModal() {
 .ep-scope-select:hover{background:#e8eff9}
 .ep-scope-select[aria-pressed="true"]{background:#dbe9ff;color:#174f9f;box-shadow:inset 0 0 0 1px #abc7ef}
 .ep-scope-select:focus-visible{outline:2px solid #3478f6;outline-offset:1px}
+.ep-scope-grouped-list{padding:0 4px}
+.ep-scope-group+.ep-scope-group{border-top:1px solid var(--border-light);padding-top:8px;margin-top:8px}
+.ep-scope-group-heading{padding:8px 5px;font-weight:700}
+.ep-scope-group-items{padding:0 0 4px}
+.ep-scope-group-item{padding:7px 5px}
+.ep-scope-level-2{padding-left:16px}
 .ep-scope-note{margin:4px;font-size:.8rem;color:var(--text-muted)}
-#epBody .ep-q.ep-scope-highlight{background:#fff4cf;border-radius:6px}
+#epBody .ep-q.ep-scope-highlight{position:relative;isolation:isolate}
+#epBody .ep-q.ep-scope-highlight::before{content:'';position:absolute;inset:-2px 0 -2px -4px;background:#fff4cf;border-radius:6px;z-index:-1;pointer-events:none}
 @media(max-width:850px){.ep-scope-layout{grid-template-columns:minmax(0,1fr)}#epScopePanel,#epModal.compose-inline-preview #epScopePanel{position:static;max-height:none}}
 
 /* 外觀調整工具列 */
@@ -616,9 +623,10 @@ function ensurePreviewModal() {
 #epBody .ep-answer-slot{display:inline-flex;align-items:center;width:4em;white-space:nowrap;color:#000}
 #epBody .ep-answer-slot .ep-answer-value{display:inline-block;width:2em;text-align:center}
 #epBody .ep-answer-value,#epBody .ep-labeled-answer .ep-answer-label{color:#b4232c;font-weight:400}
-#epBody .ep-q-difficulty{display:inline-block;padding:2px 6px;margin-right:6px;border-radius:5px;background:#edf1f6;color:#526780;font-size:.75em;font-weight:600;line-height:1.4;vertical-align:middle;white-space:nowrap}
-#epBody .ep-q-difficulty.is-hard{background:#fff0e5;color:#a34d17}
-#epBody .ep-q-difficulty.is-easy{background:#e3f3ec;color:#237553}
+#epBody .ep-q-difficulty{display:inline-flex;align-items:center;height:1lh;margin-right:6px;color:#526780;font-size:inherit;font-weight:600;line-height:inherit;vertical-align:top;white-space:nowrap;--ep-difficulty-background:#edf1f6}
+#epBody .ep-q-difficulty>span{padding:2px 6px;border-radius:5px;background:var(--ep-difficulty-background);font-size:.75em;line-height:1.4}
+#epBody .ep-q-difficulty.is-hard{--ep-difficulty-background:#fff0e5;color:#a34d17}
+#epBody .ep-q-difficulty.is-easy{--ep-difficulty-background:#e3f3ec;color:#237553}
 #epBody .ep-q-source{color:#27734c;white-space:nowrap}
 #epBody .ep-q-analysis{display:flex;margin:2px 0 0;color:#245fa5;font-size:1em;text-align:left}
 #epBody .ep-analysis-label{flex:none}
@@ -637,7 +645,7 @@ function ensurePreviewModal() {
         <button class="modal-close" onclick="window._epClose()">✕</button>
       </div>
     </div>
-    <div style="padding:14px 20px 0;flex-shrink:0">
+    <div class="ep-preview-controls" style="padding:14px 20px 0;flex-shrink:0">
       <div class="ep-inline-header hidden" id="epHeaderPanel"></div>
       <div class="ep-toolbar hidden" id="epToolbar">
         <div class="group">
@@ -685,16 +693,13 @@ function ensurePreviewModal() {
   const lineRng  = document.getElementById('epLineHeight');
   const lineVal  = document.getElementById('epLineHeightVal');
   const appearanceToggle = document.getElementById('epAppearanceToggle');
-  const toolbar = document.getElementById('epToolbar');
   appearanceToggle.addEventListener('click', () => {
-    const expanded = !toolbar.classList.toggle('hidden');
-    appearanceToggle.setAttribute('aria-expanded', String(expanded));
+    togglePreviewPanel('epToolbar');
   });
   const headerToggle = document.getElementById('epHeaderToggle');
   headerToggle.addEventListener('click', () => {
     const panel = document.getElementById('epHeaderPanel');
-    const expanded = !panel.classList.toggle('hidden');
-    headerToggle.setAttribute('aria-expanded', String(expanded));
+    const expanded = togglePreviewPanel('epHeaderPanel');
     if (expanded) mountInlineHeaderEditor(panel, window._epExamData, window._epRefresh, () => {
       panel.classList.add('hidden');
       headerToggle.setAttribute('aria-expanded', 'false');
@@ -742,6 +747,24 @@ function ensurePreviewModal() {
   });
 }
 
+export function togglePreviewPanel(panelId) {
+  const panelIds = ['epHeaderPanel', 'epToolbar', 'epPreviewOptions'];
+  const selected = document.getElementById(panelId);
+  if (!selected) return false;
+  const expanded = panelId === 'epPreviewOptions' ? selected.hidden : selected.classList.contains('hidden');
+  panelIds.forEach(id => {
+    const panel = document.getElementById(id);
+    if (!panel) return;
+    const visible = id === panelId && expanded;
+    if (id === 'epPreviewOptions') panel.hidden = !visible;
+    else panel.classList.toggle('hidden', !visible);
+    document.querySelectorAll(`.ep-panel-toggle[aria-controls="${id}"]`).forEach(button => {
+      button.setAttribute('aria-expanded', String(visible));
+    });
+  });
+  return expanded;
+}
+
 function setPreviewFullscreen(fullscreen) {
   document.getElementById('epModal').classList.toggle('is-fullscreen', fullscreen);
   const button = document.getElementById('epFullscreenToggle');
@@ -785,10 +808,11 @@ function applyAppearance() {
 // ══════════════════════════════════════════════════════════
 //  ❸  顯示預覽（對外 API）
 // ══════════════════════════════════════════════════════════
-export function showExamPreview(examData, questions) {
+export function showExamPreview(examData, questions, previewOptions = {}) {
   ensurePreviewModal();
   previewScopeView?.destroy();
   previewScopeView = null;
+  previewScopeDisplay = previewOptions.scopeDisplay === 'grouped' ? 'grouped' : 'tree';
   const scopeSession = ++previewScopeSession;
   document.getElementById('epModal').classList.toggle('ep-with-scope', !examData.booklet);
   setPreviewFullscreen(false);
@@ -907,7 +931,7 @@ function renderPaper(examData, questions, display) {
   if (!previewScopeView || !body.querySelector('#epScopePaperHost')) {
     body.innerHTML = '<div class="ep-scope-layout"><aside id="epScopePanel" aria-label="命題範圍"></aside><div id="epScopePaperHost"></div></div>';
     // Mounting invokes the callback before returning; use its argument here.
-    previewScopeView = mountPreviewScope(body.querySelector('#epScopePanel'),examData,questions,code => applyScopeHighlight(body.querySelector('#epScopePaperHost'),code),{toggleHost:document.getElementById('epTitle').parentElement});
+    previewScopeView = mountPreviewScope(body.querySelector('#epScopePanel'),examData,questions,code => applyScopeHighlight(body.querySelector('#epScopePaperHost'),code),{toggleHost:document.getElementById('epTitle').parentElement,displayMode:previewScopeDisplay});
   }
   const paper = body.querySelector('#epScopePaperHost');
   paper.innerHTML = buildPaperHtml(examData,questions,{...display,scopeHighlightMetadata:true});
@@ -1129,7 +1153,7 @@ function renderQPreview(q, num, type, previewOptions) {
   const source = String(q.source ?? '').trim();
   const sourceTag = previewOptions?.source && source ? `<span class="ep-q-source">${source.startsWith('【') ? escapeText(source) : `【${escapeText(source)}】`}</span>` : '';
   const difficultyLabel = q.difficulty === '◎' ? '較難' : q.difficulty === '△' ? '簡易' : '未標示';
-  const difficultyTag = previewOptions?.difficulty ? `<span class="ep-q-difficulty ${q.difficulty === '◎' ? 'is-hard' : q.difficulty === '△' ? 'is-easy' : ''}">${difficultyLabel}</span>` : '';
+  const difficultyTag = previewOptions?.difficulty ? `<span class="ep-q-difficulty ${q.difficulty === '◎' ? 'is-hard' : q.difficulty === '△' ? 'is-easy' : ''}"><span>${difficultyLabel}</span></span>` : '';
   let body = '';
   if (type === 'T1') {
     body = `<table class="ep-answer-table" role="presentation"><tr><td class="ep-answer-prefix">${difficultyTag}${answerSlot}${numberLabel}</td><td>${UI.questionHtml(q.text)}${sourceTag}</td></tr></table>`;
@@ -1149,8 +1173,9 @@ function renderQPreview(q, num, type, previewOptions) {
     if (previewOptions?.answers && answer) body += `<div class="ep-answer-blank">【答案】<span class="ep-answer-value">${escapeText(answer)}</span></div>`;
   }
   if (previewOptions?.analysis && q.analysis) {
-    const alignWithAnswer = type === 'T1' || type === 'T2';
-    const analysis = `<div class="ep-q-analysis"${alignWithAnswer ? ' style="display:flex;margin:6px 0 0;text-align:left"' : ''}><span class="ep-analysis-label" style="flex:none;white-space:nowrap">【解析】</span><span class="ep-analysis-text" style="min-width:0;overflow-wrap:anywhere">${escapeText(q.analysis)}</span></div>`;
+    const alignWithAnswer = type === 'T1' || type === 'T2' || type === 'T3';
+    const difficultyIndent = alignWithAnswer && difficultyTag ? `<span aria-hidden="true" style="visibility:hidden;flex:none">${difficultyTag}</span>` : '';
+    const analysis = `<div class="ep-q-analysis"${alignWithAnswer ? ' style="display:flex;margin:6px 0 0;text-align:left"' : ''}>${difficultyIndent}<span class="ep-analysis-label" style="flex:none;white-space:nowrap">【解析】</span><span class="ep-analysis-text" style="min-width:0;overflow-wrap:anywhere">${escapeText(q.analysis)}</span></div>`;
     const tableEnd = '</td></tr></table>';
     body = !alignWithAnswer && body.endsWith(tableEnd)
       ? body.slice(0, -tableEnd.length) + analysis + tableEnd

@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="css/theme.css">
 <link rel="stylesheet" href="css/process-bar.css">
 <script>if(localStorage.getItem("sidebarCollapsed")==="1")document.documentElement.classList.add("sidebar-collapsed");</script>
-<link rel="stylesheet" href="css/exam-compose.css?v=20261007-scope-text-2">
+<link rel="stylesheet" href="css/exam-compose.css?v=20261011-content-scroll">
 <style>
 .manual-layout{display:block}
 .manual-panel[hidden]{display:none}
@@ -48,7 +48,7 @@
 @media(max-width:760px){.manual-panel .card-header,.manual-panel .card-body,.bank-list,.selected-list,.score-cfg{padding-left:14px;padding-right:14px}}
 </style>
 </head>
-<body>
+<body class="exam-compose-page">
 <script src="js/icons.js"></script>
 <script src="js/core.js?v=20261008-choice-images"></script>
 <div class="layout">
@@ -101,7 +101,7 @@
             <section class="card"><div class="card-header"><div class="scope-title"><h2>試卷表頭</h2><span class="type-title-note">︱設定文字與欄位位置</span></div></div><div class="type-card-body"><div class="settings-header-sample" id="manualHeaderSample" aria-label="試卷表頭預覽"></div><div id="manualHeaderFields"></div></div></section>
           </div>
         </section>
-        <section id="manualPanel5" class="manual-panel" hidden><div class="scope-layout"><section class="card" style="grid-column:1/-1"><div class="card-header"><div class="scope-title"><h2>預覽試卷</h2><span class="type-title-note">︱確認試卷呈現</span></div><div class="scope-header-actions"><button type="button" class="btn btn-previous btn-sm" onclick="goManualStep(4)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10.5 6-6 6 6 6"/><path d="m18 6-6 6 6 6" stroke-opacity=".5"/></svg>上一步</button></div></div><div id="manualExamPreview"></div></section></div></section></div>
+        <section id="manualPanel5" class="manual-panel" hidden><div class="scope-layout"><section class="card" style="grid-column:1/-1"><div class="card-header"><div class="scope-title"><h2>預覽試卷</h2><span class="type-title-note">︱確認試卷呈現</span></div><div class="scope-header-actions"><button type="button" class="btn btn-previous btn-sm" onclick="goManualStep(4)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10.5 6-6 6 6 6"/><path d="m18 6-6 6 6 6" stroke-opacity=".5"/></svg>上一步</button></div></div><div class="selection-preview-body compose-preview-layout"><div id="manualScopePreview"></div><div id="manualExamPreview"></div></div></section></div></section></div>
     </div>
   </div>
 </div>
@@ -131,7 +131,7 @@
 <script type="module">
 import { renderScopePanel, mountScopeSelector } from './js/exam-scope.js?v=20261007-disabled-scope';
 import { guardPage } from './js/auth-guard.js';
-import { showExamPreview, showHeaderSettings, newExamHeader, loadAppearance, mountInlineHeaderEditor, buildHeaderHtml, fontStackById } from './js/exam-preview.js?v=20261008-choice-images';
+import { showExamPreview, showHeaderSettings, newExamHeader, loadAppearance, mountInlineHeaderEditor, buildHeaderHtml, fontStackById, togglePreviewPanel } from './js/exam-preview.js?v=20261011-difficulty-line-alignment';
 import { allocateTypeScores, AUTO_SCORE_WEIGHTS } from './js/score-allocation.js?v=20261007-weighted-scores';
 import { blankCount } from './js/blank-selection.js';
 window._activeNav = 'manual';
@@ -363,7 +363,7 @@ window.previewSelected = () => {
   const firstQ = qs[0];
   draftPreviewData = { typeOrder:[...settingsTypeOrder], title:'（預覽）', typeScores, scoreUnits:{T4:'blank'}, subjectCode:firstQ?.subjectCode||'', bookCode:firstQ?.bookCode||'',
     header:draftPreviewData?.header ?? newExamHeader(), appearance:draftPreviewData?.appearance ?? loadAppearance() };
-  showExamPreview(draftPreviewData, qs);
+  showExamPreview(draftPreviewData, qs, { scopeDisplay: 'grouped' });
 };
 window.openSaveModal = async () => {
   if (!selectedOrder.length) { UI.toast('請先選題','warning'); return; }
@@ -498,6 +498,13 @@ function renderManualExamPreview() {
   document.getElementById('manualExamPreview').append(modal);
   modal.classList.add('compose-inline-preview');
   modal.removeAttribute('aria-modal');
+  const scopePanel = modal.querySelector('#epScopePanel');
+  const options = document.querySelector('.ep-preview-options');
+  modal.querySelector('.ep-preview-controls').append(options);
+  if (scopePanel) {
+    document.getElementById('manualScopePreview').replaceChildren(scopePanel);
+    modal.querySelector('.ep-scope-layout').classList.add('ep-scope-detached');
+  }
   const actions = document.querySelector('#manualPanel5 .scope-header-actions');
   let tools = actions.querySelector('.compose-preview-tools');
   if (!tools) {
@@ -510,6 +517,18 @@ function renderManualExamPreview() {
   modal.querySelectorAll('.modal-header button').forEach(button => {
     if (!button.classList.contains('modal-close') && button.id !== 'epFullscreenToggle') tools.append(button);
   });
+  const infoToggle = tools.querySelector('[data-display-info-toggle]') || document.createElement('button');
+  infoToggle.type = 'button';
+  infoToggle.className = 'btn btn-ghost btn-sm ep-panel-toggle';
+  infoToggle.setAttribute('data-display-info-toggle', '');
+  infoToggle.setAttribute('aria-controls', 'epPreviewOptions');
+  infoToggle.setAttribute('aria-expanded', 'false');
+  infoToggle.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>顯示資訊';
+  tools.insertBefore(infoToggle, tools.querySelector('#epHeaderToggle'));
+  const previewOptions = document.querySelector('.ep-preview-options');
+  previewOptions.id = 'epPreviewOptions';
+  previewOptions.hidden = true;
+  infoToggle.onclick = () => togglePreviewPanel('epPreviewOptions');
   const download = tools.querySelector('button[onclick="window._epDoExport()"]');
   if (download) {
     download.classList.remove('btn-ghost');
@@ -565,7 +584,7 @@ window.goManualStep = n => {
   }
   if (n===4) renderExamSettings();
   if (n===5) renderManualExamPreview();
-  window.scrollTo({top:0,behavior:'smooth'});
+  document.querySelector('.page-content').scrollTo({top:0,behavior:'smooth'});
 };
 document.getElementById('manualStep1').setAttribute('aria-current','step');
 const scopeSelector = mountScopeSelector({ cache:_tbCache, dataService:DataService, onChange(questions, selected, reason) {

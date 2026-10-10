@@ -1,10 +1,10 @@
 /* 三種選題方式共用的介面樣式。 */
 
-body.booklet-page{height:100vh;height:100dvh;overflow:hidden}
-.booklet-page .layout{height:100%;min-height:0;overflow:hidden}
-.booklet-page .main{height:100%;min-height:0;overflow:hidden}
-.booklet-page .topbar{flex-shrink:0}
-.booklet-page .page-content{min-height:0;overflow-y:auto;overscroll-behavior:contain}
+body:is(.booklet-page,.exam-compose-page){height:100vh;height:100dvh;overflow:hidden}
+:is(.booklet-page,.exam-compose-page) .layout{height:100%;min-height:0;overflow:hidden}
+:is(.booklet-page,.exam-compose-page) .main{height:100%;min-height:0;overflow:hidden}
+:is(.booklet-page,.exam-compose-page) .topbar{flex-shrink:0}
+:is(.booklet-page,.exam-compose-page) .page-content{min-height:0;overflow-y:auto;overscroll-behavior:contain}
 
 .compose-layout{display:block}
 .compose-panel[hidden]{display:none}
@@ -220,8 +220,25 @@ body.booklet-page{height:100vh;height:100dvh;overflow:hidden}
 @media(pointer:coarse){:is(.section-weight-range,.difficulty-range){height:44px}}
 
 .compose-preview-layout{grid-template-columns:260px minmax(0,1fr)}
+.selection-preview-body{display:grid;grid-template-columns:260px minmax(0,1fr);gap:20px;align-items:start;padding:16px 20px 20px}
+.selection-preview-body>*{min-width:0}
+.selection-preview-body>:is(#composeScopePreview,#manualScopePreview,#codedScopePreview,#epScopePanel){position:relative;align-self:stretch}
+.selection-preview-body>:first-child::after{content:'';position:absolute;top:0;bottom:0;right:-10px;width:1px;background:var(--border-light)}
+.selection-preview-body .ep-scope-card{border:0;border-radius:0;box-shadow:none;background:#f5f8fc}
+@media(max-width:1000px){.selection-preview-body>:first-child::after{top:auto;bottom:-10px;left:0;right:0;width:auto;height:1px}}
+:is(.selection-preview-body #epModal.compose-inline-preview,#epModal.ep-management-preview) :is(.ep-preview-options,.ep-inline-header,.ep-toolbar){padding:12px 14px;margin:0 0 14px;background:#f5f8fc;border:0;border-radius:0;box-shadow:none}
+:is(.selection-preview-body #epModal.compose-inline-preview,#epModal.ep-management-preview) :is(.ep-preview-options,.ep-inline-header,.ep-toolbar){font-family:var(--font-sans);font-size:.88rem;font-weight:400;line-height:1.5;color:var(--text-primary)}
+:is(.selection-preview-body #epModal.compose-inline-preview,#epModal.ep-management-preview) :is(.ep-preview-options label,.ep-inline-header .form-label,.ep-toolbar .group label,.ep-toolbar .val){font-family:var(--font-sans);font-size:.88rem;font-weight:500;line-height:1.5;color:var(--text-primary)}
+:is(.selection-preview-body #epModal.compose-inline-preview,#epModal.ep-management-preview) :is(.ep-inline-header .form-control,.ep-toolbar .form-control){font-family:var(--font-sans);font-size:.88rem;font-weight:400;line-height:1.5;color:var(--text-primary)}
+.selection-preview-body .ep-scope-content{padding-top:12px}
+:is(.selection-preview-body #epModal.compose-inline-preview,#epModal.ep-management-preview) .ep-preview-options{gap:16px}
+.selection-preview-body .ep-preview-options label,.selection-preview-body .ep-preview-options label:hover,.selection-preview-body .ep-preview-options label:has(input:checked){justify-content:flex-start;min-width:0;padding:4px 0;border:0;border-radius:0;background:transparent;box-shadow:none}
+.selection-preview-body .ep-preview-options[hidden]{display:none}
+.selection-preview-body .ep-scope-heading,.selection-preview-body .ep-scope-reopen{display:none!important}
+:is(.selection-preview-body #epModal.compose-inline-preview,#epModal.ep-management-preview) .ep-preview-controls{padding:0!important}
+:is(.selection-preview-body #epModal.compose-inline-preview,#epModal.ep-management-preview) #epBody{padding-left:0!important;padding-right:0!important;padding-bottom:0!important}
 .compose-preview-layout.is-scope-collapsed{grid-template-columns:minmax(0,1fr)}
-.compose-preview-layout.is-scope-collapsed #composeScopePreview{display:none}
-#composeScopePreview{position:static;min-width:0}
-#composeScopePreview #epScopePanel{position:static;max-height:none;overflow:visible}
-@media(max-width:1000px){.compose-preview-layout{grid-template-columns:minmax(0,1fr)}#composeScopePreview{position:static}#composeScopePreview #epScopePanel{max-height:none}}
+.compose-preview-layout.is-scope-collapsed :is(#composeScopePreview,#codedScopePreview,#manualScopePreview){display:none}
+:is(#composeScopePreview,#codedScopePreview,#manualScopePreview){position:static;min-width:0}
+:is(#composeScopePreview,#codedScopePreview,#manualScopePreview) #epScopePanel{position:static;max-height:none;overflow:visible}
+@media(max-width:1000px){.compose-preview-layout{grid-template-columns:minmax(0,1fr)}:is(#composeScopePreview,#codedScopePreview,#manualScopePreview){position:static}:is(#composeScopePreview,#codedScopePreview,#manualScopePreview) #epScopePanel{max-height:none}}

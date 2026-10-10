@@ -68,8 +68,6 @@ export function mountPreviewScope(container, exam, questions, onSelection, optio
   let nodes = [];
   function sync() {
     container.querySelectorAll('[data-scope-select]').forEach(button => button.setAttribute('aria-pressed',String(button.dataset.scopeSelect === active)));
-    const node = nodes.find(node => node.code === active);
-    container.querySelector('[data-scope-status]').textContent = node ? `已標示 ${node.count} 題` : '點選章節，標示對應試題';
     onSelection(active);
   }
   function syncCollapse() {
@@ -90,14 +88,22 @@ export function mountPreviewScope(container, exam, questions, onSelection, optio
     (collapsed ? reopenButton : container.querySelector('.ep-scope-toggle')).focus();
   }
   function render(note = '') {
+    const previewOptions = container.querySelector('.ep-preview-options');
     reopenButton?.remove();
     nodes = previewScopeNodes(exam,questions,catalog);
+    const button = (node, extraClass = '') => `<button type="button" class="ep-scope-select${extraClass ? ' ' + extraClass : ''}" data-scope-select="${escape(node.code)}" aria-pressed="${node.code === active}"><span class="ep-scope-label"><span class="ep-scope-prefix">${escape(node.prefix)}</span><span class="ep-scope-name">${escape(node.title)}</span></span><small>${node.count} 題</small></button>`;
     const branch = parent => nodes.filter(node => node.code.split('-').slice(0,-1).join('-') === parent).map(node => {
       const children = branch(node.code);
-      const button = `<button type="button" class="ep-scope-select" data-scope-select="${escape(node.code)}" aria-pressed="${node.code === active}" title="${escape(node.label)}"><span class="ep-scope-label"><span class="ep-scope-prefix">${escape(node.prefix)}</span><span class="ep-scope-name">${escape(node.title)}</span></span><small>${node.count} 題</small></button>`;
-      return children ? `<details class="ep-scope-branch" open><summary>${button}</summary><div class="ep-scope-children">${children}</div></details>` : `<div class="ep-scope-leaf">${button}</div>`;
+      return children ? `<details class="ep-scope-branch" open><summary>${button(node)}</summary><div class="ep-scope-children">${children}</div></details>` : `<div class="ep-scope-leaf">${button(node)}</div>`;
     }).join('');
-    container.innerHTML = `<button type="button" class="ep-scope-reopen" data-scope-reopen aria-controls="epScopeContents" aria-expanded="${!collapsed}" aria-label="展開命題範圍" ${collapsed ? '' : 'hidden'}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16M4 12h16M4 19h16M8 5v14"/></svg><span>命題範圍</span></button><section class="card ep-scope-card${collapsed ? ' is-collapsed' : ''}"><div class="card-header ep-scope-heading"><h2>命題範圍</h2><button type="button" class="ep-scope-toggle" data-scope-toggle aria-controls="epScopeContents" aria-expanded="${!collapsed}" aria-label="${collapsed ? '展開' : '收合'}命題範圍"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg></button></div><div class="ep-scope-content" id="epScopeContents" ${collapsed ? 'hidden' : ''}><div class="ep-scope-actions"><span data-scope-status role="status" aria-live="polite"></span></div>${note ? `<p class="ep-scope-note">${escape(note)}</p>` : ''}<div class="ep-scope-tree">${branch('') || '<p class="ep-scope-note">試題尚無章節資訊</p>'}</div></div></section>`;
+    const grouped = nodes.filter(node => node.level === 0).map(group => {
+      const items = nodes.filter(node => node.code.startsWith(group.code + '-'));
+      return `<section class="ep-scope-group">${button(group,'ep-scope-group-heading')}<div class="ep-scope-group-items">${items.map(node => button(node,`ep-scope-group-item ep-scope-level-${node.level}`)).join('')}</div></section>`;
+    }).join('');
+    const listHtml = options.displayMode === 'grouped' ? grouped : branch('');
+    const listClass = options.displayMode === 'grouped' ? 'ep-scope-tree ep-scope-grouped-list' : 'ep-scope-tree';
+    container.innerHTML = `<button type="button" class="ep-scope-reopen" data-scope-reopen aria-controls="epScopeContents" aria-expanded="${!collapsed}" aria-label="展開命題範圍" ${collapsed ? '' : 'hidden'}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16M4 12h16M4 19h16M8 5v14"/></svg><span>命題範圍</span></button><section class="card ep-scope-card${collapsed ? ' is-collapsed' : ''}"><div class="card-header ep-scope-heading"><h2>命題範圍</h2><button type="button" class="ep-scope-toggle" data-scope-toggle aria-controls="epScopeContents" aria-expanded="${!collapsed}" aria-label="${collapsed ? '展開' : '收合'}命題範圍"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg></button></div><div class="ep-scope-content" id="epScopeContents" ${collapsed ? 'hidden' : ''}>${note ? `<p class="ep-scope-note">${escape(note)}</p>` : ''}<div class="${listClass}">${listHtml || '<p class="ep-scope-note">試題尚無章節資訊</p>'}</div></div></section>`;
+    if (previewOptions) container.querySelector('.ep-scope-content').prepend(previewOptions);
     reopenButton = container.querySelector('.ep-scope-reopen');
     reopenButton.onclick = event => { event.stopPropagation(); toggleCollapsed(); };
     if (toggleHost) {
