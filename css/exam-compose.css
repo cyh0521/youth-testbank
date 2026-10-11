@@ -154,6 +154,7 @@ body:is(.booklet-page,.exam-compose-page){height:100vh;height:100dvh;overflow:hi
 .result-section:last-child{margin-bottom:0}
 .result-section-title{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:9px 12px;background:var(--bg-base);border-bottom:1px solid var(--border-light);font-size:.9rem;font-weight:700;color:var(--text-primary);cursor:pointer}
 .result-section.is-collapsed .result-section-title{border-bottom:0}
+#composePanel3 .result-section-title,#manualPanel2 .result-section-title{border-radius:9px;border-bottom:0;overflow:hidden}
 .result-type-toggle{display:inline-flex;align-items:center;gap:8px;min-width:0;padding:0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
 .result-type-toggle svg{display:block;flex:none;transition:transform .15s ease}
 .result-type-toggle[aria-expanded="false"] svg{transform:rotate(-90deg)}
@@ -241,3 +242,15 @@ body:is(.booklet-page,.exam-compose-page){height:100vh;height:100dvh;overflow:hi
 :is(#composeScopePreview,#codedScopePreview,#manualScopePreview){position:static;min-width:0}
 :is(#composeScopePreview,#codedScopePreview,#manualScopePreview) #epScopePanel{position:static;max-height:none;overflow:visible}
 @media(max-width:1000px){.compose-preview-layout{grid-template-columns:minmax(0,1fr)}:is(#composeScopePreview,#codedScopePreview,#manualScopePreview){position:static}:is(#composeScopePreview,#codedScopePreview,#manualScopePreview) #epScopePanel{max-height:none}}
+
+/* 自動選題的清單與單題展開。 */
+#composePanel3 .edit-q-view-toggle{margin-left:0;height:calc(1.204rem + 10px)}
+.compose-compact-question{display:none;min-width:0;align-items:center;gap:8px}
+.compose-compact-text{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.compose-compact-question .replace-question{flex:none}
+.compose-list-view .compose-full-question{display:none}
+.compose-list-view .compose-compact-question{display:flex}
+.compose-list-view .result-q{align-items:center;cursor:pointer}
+.compose-list-view .result-q.is-expanded{align-items:flex-start}
+.compose-list-view .result-q.is-expanded .compose-full-question{display:block}
+.compose-list-view .result-q.is-expanded .compose-compact-question{display:none}

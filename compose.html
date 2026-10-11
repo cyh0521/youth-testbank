@@ -43,9 +43,9 @@
             <div id="sectionWeightError" class="alert alert-danger hidden section-weight-error" role="alert"></div>
           </div>
         </section>
-        <section id="composePanel3" class="compose-panel" hidden>
+        <section id="composePanel3" class="compose-panel compose-list-view" hidden>
           <section class="card result-card">
-            <div class="card-header"><div class="scope-title"><h2>自動選題</h2><span class="type-title-note">︱檢視完整題目與答案</span></div><div class="scope-header-actions"><button type="button" class="btn btn-previous btn-sm" onclick="goComposeStep(2)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10.5 6-6 6 6 6"/><path d="m18 6-6 6 6 6" stroke-opacity=".5"/></svg>上一步</button><button type="button" class="btn btn-primary btn-sm" onclick="goComposeStep(4)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m13.5 6 6 6-6 6"/><path d="m6 6 6 6-6 6" stroke-opacity=".5"/></svg>下一步：試卷設定</button></div></div>
+            <div class="card-header"><div class="scope-title"><h2>自動選題</h2><span class="type-title-note">︱檢視題目與答案</span></div><div class="scope-header-actions"><div class="edit-q-view-toggle" role="group" aria-label="題目顯示模式"><button id="composeListBtn" class="active" type="button" onclick="setComposeQDisplay(false)" aria-pressed="true" aria-controls="previewArea"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>清單</button><button id="composeFullBtn" type="button" onclick="setComposeQDisplay(true)" aria-pressed="false" aria-controls="previewArea"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 10 5-10 5L2 7l10-5ZM2 12l10 5 10-5M2 17l10 5 10-5"/></svg>完整</button></div><button type="button" class="btn btn-previous btn-sm" onclick="goComposeStep(2)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10.5 6-6 6 6 6"/><path d="m18 6-6 6 6 6" stroke-opacity=".5"/></svg>上一步</button><button type="button" class="btn btn-primary btn-sm" onclick="goComposeStep(4)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m13.5 6 6 6-6 6"/><path d="m6 6 6 6-6 6" stroke-opacity=".5"/></svg>下一步：試卷設定</button></div></div>
             <div class="card-body"><div id="previewStats" class="preview-stats"></div><div id="previewArea"></div></div>
           </section>
         </section>
@@ -636,9 +636,39 @@ window.toggleResultType = (code, button) => {
   if (collapsed) collapsedResultTypes.add(code);
   else collapsedResultTypes.delete(code);
 };
+function composeQuestionSummary(q) {
+  const choice = q.type === 'T2' || q.type === 'T3';
+  const options = choice && q.options?.length ? q.options.map((option,index)=>`(${String.fromCharCode(65+index)})${option}`).join(' ') : '';
+  const text = [q.text || '—', options, q.tail || ''].filter(Boolean).join(' ');
+  return UI.escapeHtml(UI.questionSummary(UI.questionText(text)).replace(/[\s\u2029]+/g,' ').trim());
+}
+const expandedComposeQuestions = new Set();
+window.setComposeQDisplay = full => {
+  document.getElementById('composePanel3').classList.toggle('compose-list-view',!full);
+  for(const [id,active] of [['composeListBtn',!full],['composeFullBtn',full]]) {
+    const button=document.getElementById(id);
+    button.classList.toggle('active',active);button.setAttribute('aria-pressed',String(active));
+  }
+};
+function toggleComposeQuestion(row) {
+  if(!document.getElementById('composePanel3').classList.contains('compose-list-view')) return;
+  const id=row.dataset.questionId;
+  const expanded=!expandedComposeQuestions.has(id);
+  if(expanded) expandedComposeQuestions.add(id);else expandedComposeQuestions.delete(id);
+  row.classList.toggle('is-expanded',expanded);
+}
+document.getElementById('previewArea').addEventListener('keydown',event=>{
+  if(event.target.matches('.result-q[data-question-id]') && (event.key==='Enter' || event.key===' ')) {
+    event.preventDefault();toggleComposeQuestion(event.target);
+  }
+});
 document.getElementById('previewArea').addEventListener('click', event => {
   const replace = event.target.closest('[data-replace-question]');
   if (replace) { replaceResultQuestion(replace.dataset.replaceQuestion, replace); return; }
+  if(!event.target.closest('button,input,select,a')) {
+    const row=event.target.closest('.result-q[data-question-id]');
+    if(row) {toggleComposeQuestion(row);return;}
+  }
   const header = event.target.closest('.result-section-title');
   if (!header || event.target.closest('button')) return;
   header.querySelector('.result-type-toggle')?.click();
@@ -675,14 +705,14 @@ function renderPreview(grouped) {
       </div>
       <div class="result-list" id="resultQuestions-${t.code}"${collapsed ? ' hidden' : ''}>
         ${t.items.map(q => `
-          <div class="result-q">
+          <div class="result-q${expandedComposeQuestions.has(String(q.id)) ? ' is-expanded' : ''}" data-question-id="${UI.escapeHtml(String(q.id))}" tabindex="0">
             <span class="q-num">${qNum++}.</span>
-            <div class="q-body">
+            <div class="q-body"><div class="compose-compact-question"><span class="q-catalog-num">${UI.escapeHtml(q.qnum || '—')}</span><span class="compose-compact-text">${composeQuestionSummary(q)}</span><button type="button" class="btn btn-ghost btn-sm replace-question" data-replace-question="${UI.escapeHtml(String(q.id))}" aria-label="更換第 ${qNum - 1} 題">換題</button></div><div class="compose-full-question">
               <div class="q-meta"><span class="q-catalog-num">${UI.escapeHtml(q.qnum || '—')}</span>${UI.typeBadge(q.type)}${UI.diffBadge(q.difficulty)}<span class="q-source">頁數 ${UI.escapeHtml(q.source || '未註明')}</span><button type="button" class="btn btn-ghost btn-sm replace-question" data-replace-question="${UI.escapeHtml(String(q.id))}" aria-label="更換第 ${qNum - 1} 題">換題</button></div>
               <div class="q-text">${q.type === 'T2' || q.type === 'T3' ? UI.choiceQuestionHtml(q, '—') : q.type === 'T5' ? UI.matchingQuestionHtml(q.text) : UI.questionHtml(q.text || '—')}</div>
               ${q.type !== 'T2' && q.type !== 'T3' && q.tail ? '<div class="q-tail">' + UI.questionHtml(q.tail) + '</div>' : ''}
               <div class="q-ans"><span class="answer-label">答案</span><span class="answer-text">${UI.questionHtml(q.answer || '—')}</span></div>
-            </div>
+            </div></div>
           </div>
         `).join('')}
       </div>
