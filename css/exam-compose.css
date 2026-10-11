@@ -244,13 +244,35 @@ body:is(.booklet-page,.exam-compose-page){height:100vh;height:100dvh;overflow:hi
 @media(max-width:1000px){.compose-preview-layout{grid-template-columns:minmax(0,1fr)}:is(#composeScopePreview,#codedScopePreview,#manualScopePreview){position:static}:is(#composeScopePreview,#codedScopePreview,#manualScopePreview) #epScopePanel{max-height:none}}
 
 /* 自動選題的清單與單題展開。 */
-#composePanel3 .edit-q-view-toggle{margin-left:0;height:calc(1.204rem + 10px)}
+#composePanel3 .compose-result-info{--result-info-height:calc(1.204rem + 10px);display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;margin-bottom:16px}
+#composePanel3 .compose-result-info .preview-stats{margin-bottom:0}
+#composePanel3 .compose-result-info .preview-stat{box-sizing:border-box;height:var(--result-info-height);padding:0 11px;line-height:1.4}
+#composePanel3 .compose-result-tools{display:flex;align-items:center;gap:6px;margin-left:auto;flex-wrap:wrap}
+#composePanel3 .compose-result-tools>.btn{display:inline-flex;align-items:center;gap:6px;height:var(--result-info-height);padding:0 11px}
+#composePanel3 .compose-result-tools>.btn svg{display:block;flex:none}
+#composePanel3 .edit-q-view-toggle{height:var(--result-info-height);margin-left:0}
 .compose-compact-question{display:none;min-width:0;align-items:center;gap:8px}
 .compose-compact-text{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .compose-compact-question .replace-question{flex:none}
 .compose-list-view .compose-full-question{display:none}
 .compose-list-view .compose-compact-question{display:flex}
-.compose-list-view .result-q{align-items:center;cursor:pointer}
-.compose-list-view .result-q.is-expanded{align-items:flex-start}
+.compose-list-view .result-q{align-items:flex-start;cursor:pointer}
+:is(#composePanel3,#manualPanel2,#codedPanel2) .result-q .q-num{display:flex;align-items:center;align-self:flex-start;height:calc(1.23rem + 4px);line-height:1}
+:is(#composePanel3,#manualPanel2,#codedPanel2) .result-q{column-gap:10px}
+:is(#composePanel3.compose-list-view,#manualPanel2.manual-list-view) .result-q:not(.is-expanded){column-gap:8px}
+:is(#composePanel3,#manualPanel2,#codedPanel2) .result-q .q-num{width:18px;min-width:18px;justify-content:flex-end;text-align:right}
+:is(#composePanel3,#manualPanel2,#codedPanel2) :is(.compose-question-drag-handle,.drag-handle){display:inline-flex;align-items:center;justify-content:center;flex:none;width:18px;height:calc(1.23rem + 4px);margin-right:-6px;padding:0;border:0;border-radius:4px;background:transparent;color:var(--text-muted);cursor:grab}
+:is(#composePanel3,#manualPanel2,#codedPanel2) :is(.compose-question-drag-handle,.drag-handle) svg{display:block;flex:none}
+:is(#composePanel3,#manualPanel2,#codedPanel2) :is(.compose-question-drag-handle,.drag-handle):active{cursor:grabbing}
+:is(#composePanel3,#manualPanel2,#codedPanel2) :is(.compose-question-drag-handle,.drag-handle):hover{color:var(--primary)}
+:is(#composePanel3,#manualPanel2,#codedPanel2) :is(.compose-question-drag-handle,.drag-handle):focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+#composePanel3 .result-q.is-dragging{opacity:.45}
+#composePanel3 .result-q.drag-over-before{box-shadow:inset 0 2px var(--primary)}
+#composePanel3 .result-q.drag-over-after{box-shadow:inset 0 -2px var(--primary)}
 .compose-list-view .result-q.is-expanded .compose-full-question{display:block}
 .compose-list-view .result-q.is-expanded .compose-compact-question{display:none}
+
+/* 選題頁標籤與試卷管理編輯頁使用相同尺寸和字重。 */
+:is(#composePanel3,#manualPanel2,#codedPanel2) .result-q :is(.q-catalog-num,.q-source,.badge,.replace-question){display:inline-flex;align-items:center;box-sizing:border-box;height:calc(1.23rem + 4px);padding:2px 8px;font-size:.82rem;line-height:1.5;border:0;border-radius:6px}
+:is(#composePanel3,#manualPanel2,#codedPanel2) .result-q :is(.badge,.replace-question){font-weight:400}
+:is(.compose-compact-question,.manual-compact-question)>.badge{flex:none}

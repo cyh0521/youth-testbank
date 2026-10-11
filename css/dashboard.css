@@ -89,3 +89,6 @@
 .recent-table .subject-tag { max-width: 100%; min-height: 26px; box-sizing: border-box; border: 1px solid transparent; padding: 4px 10px; white-space: normal; overflow-wrap: anywhere; display: inline-flex; align-items: center; vertical-align: middle; font-size: .88rem; line-height: 16px; }
 
 .exam-name.has-description strong { flex: 0 1 auto; max-width: 65%; }
+
+/* 首頁與試卷管理的表格內文统一使用一般字重。 */
+.recent-table tbody,.recent-table tbody *{font-weight:400}

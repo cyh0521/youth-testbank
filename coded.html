@@ -262,9 +262,9 @@ function renderSelected() {
   const selGroups = {};
   const TYPE_ORDER_SEL = ['T1','T2','T3','T4','T5','T6'];
   TYPE_ORDER_SEL.forEach(t => { selGroups[t] = []; });
-  selectedOrder.forEach((id,idx) => {
+  selectedOrder.forEach(id => {
     const q = selQuestions[id];
-    if (q) selGroups[q.type].push({q, id, idx});
+    if (q) selGroups[q.type].push({q, id});
   });
   let selHTML = '';
   for (const tCode of TYPE_ORDER_SEL) {
@@ -274,11 +274,11 @@ function renderSelected() {
     selHTML += `<div class="result-section${collapsedCodedTypes.selected.has(tCode) ? ' is-collapsed' : ''}">
       <div class="result-section-title">${codedTypeToggle('selected', tCode, `${tLabel}（${items.length} 題${tCode === 'T4' ? `，共 ${items.reduce((sum,{q})=>sum+blankCount(q),0)} 格` : ''}）`)}</div>
       <div class="result-list" id="coded-selected-${tCode}"${collapsedCodedTypes.selected.has(tCode) ? ' hidden' : ''}>
-        ${items.map(({q, id, idx}) => {
+        ${items.map(({q, id}, index) => {
           return `<div class="result-q" data-id="${id}"
             ondragover="dragOver(event,'${id}')" ondrop="dropOn(event,'${id}')" ondragend="dragEnd()">
-            <span class="drag-handle" style="padding-top:3px;cursor:grab" draggable="true" ondragstart="dragStart(event,'${id}')" title="拖曳排序">⠿</span>
-            <span class="q-num">${idx+1}.</span>
+            <button type="button" class="drag-handle" draggable="true" ondragstart="dragStart(event,'${id}')" title="拖曳排序" aria-label="拖曳調整${tLabel}第 ${index+1} 題順序"><svg width="16" height="18" viewBox="0 0 16 18" fill="currentColor" aria-hidden="true"><circle cx="5" cy="4" r="1.3"/><circle cx="11" cy="4" r="1.3"/><circle cx="5" cy="9" r="1.3"/><circle cx="11" cy="9" r="1.3"/><circle cx="5" cy="14" r="1.3"/><circle cx="11" cy="14" r="1.3"/></svg></button>
+            <span class="q-num">${index+1}.</span>
             <div class="q-body">
               ${codedQuestionBody(q, `<button type="button" class="btn btn-ghost btn-sm replace-question si-remove" onclick="toggleQ('${id}',false)">移除</button>`)}
             </div>
@@ -309,7 +309,7 @@ window.calcTotal = calcTotal;
 // ── 拖曳 ─────────────────────────────────────────
 let dragId=null;
 window.dragStart=(e,id)=>{dragId=id;e.currentTarget.classList.add('dragging');e.dataTransfer.effectAllowed='move';};
-window.dragEnd=()=>{dragId=null;document.querySelectorAll('#selList .result-q').forEach(el=>el.classList.remove('dragging','drag-over'));};
+window.dragEnd=()=>{dragId=null;document.querySelectorAll('#selList .dragging,#selList .drag-over').forEach(el=>el.classList.remove('dragging','drag-over'));};
 window.dragOver=(e,id)=>{e.preventDefault();if(id!==dragId)document.querySelector(`#selList .result-q[data-id="${id}"]`)?.classList.add('drag-over');};
 window.dropOn=(e,targetId)=>{e.preventDefault();if(!dragId||dragId===targetId)return;const from=selectedOrder.indexOf(dragId),to=selectedOrder.indexOf(targetId);if(from<0||to<0)return;selectedOrder.splice(from,1);selectedOrder.splice(to,0,dragId);renderSelected();};
 

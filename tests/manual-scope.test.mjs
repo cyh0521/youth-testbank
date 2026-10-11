@@ -14,7 +14,7 @@ function setup(questions, ranges) {
     scopeSelector: { getQuestions: () => filterComposePool(questions.map(q => ({...q,subjectCode:'A',bookCode:'B'})), {subjectCode:'A',bookCode:'B',chapters:ranges.map(r=>r.sub ? `${r.ch}-${r.sec}-${r.sub}` : r.sec ? `${r.ch}-${r.sec}` : r.ch)}) },
     allQs: questions, selectedOrder: [], selectedIds: new Set(), selQuestions: {}, filtered: [],
     document: {
-      querySelector: () => ranges.length ? {} : null,
+      querySelector: selector => selector === '.page-content' ? {scrollTo() {}} : ranges.length ? {} : null,
       querySelectorAll: selector => selector === '.chap-cb:checked' ? ranges.map(dataset => ({dataset})) : [],
       getElementById: id => {
         if (!elements.has(id)) elements.set(id, {hidden: id !== 'manualPanel1', value: '', style: {}, classList: {toggle() {}}, setAttribute() {}, removeAttribute() {}});

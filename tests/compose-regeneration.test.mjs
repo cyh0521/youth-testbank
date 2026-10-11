@@ -8,6 +8,59 @@ const blankUrl = 'data:text/javascript;base64,' + Buffer.from(readFileSync(new U
 const selectionSource = readFileSync(new URL('../js/section-selection.js', import.meta.url), 'utf8').replace("'./blank-selection.js'", JSON.stringify(blankUrl));
 const {selectedSections, selectSectionQuestions, questionInSection, requiresSectionCoverage} = await import('data:text/javascript;base64,' + Buffer.from(selectionSource).toString('base64'));
 
+test('整卷重選會將所有題型混合亂序，並保留手動配分；取消或失敗時保留原題目', async () => {
+  const nodes = new Map();
+  const node = id => {
+    if (!nodes.has(id)) nodes.set(id,{value:'',disabled:false,textContent:'',classList:{add(){},remove(){}},scrollIntoView(){}});
+    return nodes.get(id);
+  };
+  node('cBook').value='B'; node('cnt-T1').value='4'; node('cnt-T2').value='2';
+  node('score-T1').value='7.5'; node('score-T2').value='35';
+  const picked = [
+    {id:'hard-1',type:'T1',difficulty:'◎'}, {id:'hard-2',type:'T1',difficulty:'◎'},
+    {id:'easy-1',type:'T1',difficulty:'△'}, {id:'easy-2',type:'T1',difficulty:'△'},
+    {id:'hard-3',type:'T2',difficulty:'◎'}, {id:'easy-3',type:'T2',difficulty:'△'},
+  ];
+  const mixed = [picked[2],picked[0],picked[3],picked[1],picked[5],picked[4]];
+  let rendered, shuffled=0, selectionCalls=0, confirmResult=true, failSelection=false;
+  const context = {
+    window:{},document:{getElementById:node},cSubject:{value:'A'},TYPE_CONFIGS:[{code:'T1',label:'是非題'},{code:'T2',label:'選擇題'}],
+    generatedQuestions:[],generatedScopeChapters:[],scoreOverrides:{T1:1,T2:1},
+    scopeSelector:{getSelectedChapters:()=>['1']},validateTypeCounts:()=>true,
+    chooseWeightedQuestions:counts=>{
+      selectionCalls++;
+      assert.deepEqual(Array.from(counts,t=>t.count),[4,2]);
+      assert.equal(node('regenerateAllBtn').disabled,true);
+      if(failSelection)throw new Error('題數不足');
+      return picked;
+    },
+    shuffleQuestions:items=>{shuffled++;return items[0].type==='T1'?mixed.slice(0,4):mixed.slice(4);},
+    updateScoreRows:()=>assert.deepEqual(context.scoreOverrides,{T1:7.5,T2:35}),
+    renderPreview:groups=>{rendered=groups;},setComposeStep:step=>assert.equal(step,3),
+    confirmAction:async options=>{assert.equal(options.actionLabel,'重新選題');return confirmResult;},
+    UI:{toast(){}},
+  };
+  runInNewContext(page.slice(page.indexOf('window.doGenerate ='),page.indexOf('const collapsedResultTypes =')),context);
+  assert(page.includes('onclick="doGenerate(true)"'));
+  assert(!page.includes('regenerateType'));
+  await context.window.doGenerate(true);
+  assert.equal(shuffled,2);
+  assert.deepEqual(Array.from(rendered.flatMap(t=>t.items),q=>q.id),mixed.map(q=>q.id));
+  assert.deepEqual(Array.from(context.generatedQuestions,q=>q.id),mixed.map(q=>q.id));
+  assert.equal(context.generatedQuestions.filter(q=>q.difficulty==='◎').length,3);
+  assert.equal(node('regenerateAllBtn').disabled,false);
+  assert.equal(node('regenerateAllBtnLabel').textContent,'重新選題');
+  const previous=context.generatedQuestions;
+  node('score-T1').value='8'; confirmResult=false;
+  await context.window.doGenerate(true);
+  assert.equal(selectionCalls,1); assert.equal(context.generatedQuestions,previous);
+  confirmResult=true; failSelection=true;
+  await context.window.doGenerate(true);
+  assert.equal(context.generatedQuestions,previous);
+  assert.equal(node('regenerateAllBtn').disabled,false);
+  assert.deepEqual(context.scoreOverrides,{T1:7.5,T2:35});
+});
+
 test('每次按自動選題都重新選取；返回上一步後讀取最新章節比重與難易比例', async () => {
   const nodes = new Map();
   const node = id => {
@@ -34,7 +87,7 @@ test('每次按自動選題都重新選取；返回上一步後讀取最新章�
   const context = {
     window:{}, document:{getElementById:node,querySelector:()=>({checked:true})},
     cSubject:node('cSubject'), TYPE_CONFIGS:[{code:'T1',label:'是非題',icon:'check'}],
-    generatedQuestions:[], generatedScopeChapters:[], defaultScoreSignature:JSON.stringify([[['T1',30]],true]),
+    generatedQuestions:[], generatedScopeChapters:[], scoreOverrides:{}, defaultScoreSignature:JSON.stringify([[['T1',30]],true]),
     sectionWeights:{'1-1':3,'1-2':2,'1-3':1},
     scopeSelector:{getQuestions:()=>pool,getSelectedChapters:()=>['1'],getChapterCatalog:()=>catalog},
     selectedSections,
@@ -42,7 +95,7 @@ test('每次按自動選題都重新選取；返回上一步後讀取最新章�
       selections.push({weights:{...options.weights},hardRatio:options.hardRatio,locked:options.locked});
       return selectSectionQuestions({...options,random});
     },
-    UI:{escapeHtml:value=>String(value),toast:message=>assert.fail(message)},
+    UI:{escapeHtml:value=>String(value),toast:(message,level)=>{if(level!=='success')assert.fail(message);}},
     validateTypeCounts:()=>true, confirmAction:async()=>assert.fail('配分為100分，不應出現確認視窗'),
     autoAllocateScores() {}, updateScoreRows() {}, shuffleQuestions:questions=>[...questions],
     renderPreview:groups=>previews.push(groups.flatMap(group=>group.items)),
@@ -85,8 +138,7 @@ test('每次按自動選題都重新選取；返回上一步後讀取最新章�
 
   // Repeating with unchanged controls still invokes selection, rather than reusing results.
   const secondResult = context.generatedQuestions;
-  context.window.goComposeStep(2);
-  await context.window.doGenerate();
+  await context.window.doGenerate(true);
   assert.equal(selections.length,3);
   assert.equal(selections[2].hardRatio,.7);
   assert.deepEqual(selections[2].weights,{'1-1':1,'1-2':2,'1-3':3});
@@ -99,6 +151,8 @@ test('每次按自動選題都重新選取；返回上一步後讀取最新章�
   assert.equal(node('composePanel3').hidden,false);
   assert.equal(node('generateBtn').disabled,false);
   assert.equal(node('generateBtnLabel').textContent,'下一步：自動選題');
+  assert.equal(node('regenerateAllBtn').disabled,false);
+  assert.equal(node('regenerateAllBtnLabel').textContent,'重新選題');
 });
 
 test('實際自動選題按鈕：3節有5道配合題，出2題可成功；改出3題仍受涵蓋限制', async () => {
@@ -113,7 +167,7 @@ test('實際自動選題按鈕：3節有5道配合題，出2題可成功；改�
   const pool=Array.from({length:5},(_,i)=>({id:String(i),chapterNum:1,sectionNum:i<3?1:2,type:'T5',difficulty:'◎'}));
   const messages=[],steps=[];
   const context={window:{},document:{getElementById:node},cSubject:node('cSubject'),TYPE_CONFIGS:[{code:'T5',label:'配合題'}],
-    generatedQuestions:[],generatedScopeChapters:[],sectionWeights:{'1-1':3,'1-2':2,'1-3':1},currentSections:()=>sections,difficultyHardRatio:()=>1,
+    generatedQuestions:[],generatedScopeChapters:[],scoreOverrides:{},sectionWeights:{'1-1':3,'1-2':2,'1-3':1},currentSections:()=>sections,difficultyHardRatio:()=>1,
     scopeSelector:{getQuestions:()=>pool,getSelectedChapters:()=>['1']},selectSectionQuestions,
     validateTypeCounts:()=>true,confirmAction:async()=>assert.fail('配分100分不應詢問確認'),
     UI:{toast:message=>messages.push(message)},shuffleQuestions:q=>q,updateScoreRows(){},renderPreview(){},setComposeStep:step=>steps.push(step)};
@@ -139,7 +193,7 @@ test('實際個別換題：總題數少於節數可跨節，不少於節數則�
     const context={window:{_allBookQs:[replacement]},document:{querySelectorAll:()=>[{dataset:{ch:'1'}}],getElementById:()=>({value:'01'})},
       cSubject:{value:'A1'},generatedQuestions:questions,TYPE_CONFIGS:[{code:'T1'},{code:'T5'}],filterComposePool:()=>[replacement],
       currentSections:()=>sections,questionInSection,requiresSectionCoverage,UI:{toast:message=>messages.push(message)},renderPreview(){}};
-    runInNewContext(page.slice(page.indexOf('async function replaceResultQuestion('),page.indexOf('async function regenerateType(')),context);
+    runInNewContext(page.slice(page.indexOf('async function replaceResultQuestion('),page.indexOf('window.openSaveModal =')),context);
     const button={disabled:false}; await context.replaceResultQuestion('old',button);
     assert.equal(questions[0].id,total===2?'new':'old');
     assert.match(messages.at(-1),total===2?/已更換題目/:/此節必須保留至少一題/);

@@ -45,8 +45,8 @@
         </section>
         <section id="composePanel3" class="compose-panel compose-list-view" hidden>
           <section class="card result-card">
-            <div class="card-header"><div class="scope-title"><h2>自動選題</h2><span class="type-title-note">︱檢視題目與答案</span></div><div class="scope-header-actions"><div class="edit-q-view-toggle" role="group" aria-label="題目顯示模式"><button id="composeListBtn" class="active" type="button" onclick="setComposeQDisplay(false)" aria-pressed="true" aria-controls="previewArea"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>清單</button><button id="composeFullBtn" type="button" onclick="setComposeQDisplay(true)" aria-pressed="false" aria-controls="previewArea"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 10 5-10 5L2 7l10-5ZM2 12l10 5 10-5M2 17l10 5 10-5"/></svg>完整</button></div><button type="button" class="btn btn-previous btn-sm" onclick="goComposeStep(2)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10.5 6-6 6 6 6"/><path d="m18 6-6 6 6 6" stroke-opacity=".5"/></svg>上一步</button><button type="button" class="btn btn-primary btn-sm" onclick="goComposeStep(4)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m13.5 6 6 6-6 6"/><path d="m6 6 6 6-6 6" stroke-opacity=".5"/></svg>下一步：試卷設定</button></div></div>
-            <div class="card-body"><div id="previewStats" class="preview-stats"></div><div id="previewArea"></div></div>
+            <div class="card-header"><div class="scope-title"><h2>自動選題</h2><span class="type-title-note">︱檢視題目與答案</span></div><div class="scope-header-actions"><button type="button" class="btn btn-previous btn-sm" onclick="goComposeStep(2)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10.5 6-6 6 6 6"/><path d="m18 6-6 6 6 6" stroke-opacity=".5"/></svg>上一步</button><button type="button" class="btn btn-primary btn-sm" onclick="goComposeStep(4)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m13.5 6 6 6-6 6"/><path d="m6 6 6 6-6 6" stroke-opacity=".5"/></svg>下一步：試卷設定</button></div></div>
+            <div class="card-body"><div class="compose-result-info"><div id="previewStats" class="preview-stats"></div><div class="compose-result-tools"><button id="regenerateAllBtn" type="button" class="btn btn-ghost btn-sm" onclick="doGenerate(true)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5M6 7a7 7 0 0 1 12-2l2 2M18 17a7 7 0 0 1-12 2l-2-2"/></svg><span id="regenerateAllBtnLabel">重新選題</span></button><div class="edit-q-view-toggle" role="group" aria-label="題目顯示模式"><button id="composeListBtn" class="active" type="button" onclick="setComposeQDisplay(false)" aria-pressed="true" aria-controls="previewArea"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>清單</button><button id="composeFullBtn" type="button" onclick="setComposeQDisplay(true)" aria-pressed="false" aria-controls="previewArea"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 10 5-10 5L2 7l10-5ZM2 12l10 5 10-5M2 17l10 5 10-5"/></svg>完整</button></div></div></div><div id="previewArea"></div></div>
           </section>
         </section>
         <section id="composePanel4" class="compose-panel" hidden>
@@ -567,7 +567,7 @@ window.recalcTotal = input => {
 };
 
 // ── 自動選題 ──────────────────────────────────────
-window.doGenerate = async () => {
+window.doGenerate = async (reselect = false) => {
   const sc   = cSubject.value;
   const bc   = document.getElementById('cBook').value;
 
@@ -590,17 +590,20 @@ window.doGenerate = async () => {
   const chapters = scopeSelector.getSelectedChapters();
   if (!chapters.length) { UI.toast('請勾選至少一個章節', 'warning'); return; }
 
-  const configuredScore = Math.round(typeCounts.reduce((sum, type) => {
-    const score = Number(document.getElementById('score-' + type.code)?.value) || 0;
-    return sum + type.count * score;
-  }, 0) * 10) / 10;
+  const configuredScores = Object.fromEntries(typeCounts.filter(type => type.count > 0).map(type =>
+    [type.code, Number(document.getElementById('score-' + type.code).value)]));
+  const configuredScore = Math.round(typeCounts.reduce((sum, type) =>
+    sum + type.count * (configuredScores[type.code] || 0), 0) * 10) / 10;
   if (configuredScore !== 100 && !await confirmAction({
     title:'配分非 100 分',
-    message:`目前配分總計為 ${configuredScore} 分，確定要繼續下一步驟嗎？`,
-    actionLabel:'下一步',
+    message:reselect ? `目前配分總計為 ${configuredScore} 分，確定要重新選題嗎？` : `目前配分總計為 ${configuredScore} 分，確定要繼續下一步驟嗎？`,
+    actionLabel:reselect ? '重新選題' : '下一步',
   })) return;
 
   const btn = document.getElementById('generateBtn');
+  const reselectBtn = document.getElementById('regenerateAllBtn');
+  reselectBtn.disabled = true;
+  document.getElementById('regenerateAllBtnLabel').textContent = '重新選題中…';
   btn.disabled = true; document.getElementById('generateBtnLabel').textContent = '選題中…';
 
   try {
@@ -610,9 +613,13 @@ window.doGenerate = async () => {
 
     generatedQuestions = allPicked.flatMap(t => t.items.map(q => ({...q, _typeLabel: t.label, _icon: t.icon})));
     generatedScopeChapters = generatedQuestions.length ? [...chapters] : [];
+    Object.assign(scoreOverrides, configuredScores);
     updateScoreRows();
     renderPreview(allPicked);
-    if (generatedQuestions.length) setComposeStep(3);
+    if (generatedQuestions.length) {
+      setComposeStep(3);
+      if (reselect) UI.toast('已依目前設定重新選題', 'success');
+    }
     else UI.toast('此範圍沒有符合條件的題目，請調整題數', 'warning');
   } catch(e) {
     const error = document.getElementById('sectionWeightError');
@@ -621,6 +628,8 @@ window.doGenerate = async () => {
     UI.toast('選題失敗：'+e.message, 'danger');
   } finally {
     btn.disabled = false; document.getElementById('generateBtnLabel').textContent = '下一步：自動選題';
+    reselectBtn.disabled = false;
+    document.getElementById('regenerateAllBtnLabel').textContent = '重新選題';
   }
 };
 
@@ -665,7 +674,7 @@ document.getElementById('previewArea').addEventListener('keydown',event=>{
 document.getElementById('previewArea').addEventListener('click', event => {
   const replace = event.target.closest('[data-replace-question]');
   if (replace) { replaceResultQuestion(replace.dataset.replaceQuestion, replace); return; }
-  if(!event.target.closest('button,input,select,a')) {
+  if(!event.target.closest('button,input,select,a,.compose-question-drag-handle')) {
     const row=event.target.closest('.result-q[data-question-id]');
     if(row) {toggleComposeQuestion(row);return;}
   }
@@ -673,6 +682,58 @@ document.getElementById('previewArea').addEventListener('click', event => {
   if (!header || event.target.closest('button')) return;
   header.querySelector('.result-type-toggle')?.click();
 });
+
+function moveComposeQuestion(sourceId, targetId, after = false) {
+  const source = generatedQuestions.find(q => String(q.id) === sourceId);
+  const target = generatedQuestions.find(q => String(q.id) === targetId);
+  if (!source || !target || source === target || source.type !== target.type) return false;
+  generatedQuestions.splice(generatedQuestions.indexOf(source), 1);
+  generatedQuestions.splice(generatedQuestions.indexOf(target) + (after ? 1 : 0), 0, source);
+  renderPreview(TYPE_CONFIGS.map(type => ({...type, items:generatedQuestions.filter(q => q.type === type.code)})).filter(type => type.items.length));
+  return true;
+}
+const composeDragArea = document.getElementById('previewArea');
+let draggedComposeQuestionId = null;
+function clearComposeDrag() {
+  draggedComposeQuestionId = null;
+  composeDragArea.querySelectorAll('.is-dragging,.drag-over-before,.drag-over-after').forEach(row =>
+    row.classList.remove('is-dragging','drag-over-before','drag-over-after'));
+}
+composeDragArea.addEventListener('dragstart', event => {
+  const handle = event.target.closest('.compose-question-drag-handle');
+  if (!handle) return;
+  const row = handle.closest('.result-q');
+  draggedComposeQuestionId = row.dataset.questionId;
+  event.dataTransfer.effectAllowed = 'move';
+  event.dataTransfer.setData('text/plain', draggedComposeQuestionId);
+  event.dataTransfer.setDragImage(row, 16, 12);
+  row.classList.add('is-dragging');
+});
+composeDragArea.addEventListener('dragover', event => {
+  const row = event.target.closest('.result-q[data-question-id]');
+  const source = generatedQuestions.find(q => String(q.id) === draggedComposeQuestionId);
+  if (!row || !source || row.dataset.questionId === draggedComposeQuestionId || row.dataset.questionType !== source.type) return;
+  event.preventDefault();
+  event.dataTransfer.dropEffect = 'move';
+  composeDragArea.querySelectorAll('.drag-over-before,.drag-over-after').forEach(item => item.classList.remove('drag-over-before','drag-over-after'));
+  const bounds = row.getBoundingClientRect();
+  row.classList.add(event.clientY < bounds.top + bounds.height / 2 ? 'drag-over-before' : 'drag-over-after');
+});
+composeDragArea.addEventListener('dragleave', event => {
+  const row = event.target.closest('.result-q');
+  if (row && !row.contains(event.relatedTarget)) row.classList.remove('drag-over-before','drag-over-after');
+});
+composeDragArea.addEventListener('drop', event => {
+  const row = event.target.closest('.result-q[data-question-id]');
+  if (!row || !draggedComposeQuestionId) return;
+  event.preventDefault();
+  const sourceId = draggedComposeQuestionId;
+  const bounds = row.getBoundingClientRect();
+  const after = event.clientY >= bounds.top + bounds.height / 2;
+  clearComposeDrag();
+  moveComposeQuestion(sourceId, row.dataset.questionId, after);
+});
+composeDragArea.addEventListener('dragend', clearComposeDrag);
 
 function renderPreview(grouped) {
   const typeScore = type => {
@@ -692,22 +753,23 @@ function renderPreview(grouped) {
   `;
 
   let html = '';
-  let qNum = 1;
   let sectionIndex = 0;
   const sectionNumbers = ['一','二','三','四','五','六'];
   for (const t of grouped) {
     if (!t.items.length) continue;
+    let qNum = 1;
     const collapsed = collapsedResultTypes.has(t.code);
     html += `<div class="result-section${collapsed ? ' is-collapsed' : ''}">
       <div class="result-section-title">
         <button type="button" class="result-type-toggle" onclick="toggleResultType('${t.code}',this)" aria-expanded="${!collapsed}" aria-controls="resultQuestions-${t.code}" aria-label="${collapsed ? '展開' : '收合'}${t.label}題目"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg><span>${sectionNumbers[sectionIndex++]}、${t.label}（${t.items.length} 題${t.code === 'T4' ? `，共 ${scoreUnits(t)} 格` : ''}）</span></button>
-        <div class="result-section-actions"><span class="result-section-score">每${t.code === 'T4' ? '格' : '題'} ${typeScore(t)} 分，共 ${scoreUnits(t) * typeScore(t)} 分</span><button type="button" class="btn btn-ghost btn-sm" onclick="regenerateType('${t.code}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5M6 7a7 7 0 0 1 12-2l2 2M18 17a7 7 0 0 1-12 2l-2-2"/></svg>重選題目</button></div>
+        <div class="result-section-actions"><span class="result-section-score">每${t.code === 'T4' ? '格' : '題'} ${typeScore(t)} 分，共 ${scoreUnits(t) * typeScore(t)} 分</span></div>
       </div>
       <div class="result-list" id="resultQuestions-${t.code}"${collapsed ? ' hidden' : ''}>
         ${t.items.map(q => `
-          <div class="result-q${expandedComposeQuestions.has(String(q.id)) ? ' is-expanded' : ''}" data-question-id="${UI.escapeHtml(String(q.id))}" tabindex="0">
+          <div class="result-q${expandedComposeQuestions.has(String(q.id)) ? ' is-expanded' : ''}" data-question-id="${UI.escapeHtml(String(q.id))}" data-question-type="${t.code}" tabindex="0">
+            <button type="button" class="compose-question-drag-handle" draggable="true" title="拖曳調整題目順序" aria-label="拖曳調整${t.label}第 ${qNum} 題順序"><svg width="16" height="18" viewBox="0 0 16 18" fill="currentColor" aria-hidden="true"><circle cx="5" cy="4" r="1.3"/><circle cx="11" cy="4" r="1.3"/><circle cx="5" cy="9" r="1.3"/><circle cx="11" cy="9" r="1.3"/><circle cx="5" cy="14" r="1.3"/><circle cx="11" cy="14" r="1.3"/></svg></button>
             <span class="q-num">${qNum++}.</span>
-            <div class="q-body"><div class="compose-compact-question"><span class="q-catalog-num">${UI.escapeHtml(q.qnum || '—')}</span><span class="compose-compact-text">${composeQuestionSummary(q)}</span><button type="button" class="btn btn-ghost btn-sm replace-question" data-replace-question="${UI.escapeHtml(String(q.id))}" aria-label="更換第 ${qNum - 1} 題">換題</button></div><div class="compose-full-question">
+            <div class="q-body"><div class="compose-compact-question"><span class="q-catalog-num">${UI.escapeHtml(q.qnum || '—')}</span>${UI.diffBadge(q.difficulty)}<span class="compose-compact-text">${composeQuestionSummary(q)}</span><button type="button" class="btn btn-ghost btn-sm replace-question" data-replace-question="${UI.escapeHtml(String(q.id))}" aria-label="更換第 ${qNum - 1} 題">換題</button></div><div class="compose-full-question">
               <div class="q-meta"><span class="q-catalog-num">${UI.escapeHtml(q.qnum || '—')}</span>${UI.typeBadge(q.type)}${UI.diffBadge(q.difficulty)}<span class="q-source">頁數 ${UI.escapeHtml(q.source || '未註明')}</span><button type="button" class="btn btn-ghost btn-sm replace-question" data-replace-question="${UI.escapeHtml(String(q.id))}" aria-label="更換第 ${qNum - 1} 題">換題</button></div>
               <div class="q-text">${q.type === 'T2' || q.type === 'T3' ? UI.choiceQuestionHtml(q, '—') : q.type === 'T5' ? UI.matchingQuestionHtml(q.text) : UI.questionHtml(q.text || '—')}</div>
               ${q.type !== 'T2' && q.type !== 'T3' && q.tail ? '<div class="q-tail">' + UI.questionHtml(q.tail) + '</div>' : ''}
@@ -751,32 +813,6 @@ async function replaceResultQuestion(questionId, button) {
     button.disabled = false;
   }
 }
-
-async function regenerateType(typeCode) {
-  const sc   = cSubject.value;
-  const bc   = document.getElementById('cBook').value;
-  const cnt  = parseInt(document.getElementById('cnt-'+typeCode).value)||0;
-  if (!cnt) return;
-
-  const checkedCbs = [...document.querySelectorAll('.chap-cb:checked')];
-  const chapters = checkedCbs.map(c => c.dataset.sub ? `${c.dataset.ch}-${c.dataset.sec}-${c.dataset.sub}` : c.dataset.sec ? `${c.dataset.ch}-${c.dataset.sec}` : c.dataset.ch);
-
-  try {
-    const counts = TYPE_CONFIGS.map(type => ({...type,count:parseInt(document.getElementById('cnt-' + type.code).value) || 0}));
-    const selection = chooseWeightedQuestions(counts, generatedQuestions.filter(q => q.type !== typeCode));
-    const newItems = selection.filter(q => q.type === typeCode);
-    generatedQuestions = TYPE_CONFIGS.flatMap(type => selection.filter(q => q.type === type.code));
-    updateScoreRows();
-    UI.toast(`已重新選取 ${newItems.length} 題 ${QUESTION_TYPES[typeCode]}`, 'success');
-    // 重組並渲染
-    const TYPE_CONFIGS_local = TYPE_CONFIGS.map(t => ({
-      ...t,
-      items: generatedQuestions.filter(q => q.type === t.code)
-    }));
-    renderPreview(TYPE_CONFIGS_local.filter(t => t.items.length));
-  } catch(e) { UI.toast('重選失敗：'+e.message, 'danger'); }
-}
-window.regenerateType = regenerateType;
 
 window.openSaveModal = async () => {
   if (!generatedQuestions.length) { UI.toast('請先選題', 'warning'); return; }
