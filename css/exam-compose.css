@@ -150,6 +150,7 @@ body:is(.booklet-page,.exam-compose-page){height:100vh;height:100dvh;overflow:hi
 .preview-stat strong{font-size:1rem}
 .preview-stat.score-stat{background:#e1f3e9;color:#176d49}
 .result-section{margin-bottom:14px;border:1px solid var(--border-light);border-radius:9px;overflow:hidden;background:#fff}
+#composePanel3 .result-section{border:0;border-radius:0;box-shadow:none}
 .result-section:last-child{margin-bottom:0}
 .result-section-title{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:9px 12px;background:var(--bg-base);border-bottom:1px solid var(--border-light);font-size:.9rem;font-weight:700;color:var(--text-primary);cursor:pointer}
 .result-section.is-collapsed .result-section-title{border-bottom:0}
@@ -223,9 +224,7 @@ body:is(.booklet-page,.exam-compose-page){height:100vh;height:100dvh;overflow:hi
 .selection-preview-body{display:grid;grid-template-columns:260px minmax(0,1fr);gap:20px;align-items:start;padding:16px 20px 20px}
 .selection-preview-body>*{min-width:0}
 .selection-preview-body>:is(#composeScopePreview,#manualScopePreview,#codedScopePreview,#epScopePanel){position:relative;align-self:stretch}
-.selection-preview-body>:first-child::after{content:'';position:absolute;top:0;bottom:0;right:-10px;width:1px;background:var(--border-light)}
 .selection-preview-body .ep-scope-card{border:0;border-radius:0;box-shadow:none;background:#f5f8fc}
-@media(max-width:1000px){.selection-preview-body>:first-child::after{top:auto;bottom:-10px;left:0;right:0;width:auto;height:1px}}
 :is(.selection-preview-body #epModal.compose-inline-preview,#epModal.ep-management-preview) :is(.ep-preview-options,.ep-inline-header,.ep-toolbar){padding:12px 14px;margin:0 0 14px;background:#f5f8fc;border:0;border-radius:0;box-shadow:none}
 :is(.selection-preview-body #epModal.compose-inline-preview,#epModal.ep-management-preview) :is(.ep-preview-options,.ep-inline-header,.ep-toolbar){font-family:var(--font-sans);font-size:.88rem;font-weight:400;line-height:1.5;color:var(--text-primary)}
 :is(.selection-preview-body #epModal.compose-inline-preview,#epModal.ep-management-preview) :is(.ep-preview-options label,.ep-inline-header .form-label,.ep-toolbar .group label,.ep-toolbar .val){font-family:var(--font-sans);font-size:.88rem;font-weight:500;line-height:1.5;color:var(--text-primary)}

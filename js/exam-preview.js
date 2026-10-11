@@ -1,4 +1,4 @@
-import { mountPreviewScope, loadPreviewScopeCatalog, applyScopeHighlight, questionScopeCode } from './preview-scope.js?v=20261010-scope-without-hints';
+import { mountPreviewScope, loadPreviewScopeCatalog, applyScopeHighlight, questionScopeCode } from './preview-scope.js?v=20261011-scope-level-emphasis';
 import { DOWNLOAD_TYPES, buildDownloadVariants, downloadFilename } from './download-variants.js';
 import { createDocxBlob } from './docx-export.js?v=20261007-images-block';
 
@@ -572,7 +572,8 @@ function ensurePreviewModal() {
 .ep-scope-select:focus-visible{outline:2px solid #3478f6;outline-offset:1px}
 .ep-scope-grouped-list{padding:0 4px}
 .ep-scope-group+.ep-scope-group{border-top:1px solid var(--border-light);padding-top:8px;margin-top:8px}
-.ep-scope-group-heading{padding:8px 5px;font-weight:700}
+.ep-scope-group-heading{padding:8px 5px;font-weight:400}
+.ep-scope-three-levels>.ep-scope-group-heading .ep-scope-label{font-weight:700}
 .ep-scope-group-items{padding:0 0 4px}
 .ep-scope-group-item{padding:7px 5px}
 .ep-scope-level-2{padding-left:16px}

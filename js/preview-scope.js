@@ -98,7 +98,7 @@ export function mountPreviewScope(container, exam, questions, onSelection, optio
     }).join('');
     const grouped = nodes.filter(node => node.level === 0).map(group => {
       const items = nodes.filter(node => node.code.startsWith(group.code + '-'));
-      return `<section class="ep-scope-group">${button(group,'ep-scope-group-heading')}<div class="ep-scope-group-items">${items.map(node => button(node,`ep-scope-group-item ep-scope-level-${node.level}`)).join('')}</div></section>`;
+      return `<section class="ep-scope-group${items.some(node => node.level === 2) ? ' ep-scope-three-levels' : ''}">${button(group,'ep-scope-group-heading')}<div class="ep-scope-group-items">${items.map(node => button(node,`ep-scope-group-item ep-scope-level-${node.level}`)).join('')}</div></section>`;
     }).join('');
     const listHtml = options.displayMode === 'grouped' ? grouped : branch('');
     const listClass = options.displayMode === 'grouped' ? 'ep-scope-tree ep-scope-grouped-list' : 'ep-scope-tree';

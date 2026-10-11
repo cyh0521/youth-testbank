@@ -5,7 +5,7 @@
 <title>試卷管理 — 幼獅題庫系統</title>
 <link rel="stylesheet" href="css/theme.css?v=20261005-tight-labels">
 <link rel="stylesheet" href="css/dashboard.css">
-<link rel="stylesheet" href="css/exam-compose.css?v=20261011-management-preview-sync">
+<link rel="stylesheet" href="css/exam-compose.css?v=20261011-scope-level-emphasis">
 <script>if(localStorage.getItem("sidebarCollapsed")==="1")document.documentElement.classList.add("sidebar-collapsed");</script>
 <style>
 .filter-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
@@ -175,7 +175,7 @@ import { guardPage } from './js/auth-guard.js';
 import { confirmExamDeletion } from './js/confirm-exam-deletion.js';
 import { chooseExamReplacement } from './js/exam-question-replacement.js';
 import { examScopeSummaryHtml } from './js/exam-scope-summary.js';
-import { showExamPreview, downloadExam, printWithPaperChoice, showHeaderSettings, loadHeader, loadAppearance, mountInlineHeaderEditor, buildHeaderHtml, fontStackById, togglePreviewPanel } from './js/exam-preview.js?v=20261011-difficulty-line-alignment';
+import { showExamPreview, downloadExam, printWithPaperChoice, showHeaderSettings, loadHeader, loadAppearance, mountInlineHeaderEditor, buildHeaderHtml, fontStackById, togglePreviewPanel } from './js/exam-preview.js?v=20261011-scope-level-emphasis';
 window.openHeaderSettings = showHeaderSettings;
 window._activeNav = 'exams';
 const user = await guardPage(['admin','manager','teacher']);
