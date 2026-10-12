@@ -61,6 +61,7 @@
   const NAV_PATHS = {
     navHome: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
     navTextbooks: '<path d="M12 6.5c-2.8-1.8-5.7-2-9-1.2v14c3.3-.8 6.2-.6 9 1.2 2.8-1.8 5.7-2 9-1.2v-14c-3.3-.8-6.2-.6-9 1.2z"/><path d="M12 6.5v14"/>',
+    database: '<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.7 4 3 9 3s9-1.3 9-3V5M3 12c0 1.7 4 3 9 3s9-1.3 9-3"/>',
     navImport: '<path d="M12 3v12m-4-4 4 4 4-4M4 16v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/>',
     navQuestions: '<path d="M8 6h13M8 12h13M8 18h13"/><path d="m2 6 1.5 1.5L6 4.5m-4 7.5 1.5 1.5L6 10.5m-4 7.5 1.5 1.5L6 16.5"/>',
     navAuto: '<path d="M4 7h3c4 0 6 10 10 10h3m-3-3 3 3-3 3M4 17h3c1.5 0 2.8-1.4 4-3m2-4c1.2-1.6 2.5-3 4-3h3m-3-3 3 3-3 3"/>',

@@ -80,6 +80,7 @@ body.exam-editing .page-content{min-height:0;overflow-y:auto;overscroll-behavior
 #editModal .modal-header{position:static;flex-wrap:wrap;gap:12px}
 #editModal .edit-card-actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 #editModal .modal-body{overflow:visible}
+#editModal #editHeaderPanel{padding:12px 14px;background:#f5f8fc;border:0;border-radius:12px}
 .edit-q-item{display:grid;grid-template-columns:max-content 18px minmax(0,1fr) max-content;align-items:start;column-gap:8px;padding:12px;border-bottom:1px solid var(--border-light);font-size:.9rem}
 .edit-q-section{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:7px 12px;background:var(--bg-base);border-top:1px solid var(--border);border-bottom:1px solid var(--border-light);font-size:.9rem;font-weight:700;color:var(--text-primary);cursor:pointer}
 .edit-q-section:first-child{border-top:0}
@@ -189,7 +190,7 @@ body.exam-editing .page-content{min-height:0;overflow-y:auto;overscroll-behavior
     </div>
     <div class="modal-body" style="padding:16px 20px">
       <div id="editHeaderPanel" class="ep-inline-header hidden">
-        <div id="editHeaderSample" class="edit-header-sample"></div>
+        
         <div id="editHeaderFields"></div>
       </div>
       <div style="font-size:.9rem;color:var(--text-secondary);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
@@ -240,7 +241,7 @@ import { guardPage } from './js/auth-guard.js';
 import { confirmExamDeletion } from './js/confirm-exam-deletion.js';
 import { chooseExamReplacement } from './js/exam-question-replacement.js';
 import { examScopeSummaryHtml } from './js/exam-scope-summary.js';
-import { showExamPreview, downloadExam, printWithPaperChoice, showHeaderSettings, loadHeader, loadAppearance, mountInlineHeaderEditor, buildHeaderHtml, fontStackById, togglePreviewPanel } from './js/exam-preview.js?v=20261011-scope-level-emphasis';
+import { showExamPreview, downloadExam, printWithPaperChoice, showHeaderSettings, loadHeader, loadAppearance, mountInlineHeaderEditor, buildHeaderHtml, fontStackById, togglePreviewPanel } from './js/exam-preview.js?v=20261012-simple-header-v2';
 window.openHeaderSettings = showHeaderSettings;
 window._activeNav = 'exams';
 const user = await guardPage(['admin','manager','teacher']);
@@ -414,14 +415,14 @@ function showManagementPreview(exam, questions) {
     closePreview();
     document.body.classList.remove('exam-previewing');
     document.getElementById('listView').classList.remove('hidden');
-    window.scrollTo(0, 0);
+    document.querySelector('.page-content').scrollTo(0, 0);
   };
   const closeButton = modal.querySelector('.modal-header button[onclick="window._epClose()"]');
   closeButton.className = 'btn btn-danger btn-sm';
   closeButton.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m18 6-12 12M6 6l12 12"/></svg>關閉';
   modal.tabIndex = -1;
   modal.focus({ preventScroll:true });
-  window.scrollTo(0, 0);
+  document.querySelector('.page-content').scrollTo(0, 0);
   document.querySelector('.page-content').scrollTop = 0;
   requestAnimationFrame(() => {
     if (document.body.classList.contains('exam-previewing')) document.querySelector('.page-content').scrollTop = 0;
@@ -513,7 +514,7 @@ window.openEdit = async (id) => {
   document.getElementById('editTypeOrderModal').classList.add('hidden');
   document.getElementById('editHeaderPanel').classList.add('hidden');
   document.getElementById('editHeaderToggle').setAttribute('aria-expanded', 'false');
-  window.scrollTo(0, 0);
+  document.querySelector('.page-content').scrollTo(0, 0);
   document.body.classList.add('exam-editing');
   document.getElementById('listView').classList.add('hidden');
   document.getElementById('editModal').classList.remove('hidden');
@@ -590,11 +591,6 @@ document.getElementById('editScopeModal').addEventListener('keydown', event => {
   if (event.key === 'Escape') { event.preventDefault(); closeEditScope(); }
 });
 
-function renderEditHeaderSample() {
-  const sample = document.getElementById('editHeaderSample');
-  sample.style.fontFamily = fontStackById(editDraftExam.appearance.font);
-  sample.innerHTML = buildHeaderHtml(editDraftExam.header);
-}
 document.addEventListener('exam-header-saved', event => {
   const { id, header, source } = event.detail;
   const exam = allExams.find(item => item.id === id);
@@ -602,8 +598,8 @@ document.addEventListener('exam-header-saved', event => {
   if (editExamId !== id || !editDraftExam || source === editDraftExam) return;
   editDraftExam.header = { ...header };
   if (!document.getElementById('editHeaderPanel').classList.contains('hidden')) {
-    renderEditHeaderSample();
-    mountInlineHeaderEditor(document.getElementById('editHeaderFields'), editDraftExam, renderEditHeaderSample, () => {
+    
+    mountInlineHeaderEditor(document.getElementById('editHeaderFields'), editDraftExam, null, () => {
       document.getElementById('editHeaderPanel').classList.add('hidden');
       document.getElementById('editHeaderToggle').setAttribute('aria-expanded', 'false');
     });
@@ -614,8 +610,8 @@ window.toggleEditHeader = () => {
   const expanded = !panel.classList.toggle('hidden');
   document.getElementById('editHeaderToggle').setAttribute('aria-expanded', String(expanded));
   if (expanded) {
-    renderEditHeaderSample();
-    mountInlineHeaderEditor(document.getElementById('editHeaderFields'), editDraftExam, renderEditHeaderSample, () => {
+    
+    mountInlineHeaderEditor(document.getElementById('editHeaderFields'), editDraftExam, null, () => {
       panel.classList.add('hidden');
       document.getElementById('editHeaderToggle').setAttribute('aria-expanded', 'false');
     });
@@ -883,8 +879,8 @@ window.previewEdit = () => {
   editDraftExam.typeOrder = orderedEditTypes();
   editDraftExam.onPreviewClose = () => {
     if (!document.getElementById('editHeaderPanel').classList.contains('hidden')) {
-      renderEditHeaderSample();
-      mountInlineHeaderEditor(document.getElementById('editHeaderFields'), editDraftExam, renderEditHeaderSample, () => {
+      
+      mountInlineHeaderEditor(document.getElementById('editHeaderFields'), editDraftExam, null, () => {
         document.getElementById('editHeaderPanel').classList.add('hidden');
         document.getElementById('editHeaderToggle').setAttribute('aria-expanded', 'false');
       });
@@ -937,7 +933,7 @@ window.closeEdit = () => {
     url.searchParams.delete('edit');
     history.replaceState(null, '', url);
   }
-  window.scrollTo(0, 0);
+  document.querySelector('.page-content').scrollTo(0, 0);
 };
 
 init();

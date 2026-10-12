@@ -10,6 +10,17 @@ body:is(.booklet-page,.exam-compose-page){height:100vh;height:100dvh;overflow:hi
 .compose-panel[hidden]{display:none}
 .scope-layout{display:grid;grid-template-columns:minmax(240px,.7fr) minmax(0,1.7fr);gap:16px;align-items:start}
 .scope-layout .card{min-width:0}
+.scope-overview{padding:18px 20px 22px}
+.scope-overview-filters{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+.scope-overview-filters .form-control{width:100%;min-width:0;font-size:.9rem}
+.scope-question-total{font-size:2.7rem;font-weight:700;line-height:1.25;margin:16px 0;color:#142238;font-variant-numeric:tabular-nums}
+.scope-question-total span{font-size:.95rem;font-weight:500;color:var(--text-secondary);margin-left:5px}
+.scope-bar-item{display:flex;align-items:center;gap:10px;margin-bottom:12px;font-size:.9rem}
+.scope-bar-item:last-child{margin-bottom:0}
+.scope-bar-label{flex:none;width:54px;color:var(--text-secondary)}
+.scope-bar-track{flex:1;min-width:0;height:9px;background:#f0f3f8;border-radius:4px;overflow:hidden}
+.scope-bar-fill{height:100%;border-radius:4px}
+.scope-bar-count{flex:none;min-width:35px;text-align:right;color:var(--text-secondary);font-variant-numeric:tabular-nums}
 .scope-layout .card-header{min-height:60px;padding:10px 20px;gap:12px}
 .scope-layout .card-header h2{font-size:1.2rem;font-weight:700;letter-spacing:.01em}
 .scope-title{display:flex;align-items:baseline;gap:8px;min-width:0;flex-wrap:wrap}
@@ -43,7 +54,8 @@ body:is(.booklet-page,.exam-compose-page){height:100vh;height:100dvh;overflow:hi
 #chapterTree .chapter-item.section,#chapterTree .chapter-item.subsection{padding-left:12px}
 #chapterTree .chapter-item:has(input:checked){background:#eaf1f8}
 #chapterTree .chapter-item{user-select:none}
-#chapterTree .expand-btn{color:#385b8a}
+#chapterTree .expand-btn{color:#385b8a;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;flex:0 0 16px;width:16px;min-width:16px;height:24px;padding:0;line-height:1}
+#chapterTree .chapter-item input[type=checkbox]{width:18px;height:18px;flex:0 0 18px;margin:0;align-self:center}
 @media(max-width:1100px){.scope-layout{grid-template-columns:1fr}}
 @media(max-width:760px){.wizard-actions{flex-wrap:wrap}}
 

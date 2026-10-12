@@ -217,17 +217,24 @@ export function loadHeader() {
   return DataService.getExamPreferences().header || {};
 }
 export function newExamHeader() {
-  return { layout: normalizeHeaderLayout(loadHeader().layout) };
+  const defaults = loadHeader();
+  return { titleText:headerTitleText(defaults), ...Object.fromEntries(Object.keys(HEADER_BLANK_LABELS).map(field =>
+    [`${field}Length`, headerBlankParts(defaults, field).length])) };
 }
 export async function saveHeader(d) {
   await DataService.updateExamPreferences({ header:{ ...loadHeader(), ...d } });
 }
 
-export const HEADER_BLANK_DEFAULTS = { class:8, name:8, seat:0 };
+export const HEADER_BLANK_DEFAULTS = { class:8, name:8, seat:8 };
 export const HEADER_BLANK_LABELS = { class:'班級：', name:'姓名：', seat:'座號：' };
 export function headerYearSemesterText(data) {
   if (data.yearSemesterText != null) return data.yearSemesterText === '○○○學年度第○學期' ? '' : data.yearSemesterText;
   return data.year && data.year !== '○○○' ? `${data.year}學年度第${data.semester || '○'}學期` : '';
+}
+export function headerTitleText(data) {
+  if (data.titleText != null) return String(data.titleText);
+  return [data.school, headerYearSemesterText(data), data.subjectText, data.examType,
+    data.range ? `範圍：${data.range}` : ''].filter(Boolean).join('　');
 }
 export function headerBlankParts(data, field) {
   const storedText = data[`${field}Text`];
@@ -300,15 +307,10 @@ function ensureHeaderModal() {
       <p style="font-size:.9rem;color:var(--text-muted);margin-bottom:14px">
         於此設定試卷上方表頭資訊。空白欄位的範例不會輸出；設定會套用到預覽、列印、Word。
       </p>
-      <div class="grid-2">
-        <div class="form-group"><label class="form-label" for="hdSchool">學校</label><input class="form-control header-example-input" id="hdSchool" placeholder="例：幼獅高中"></div>
-        <div class="form-group"><label class="form-label" for="hdYearSemesterText">學年度與學期</label><input class="form-control header-example-input" id="hdYearSemesterText" placeholder="例：115學年度上學期"></div>
-        <div class="form-group"><label class="form-label" for="hdExamType">試別</label><input class="form-control header-example-input" id="hdExamType" placeholder="例：第一次段考"></div>
-        <div class="form-group"><label class="form-label" for="hdSubjectText">科目</label><input class="form-control header-example-input" id="hdSubjectText" placeholder="例：全民國防教育"></div>
-        <div class="form-group"><label class="form-label" for="hdRange">考試範圍</label><input class="form-control header-example-input" id="hdRange" placeholder="例：第1-3章"></div>
-        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px">
-          ${Object.entries(HEADER_BLANK_LABELS).map(([field,label]) => `<div class="form-group"><label class="form-label" for="hdLength-${field}">${label.replace('：','')}欄</label><select class="form-control" id="hdLength-${field}" aria-label="${label}空格數">${Array.from({length:13}, (_,count) => `<option value="${count}">${count} 格</option>`).join('')}</select></div>`).join('')}
-        </div>
+      <div class="form-group"><label class="form-label" for="hdTitleText">表頭資訊</label><input class="form-control header-example-input" id="hdTitleText" placeholder="例：幼獅高中 115 學年度第一學期 第一次段考 二年級家政科"></div>
+      
+      <div class="ep-inline-header-lengths">
+        ${Object.entries(HEADER_BLANK_LABELS).map(([field,label]) => `<div class="form-group"><label class="form-label" for="hdLength-${field}">${label.replace('：','')}</label><select class="form-control" id="hdLength-${field}" aria-label="${label}空格數">${Array.from({length:13}, (_,count) => `<option value="${count}">${count} 格</option>`).join('')}</select></div>`).join('')}
       </div>
     </div>
     <div class="modal-footer">
@@ -335,7 +337,7 @@ function ensureHeaderModal() {
   };
   document.getElementById('hdResetBtn').onclick = async () => {
     if (!confirm('確定要清除這些表頭文字？')) return;
-    const defaults = { school:'', yearSemesterText:'', examType:'', subjectText:'', range:'',
+    const defaults = { titleText:'', school:'', yearSemesterText:'', examType:'', subjectText:'', range:'',
       classLength:HEADER_BLANK_DEFAULTS.class, nameLength:HEADER_BLANK_DEFAULTS.name, seatLength:HEADER_BLANK_DEFAULTS.seat,
       classText:HEADER_BLANK_LABELS.class, nameText:HEADER_BLANK_LABELS.name, seatText:HEADER_BLANK_LABELS.seat };
     try {
@@ -353,11 +355,7 @@ function ensureHeaderModal() {
 
 function readHeaderForm() {
   return {
-    school:   (document.getElementById('hdSchool').value   || '').trim(),
-    yearSemesterText: (document.getElementById('hdYearSemesterText').value || '').trim(),
-    examType: (document.getElementById('hdExamType').value || '').trim(),
-    subjectText: (document.getElementById('hdSubjectText').value || '').trim(),
-    range:    (document.getElementById('hdRange').value    || '').trim(),
+    titleText: document.getElementById('hdTitleText').value.trim(),
     ...Object.fromEntries(Object.keys(HEADER_BLANK_LABELS).flatMap(field => [
       [`${field}Length`, Number(document.getElementById(`hdLength-${field}`).value)],
       [`${field}Text`, HEADER_BLANK_LABELS[field]],
@@ -365,11 +363,7 @@ function readHeaderForm() {
   };
 }
 function fillHeaderForm(d) {
-  document.getElementById('hdSchool').value   = d.school   || '';
-  document.getElementById('hdYearSemesterText').value = headerYearSemesterText(d);
-  document.getElementById('hdExamType').value = d.examType || '';
-  document.getElementById('hdSubjectText').value = d.subjectText || '';
-  document.getElementById('hdRange').value    = d.range    || '';
+  document.getElementById('hdTitleText').value = headerTitleText(d);
   for (const field of Object.keys(HEADER_BLANK_LABELS)) {
     document.getElementById(`hdLength-${field}`).value = headerBlankParts(d, field).length;
   }
@@ -383,87 +377,16 @@ export function showHeaderSettings(examData = null) {
   document.getElementById('hdModal').classList.remove('hidden');
 }
 
-export function mountInlineHeaderEditor(container, examData, onChange, onCancel) {
-  const fields = [
-    ['school','學校','例：幼獅高中'],
-    ['yearSemesterText','學年度與學期','例：115學年度上學期'],
-    ['examType','試別','例：第一次段考'],
-    ['subjectText','科目','例：全民國防教育'],
-    ['range','考試範圍','例：第1-3章'],
-  ];
+export function mountInlineHeaderEditor(container, examData, onChange, onCancel, options = {}) {
+  const fields = [['titleText']];
   const header = examData.header ?? loadHeader();
   let savedHeader = { ...header };
-  container.innerHTML = `<div class="ep-inline-header-fields">
-    ${fields.map(([key,label,placeholder]) => `<label class="form-group"><span class="form-label">${label}</span><input class="form-control header-example-input" data-header-field="${key}" placeholder="${placeholder}"></label>`).join('')}
-    <div class="ep-inline-header-lengths">${Object.entries(HEADER_BLANK_LABELS).map(([field,label]) => `<label class="form-group"><span class="form-label">${label.replace('：','')}欄</span><select class="form-control" data-header-length="${field}">${Array.from({length:13}, (_,n) => `<option value="${n}">${n} 格</option>`).join('')}</select></label>`).join('')}</div>
-  </div><button class="ep-header-layout-toggle" type="button" data-header-layout-toggle aria-expanded="false"><span class="ep-header-layout-toggle-icon" aria-hidden="true">↕</span><span class="ep-header-layout-toggle-copy"><strong>調整欄位位置</strong><small>點此展開，可拖曳欄位到第一行或第二行</small></span><span class="ep-header-layout-toggle-chevron" data-layout-chevron aria-hidden="true">▾</span></button>
-  <div class="ep-header-layout-panel" data-header-layout-panel hidden><p>拖曳欄位到第一行或第二行，變更會立即顯示在表頭。</p>
-    <div class="ep-header-layout-board">${[1,2].map(row => `<div class="ep-header-layout-line"><strong>第 ${row} 行</strong><div class="ep-header-layout-zone" data-row="${row}" aria-label="第 ${row} 行欄位"></div></div>`).join('')}</div>
+  container.innerHTML = `<div class="ep-inline-header-fields" style="display:block">
+    <label class="form-group"><span class="form-label">表頭資訊</span><input class="form-control header-example-input" data-header-field="titleText" placeholder="例：幼獅高中 115 學年度第一學期 第一次段考 二年級家政科"></label>
+    <div style="margin-top:12px"><div class="ep-inline-header-lengths">${Object.entries(HEADER_BLANK_LABELS).map(([field,label]) => `<label class="form-group"><span class="form-label">${label.replace('：','')}</span><select class="form-control" data-header-length="${field}">${Array.from({length:13}, (_,n) => `<option value="${n}">${n} 格</option>`).join('')}</select></label>`).join('')}</div></div>
   </div><div class="ep-inline-header-actions"><button class="btn btn-primary btn-sm" type="button" data-header-save>儲存變更</button><button class="btn btn-outline btn-sm" type="button" data-header-clear>清除</button><button class="btn btn-ghost btn-sm" type="button" data-header-cancel>取消</button></div>`;
-  for (const [key] of fields) container.querySelector(`[data-header-field="${key}"]`).value = key === 'yearSemesterText' ? headerYearSemesterText(header) : header[key] || '';
+  container.querySelector('[data-header-field="titleText"]').value = headerTitleText(header);
   for (const field of Object.keys(HEADER_BLANK_LABELS)) container.querySelector(`[data-header-length="${field}"]`).value = headerBlankParts(header, field).length;
-  const layoutToggle = container.querySelector('[data-header-layout-toggle]');
-  const layoutPanel = container.querySelector('[data-header-layout-panel]');
-  layoutToggle.onclick = () => {
-    layoutPanel.hidden = !layoutPanel.hidden;
-    layoutToggle.setAttribute('aria-expanded', String(!layoutPanel.hidden));
-    layoutToggle.querySelector('[data-layout-chevron]').textContent = layoutPanel.hidden ? '▾' : '▴';
-  };
-  const zones = Object.fromEntries([1,2].map(row => [row, layoutPanel.querySelector(`.ep-header-layout-zone[data-row="${row}"]`)]));
-  const layout = normalizeHeaderLayout(header.layout);
-  HEADER_FIELDS.slice().sort((a,b) => layout[a.id].row - layout[b.id].row || layout[a.id].position - layout[b.id].position)
-    .forEach(field => {
-      const chip = document.createElement('button');
-      chip.type = 'button';
-      chip.className = 'ep-header-layout-chip';
-      chip.draggable = true;
-      chip.dataset.field = field.id;
-      chip.textContent = field.label;
-      chip.title = `拖曳「${field.label}」調整位置`;
-      zones[layout[field.id].row].appendChild(chip);
-    });
-  const board = layoutPanel.querySelector('.ep-header-layout-board');
-  let draggedChip = null;
-  const placeholder = document.createElement('span');
-  placeholder.className = 'ep-header-layout-placeholder';
-  const finishDrag = () => {
-    draggedChip?.classList.remove('dragging');
-    draggedChip = null;
-    placeholder.remove();
-    Object.values(zones).forEach(zone => zone.classList.remove('is-target'));
-  };
-  board.addEventListener('dragstart', event => {
-    const chip = event.target.closest('.ep-header-layout-chip');
-    if (!chip) return;
-    draggedChip = chip;
-    event.dataTransfer.effectAllowed = 'move';
-    event.dataTransfer.setData('text/plain', chip.dataset.field);
-    chip.classList.add('dragging');
-  });
-  board.addEventListener('dragover', event => {
-    const zone = event.target.closest('.ep-header-layout-zone');
-    if (!draggedChip || !zone) return;
-    event.preventDefault();
-    event.dataTransfer.dropEffect = 'move';
-    Object.values(zones).forEach(item => item.classList.toggle('is-target', item === zone));
-    const before = [...zone.querySelectorAll('.ep-header-layout-chip:not(.dragging)')].find(chip => {
-      const rect = chip.getBoundingClientRect();
-      return event.clientY < rect.top + rect.height / 2 || (event.clientY <= rect.bottom && event.clientX < rect.left + rect.width / 2);
-    });
-    zone.insertBefore(placeholder, before || null);
-  });
-  board.addEventListener('drop', event => {
-    const zone = event.target.closest('.ep-header-layout-zone');
-    if (!draggedChip || !zone) return;
-    event.preventDefault();
-    zone.insertBefore(draggedChip, placeholder);
-    finishDrag();
-    examData.header = { ...examData.header, layout:Object.fromEntries([1,2].flatMap(row =>
-      [...zones[row].querySelectorAll('.ep-header-layout-chip')].map((chip, index) =>
-        [chip.dataset.field, { row, position:index+1 }])))};
-    onChange?.();
-  });
-  board.addEventListener('dragend', finishDrag);
   const update = () => {
     const data = Object.fromEntries(fields.map(([key]) => [key, container.querySelector(`[data-header-field="${key}"]`).value]));
     for (const field of Object.keys(HEADER_BLANK_LABELS)) {
@@ -493,13 +416,14 @@ export function mountInlineHeaderEditor(container, examData, onChange, onCancel)
     save.disabled = clear.disabled = cancel.disabled = true;
     controls.forEach(control => { control.disabled = true; });
     try {
-      if (examData.id) await DataService.saveExam({ id:examData.id, header:examData.header });
+      if (options.save) await options.save({ ...examData.header });
+      else if (examData.id) await DataService.saveExam({ id:examData.id, header:examData.header });
       savedHeader = { ...examData.header };
       examData.onHeaderSaved?.();
       if (examData.id) document.dispatchEvent(new CustomEvent('exam-header-saved', {
         detail:{ id:examData.id, header:{ ...examData.header }, source:examData }
       }));
-      UI.toast(examData.id ? '已儲存至此試卷' : '已套用至目前草稿', 'success');
+      UI.toast(options.successMessage || (examData.id ? '已儲存至此試卷' : '已套用至目前草稿'), 'success');
       onCancel?.();
     } catch (error) { UI.toast(`儲存失敗：${error.message}`, 'danger'); }
     finally {
@@ -947,38 +871,12 @@ export function attachPreviewScopeToggle(host) {
 
 export function buildHeaderHtml(h) {
   const escapeHeader = value => String(value || '').replace(/[&<>"']/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[char]);
-  const blankValue = field => {
+  const title = headerTitleText(h);
+  const studentRow = ['class','name','seat'].map(field => {
     const { text, length } = headerBlankParts(h, field);
-    return text + '　'.repeat(length);
-  };
-  const headerValues = {
-    year: headerYearSemesterText(h),
-    subject: h.subjectText || '',
-    examType: h.examType || '',
-    class: blankValue('class'),
-    name: blankValue('name'),
-    seat: blankValue('seat'),
-    school: h.school || '', range: h.range ? `範圍：${h.range}` : '',
-  };
-  const headerLayout = normalizeHeaderLayout(h.layout);
-  const headerRows = [1,2].map(row => HEADER_FIELDS
-    .filter(field => {
-      const place = headerLayout[field.id];
-      return Number(place.row) === row && headerValues[field.id];
-    })
-    .sort((a,b) => {
-      const pa = headerLayout[a.id];
-      const pb = headerLayout[b.id];
-      return Number(pa.position) - Number(pb.position) || HEADER_FIELDS.indexOf(a) - HEADER_FIELDS.indexOf(b);
-    })
-    .map(field => {
-      const value = escapeHeader(headerValues[field.id]);
-      return `<span><strong>${value}</strong></span>`;
-    }).join(''));
-
-  return `<div class="ep-exam-header">
-    ${headerRows.map((content, index) => content ? `<div class="ep-header-row${index === 0 ? ' title-row' : ''}">${content}</div>` : '').join('')}
-  </div>`;
+    return `<span><strong>${escapeHeader(text + '　'.repeat(length))}</strong></span>`;
+  }).join('');
+  return `<div class="ep-exam-header">${title ? `<div class="ep-header-row title-row"><span style="white-space:pre-wrap"><strong>${escapeHeader(title)}</strong></span></div>` : ''}<div class="ep-header-row">${studentRow}</div></div>`;
 }
 
 function buildPaperHtml(examData, questions, previewOptions, includeAnswerSheet = true) {

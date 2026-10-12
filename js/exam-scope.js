@@ -1,18 +1,30 @@
 import { filterComposePool } from './compose-selection.js';
 
 /** Shared scope panel, based on the computer-selection layout. */
-export function renderScopePanel({ nextAction, nextLabel }) {
+export function renderScopePanel({ nextAction, nextLabel, subjectOverview = true }) {
   return `<div class="scope-layout">
-            <section class="card"><div class="card-header"><h2>選擇命題科目</h2></div><div class="scope-tree" id="subjectTree"></div></section>
+            <section class="card"><div class="card-header"><h2>選擇命題科目</h2></div>${subjectOverview ? `<div class="scope-overview" id="scopeOverview"><div class="scope-overview-filters"><select class="form-control" id="cSubject" aria-label="命題科目" onchange="onSubjectChange()"></select><select class="form-control" id="cBook" aria-label="命題冊別" disabled onchange="loadChapters()"><option value="">請先選科目</option></select></div><div class="scope-question-total" id="scopeTotal">0 <span>題</span></div><div class="scope-overview-chart" id="scopeChart" aria-label="題型分布" aria-live="polite"></div></div>` : `<div class="scope-tree" id="subjectTree"></div>`}</section>
             <section class="card"><div class="card-header"><div class="scope-title"><h2>選擇命題章節</h2><span class="scope-available" id="scopeAvailable">︱可選題數 0 題</span></div><div class="scope-header-actions"><div class="compose-action-tools" id="scopeSelectionTools" role="group" aria-label="範圍工具" hidden><button class="btn btn-ghost btn-sm" onclick="clearAllChapters()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 3 5 5a2 2 0 0 1 0 3L11 21H6l-4-4a2 2 0 0 1 0-3L13 3a2 2 0 0 1 3 0zM8 8l8 8M11 21h11"/></svg>取消選取</button></div><button class="btn btn-primary btn-sm" onclick="${nextAction}"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m13.5 6 6 6-6 6"/><path d="m6 6 6 6-6 6" stroke-opacity=".5"/></svg>下一步：${nextLabel}</button></div></div><div class="chapter-tree scope-tree" id="chapterTree"><div class="scope-empty">請先選擇左側的科目與冊次</div></div></section>
           </div>
-          <div hidden><select id="cSubject" onchange="onSubjectChange()"><option value="">請選擇科目</option></select><select id="cBook" disabled onchange="loadChapters()"><option value="">請先選科目</option></select></div>`;
+          ${subjectOverview ? '' : `<div hidden><select id="cSubject" onchange="onSubjectChange()"><option value="">請選擇科目</option></select><select id="cBook" disabled onchange="loadChapters()"><option value="">請先選科目</option></select></div>`}`;
 }
 
 export function mountScopeSelector({ cache, dataService, onChange }) {
   const _tbCache = cache;
   const DataService = dataService;
   const cSubject = document.getElementById('cSubject');
+  const isOverview = !!document.getElementById('scopeOverview');
+  let subjectPool = null;
+  let subjectRevision = 0;
+  const chartColors = ['#3478f6','#49b998','#a38ae5','#f3b94e','#ee8998','#75a7bb'];
+  function renderScopeChart(questions) {
+    if (!isOverview) return;
+    const byType = {};
+    for (const q of questions) byType[q.type] = (byType[q.type] || 0) + 1;
+    document.getElementById('scopeTotal').innerHTML = `${questions.length.toLocaleString()} <span>題</span>`;
+    const max = Math.max(...Object.values(byType), 1);
+    document.getElementById('scopeChart').innerHTML = Object.entries(QUESTION_TYPES).filter(([code]) => byType[code] > 0).map(([code, name], index) => `<div class="scope-bar-item"><span class="scope-bar-label">${escapeTreeText(name)}</span><div class="scope-bar-track"><div class="scope-bar-fill" style="width:${Math.round(byType[code] / max * 100)}%;background:${chartColors[Object.keys(QUESTION_TYPES).indexOf(code)]}"></div></div><span class="scope-bar-count">${byType[code].toLocaleString()}</span></div>`).join('') || '<div class="scope-empty">此範圍尚無題目資料</div>';
+  }
   const escapeTreeText = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   let bookQuestions = [];
   let chapterData = {};
@@ -69,11 +81,11 @@ export function mountScopeSelector({ cache, dataService, onChange }) {
       ).join('') : '<div class="scope-empty">尚無冊次</div>'}</details>`;
     }).join('') || '<div class="scope-empty">尚無科目</div>';
   }
-  document.getElementById('subjectTree').addEventListener('toggle', event => {
+  document.getElementById('subjectTree')?.addEventListener('toggle', event => {
     if (event.target.matches('.subject-node') && event.target.open) checkBookCounts(event.target);
   }, true);
   let bookLoadRevision = 0;
-  document.getElementById('subjectTree').addEventListener('change', async event => {
+  document.getElementById('subjectTree')?.addEventListener('change', async event => {
     const input = event.target;
     if (input.name !== 'scopeBook' || input.disabled) return;
     cSubject.value = input.dataset.subject;
@@ -146,6 +158,7 @@ export function mountScopeSelector({ cache, dataService, onChange }) {
     document.getElementById('chapterTree').innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:.88rem">請選擇冊次</div>';
     document.getElementById('scopeAvailable').textContent = '︱可選題數 0 題';
     bookQuestions = [];
+    renderScopeChart([]);
     notify('book');
   };
 
@@ -153,6 +166,7 @@ export function mountScopeSelector({ cache, dataService, onChange }) {
     const sc = cSubject.value, bc = document.getElementById('cBook').value;
     const revision = ++bookLoadRevision;
     bookQuestions = [];
+    renderScopeChart([]);
     notify('book');
     if (!sc || !bc) { document.getElementById('chapterTree').innerHTML = '<div class="scope-empty">請先選擇冊次</div>'; return; }
     if (bookCounts.get(bookKey(sc, bc)) === 0) {
@@ -167,12 +181,13 @@ export function mountScopeSelector({ cache, dataService, onChange }) {
     const isCurrentBook = () => revision === bookLoadRevision && cSubject.value === sc && document.getElementById('cBook').value === bc;
     let qs = [];
     try {
-      qs = await DataService.getQuestions({ subjectCode:sc, bookCode:bc });
+      qs = isOverview && subjectPool ? subjectPool.filter(q => String(q.bookCode) === bc) : await DataService.getQuestions({ subjectCode:sc, bookCode:bc });
     } catch(e) {
       if (isCurrentBook()) tree.innerHTML = `<div class="scope-empty">載入失敗：${escapeTreeText(e.message)}</div>`;
       return;
     }
     if (!isCurrentBook()) return;
+    renderScopeChart(qs);
     bookCounts.set(bookKey(sc, bc), qs.length);
     document.querySelectorAll('input[name="scopeBook"]').forEach(input => {
       if (input.dataset.subject === sc && input.value === bc) {
@@ -372,6 +387,47 @@ export function mountScopeSelector({ cache, dataService, onChange }) {
   };
 
 
-  renderScopeCatalog();
+  if (isOverview) {
+    const resetSubject = window.onSubjectChange;
+    const bk = document.getElementById('cBook');
+    window.onSubjectChange = async () => {
+      const revision = ++subjectRevision;
+      subjectPool = null;
+      resetSubject();
+      const sc = cSubject.value;
+      if (!sc) return;
+      bk.disabled = true;
+      bk.innerHTML = '<option value="">載入冊別中…</option>';
+      const chart = document.getElementById('scopeChart');
+      chart.setAttribute('aria-busy', 'true');
+      chart.innerHTML = '<div class="scope-empty">正在載入題型分布…</div>';
+      try {
+        const qs = await DataService.getQuestions({subjectCode:sc});
+        if (revision !== subjectRevision || cSubject.value !== sc) return;
+        subjectPool = qs;
+        const subject = _tbCache.subjectByCode[sc];
+        const books = _tbCache.booksBySubject[subject.id] || [];
+        bk.innerHTML = books.map(book => {
+          const count = qs.filter(q => String(q.bookCode) === String(book.code)).length;
+          bookCounts.set(bookKey(sc, book.code), count);
+          return `<option value="${escapeTreeText(book.code)}" ${count ? '' : 'disabled'}>${escapeTreeText(book.name)}</option>`;
+        }).join('') || '<option value="">尚無冊別</option>';
+        const available = books.find(book => bookCounts.get(bookKey(sc, book.code)) > 0);
+        bk.disabled = !available;
+        bk.value = available?.code || '';
+        chart.setAttribute('aria-busy', 'false');
+        if (available) await window.loadChapters();
+        else renderScopeChart([]);
+      } catch (error) {
+        if (revision !== subjectRevision || cSubject.value !== sc) return;
+        bk.innerHTML = '<option value="">冊別無法載入</option>';
+        chart.setAttribute('aria-busy', 'false');
+        chart.innerHTML = '<div class="scope-empty">題型分布暫時無法載入，請重新選擇科目。</div>';
+      }
+    };
+    cSubject.value = _tbCache.subjects[0]?.code || '';
+    cSubject.disabled = !_tbCache.subjects.length;
+    queueMicrotask(() => window.onSubjectChange());
+  } else renderScopeCatalog();
   return { getQuestions: selectedQuestions, getSelectedChapters, getChapterCatalog: () => chapterCatalog, clear: window.clearAllChapters };
 }

@@ -5,7 +5,7 @@
 <title>題本列印 — 幼獅題庫系統</title>
 <link rel="stylesheet" href="css/theme.css">
 <link rel="stylesheet" href="css/process-bar.css">
-<link rel="stylesheet" href="css/exam-compose.css?v=20261011-scope-level-emphasis">
+<link rel="stylesheet" href="css/exam-compose.css?v=20261012-chapter-controls-18">
 <script>if(localStorage.getItem('sidebarCollapsed')==='1')document.documentElement.classList.add('sidebar-collapsed');</script>
 </head>
 <body class="booklet-page">
@@ -32,14 +32,14 @@
   </div>
 </div>
 <script type="module">
-import { renderScopePanel, mountScopeSelector } from './js/exam-scope.js?v=20261007-disabled-scope';
-import { showExamPreview, loadAppearance } from './js/exam-preview.js?v=20261011-scope-level-emphasis';
+import { renderScopePanel, mountScopeSelector } from './js/exam-scope.js?v=20261012-available-count';
+import { showExamPreview, loadAppearance } from './js/exam-preview.js?v=20261012-simple-header-v2';
 import { guardPage } from './js/auth-guard.js';
 window._activeNav = 'booklet';
 const user = await guardPage(['admin','manager','teacher']);
 if (!user) throw new Error('not auth');
 await initTextbookCache();
-document.getElementById('examScope').innerHTML = renderScopePanel({nextAction:'goBookletStep(2)', nextLabel:'預覽題本'});
+document.getElementById('examScope').innerHTML = renderScopePanel({nextAction:'goBookletStep(2)', nextLabel:'預覽題本',subjectOverview:false});
 document.getElementById('cSubject').innerHTML = tbSubjectOptions();
 let bookletData = {title:'題本', booklet:true, appearance:loadAppearance()};
 let scopeRevision = 0;

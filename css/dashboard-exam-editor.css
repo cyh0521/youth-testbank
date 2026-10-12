@@ -1,4 +1,5 @@
 /* 試卷編輯 Modal */
+#editModal #editHeaderPanel{padding:12px 14px;background:#f5f8fc;border:0;border-radius:12px}
 .edit-basic-fields{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
 .edit-basic-fields .form-group{margin-bottom:0}
 @media(max-width:600px){.edit-basic-fields{grid-template-columns:1fr}}

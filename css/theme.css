@@ -1080,3 +1080,10 @@ input[type=checkbox], input[type=radio] { accent-color: #3478f6; }
 
 /* 試卷名稱旁的說明：完整內容由 title 顯示。 */
 .exam-description { flex: 1 1 0; min-width: 0; color: var(--text-light); font-size: .84rem; font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* 主頁面只捲動頂欄下方的內容，登入頁維持原本版面。 */
+body:has(> .layout) { height: 100vh; height: 100dvh; overflow: hidden; }
+body > .layout { height: 100%; min-height: 0; overflow: hidden; }
+body > .layout > .main { height: 100%; min-height: 0; overflow: hidden; }
+body > .layout > .main > .topbar { flex: none; }
+body > .layout > .main > .page-content { min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; }

@@ -1,5 +1,6 @@
 /* 首頁工作台：以出題與最近試卷為主要入口。 */
 .dashboard-overview { display: grid; grid-template-columns: minmax(0,1.5fr) minmax(0,1fr); align-items: start; gap: 18px; margin-bottom: 28px; }
+.dashboard-overview.dashboard-create-only{grid-template-columns:1fr}
 .create-card, .overview-card, .recent-section { padding: 22px; }
 .overview-heading, .section-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .overview-heading h2, .section-heading h2 { font-size: 1.35rem; letter-spacing: .01em; font-weight: 700; }

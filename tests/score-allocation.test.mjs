@@ -91,7 +91,7 @@ for(const mode of ['manual','coded'])test(`${mode} 填空按格、配合按題�
   const context={window:{},document:{getElementById:node},blankCount,AUTO_SCORE_WEIGHTS,allocateTypeScores,
     selQuestions,selectedOrder:Object.keys(selQuestions),settingsTypeOrder:codes,draftPreviewData:null,
     TYPE_SCORES:{T1:2,T4:2,T5:6,T6:6},newExamHeader:()=>({}),loadAppearance:()=>({}),renderSelected(){},
-    scopeSelector:{getSelectedChapters:()=>['1']},showExamPreview:exam=>{preview=exam;},
+    scopeSelector:{getSelectedChapters:()=>['1'],getChapterCatalog:()=>({labels:['章','節',''],chapters:[]})},examScopeSnapshot:()=>({}),showExamPreview:exam=>{preview=exam;},
     DataService:{saveExam:async exam=>{saved=exam;}},UI:{toast:message=>assert.equal(message,'試卷已儲存！')},
   };
   const name=mode[0].toUpperCase()+mode.slice(1);

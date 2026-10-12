@@ -714,7 +714,7 @@ function buildPageRange(cur, total) {
   return r;
 }
 
-window.gotoPage = p => { currentPage=p; renderTable(); window.scrollTo(0,0); };
+window.gotoPage = p => { currentPage=p; renderTable(); document.querySelector('.page-content').scrollTo(0, 0); };
 
 // ── 選取 ─────────────────────────────────────────
 window.onCbClick = (event, id) => {
