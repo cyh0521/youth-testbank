@@ -530,7 +530,7 @@ function ensurePreviewModal() {
 #epModal.is-fullscreen .ep-fullscreen-icon-expand{display:none}
 #epModal.is-fullscreen .ep-fullscreen-icon-restore{display:block}
 
-#epModal.ep-with-scope:not(.compose-inline-preview) .ep-preview-modal{max-width:1200px}
+#epModal.ep-with-scope:not(.compose-inline-preview):not(.ep-management-preview) .ep-preview-modal{max-width:1200px}
 #epModal.is-fullscreen.ep-with-scope .ep-preview-modal{max-width:none}
 .ep-scope-layout{display:grid;grid-template-columns:240px minmax(0,1fr);gap:20px;align-items:start}
 #epScopePaperHost{min-width:0}
