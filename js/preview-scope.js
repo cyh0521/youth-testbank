@@ -74,17 +74,45 @@ export function mountPreviewScope(container, exam, questions, onSelection, optio
   let active = '';
   let collapsed = false;
   let nodes = [];
+  let scopeCardAnimation = null;
   function sync() {
     container.querySelectorAll('[data-scope-select]').forEach(button => button.setAttribute('aria-pressed',String(button.dataset.scopeSelect === active)));
     onSelection(active);
   }
-  function syncCollapse() {
+  function syncCollapse(animate = false) {
+    const card = container.querySelector('.ep-scope-card');
+    const cardWidth = card.getBoundingClientRect().width;
+    scopeCardAnimation?.cancel();
+    card.style.position = '';
+    card.style.width = '';
+    const animateCard = animate && options.zoomToggle && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     container.classList.toggle('is-collapsed',collapsed);
     const layout = container.closest('.compose-preview-layout') || container.closest('.ep-scope-layout');
     layout?.classList.toggle('is-scope-collapsed',collapsed);
-    container.querySelector('.ep-scope-card').hidden = collapsed;
-    reopenButton.hidden = !collapsed;
-    container.querySelector('#epScopeContents').hidden = collapsed;
+    card.hidden = collapsed && !animateCard;
+    reopenButton.hidden = options.zoomToggle || !collapsed;
+    if (options.zoomToggle) {
+      const toggle = container.querySelector('.ep-scope-toggle');
+      toggle.querySelector('path').setAttribute('d', collapsed ? toggle.dataset.openPath : toggle.dataset.collapsePath);
+    }
+    container.querySelector('#epScopeContents').hidden = collapsed && !animateCard;
+    if (animateCard) {
+      if (collapsed) {
+        card.style.position = 'absolute';
+        card.style.width = `${cardWidth}px`;
+      }
+      scopeCardAnimation = card.animate(collapsed
+        ? [{ opacity:1, transform:'scale(1)' }, { opacity:0, transform:'scale(.94)' }]
+        : [{ opacity:0, transform:'scale(.94)' }, { opacity:1, transform:'scale(1)' }],
+        { duration:220, easing:'ease-out' });
+      scopeCardAnimation.onfinish = () => {
+        card.hidden = collapsed;
+        container.querySelector('#epScopeContents').hidden = collapsed;
+        card.style.position = '';
+        card.style.width = '';
+        scopeCardAnimation = null;
+      };
+    }
     [reopenButton,...container.querySelectorAll('[data-scope-toggle]')].forEach(button => {
       button.setAttribute('aria-expanded',String(!collapsed));
       button.setAttribute('aria-label',(collapsed ? '展開' : '收合') + '命題範圍');
@@ -92,10 +120,15 @@ export function mountPreviewScope(container, exam, questions, onSelection, optio
   }
   function toggleCollapsed() {
     collapsed = !collapsed;
-    syncCollapse();
-    (collapsed ? reopenButton : container.querySelector('.ep-scope-toggle')).focus();
+    syncCollapse(true);
+    const toggle = options.zoomToggle ? container.querySelector('.ep-scope-toggle') : collapsed ? reopenButton : container.querySelector('.ep-scope-toggle');
+    toggle.focus({ preventScroll:true });
+    if (options.zoomToggle && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      toggle.querySelector('svg').animate([{ transform:'rotate(-180deg)' }, { transform:'rotate(0deg)' }], { duration:240, easing:'ease-out' });
+    }
   }
   function render(note = '') {
+    const scopeToggleSquare = options.zoomToggle ? '<rect x="14" y="14" width="7" height="7" fill="currentColor" stroke="none"/>' : '';
     const previewOptions = container.querySelector('.ep-preview-options');
     reopenButton?.remove();
     nodes = previewScopeNodes(exam,questions,catalog);
@@ -110,9 +143,15 @@ export function mountPreviewScope(container, exam, questions, onSelection, optio
     }).join('');
     const listHtml = options.displayMode === 'grouped' ? grouped : branch('');
     const listClass = options.displayMode === 'grouped' ? 'ep-scope-tree ep-scope-grouped-list' : 'ep-scope-tree';
-    container.innerHTML = `<button type="button" class="ep-scope-reopen" data-scope-reopen aria-controls="epScopeContents" aria-expanded="${!collapsed}" aria-label="展開命題範圍" ${collapsed ? '' : 'hidden'}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16M4 12h16M4 19h16M8 5v14"/></svg><span>命題範圍</span></button><section class="card ep-scope-card${collapsed ? ' is-collapsed' : ''}"><div class="card-header ep-scope-heading"><h2>命題範圍</h2><button type="button" class="ep-scope-toggle" data-scope-toggle aria-controls="epScopeContents" aria-expanded="${!collapsed}" aria-label="${collapsed ? '展開' : '收合'}命題範圍"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg></button></div><div class="ep-scope-content" id="epScopeContents" ${collapsed ? 'hidden' : ''}>${note ? `<p class="ep-scope-note">${escape(note)}</p>` : ''}<div class="${listClass}">${listHtml || '<p class="ep-scope-note">試題尚無章節資訊</p>'}</div></div></section>`;
+    container.innerHTML = `<button type="button" class="ep-scope-reopen" data-scope-reopen aria-controls="epScopeContents" aria-expanded="${!collapsed}" aria-label="展開命題範圍" ${collapsed ? '' : 'hidden'}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${options.zoomToggle ? 'M21 11V4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h7M7 7l5 5M8 12h4V8' : 'M4 5h16M4 12h16M4 19h16M8 5v14'}"/>${scopeToggleSquare}</svg><span>命題範圍</span></button><section class="card ep-scope-card${collapsed ? ' is-collapsed' : ''}"><div class="card-header ep-scope-heading"><h2>命題範圍</h2><button type="button" class="ep-scope-toggle" data-scope-toggle aria-controls="epScopeContents" aria-expanded="${!collapsed}" aria-label="${collapsed ? '展開' : '收合'}命題範圍"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${options.zoomToggle ? 'M21 11V4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h7M12 12 7 7M7 11V7h4' : 'm6 15 6-6 6 6'}"/>${scopeToggleSquare}</svg></button></div><div class="ep-scope-content" id="epScopeContents" ${collapsed ? 'hidden' : ''}>${note ? `<p class="ep-scope-note">${escape(note)}</p>` : ''}<div class="${listClass}">${listHtml || '<p class="ep-scope-note">試題尚無章節資訊</p>'}</div></div></section>`;
     if (previewOptions) container.querySelector('.ep-scope-content').prepend(previewOptions);
     reopenButton = container.querySelector('.ep-scope-reopen');
+    if (options.zoomToggle) {
+      const toggle = container.querySelector('.ep-scope-toggle');
+      toggle.dataset.collapsePath = toggle.querySelector('path').getAttribute('d');
+      toggle.dataset.openPath = reopenButton.querySelector('path').getAttribute('d');
+      container.prepend(toggle);
+    }
     reopenButton.onclick = event => { event.stopPropagation(); toggleCollapsed(); };
     if (toggleHost) {
       toggleHost.prepend(reopenButton);

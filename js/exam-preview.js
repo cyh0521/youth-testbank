@@ -515,6 +515,7 @@ export function mountInlineHeaderEditor(container, examData, onChange, onCancel)
 // ══════════════════════════════════════════════════════════
 let previewScopeView = null;
 let previewScopeDisplay = 'tree';
+let previewScopeToggleInPanel = false;
 let previewScopeSession = 0;
 
 function ensurePreviewModal() {
@@ -814,6 +815,7 @@ export function showExamPreview(examData, questions, previewOptions = {}) {
   previewScopeView?.destroy();
   previewScopeView = null;
   previewScopeDisplay = previewOptions.scopeDisplay === 'grouped' ? 'grouped' : 'tree';
+  previewScopeToggleInPanel = !!previewOptions.scopeToggleInPanel;
   const scopeSession = ++previewScopeSession;
   document.getElementById('epModal').classList.toggle('ep-with-scope', !examData.booklet);
   setPreviewFullscreen(false);
@@ -932,7 +934,7 @@ function renderPaper(examData, questions, display) {
   if (!previewScopeView || !body.querySelector('#epScopePaperHost')) {
     body.innerHTML = '<div class="ep-scope-layout"><aside id="epScopePanel" aria-label="命題範圍"></aside><div id="epScopePaperHost"></div></div>';
     // Mounting invokes the callback before returning; use its argument here.
-    previewScopeView = mountPreviewScope(body.querySelector('#epScopePanel'),examData,questions,code => applyScopeHighlight(body.querySelector('#epScopePaperHost'),code),{toggleHost:document.getElementById('epTitle').parentElement,displayMode:previewScopeDisplay});
+    previewScopeView = mountPreviewScope(body.querySelector('#epScopePanel'),examData,questions,code => applyScopeHighlight(body.querySelector('#epScopePaperHost'),code),{toggleHost:previewScopeToggleInPanel ? null : document.getElementById('epTitle').parentElement,displayMode:previewScopeDisplay,zoomToggle:previewScopeToggleInPanel});
   }
   const paper = body.querySelector('#epScopePaperHost');
   paper.innerHTML = buildPaperHtml(examData,questions,{...display,scopeHighlightMetadata:true});

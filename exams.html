@@ -17,12 +17,30 @@
 /* 試卷管理預覽：標題工具列橫跨命題範圍與試卷兩欄。 */
 #epModal.ep-management-preview #epBody{padding:0!important}
 #epModal.ep-management-preview .ep-management-paper{min-width:0}
-#epModal.ep-management-preview .ep-scope-card{border:1px solid var(--border-light);border-radius:12px;overflow:hidden}
-#epModal.ep-management-preview .ep-preview-controls :is(.ep-preview-options,.ep-inline-header,.ep-toolbar){border:1px solid var(--border-light);border-radius:12px}
+#epModal.ep-management-preview .ep-scope-card{border:0;border-radius:12px;overflow:hidden}
+#epModal.ep-management-preview .ep-scope-card{transform-origin:top left}
+#epModal.ep-management-preview #epScopePanel.is-collapsed .ep-scope-card{pointer-events:none}
+#epModal.ep-management-preview .ep-scope-toggle{z-index:1}
+#epModal.ep-management-preview .ep-scope-content{padding-top:2px}
+#epModal.ep-management-preview .ep-scope-group+.ep-scope-group{border-top:0;padding-top:0;margin-top:2px}
+#epModal.ep-management-preview .ep-scope-children{border-left:0}
+#epModal.ep-management-preview .ep-preview-controls :is(.ep-preview-options,.ep-inline-header,.ep-toolbar){border:0;border-radius:12px}
 #epModal.ep-management-preview .modal-header{flex-wrap:wrap;gap:10px}
 #epModal.ep-management-preview .modal-header>div{flex-wrap:wrap}
 #epModal.ep-management-preview #epTitle .modal-title-icon{display:none}
-#epModal.ep-management-preview .ep-scope-reopen{display:none!important}
+#epModal.ep-management-preview #epScopePanel{position:relative;min-height:39px}
+#epModal.ep-management-preview :is(.ep-scope-card,.ep-scope-heading){position:static}
+#epModal.ep-management-preview .ep-scope-heading{display:flex!important;height:38px;min-height:0;padding:0;border:0;background:transparent}
+#epModal.ep-management-preview .ep-scope-heading h2{display:none}
+#epModal.ep-management-preview .ep-scope-reopen:not([hidden]){display:inline-flex!important}
+#epModal.ep-management-preview .ep-scope-reopen>span{display:none}
+#epModal.ep-management-preview :is(.ep-scope-toggle,.ep-scope-reopen){position:absolute;top:11px;left:13px;display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;margin:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;transition:color .18s ease}
+#epModal.ep-management-preview :is(.ep-scope-toggle,.ep-scope-reopen) svg{width:18px;height:18px;display:block;flex:none;transform-origin:center;transform:none}
+#epModal.ep-management-preview .ep-scope-layout{grid-template-columns:260px minmax(0,1fr);gap:20px;transition:grid-template-columns .2s ease,gap .2s ease}
+#epModal.ep-management-preview :is(.ep-scope-toggle,.ep-scope-reopen):hover{background:transparent;color:#2563eb}
+#epModal.ep-management-preview #epScopePanel.is-collapsed{display:block}
+#epModal.ep-management-preview .ep-scope-layout.is-scope-collapsed{grid-template-columns:42px minmax(0,1fr);gap:4px}
+@media(max-width:850px){#epModal.ep-management-preview .ep-scope-layout:not(.is-scope-collapsed){grid-template-columns:minmax(0,1fr)}}
 #epModal.ep-management-preview{position:static;display:block;width:100%;min-width:0;padding:0;background:var(--bg-card,#fff);backdrop-filter:none;animation:none;overflow:hidden;overscroll-behavior:auto}
 #epModal.ep-management-preview.hidden{display:none}
 #epModal.ep-management-preview .ep-preview-modal,#epModal.ep-management-preview.ep-with-scope .ep-preview-modal{width:100%;max-width:none!important;max-height:none;overflow:visible;overscroll-behavior:auto;border:0;border-radius:0;box-shadow:none;animation:none}
@@ -385,7 +403,7 @@ function showManagementPreview(exam, questions) {
     const controls = existingModal.querySelector('.ep-preview-controls');
     shell.insertBefore(controls, body);
   }
-  showExamPreview(exam, questions, { scopeDisplay: 'grouped' });
+  showExamPreview(exam, questions, { scopeDisplay: 'grouped', scopeToggleInPanel:true });
   const modal = document.getElementById('epModal');
   modal.classList.add('ep-management-preview', 'card');
   document.querySelector('.page-content').append(modal);
