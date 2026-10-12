@@ -149,6 +149,7 @@ import { guardPage } from './js/auth-guard.js';
 import { showExamPreview, showHeaderSettings, newExamHeader, loadAppearance, mountInlineHeaderEditor, buildHeaderHtml, fontStackById, togglePreviewPanel } from './js/exam-preview.js?v=20261011-scope-level-emphasis';
 import { allocateTypeScores, AUTO_SCORE_WEIGHTS } from './js/score-allocation.js?v=20261007-weighted-scores';
 import { blankCount } from './js/blank-selection.js';
+import { examScopeSnapshot } from './js/preview-scope.js';
 window._activeNav = 'manual';
 const user = await guardPage(['admin','manager','teacher']);
 if (!user) throw new Error('not auth');
@@ -442,6 +443,7 @@ window.doSaveExam = async () => {
     totalScore, typeScores, scoreUnits:{T4:'blank'}, questionIds:[...selectedOrder],
     questionCount: selectedOrder.length, composeMode:'manual',
     scopeChapters: scopeSelector.getSelectedChapters(),
+    scopeSnapshot: examScopeSnapshot(scopeSelector.getSelectedChapters(), selectedOrder.map(id => selQuestions[id]).filter(Boolean), scopeSelector.getChapterCatalog()),
   };
   try {
     await DataService.saveExam(exam);

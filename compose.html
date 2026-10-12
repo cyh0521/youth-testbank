@@ -101,6 +101,7 @@ import { blankCount, reachableBlankCounts } from './js/blank-selection.js';
 import { filterComposePool } from './js/compose-selection.js';
 import { selectedSections, questionInSection, selectSectionQuestions, requiresSectionCoverage } from './js/section-selection.js?v=20261007-coverage';
 import { confirmAction } from './js/confirm-exam-deletion.js';
+import { examScopeSnapshot } from './js/preview-scope.js';
 window._activeNav = 'compose';
 const user = await guardPage(['admin','manager','teacher']);
 if (!user) throw new Error('not auth');
@@ -861,6 +862,7 @@ window.doSaveExam = async () => {
     questionCount: questionIds.length,
     composeMode: 'auto',
     scopeChapters: [...generatedScopeChapters],
+    scopeSnapshot: examScopeSnapshot(generatedScopeChapters, generatedQuestions, scopeSelector.getChapterCatalog()),
   };
 
   try {

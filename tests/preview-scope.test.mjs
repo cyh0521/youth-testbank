@@ -3,7 +3,7 @@ import {readFileSync} from 'node:fs';
 import {runInNewContext} from 'node:vm';
 import test from 'node:test';
 const source=readFileSync(new URL('../js/preview-scope.js',import.meta.url),'utf8');
-const {previewScopeNodes,questionScopeCode,scopeContains,applyScopeHighlight}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
+const {previewScopeNodes,examScopeSnapshot,questionScopeCode,scopeContains,applyScopeHighlight}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 const questions=[{chapterNum:'01',sectionNum:'02',subsectionNum:'01'},{chapterNum:1,sectionNum:2,subsectionNum:2},{chapterNum:1,sectionNum:3},{chapterNum:2,sectionNum:1}];
 const catalog={labels:['章','節','小節'],chapters:[{chapterNum:1,title:'國家安全',sections:[{sectionNum:3,title:'第三節'},{sectionNum:2,title:'第2節 定義',subsections:[{num:1,title:'項目一'},{num:2,title:'項目二'}]}]},{chapterNum:2,sections:[{sectionNum:1,title:'未選'}]}]};
 test('命題範圍與子層依目錄順序呈現，保留上層，題數按實際題目計算',()=>{
@@ -11,6 +11,13 @@ test('命題範圍與子層依目錄順序呈現，保留上層，題數按實�
   assert.deepEqual(nodes.map(n=>n.code),['1','1-3','1-2','1-2-1','1-2-2']);
   assert.equal(nodes[0].count,3);assert.equal(nodes[2].count,2);
   assert.equal(nodes[2].label,'第2節 定義');
+});
+test('建立試卷時儲存包含各層名稱的命題範圍快照',()=>{
+  const snapshot=examScopeSnapshot(['1-2'],questions,catalog);
+  assert.deepEqual(snapshot.nodes.map(node=>node.code),['1','1-2','1-2-1','1-2-2']);
+  assert.deepEqual(snapshot.nodes.map(node=>node.level),[0,1,2,2]);
+  assert.equal(snapshot.nodes[1].label,'第2節 定義');
+  assert.equal(snapshot.nodes[2].label,'第1小節 項目一');
 });
 test('僅選一節時不列其他節；未抽中節仍顯示零題',()=>{
   const nodes=previewScopeNodes({scopeChapters:['01-02']},questions,catalog);

@@ -49,6 +49,14 @@ export function previewScopeNodes(exam, questions, catalog = {chapters:[],labels
   return [...nodes.values()];
 }
 
+export function examScopeSnapshot(scopeChapters, questions, catalog) {
+  const nodes = previewScopeNodes({ scopeChapters }, questions, catalog);
+  return {
+    version:1,
+    nodes:nodes.map(({ code, label, level }) => ({ code, label, level }))
+  };
+}
+
 export function applyScopeHighlight(paper, activeCode) {
   let count = 0;
   paper.querySelectorAll('[data-ep-scope]').forEach(question => {

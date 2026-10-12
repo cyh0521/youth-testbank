@@ -1,5 +1,41 @@
 const chapterCache = new Map();
 
+async function scopeCatalog(exam, cache) {
+  const subject = cache.subjectByCode?.[exam.subjectCode];
+  const book = (cache.booksBySubject?.[subject?.id] || []).find(item => item.code === exam.bookCode);
+  if (!subject || !book) return { book:null, chapters:[] };
+  const key = `${subject.id}/${book.id}`;
+  if (!chapterCache.has(key)) {
+    chapterCache.set(key, DataService.getChapterDefs(subject.id, book.id).catch(error => {
+      chapterCache.delete(key);
+      throw error;
+    }));
+  }
+  return { book, chapters:await chapterCache.get(key) };
+}
+
+export function examScopeTreeHtml(nodes) {
+  if (!nodes.length) return '<p class="edit-scope-empty">此試卷尚未記錄命題範圍。</p>';
+  const hasThreeLevels = nodes.some(node => String(node.code || '').split('-').length >= 3);
+  const children = new Map();
+  for (const node of nodes) {
+    const code = String(node.code || '');
+    const parent = code.includes('-') ? code.slice(0, code.lastIndexOf('-')) : '';
+    if (!children.has(parent)) children.set(parent, []);
+    children.get(parent).push(node);
+  }
+  const render = (parent, ancestors = new Set()) => {
+    const branch = (children.get(parent) || []).filter(node => !ancestors.has(String(node.code)));
+    if (!branch.length) return '';
+    return `<ul class="edit-scope-tree${parent === '' && hasThreeLevels ? ' has-three-levels' : ''}">${branch.map(node => {
+      const code = String(node.code);
+      const nested = render(code, new Set([...ancestors, code]));
+      return `<li><span class="edit-scope-tree-label">${UI.escapeHtml(node.label || code)}</span>${nested}</li>`;
+    }).join('')}</ul>`;
+  };
+  return render('');
+}
+
 function scopeLabel(parts, chapters, book) {
   const number = value => String(Number(value) || value);
   const sameNumber = (a, b) => Number(a) === Number(b);
@@ -22,24 +58,23 @@ function scopeLabel(parts, chapters, book) {
   return labels.join('／');
 }
 
-export async function examScopeSummaryHtml(exam) {
+export async function examScopeSummaryHtml(exam, options = {}) {
+  if (options.allLevels) {
+    return exam.scopeSnapshot?.version === 1 && Array.isArray(exam.scopeSnapshot.nodes)
+      ? examScopeTreeHtml(exam.scopeSnapshot.nodes)
+      : '<p class="edit-scope-empty">此試卷建立時尚未儲存命題範圍。</p>';
+  }
   if (!Array.isArray(exam.scopeChapters) || !exam.scopeChapters.length) {
     return '<p class="edit-scope-empty">此試卷尚未記錄命題範圍。</p>';
   }
 
-  const selected = [...new Set(exam.scopeChapters.map(String))];
+  const selected = [...new Set((exam.scopeChapters || []).map(String))];
   const compact = selected.filter(code => !selected.some(parent => parent !== code && code.startsWith(parent + '-')));
   let book = null;
   let chapters = [];
   try {
     const cache = await window.initTextbookCache();
-    const subject = cache.subjectByCode?.[exam.subjectCode];
-    book = (cache.booksBySubject?.[subject?.id] || []).find(item => item.code === exam.bookCode);
-    if (subject && book) {
-      const key = `${subject.id}/${book.id}`;
-      if (!chapterCache.has(key)) chapterCache.set(key, DataService.getChapterDefs(subject.id, book.id));
-      chapters = await chapterCache.get(key);
-    }
+    ({ book, chapters } = await scopeCatalog(exam, cache));
   } catch (error) {
     // 章節名稱無法載入時仍顯示已記錄的章節編號。
   }

@@ -764,6 +764,10 @@ window.DataService = {
     } else {
       // 新增
       const { id: _id, ...data } = exam;
+      if (['auto', 'manual'].includes(data.composeMode) &&
+          (data.scopeSnapshot?.version !== 1 || !Array.isArray(data.scopeSnapshot.nodes) || !data.scopeSnapshot.nodes.length)) {
+        throw new Error('命題範圍未完整記錄，請重新整理選題頁面後再儲存試卷');
+      }
       const uid = DataService._currentUser?.uid;
       if (!uid) throw new Error('請先登入');
       if (DataService._currentUser.examCurrentCount == null) {
