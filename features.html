@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="幼獅文化線上命題系統：電腦選題、人工選題、編碼選題、試卷儲存、題本列印與 Word 匯出。">
+  <title>特色與功能｜幼獅文化線上命題系統</title>
+  <style>
+    :root{--ink:#203247;--muted:#637487;--blue:#326be8;--paper:#f6f7fa;--line:#dfe5ed;--navy:#283d51}
+    *{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:90px}body{margin:0;background:var(--paper);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft JhengHei","PingFang TC",sans-serif;line-height:1.75}a{color:inherit;text-decoration:none}button{font:inherit;cursor:pointer}a:focus-visible,button:focus-visible{outline:3px solid #87adff;outline-offset:5px}
+    .container{width:min(1120px,calc(100% - 48px));margin:auto}.header{position:sticky;top:0;z-index:10;background:#f6f7faf2;border-bottom:1px solid var(--line);backdrop-filter:blur(14px)}.header-inner{min-height:76px;display:flex;align-items:center;justify-content:space-between;gap:24px}.brand{display:flex;align-items:center;gap:11px;font-weight:700}.brand-mark{display:grid;place-items:center;background:#f3c75f;color:white;width:38px;height:38px;border-radius:11px}.brand-mark svg{width:25px;height:25px}.brand small{display:block;font-size:11px;letter-spacing:.08em;color:var(--muted);font-weight:400}.nav{display:flex;gap:22px;align-items:center;font-size:13px;color:var(--muted)}.nav a:hover{color:var(--blue)}.button{display:inline-flex;align-items:center;justify-content:center;padding:10px 18px;border:1px solid var(--line);border-radius:9px;background:white;color:var(--ink);font-weight:600;font-size:14px}.button.primary{background:var(--blue);color:white;border-color:var(--blue)}.button:hover{box-shadow:0 3px 12px #20324710}
+    .hero{display:grid;grid-template-columns:1.1fr 1fr;gap:65px;align-items:center;padding:85px 0 72px}.eyebrow{font-size:12px;font-weight:700;letter-spacing:.13em;color:var(--blue);margin:0 0 16px}h1{font-size:clamp(32px,4vw,51px);line-height:1.28;letter-spacing:-.04em;margin:0 0 22px}h1 span{color:var(--blue)}.lead{font-size:17px;color:var(--muted);margin:0;max-width:520px}.hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}.hero-note{color:var(--muted);font-size:12px;margin-top:18px}
+    .preview{background:white;border:1px solid var(--line);border-radius:16px;box-shadow:0 20px 55px #273e5310;overflow:hidden}.preview-top{display:flex;justify-content:space-between;background:#f9fbfe;padding:17px 20px;border-bottom:1px solid var(--line);font-size:12px;color:var(--muted)}.preview-body{padding:25px}.preview-label{font-size:11px;letter-spacing:.09em;color:var(--blue)}.preview h3{font-size:21px;margin:5px 0 18px}.mock-row{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid #edf0f5;font-size:13px}.mock-row strong{font-weight:500}.mock-row span{white-space:nowrap;color:var(--muted)}.mock-total{display:flex;justify-content:space-between;padding:12px;margin-top:15px;border-radius:8px;background:#eaf5ef;color:#42725d;font-size:13px}.mock-toolbar{display:flex;gap:8px;margin-top:20px}.mock-tag{font-size:11px;background:#eff4ff;color:#5874a9;padding:5px 10px;border-radius:6px}.mock-caption{font-size:11px;color:var(--muted);margin:16px 0 0}
+    .strip{display:grid;grid-template-columns:repeat(4,1fr);border-block:1px solid var(--line);padding:22px 0;gap:20px}.strip strong{display:block;font-size:15px}.strip span{font-size:12px;color:var(--muted)}
+    section{padding:65px 0}.section-head{display:flex;justify-content:space-between;align-items:flex-end;gap:30px;margin-bottom:30px}.section-head h2{font-size:29px;line-height:1.35;letter-spacing:-.03em;margin:0}.section-head p{color:var(--muted);font-size:14px;margin:0;max-width:440px}.methods{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.method{background:white;border:1px solid var(--line);border-radius:12px;padding:25px}.number{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;background:#edf3ff;color:var(--blue);border-radius:10px;font-size:12px;font-weight:700}.method:nth-child(2) .number{background:#fff0ed;color:#ba6a5f}.method:nth-child(3) .number{background:#edf5ef;color:#578773}.method h3{font-size:20px;margin:17px 0 8px}.method p{font-size:14px;color:var(--muted);margin:0}.method ul{padding-left:18px;margin:18px 0 0;font-size:13px;color:#4e6176}.method li{margin:7px 0}
+    .workflow{background:var(--navy);color:white;border-radius:16px;padding:34px;margin-top:28px}.workflow h3{font-size:17px;margin:0 0 22px}.steps{display:grid;grid-template-columns:repeat(5,1fr);gap:16px}.step span{display:block;color:#9db9dc;font-size:12px;margin-bottom:6px}.step strong{font-size:14px;font-weight:500}.workflow p{font-size:12px;color:#bdcad9;margin:24px 0 0}
+    .detail-section{border-top:1px solid var(--line)}.details{display:grid;grid-template-columns:1fr 1fr;column-gap:52px;row-gap:0}.detail{padding:24px 0;border-bottom:1px solid var(--line)}.detail h3{font-size:19px;margin:0 0 10px}.detail p{font-size:14px;color:var(--muted);margin:0}.tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:15px}.tag{font-size:12px;background:white;border:1px solid var(--line);border-radius:6px;padding:4px 9px;color:#55677b}
+    .booklet{margin-top:30px;background:#eaf1fa;border-radius:14px;padding:30px;display:grid;grid-template-columns:1fr 1fr;gap:30px}.booklet h3{font-size:21px;margin:0 0 9px}.booklet p{font-size:14px;color:var(--muted);margin:0}.booklet ol{margin:0;padding-left:22px;font-size:14px;color:#4e6176}.booklet li{padding:5px 0}
+    .roles{display:grid;grid-template-columns:1.15fr 1fr;gap:36px}.role-panel{padding:27px;border:1px solid var(--line);background:white;border-radius:12px}.role-panel h3{font-size:19px;margin:0 0 10px}.role-panel ul{margin:0;padding-left:19px;font-size:14px;color:var(--muted)}.role-panel li{margin:9px 0}.subjects{display:flex;gap:9px;flex-wrap:wrap;margin-top:24px}.subjects span{font-size:13px;padding:8px 13px;border:1px solid var(--line);border-radius:8px;background:white}
+    .boundary{padding:20px 24px;border-left:3px solid #a9b7c9;margin-top:28px;background:#eef1f5;color:var(--muted);font-size:13px}.boundary strong{color:var(--ink)}.footer{border-top:1px solid var(--line);padding:26px 0 40px;color:var(--muted);font-size:12px}.footer-inner{display:flex;justify-content:space-between;gap:20px;align-items:center}
+    @media(max-width:850px){.hero{gap:30px;grid-template-columns:1fr;padding:50px 0}.preview{max-width:560px}.methods{grid-template-columns:1fr}.steps{grid-template-columns:repeat(3,1fr)}.nav{gap:14px}.section-head{align-items:flex-start;flex-direction:column;gap:13px}.roles{grid-template-columns:1fr}.booklet{grid-template-columns:1fr}.strip{grid-template-columns:1fr 1fr}}
+    @media(max-width:520px){.container{width:calc(100% - 32px)}.header-inner{min-height:70px}.nav a{display:none}.nav .button{font-size:12px;padding:8px 12px}.details{grid-template-columns:1fr}.steps{grid-template-columns:1fr 1fr}.workflow{padding:24px}.hero h1{font-size:34px}.lead{font-size:15px}section{padding:44px 0}.section-head h2{font-size:25px}.footer-inner{align-items:flex-start;flex-direction:column}.preview-body{padding:20px}}
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+    @media print{html{scroll-behavior:auto}body{background:white;font-size:10pt}.header{position:static;background:white}.nav,.hero-actions,.hero-note,.footer button{display:none}.container{width:100%}.hero{padding:25px 0;gap:25px;grid-template-columns:1.1fr 1fr}h1{font-size:28pt}.lead{font-size:11pt}section{padding:25px 0}.section-head h2{font-size:20pt}.method,.detail,.role-panel,.booklet,.workflow{break-inside:avoid;box-shadow:none}.methods{grid-template-columns:repeat(3,1fr)}.method{padding:16px}.workflow{background:white;color:var(--ink);border:1px solid var(--line)}.workflow p,.step span{color:var(--muted)}.preview{box-shadow:none}.footer{padding:16px 0}.details{gap:0 25px}.tags,.subjects{gap:5px}a[href]:after{content:none}}
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="container header-inner">
+      <a class="brand" href="#top" aria-label="幼獅文化線上命題系統介紹首頁">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 5v15M3 4c4-1 6-1 9 1 3-2 5-2 9-1v15c-4-1-6-1-9 1-3-2-5-2-9-1Z"/></svg></span>
+        <span>幼獅文化<small>線上命題系統 · 功能導覽</small></span>
+      </a>
+      <nav class="nav" aria-label="頁面導覽"><a href="#methods">出題方式</a><a href="#features">核心功能</a><a href="#management">題庫管理</a><button class="button" onclick="window.print()">列印介紹</button></nav>
+    </div>
+  </header>
+  <main id="top" class="container">
+    <div class="hero">
+      <div>
+        <p class="eyebrow">為教師備課與命題而設計</p>
+        <h1>從挑選好題目，<br>到完成一份<span>好試卷。</span></h1>
+        <p class="lead">整合題庫選題、配分、試卷編輯與輸出。依教學範圍組卷，確認版面後儲存、列印或下載 Word，讓日常命題更有條理。</p>
+        <div class="hero-actions"><a href="#methods" class="button primary">探索三種出題方式 ↓</a><a href="index.html" class="button">前往系統登入 →</a></div>
+        <p class="hero-note">供教師與管理員使用；教師帳號請聯繫幼獅業務同仁申請。</p>
+      </div>
+      <aside class="preview" aria-label="試卷設定示意">
+        <div class="preview-top"><span>線上命題系統</span><span>試卷檢視</span></div>
+        <div class="preview-body"><div class="preview-label">健康與護理 · 隨堂練習</div><h3>出題內容，一目了然。</h3>
+          <div class="mock-row"><strong>是非題</strong><span>10 題 × 2 分</span></div>
+          <div class="mock-row"><strong>選擇題</strong><span>20 題 × 3 分</span></div>
+          <div class="mock-row"><strong>問答題</strong><span>2 題 × 10 分</span></div>
+          <div class="mock-total"><strong>總分</strong><strong>100 分</strong></div>
+          <div class="mock-toolbar"><span class="mock-tag">預覽版面</span><span class="mock-tag">列印</span><span class="mock-tag">下載 DOCX</span></div>
+          <p class="mock-caption">此處為功能示意，題數與配分為示例資料。</p>
+        </div>
+      </aside>
+    </div>
+    <div class="strip" aria-label="功能摘要"><div><strong>三種選題方式</strong><span>自動組卷、逐題挑選、輸入編碼</span></div><div><strong>六類題型</strong><span>搭配題數、配分與難易度設定</span></div><div><strong>試卷與題本輸出</strong><span>瀏覽器列印及 Word 文件</span></div><div><strong>儲存後再利用</strong><span>查找、編輯與重新輸出試卷</span></div></div>
+    <section id="methods" aria-labelledby="methods-title">
+      <div class="section-head"><h2 id="methods-title">依你的命題習慣，<br>選擇最順手的方式。</h2><p>同一套題庫，三種工作流程。從快速準備測驗，到精選每一道題目，都有對應的出題入口。</p></div>
+      <div class="methods">
+        <article class="method"><span class="number">01</span><h3>電腦選題</h3><p>設定條件，讓系統從指定範圍自動組卷。</p><ul><li>依科目、冊別與章節選擇範圍。</li><li>設定題數、配分及難易度比例。</li><li>調整章節題目比重，支援重新選題與換題。</li><li>填空題以格數規劃，提供自動配分。</li></ul></article>
+        <article class="method"><span class="number">02</span><h3>人工選題</h3><p>檢視題目內容，逐題挑選適合班級進度的試題。</p><ul><li>依科目、冊別與命題範圍尋找題目。</li><li>檢視題目與答案，累積已選試題。</li><li>核對題數與配分，再完成試卷設定。</li><li>調整題目順序，保留教師選題彈性。</li></ul></article>
+        <article class="method"><span class="number">03</span><h3>編碼選題</h3><p>已有目標題目時，透過題目編碼快速建立試卷。</p><ul><li>輸入題目編號加入試卷。</li><li>支援批次輸入多個題目編碼。</li><li>核對選題內容、設定配分與表頭。</li><li>接續預覽、儲存與輸出流程。</li></ul></article>
+      </div>
+      <div class="workflow"><h3>電腦選題：五個步驟完成一份試卷</h3><div class="steps"><div class="step"><span>STEP 01</span><strong>出題範圍</strong></div><div class="step"><span>STEP 02</span><strong>題型與配分</strong></div><div class="step"><span>STEP 03</span><strong>自動選題</strong></div><div class="step"><span>STEP 04</span><strong>試卷設定</strong></div><div class="step"><span>STEP 05</span><strong>預覽與輸出</strong></div></div><p>儲存時填寫試卷名稱及選填說明，完成後留在目前預覽頁，方便繼續調整。</p></div>
+    </section>
+    <section id="features" class="detail-section" aria-labelledby="features-title">
+      <div class="section-head"><h2 id="features-title">內容、版面與輸出，<br>在同一個工作流程完成。</h2><p>題目選好之後，仍可調整表頭、順序和顯示內容，讓試卷符合實際教學需求。</p></div>
+      <div class="details">
+        <article class="detail"><h3>多題型與配分</h3><p>支援是非、選擇、複選、填空、配合與問答六類題型。電腦選題提供自動配分、整數或半分調整，並顯示題數與總分摘要。</p><div class="tags"><span class="tag">六類題型</span><span class="tag">填空按格計分</span><span class="tag">總分檢視</span></div></article>
+        <article class="detail"><h3>表頭與版面設定</h3><p>設定學校、學年度、學期、科目、試別與考試範圍；調整班級、姓名、座號欄位格數與表頭位置。可選字型、行距與邊距，保存帳號的常用版面偏好。</p><div class="tags"><span class="tag">自訂表頭</span><span class="tag">字型與行距</span><span class="tag">版面偏好</span></div></article>
+        <article class="detail"><h3>預覽與題目順序</h3><p>預覽時切換解答、解析、出處與難易度。命題範圍目錄可標示對應試題，方便核對章節分布；題目與題型順序調整會帶入試卷輸出。</p><div class="tags"><span class="tag">解答與解析</span><span class="tag">範圍核對</span><span class="tag">順序調整</span></div></article>
+        <article class="detail"><h3>列印與 Word 匯出</h3><p>支援瀏覽器列印與真正的 DOCX 文件下載。輸出可選 A3、A4 或 JIS B4 紙張，搭配單欄／雙欄；題目、表頭及勾選的顯示內容沿用試卷設定。</p><div class="tags"><span class="tag">A3／A4／JIS B4</span><span class="tag">單欄／雙欄</span><span class="tag">DOCX 文件</span></div></article>
+        <article class="detail"><h3>試卷儲存與管理</h3><p>儲存試卷名稱與說明，透過名稱搜尋及冊別篩選找回試卷。清單顯示題數、冊別與建立時間，可依名稱、科目／冊別、題數及時間切換排序。</p><div class="tags"><span class="tag">搜尋與篩選</span><span class="tag">升冪／降冪</span><span class="tag">編輯與再次輸出</span></div></article>
+        <article class="detail"><h3>常用科目與個人設定</h3><p>在進階設定管理個人資料、常用科目及試卷版面偏好。使用帳號保存常用設定，減少每次建立新試卷時的重複操作。</p><div class="tags"><span class="tag">個人資料</span><span class="tag">常用科目</span><span class="tag">帳號設定</span></div></article>
+      </div>
+      <aside class="booklet"><div><h3>題本列印：把指定範圍整理成練習題本。</h3><p>從側邊欄進入題本列印，輸出指定科目、冊次與章節中的全部題目，適合備課與整理複習資料。</p></div><ol><li>選擇科目、冊次及有題目的章節。</li><li>依章節與題型分組預覽，切換解答、解析、出處及難易度。</li><li>調整版面後列印或下載 Word。</li></ol></aside>
+    </section>
+    <section id="management" class="detail-section" aria-labelledby="management-title">
+      <div class="section-head"><h2 id="management-title">教師專注命題，<br>管理員維護題庫。</h2><p>帳號角色區分出題與維護工作，科目、冊別及章節目錄串聯整套題庫內容。</p></div>
+      <div class="roles"><article class="role-panel"><h3>教師的日常工作</h3><ul><li>使用三種選題流程與題本列印。</li><li>預覽、儲存及管理自己的試卷。</li><li>調整表頭、版面與個人常用設定。</li><li>依需求列印試卷或匯出 Word。</li></ul></article><article class="role-panel"><h3>管理員的題庫維護</h3><ul><li>建立科目、冊別與多層章節目錄。</li><li>批次匯入 Word 入題檔，預覽並確認解析結果。</li><li>依章節、題型與關鍵字搜尋及編輯題目。</li><li>管理教師帳號；帳號操作依角色權限開放。</li></ul></article></div>
+      <div class="subjects" aria-label="共用預設科目"><span>大學全民國防教育</span><span>高中全民國防教育</span><span>健康與護理</span><span>生涯規劃</span><span>家政</span><span>生命教育</span><span>高中美術</span><span>技高美術</span><span>生活科技</span></div>
+      <p style="font-size:12px;color:var(--muted)">以上為系統共用預設科目；實際可選科目、冊別與題目依已發布題庫及課本目錄為準。</p>
+      <div class="boundary"><strong>目前服務範圍</strong><br>系統以教師命題、試卷管理與紙本輸出為核心。班級欄位用於試卷表頭，目前不提供班級分類、學生帳號、線上作答或成績管理。瀏覽器預覽與 Word 的分頁可能不同，正式使用前請確認實際輸出版面。</div>
+    </section>
+  </main>
+  <footer class="footer"><div class="container footer-inner"><span>幼獅文化 · 線上命題系統<br>功能內容依 2026 年 10 月 12 日專案版本整理。</span><a class="button" href="#top">回到頂端 ↑</a></div></footer>
+</body>
+</html>
