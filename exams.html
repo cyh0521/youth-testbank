@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="css/theme.css?v=20261005-tight-labels">
 <link rel="stylesheet" href="css/dashboard.css?v=20261012-shared-exam-table">
 <link rel="stylesheet" href="css/exam-compose.css?v=20261011-scope-level-emphasis">
-<script>if(localStorage.getItem("sidebarCollapsed")==="1")document.documentElement.classList.add("sidebar-collapsed");</script>
+
 <style>
 .filter-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
 .filter-row select{max-width:180px}
@@ -155,13 +155,14 @@ body.exam-editing .page-content{min-height:0;overflow-y:auto;overscroll-behavior
 #editQList .badge,#editQList .eq-full-replace{font-weight:400}
 .eq-compact>span.eq-compact-meta:not(.eq-qnum){display:inline-flex;align-items:center;line-height:1}
 </style>
+<link rel="stylesheet" href="css/site-redesign.css?v=20261012">
 </head>
 <body>
 <script src="js/icons.js"></script>
 <script src="js/core.js?v=20261008-choice-images"></script>
 <div class="layout">
-  <aside class="sidebar" id="sidebar"></aside>
-  <script src="js/shell.js?v=20261007-images-dir"></script>
+  <header class="site-header" id="sidebar"></header>
+  <script src="js/shell.js?v=20261012-redesign"></script>
   <div class="main" inert>
     <div class="topbar">
       <span class="topbar-title">試卷管理</span>

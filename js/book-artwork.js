@@ -1,0 +1,23 @@
+export const bookArtwork = Object.freeze({
+  "A1-01": "images/ui-redesign/books/A1-01.webp",
+  "A1-02": "images/ui-redesign/books/A1-02.webp",
+  "A1-03": "images/ui-redesign/books/A1-03.webp",
+  "A1-04": "images/ui-redesign/books/A1-04.webp",
+  "A1-05": "images/ui-redesign/books/A1-05.webp",
+  "B1-01": "images/ui-redesign/books/B1-01.webp",
+  "B1-02": "images/ui-redesign/books/B1-02.webp",
+  "C1-01": "images/ui-redesign/books/C1-01.webp",
+  "C1-02": "images/ui-redesign/books/C1-02.webp",
+  "C1-03": "images/ui-redesign/books/C1-03.webp",
+  "C1-04": "images/ui-redesign/books/C1-04.webp",
+  "C1-06": "images/ui-redesign/books/C1-06.webp",
+  "D1-01": "images/ui-redesign/books/D1-01.webp",
+  "D1-03": "images/ui-redesign/books/D1-03.webp",
+  "E1-01": "images/ui-redesign/books/E1-01.webp",
+  "F1-01": "images/ui-redesign/books/F1-01.webp",
+  "G1-01": "images/ui-redesign/books/G1-01.webp",
+  "G1-02": "images/ui-redesign/books/G1-02.webp",
+  "G1-03": "images/ui-redesign/books/G1-03.webp",
+  "H1-01": "images/ui-redesign/books/H1-01.webp",
+  "I1-01": "images/ui-redesign/books/I1-01.webp"
+});

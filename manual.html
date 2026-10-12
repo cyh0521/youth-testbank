@@ -5,7 +5,7 @@
 <title>手動選題 — 幼獅題庫系統</title>
 <link rel="stylesheet" href="css/theme.css">
 <link rel="stylesheet" href="css/process-bar.css">
-<script>if(localStorage.getItem("sidebarCollapsed")==="1")document.documentElement.classList.add("sidebar-collapsed");</script>
+
 <link rel="stylesheet" href="css/exam-compose.css?v=20261012-chapter-controls-18">
 <style>
 .manual-layout{display:block}
@@ -72,13 +72,14 @@
 @media(max-width:1100px){.selection-layout{grid-template-columns:1fr}}
 @media(max-width:760px){.manual-panel .card-header,.manual-panel .card-body,.bank-list,.selected-list,.score-cfg{padding-left:14px;padding-right:14px}}
 </style>
+<link rel="stylesheet" href="css/site-redesign.css?v=20261012">
 </head>
 <body class="exam-compose-page">
 <script src="js/icons.js"></script>
 <script src="js/core.js?v=20261008-choice-images"></script>
 <div class="layout">
-  <aside class="sidebar" id="sidebar"></aside>
-  <script src="js/shell.js?v=20261007-images-dir"></script>
+  <header class="site-header" id="sidebar"></header>
+  <script src="js/shell.js?v=20261012-redesign"></script>
   <div class="main" inert>
     <div class="topbar">
       <span class="topbar-title">手動選題</span>
@@ -144,7 +145,7 @@
 </div>
 
 <script type="module">
-import { renderScopePanel, mountScopeSelector } from './js/exam-scope.js?v=20261012-available-count';
+import { renderScopePanel, mountScopeSelector } from './js/exam-scope.js?v=20261012-book-entry';
 import { guardPage } from './js/auth-guard.js';
 import { showExamPreview, showHeaderSettings, newExamHeader, loadAppearance, mountInlineHeaderEditor, buildHeaderHtml, fontStackById, togglePreviewPanel } from './js/exam-preview.js?v=20261012-simple-header-v2';
 import { allocateTypeScores, AUTO_SCORE_WEIGHTS } from './js/score-allocation.js?v=20261007-weighted-scores';

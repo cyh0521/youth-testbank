@@ -1,184 +1,26 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
-<head>
+<html lang="zh-TW"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>首頁總覽 — 幼獅題庫系統</title>
-<link rel="stylesheet" href="css/theme.css?v=20261005-tight-labels">
-<link rel="stylesheet" href="css/dashboard.css?v=20261012-scope-overview">
-<link rel="stylesheet" href="css/dashboard-exam-editor.css">
-<script>if(localStorage.getItem("sidebarCollapsed")==="1")document.documentElement.classList.add("sidebar-collapsed");</script>
-</head>
-<body>
-<script src="js/icons.js"></script>
-<script src="js/core.js?v=20261008-choice-images"></script>
-<div class="layout">
-  <aside class="sidebar" id="sidebar"></aside>
-  <script src="js/shell.js?v=20261007-images-dir"></script>
-  <main class="main" inert>
-    <div class="topbar">
-      <span class="topbar-title">首頁總覽</span>
-      <div class="topbar-actions">
-        <span class="text-sm text-muted" id="welcomeText"></span>
-      </div>
-    </div>
-    <div class="page-content" id="content" aria-busy="true">
-      <div class="dashboard-overview dashboard-create-only"><div class="skeleton dash-skel-section"></div><div class="skeleton dash-skel-section"></div></div>
-      <div class="skeleton dash-skel-section"></div>
-    </div>
-  </main>
-</div>
-<script type="module">
-import { guardPage } from './js/auth-guard.js';
-import { openDashboardExamEditor } from './js/dashboard-exam-editor.js?v=20261012-simple-header-v2';
-import { confirmExamDeletion } from './js/confirm-exam-deletion.js';
-window._activeNav = 'dashboard';
-const user = await guardPage();
-if (!user) throw new Error('not auth');
-const I = window.ICONS;
-const esc = UI.escapeHtml;
-let dashboardExams = [];
-let examsLoaded = false;
-let dashboardSubjects = Object.fromEntries(Object.entries(SUBJECT_CODES).filter(([code]) => DataService.isSubjectVisible(code)));
-let dashboardSubjectRecords = new Map();
-const bookCache = new Map();
-
-const subjectName = code => dashboardSubjects[code] || code || '未分類';
-const examBookName = exam => {
-  const books = bookCache.get(exam.subjectCode);
-  const book = Array.isArray(books) ? books.find(item => item.code === exam.bookCode) : null;
-  return book?.name || exam.bookName || exam.bookCode || '未指定冊別';
-};
-const subjectTone = code => Math.max(0, Object.keys(SUBJECT_CODES).indexOf(code)) % 6;
-const examTime = value => {
-  if (!value) return 0;
-  const date = value.toDate ? value.toDate() : value.seconds != null ? new Date(value.seconds * 1000) : new Date(value);
-  return Number.isNaN(date.getTime()) ? 0 : date.getTime();
-};
-const dateLabel = value => {
-  const time = examTime(value);
-  return time ? new Date(time).toLocaleString('zh-TW', {year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}) : '—';
-};
-
-
-const canEditExams = DataService.isAdmin() || DataService.isTeacher();
-const recentEyeIcon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
-async function handleRecentExamAction(event) {
-  const button = event.target.closest('[data-exam-action]');
-  if (!button || button.dataset.busy === 'true') return;
-  const exam = dashboardExams.find(e => e.id === button.closest('[data-exam-id]').dataset.examId);
-  if (!exam) return;
-  const action = button.dataset.examAction;
-  if (action === 'delete' && !canEditExams) return;
-  button.dataset.busy = 'true';
-  try {
-    if (action === 'delete' && !await confirmExamDeletion(exam.title || '')) return;
-    if (action === 'edit') {
-      await openDashboardExamEditor(exam, async () => {
-        dashboardExams = await DataService.getExams();
-        renderExamRows();
-      });
-      return;
-    }
-    if (action === 'delete') {
-      await DataService.deleteExam(exam.id);
-      dashboardExams = dashboardExams.filter(e => e.id !== exam.id);
-      renderExamRows();
-      UI.toast('試卷已刪除', 'success');
-      return;
-    }
-    const questions = await DataService.getQuestionsByIds(exam.questionIds || []);
-    const byId = new Map(questions.map(q => [q.id, q]));
-    const ordered = (exam.questionIds || []).map(id => byId.get(id)).filter(Boolean);
-    if (!ordered.length) { UI.toast('此試卷無法載入題目', 'warning'); return; }
-    const { showExamPreview, printWithPaperChoice, downloadExam } = await import('./js/exam-preview.js?v=20261012-simple-header-v2');
-    if (action === 'preview') showExamPreview(exam, ordered);
-    else if (action === 'print') await printWithPaperChoice(exam, ordered);
-    else if (action === 'word') await downloadExam(exam, ordered, 'Word');
-  } catch (error) {
-    UI.toast('操作失敗：' + error.message, 'danger');
-  } finally {
-    delete button.dataset.busy;
-  }
-}
-
-function renderExamRows() {
-  if (!examsLoaded) {
-    document.getElementById('recentExamRows').innerHTML = '<tr><td colspan="5" class="dash-empty">試卷清單暫時無法載入，請重新載入頁面。</td></tr>';
-    return;
-  }
-  const filtered = [...dashboardExams].sort((a,b) => examTime(b.createdAt) - examTime(a.createdAt));
-  document.getElementById('recentExamRows').innerHTML = filtered.slice(0,10).map(e => `
-    <tr>
-      <td><span class="exam-name${e.description ? ' has-description' : ''}">${I.test20}<strong title="${esc(e.title || '（未命名）')}">${esc(e.title || '（未命名）')}</strong>${e.description ? `<span class="exam-description" title="${esc(e.description)}">${esc(e.description)}</span>` : ''}</span></td>
-      <td><span class="subject-tag tone-${subjectTone(e.subjectCode)}" title="${esc(examBookName(e))}">${esc(examBookName(e))}</span></td>
-      <td class="nowrap">${Number(e.questionCount) || 0} 題</td>
-      <td class="exam-date">${esc(dateLabel(e.createdAt))}</td>
-      <td><div class="recent-exam-actions" data-exam-id="${esc(e.id)}">
-        <button class="btn btn-sm btn-ghost" data-exam-action="preview">${recentEyeIcon}預覽</button>
-        ${canEditExams ? `<button class="btn btn-sm btn-ghost" data-exam-action="edit">${I.edit16}編輯</button>` : ''}
-        <button class="btn btn-sm btn-ghost" data-exam-action="print">${I.printer16}列印</button>
-        <button class="btn btn-sm btn-primary" data-exam-action="word">${I.download16}下載</button>
-        ${canEditExams ? `<button class="btn btn-sm btn-danger" data-exam-action="delete">${I.trash16}刪除</button>` : ''}
-      </div></td>
-    </tr>`).join('') || `<tr><td colspan="5" class="dash-empty">尚無試卷，從上方選題方式開始建立第一份試卷。</td></tr>`;
-}
-
-async function renderStaff() {
-  const [examsResult, subjectsResult] = await Promise.allSettled([
-    DataService.getExams(), DataService.getVisibleSubjects()
-  ]);
-  dashboardExams = examsResult.status === 'fulfilled' ? examsResult.value : [];
-  examsLoaded = examsResult.status === 'fulfilled';
-  // 合併課本管理中的自訂科目名稱；選單僅顯示有題目的科目。
-  if (subjectsResult.status === 'fulfilled') {
-    for (const subject of subjectsResult.value) {
-      if (subject.code) {
-        dashboardSubjects[subject.code] = subject.name || subject.code;
-        dashboardSubjectRecords.set(subject.code, subject);
-      }
-    }
-  }
-  await Promise.all([...new Set(dashboardExams.map(exam => exam.subjectCode).filter(Boolean))].map(async code => {
-    const subject = dashboardSubjectRecords.get(code);
-    if (!subject) return;
-    try {
-      const books = await DataService.getVisibleBooks(subject.id, code);
-      bookCache.set(code, books);
-    } catch (error) {
-      console.warn('Dashboard book names unavailable:', code, error);
-    }
-  }));
-  const action = (page, icon, label, desc, cls='') => `<a class="create-action ${cls}" href="${page}.html"><span class="create-icon">${icon}</span><span><strong>${label}</strong><small>${desc}</small></span><span class="action-arrow" aria-hidden="true">›</span></a>`;
-  const warnings = [examsResult.status === 'rejected' ? '試卷清單暫時無法載入' : ''].filter(Boolean);
-  document.getElementById('content').innerHTML = `
-    ${warnings.length ? `<div class="alert alert-warning" role="status">${warnings.join('；')}。<button class="btn btn-sm btn-outline" onclick="location.reload()">重新載入</button></div>` : ''}
-    <div class="dashboard-overview dashboard-create-only">
-      <section class="card create-card">
-        <div class="overview-heading"><div><h2>建立新試卷</h2><p>選擇方式，快速開始出題或列印題本</p></div></div>
-        <div class="create-actions">
-          ${action('compose', I.navAuto20, '電腦選題','依範圍與條件，快速生成試卷','auto-action')}
-          ${action('manual', I.navManual20, '手動選題','從題庫中挑選，彈性組卷','manual-action')}
-          ${action('coded', I.navNumber20, '編碼選題','輸入題目編號，精準加入試卷','coded-action')}
-          ${action('booklet', I.navBooklet20, '題本列印','依科目與章節製作題本，快速檢視','print-action')}
-        </div>
-      </section>
-    </div>
-    <section class="card recent-section" aria-labelledby="recentHeading">
-      <div class="section-heading"><div><h2 id="recentHeading">最近試卷</h2><p>查看最近建立的 10 份試卷，快速預覽、列印與管理；若要查看完整試卷清單，請移至「<a class="recent-management-link" href="exams.html">試卷管理</a>」。</p></div></div>
-      <div class="table-wrapper"><table class="data-table recent-table"><colgroup><col class="recent-col-title"><col class="recent-col-subject"><col class="recent-col-count"><col class="recent-col-date"><col class="recent-col-actions"></colgroup><thead><tr><th>試卷名稱</th><th>科目（冊別）</th><th>題數</th><th>建立時間</th><th>操作</th></tr></thead><tbody id="recentExamRows"></tbody></table></div>
-    </section>`;
-  document.getElementById('recentExamRows').addEventListener('click', handleRecentExamAction);
-  renderExamRows();
-}
-
-try {
-  await renderStaff();
-} catch (e) {
-  console.error('Dashboard render error:', e);
-  document.getElementById('content').innerHTML = `<div class="alert alert-danger">首頁載入失敗，請稍後重試。</div><button class="btn btn-primary" onclick="location.reload()">重新載入</button>`;
-} finally {
-  document.getElementById('content').setAttribute('aria-busy', 'false');
-}
-</script>
-</body>
-</html>
+<title>首頁總覽 — 幼獅文化</title>
+<link rel="stylesheet" href="css/theme.css?v=20261012">
+<link rel="stylesheet" href="css/site-redesign.css?v=20261012">
+<link rel="stylesheet" href="css/dashboard-redesign.css?v=20261012">
+<link rel="preload" href="vendor/chenyuluoyan/ChenYuluoyan-2.0-Thin.ttf" as="font" type="font/ttf" crossorigin>
+</head><body class="dashboard-page">
+<script src="js/icons.js"></script><script src="js/core.js?v=20261008-choice-images"></script>
+<div class="layout"><header class="site-header" id="sidebar"></header><script src="js/shell.js?v=20261012-redesign"></script>
+<main class="main" inert><div class="topbar"><span class="topbar-title">首頁總覽</span></div>
+<div class="page-content" id="content" aria-busy="true"><div id="green-comic-test"><section class="gc-home">
+        <section class="gc-welcome" aria-labelledby="gc-welcome-title">
+          <div class="gc-welcome-copy"><h2 id="gc-welcome-title"><span class="gc-coffee-line">給辛苦的自己一杯咖啡，</span><span class="gc-work-line"><span>開始今天的</span><strong>命題</strong>吧！</span></h2></div>
+          <img class="gc-welcome-art" src="images/ui-redesign/teacher-coffee-hero.png" alt="年輕老師使用筆電準備試卷，桌上有熱咖啡和鉛筆的綠色漫畫插畫" width="1774" height="887" decoding="async"/>
+        </section>
+        <div class="gc-heading"><h1>選擇冊別</h1><span>載入中…</span></div><div class="gc-grid"><div class="skeleton" style="height:205px"></div><div class="skeleton" style="height:205px"></div><div class="skeleton" style="height:205px"></div></div>
+      </section><div class="gc-overlay" hidden><div class="gc-modal" role="dialog" aria-modal="true" aria-labelledby="gc-mode-title"><button class="gc-close" type="button" aria-label="關閉">×</button><span class="gc-kicker">選擇出題方式</span><h2 id="gc-mode-title"></h2><div class="gc-modes">
+      <button type="button" data-mode="電腦選題"><span class="gc-mode-art"><svg viewBox="0 0 64 64"><rect x="10" y="10" width="44" height="32" rx="4"/><path d="M24 43v10M40 43v10M20 54h24M20 22h10M20 29h15M39 20l2 4 5 1-4 3 1 5-4-3-4 3 1-5-4-3 5-1z"/></svg></span><strong>電腦選題</strong><small>設定條件，快速生成試卷</small></button>
+      <button type="button" data-mode="手動選題"><span class="gc-mode-art"><svg viewBox="0 0 64 64"><rect x="14" y="9" width="36" height="46" rx="3"/><path d="m21 21 3 3 5-6M34 21h9m-22 14 3 3 5-6m5 3h9M21 47h22"/></svg></span><strong>手動選題</strong><small>逐題挑選，彈性組卷</small></button>
+      <button type="button" data-mode="編碼選題"><span class="gc-mode-art"><svg viewBox="0 0 64 64"><rect x="10" y="12" width="44" height="40" rx="4"/><path d="M18 23h8M18 32h8M18 41h8M34 23h11M34 32h11M34 41h11M22 8v8M42 8v8"/></svg></span><strong>編碼選題</strong><small>輸入題目編號，精準加入</small></button>
+      <button type="button" data-mode="題本列印"><span class="gc-mode-art"><svg viewBox="0 0 64 64"><path d="M18 20V8h28v12M18 46H9V24a4 4 0 0 1 4-4h38a4 4 0 0 1 4 4v22h-9M18 36h28v20H18zM45 27h2"/></svg></span><strong>題本列印</strong><small>依章節製作整冊或部分題本</small></button>
+    </div><p>所選冊別會自動帶入出題頁面</p></div></div></div></div></main></div>
+<script type="module" src="js/dashboard-home.js?v=20261012"></script>
+</body></html>

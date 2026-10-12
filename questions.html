@@ -5,7 +5,7 @@
 <title>題目維護 — 幼獅題庫系統</title>
 <link rel="stylesheet" href="css/theme.css">
 <link rel="stylesheet" href="css/dashboard.css">
-<script>if(localStorage.getItem("sidebarCollapsed")==="1")document.documentElement.classList.add("sidebar-collapsed");</script>
+
 <style>
 /* 頁面特有：題目文字截斷 */
 .filter-bar{flex-wrap:nowrap;overflow-x:auto}
@@ -167,13 +167,14 @@
 .q-card-answer .ans-label{flex:none;font-size:.82rem;color:inherit;font-weight:400}
 .q-card-answer .ans-val{min-width:0;white-space:pre-wrap;overflow-wrap:anywhere;color:inherit;font-weight:400;font-family:inherit}
 </style>
+<link rel="stylesheet" href="css/site-redesign.css?v=20261012">
 </head>
 <body>
 <script src="js/icons.js"></script>
 <script src="js/core.js?v=20261008-choice-images"></script>
 <div class="layout">
-  <aside class="sidebar" id="sidebar"></aside>
-  <script src="js/shell.js?v=20261007-images-dir"></script>
+  <header class="site-header" id="sidebar"></header>
+  <script src="js/shell.js?v=20261012-redesign"></script>
   <div class="main" inert>
     <div class="topbar">
       <span class="topbar-title">題目維護</span>

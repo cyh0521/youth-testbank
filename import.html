@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="css/process-bar.css">
 <link rel="stylesheet" href="css/dashboard.css">
 <link rel="stylesheet" href="css/exam-compose.css">
-<script>if(localStorage.getItem("sidebarCollapsed")==="1")document.documentElement.classList.add("sidebar-collapsed");</script>
+
 <style>
 /* ── 步驟 ── */
 .import-intro{display:grid;grid-template-columns:minmax(300px,.85fr) minmax(0,1.4fr);gap:18px;align-items:start}
@@ -117,13 +117,14 @@
 #importedFilesModal .btn-danger svg{display:block;width:16px;height:16px}
 #importedFilesModal .data-table th:last-child,#importedFilesModal .data-table td:last-child{width:88px;white-space:nowrap}
 </style>
+<link rel="stylesheet" href="css/site-redesign.css?v=20261012">
 </head>
 <body>
 <script src="js/icons.js"></script>
 <script src="js/core.js?v=20261008-choice-images"></script>
 <div class="layout">
-  <aside class="sidebar" id="sidebar"></aside>
-  <script src="js/shell.js?v=20261007-images-dir"></script>
+  <header class="site-header" id="sidebar"></header>
+  <script src="js/shell.js?v=20261012-redesign"></script>
   <div class="main" inert>
     <div class="topbar">
       <span class="topbar-title">題目匯入</span>

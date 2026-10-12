@@ -6,7 +6,6 @@
 (() => {
   const ROLE_KEY = 'youth.shellRole';
   const ACCOUNT_KEY = 'youth.shellAccount';
-  const COLLAPSED_KEY = 'sidebarCollapsed';
   const AVATAR_URL = new URL('avatar.js', document.currentScript.src).href;
   const avatarReady = window.Avatar ? Promise.resolve() : import(AVATAR_URL);
   const read = (storage, key) => { try { return window[storage].getItem(key); } catch { return null; } };
@@ -16,10 +15,6 @@
     if (page !== 'settings') return page;
     const view = new URLSearchParams(location.search).get('view');
     return view === 'accounts' ? 'account-admin' : 'settings';
-  };
-  const isCollapsed = () => {
-    const saved = read('localStorage', COLLAPSED_KEY);
-    return saved === null ? matchMedia('(max-width: 760px)').matches : saved === '1';
   };
 
   function enhanceTopbar() {
@@ -58,17 +53,6 @@
     topbar.querySelector('.topbar-breadcrumb')?.remove();
   }
 
-  function applyCollapsed(collapsed, remember = false) {
-    document.documentElement.classList.toggle('sidebar-collapsed', collapsed);
-    if (remember) write('localStorage', COLLAPSED_KEY, collapsed ? '1' : '0');
-    const toggle = document.getElementById('sidebarToggle');
-    if (toggle) {
-      const label = collapsed ? '展開側邊欄' : '收合側邊欄';
-      toggle.setAttribute('aria-expanded', String(!collapsed));
-      toggle.setAttribute('aria-label', label);
-      toggle.title = label;
-    }
-  }
 
   function confirmLogout() {
     const previousFocus = document.activeElement;
@@ -139,7 +123,7 @@
   }
 
   function renderAccount(user) {
-    const topbar = document.querySelector('.topbar');
+    const topbar = document.getElementById('siteAccount') || document.querySelector('.topbar');
     if (!topbar || !user) return;
 
     let actions = topbar.querySelector('.topbar-actions');
@@ -215,40 +199,35 @@
     const el = document.getElementById('sidebar');
     if (!el) return;
     const navRole = role === 'admin' || role === 'manager' ? 'admin' : 'teacher';
+    document.documentElement.classList.remove('sidebar-collapsed');
+    document.documentElement.classList.add('ui-redesign');
+    el.className = 'site-header';
     if (el.dataset.navRole !== navRole) {
       const I = window.ICONS || {};
-      const item = (page, icon, label, href = `${page}.html`) => `<a class="nav-item" href="${href}" data-page="${page}" title="${label}"><span class="icon">${icon || ''}</span><span class="nav-label">${label}</span></a>`;
-      const section = label => `<div class="nav-section-title"><span class="nav-label">${label}</span></div>`;
-      const brandIcon = '<img src="images/youth.png" alt="" aria-hidden="true" draggable="false">';
+      const previousAccount = el.querySelector('#siteAccount');
+      const item = (page, icon, label, href = `${page}.html`) => `<a href="${href}" data-page="${page}">${icon ? `<span class="site-nav-icon">${icon}</span>` : ''}<span>${label}</span></a>`;
+      const group = (label, contents) => `<details class="site-nav-group"><summary>${label}<span aria-hidden="true">⌄</span></summary><div class="site-nav-menu">${contents}</div></details>`;
       el.innerHTML = `
-        <div class="sidebar-top">
-          <button class="sidebar-brand-toggle" id="sidebarToggle" type="button" aria-controls="sidebarNav">
-            <span class="sidebar-brand-main"><span class="sidebar-brand-mark">${brandIcon}</span><strong class="sidebar-brand-name">幼獅文化</strong></span>
-            <span class="sidebar-brand-subtitle">線上命題系統</span>
-            <span class="sidebar-brand-hint" aria-hidden="true"><span class="sidebar-hint-collapse">‹</span><span class="sidebar-hint-expand">›</span></span>
-          </button>
-        </div>
-        <nav class="sidebar-nav" id="sidebarNav" aria-label="主要導覽">
-          ${item('dashboard', I.navHome20, '首頁總覽')}
-          ${navRole === 'admin' ? section('題庫管理') + item('textbooks', I.navTextbooks20, '課本管理') + item('import', I.navImport20, '題目匯入') + item('questions', I.navQuestions20, '題目維護') : ''}
-          ${section('出題管理')}
-          ${item('compose', I.navAuto20, '電腦選題')}
-          ${item('manual', I.navManual20, '手動選題')}
-          ${item('coded', I.navNumber20, '編碼選題')}
-          ${item('booklet', I.navBooklet20, '題本列印')}
-          ${item('exams', I.navExams20, '試卷管理')}
-          ${section('系統設定')}
-          ${item('settings', I.navSettings20, '進階設定')}
-          ${navRole === 'admin' ? item('account-admin', I.navAccounts20, '帳號管理', 'settings.html?view=accounts') : ''}
+        <a class="site-brand" href="dashboard.html"><svg viewBox="0 0 32 28" aria-hidden="true"><path d="M16 5C11 1 5 1 1 3v22c5-2 10-2 15 2 5-4 10-4 15-2V3c-4-2-10-2-15 2Z" fill="#f5c444"/><path d="M16 5v22" stroke="#fff" stroke-width="1.5"/></svg><strong>幼獅文化</strong></a>
+        <nav class="site-nav" aria-label="主要導覽">
+          ${item('dashboard', '', '首頁')}
+          ${group('出題與列印',item('compose',I.navAuto20,'電腦選題')+item('manual',I.navManual20,'手動選題')+item('coded',I.navNumber20,'編碼選題')+item('booklet',I.navBooklet20,'題本列印'))}
+          ${item('exams', '', '試卷管理')}
+          ${navRole === 'admin' ? group('題庫管理',item('textbooks',I.navTextbooks20,'課本管理')+item('import',I.navImport20,'題目匯入')+item('questions',I.navQuestions20,'題目維護')) : ''}
+          ${navRole === 'admin' ? group('設定',item('settings',I.navSettings20,'進階設定')+item('account-admin',I.navAccounts20,'帳號管理','settings.html?view=accounts')) : item('settings','','設定')}
         </nav>
-        <div class="sidebar-footer">
-          <button class="nav-item logout-btn" id="logoutBtn" type="button" aria-label="登出" title="登出" disabled><span class="icon">${I.logout20 || '⬅'}</span><span class="nav-label">登出</span></button>
-        </div>`;
+        <div id="siteAccount" class="site-account"></div>`;
+      if (previousAccount) el.querySelector('#siteAccount').replaceChildren(...previousAccount.childNodes);
+      el.querySelector('#siteAccount').inert = !document.documentElement.classList.contains('auth-ready');
       el.dataset.navRole = navRole;
-      document.getElementById('sidebarToggle').addEventListener('click', () => {
-        applyCollapsed(!document.documentElement.classList.contains('sidebar-collapsed'), true);
-      });
-      document.getElementById('logoutBtn').addEventListener('click', confirmLogout);
+      el.addEventListener('toggle',event=>{
+        if(event.target.matches('.site-nav-group[open]'))el.querySelectorAll('.site-nav-group').forEach(group=>{if(group!==event.target)group.open=false;});
+      },true);
+      if (!el._navigationEvents) {
+        el._navigationEvents = true;
+        document.addEventListener('pointerdown',event=>{if(!el.contains(event.target))el.querySelectorAll('.site-nav-group').forEach(group=>group.open=false);});
+        el.addEventListener('keydown',event=>{if(event.key==='Escape'){const group=event.target.closest('.site-nav-group');if(group){group.open=false;group.querySelector('summary').focus();}}});
+      }
     }
     el.querySelectorAll('[data-page]').forEach(link => {
       const selected = link.dataset.page === active;
@@ -256,7 +235,7 @@
       if (selected) link.setAttribute('aria-current', 'page');
       else link.removeAttribute('aria-current');
     });
-    applyCollapsed(isCollapsed());
+    el.querySelectorAll('.site-nav-group').forEach(group=>group.classList.toggle('active',!!group.querySelector('a.active')));
   }
 
   function confirmUser(user, active) {
@@ -265,8 +244,7 @@
     document.documentElement.classList.add('auth-ready');
     const main = document.querySelector('.main');
     if (main) main.inert = false;
-    const logout = document.getElementById('logoutBtn');
-    if (logout) logout.disabled = false;
+    document.getElementById('siteAccount').inert = false;
     refreshAccount(user);
   }
 
@@ -283,6 +261,7 @@
   // 靜態版面先顯示，資料操作等真實登入驗證後才啟用。
   document.addEventListener('DOMContentLoaded', () => {
     enhanceTopbar();
+    document.querySelectorAll('.topbar .topbar-actions').forEach(actions=>actions.remove());
     const main = document.querySelector('.main');
     if (main) main.inert = !document.documentElement.classList.contains('auth-ready');
     const cached = cachedAccount();

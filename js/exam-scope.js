@@ -13,6 +13,10 @@ export function mountScopeSelector({ cache, dataService, onChange }) {
   const _tbCache = cache;
   const DataService = dataService;
   const cSubject = document.getElementById('cSubject');
+  const entry = new URLSearchParams(globalThis.location?.search || '');
+  const entrySubject = entry.get('subject');
+  const entryBook = entry.get('book');
+  let entryPending = true;
   const isOverview = !!document.getElementById('scopeOverview');
   let subjectPool = null;
   let subjectRevision = 0;
@@ -412,12 +416,14 @@ export function mountScopeSelector({ cache, dataService, onChange }) {
           bookCounts.set(bookKey(sc, book.code), count);
           return `<option value="${escapeTreeText(book.code)}" ${count ? '' : 'disabled'}>${escapeTreeText(book.name)}</option>`;
         }).join('') || '<option value="">尚無冊別</option>';
-        const available = books.find(book => bookCounts.get(bookKey(sc, book.code)) > 0);
-        bk.disabled = !available;
+        const requested = entryPending && sc === entrySubject ? books.find(book => book.code === entryBook) : null;
+        entryPending = false;
+        const available = requested ? (bookCounts.get(bookKey(sc, requested.code)) > 0 ? requested : null) : books.find(book => bookCounts.get(bookKey(sc, book.code)) > 0);
+        bk.disabled = !books.some(book => bookCounts.get(bookKey(sc, book.code)) > 0);
         bk.value = available?.code || '';
         chart.setAttribute('aria-busy', 'false');
         if (available) await window.loadChapters();
-        else renderScopeChart([]);
+        else { renderScopeChart([]); if (requested) UI.toast('所選冊別尚無題目，請選擇其他冊別', 'warning'); }
       } catch (error) {
         if (revision !== subjectRevision || cSubject.value !== sc) return;
         bk.innerHTML = '<option value="">冊別無法載入</option>';
@@ -425,9 +431,27 @@ export function mountScopeSelector({ cache, dataService, onChange }) {
         chart.innerHTML = '<div class="scope-empty">題型分布暫時無法載入，請重新選擇科目。</div>';
       }
     };
-    cSubject.value = _tbCache.subjects[0]?.code || '';
+    cSubject.value = _tbCache.subjectByCode[entrySubject] ? entrySubject : _tbCache.subjects[0]?.code || '';
     cSubject.disabled = !_tbCache.subjects.length;
     queueMicrotask(() => window.onSubjectChange());
-  } else renderScopeCatalog();
+  } else {
+    renderScopeCatalog();
+    queueMicrotask(async () => {
+      if (!entrySubject || !entryBook) return;
+      const input = [...document.querySelectorAll('input[name="scopeBook"]')].find(input => input.dataset.subject === entrySubject && input.value === entryBook);
+      if (!input) return;
+      try {
+        const node = input.closest('.subject-node');
+        node.open = true;
+        await checkBookCounts(node);
+        if (input.disabled) { UI.toast('所選冊別尚無可用題目，請選擇其他冊別', 'warning'); return; }
+        cSubject.value = entrySubject;
+        await window.onSubjectChange();
+        document.getElementById('cBook').value = entryBook;
+        input.checked = true;
+        await window.loadChapters();
+      } catch (error) { UI.toast('冊別載入失敗，請重新選擇冊別', 'danger'); }
+    });
+  }
   return { getQuestions: selectedQuestions, getSelectedChapters, getChapterCatalog: () => chapterCatalog, clear: window.clearAllChapters };
 }

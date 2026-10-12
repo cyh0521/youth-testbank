@@ -5,7 +5,7 @@
 <title>編碼選題 — 幼獅題庫系統</title>
 <link rel="stylesheet" href="css/theme.css">
 <link rel="stylesheet" href="css/process-bar.css">
-<script>if(localStorage.getItem("sidebarCollapsed")==="1")document.documentElement.classList.add("sidebar-collapsed");</script>
+
 <link rel="stylesheet" href="css/exam-compose.css?v=20261012-chapter-controls-18">
 <style>
 .coded-layout{display:block}
@@ -47,13 +47,14 @@
 .coded-input-cards{display:grid;gap:16px;min-width:0}.coded-input-cards .form-group{margin-bottom:0}.coded-input-row{display:flex;gap:8px;align-items:center}.coded-input-row .form-control{flex:1;min-width:0}#lookupResult:empty{display:none}#lookupResult{margin-top:12px}#lookupResult .result-q{padding-left:0;padding-right:0;background:transparent}#lookupResult .result-q:hover{background:transparent}#codedPanel2 .selection-layout{grid-template-columns:minmax(280px,1fr) minmax(0,1.4fr)}@media(max-width:1100px){#codedPanel2 .selection-layout{grid-template-columns:1fr}}
 .coded-single-input{align-items:stretch}.coded-single-input .form-control{font-size:.86rem;padding:5px 8px}.coded-single-input .btn{font-size:.86rem;padding:5px 10px;white-space:nowrap}#qnumHint:empty,#batchHint:empty{display:none}
 </style>
+<link rel="stylesheet" href="css/site-redesign.css?v=20261012">
 </head>
 <body class="exam-compose-page">
 <script src="js/icons.js"></script>
 <script src="js/core.js?v=20261008-choice-images"></script>
 <div class="layout">
-  <aside class="sidebar" id="sidebar"></aside>
-  <script src="js/shell.js?v=20261007-images-dir"></script>
+  <header class="site-header" id="sidebar"></header>
+  <script src="js/shell.js?v=20261012-redesign"></script>
   <div class="main" inert>
     <div class="topbar">
       <span class="topbar-title">編碼選題</span>
@@ -107,7 +108,7 @@
 </div>
 
 <script type="module">
-import { renderScopePanel, mountScopeSelector } from './js/exam-scope.js?v=20261012-available-count';
+import { renderScopePanel, mountScopeSelector } from './js/exam-scope.js?v=20261012-book-entry';
 import { guardPage } from './js/auth-guard.js';
 import { showExamPreview, showHeaderSettings, newExamHeader, loadAppearance, mountInlineHeaderEditor, buildHeaderHtml, fontStackById, togglePreviewPanel } from './js/exam-preview.js?v=20261012-simple-header-v2';
 import { allocateTypeScores, AUTO_SCORE_WEIGHTS } from './js/score-allocation.js?v=20261007-weighted-scores';
