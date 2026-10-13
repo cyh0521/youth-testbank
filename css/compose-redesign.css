@@ -116,6 +116,9 @@
 @media(prefers-reduced-motion:reduce){.selection-redesign-page .compose-page-heading .step::before,.selection-redesign-page .compose-page-heading .step-num,.selection-redesign-page .compose-page-heading .step-copy strong{transition:none}}
 
 /* 流程區以整組高度置中，抵消文字行高造成的視覺上偏。 */
+.selection-redesign-page .compose-page-title{position:relative;z-index:1;flex:none;min-width:0}
+.selection-redesign-page .compose-page-title p{margin:0;color:#718775;font-size:.8rem;line-height:1.6}
+@media(max-width:1000px){.selection-redesign-page .compose-page-title{grid-column:1;grid-row:1}}
 .selection-redesign-page .compose-page-heading{align-items:center}
 .selection-redesign-page .compose-page-heading .import-progress{align-self:center;position:relative;top:2px}
 .selection-redesign-page .compose-page-heading .step-copy strong{line-height:1.4}

@@ -116,6 +116,7 @@
 
 </style>
 <link rel="stylesheet" href="css/site-redesign.css?v=20261013-control-states">
+<link rel="stylesheet" href="css/accounts-redesign.css?v=20261014-label-radius">
 </head>
 <body>
 <script src="js/icons.js"></script>
@@ -137,11 +138,11 @@
 <!-- ════════════════════════════════════════════
      新增 / 編輯帳號 Modal（靜態，不在 innerHTML 裡）
      ════════════════════════════════════════════ -->
-<div class="modal-overlay hidden" id="userModal">
+<div class="modal-overlay hidden" id="userModal" role="dialog" aria-modal="true" aria-labelledby="umTitle">
   <div class="modal">
     <div class="modal-header">
       <h3 id="umTitle">新增帳號</h3>
-      <button class="modal-close" onclick="closeUserModal()">✕</button>
+      <button class="modal-close" type="button" onclick="closeUserModal()" aria-label="關閉">✕</button>
     </div>
     <div class="modal-body">
       <div class="err-box" id="umErr"></div>
@@ -291,6 +292,8 @@ import { confirmAction, confirmDeletion } from './js/confirm-exam-deletion.js';
 import { DEFAULT_WORD_MARGINS, loadWordMargins, saveWordMargins, resetWordMargins, FONT_OPTIONS, FONT_SIZE_RANGE, LINE_HEIGHT_RANGE, loadAppearance, saveAppearance, loadHeader, saveHeader, HEADER_BLANK_LABELS, HEADER_BLANK_DEFAULTS, headerBlankParts, mountInlineHeaderEditor } from './js/exam-preview.js?v=20261012-simple-header-v2';
 
 const settingsView = new URLSearchParams(location.search).get('view');
+document.body.classList.toggle('accounts-redesign-page', settingsView === 'accounts');
+document.getElementById('accountInfoTitle').innerHTML = `<span class="modal-title-icon" aria-hidden="true">${ICONS.info20}</span>帳號資訊`;
 window._activeNav = settingsView === 'accounts' ? 'account-admin' : 'settings';
 const user = await guardPage();
 if (!user) throw new Error('not auth');
@@ -409,21 +412,19 @@ let allUsers = [];
 
 function buildAccountsPanel() {
   document.getElementById('spanel-accounts').innerHTML = `
+    <header class="accounts-page-heading"><h1>帳號管理</h1><p>管理使用者帳號與身份</p></header>
     <div class="card accounts-card">
-      <div class="card-header">
-        <h2>帳號管理</h2>
-        <button class="btn btn-primary btn-sm" id="addUserBtn">${ICONS.plus16}新增帳號</button>
-      </div>
       <div class="card-body">
         <div class="search-bar">
-          <div class="settings-search">${ICONS.search16}<input class="form-control" id="searchInput" placeholder="搜尋姓名或信箱" oninput="filterUsers()"></div>
-          <select class="form-control" id="roleFilter" style="max-width:130px" onchange="filterUsers()">
+          <div class="settings-search">${ICONS.search16}<input class="form-control" id="searchInput" aria-label="搜尋帳號" placeholder="搜尋姓名、信箱或學校" oninput="filterUsers()"></div>
+          <select class="form-control" id="roleFilter" aria-label="篩選身份" style="max-width:130px" onchange="filterUsers()">
             <option value="">全部身份</option>
             <option value="admin">主要管理員</option>
             <option value="manager">管理員</option>
             <option value="teacher">教師</option>
           </select>
           <span class="user-count" id="userCount"></span>
+          <button class="btn btn-primary btn-sm" id="addUserBtn">${ICONS.plus16}新增帳號</button>
         </div>
         <div class="table-wrapper">
           <table class="data-table" id="userTable">
@@ -469,12 +470,12 @@ window.filterUsers = () => {
   tbody.innerHTML = filtered.map(u => `
     <tr>
       <td><strong>${UI.escapeHtml(u.displayName||'—')}</strong>
-        ${u.uid===self.uid?'<span style="font-size:.82rem;background:#e8eef6;color:var(--primary);padding:1px 5px;border-radius:10px;margin-left:4px">我</span>':''}</td>
+        ${u.uid===self.uid?'<span class="account-self-badge">我</span>':''}</td>
       <td style="color:var(--text-secondary)">${UI.escapeHtml(u.email||'—')}</td>
       <td>${roleTag(u.role)}</td>
       <td>${UI.escapeHtml(u.school||'—')}</td>
       <td style="color:var(--text-muted)">${fmtDate(u.createdAt)}</td>
-      <td><div style="display:flex;gap:5px">
+      <td><div class="account-row-actions">
         <button class="btn btn-sm btn-ghost" type="button" onclick="openAccountInfo('${u.id||u.uid}')">${ICONS.info16}資訊</button>
         ${(isPrimaryAdmin || u.role==='teacher' || u.uid===self.uid) ? `<button class="btn btn-sm btn-ghost" onclick="openUserModal('${u.id||u.uid}')">${ICONS.edit16}編輯</button>` : ''}
         ${u.uid!==self.uid && u.role!=='admin' && (isPrimaryAdmin || u.role==='teacher')?`<button class="btn btn-sm btn-danger" onclick="doDelete('${u.id||u.uid}')">${ICONS.trash16}刪除</button>`:''}
@@ -562,7 +563,7 @@ window.openUserModal = (uid) => {
     const u = allUsers.find(x => (x.id||x.uid)===uid);
     if (!u) { UI.toast('找不到帳號', 'danger'); return; }
     if (u.uid !== user.uid && (!isPrimaryAdmin && u.role !== 'teacher')) { UI.toast('權限不足', 'danger'); return; }
-    document.getElementById('umTitle').textContent    = '編輯帳號';
+    document.getElementById('umTitle').innerHTML = `<span class="modal-title-icon" aria-hidden="true">${ICONS.edit20}</span>編輯帳號`;
     document.getElementById('umUid').value            = uid;
     document.getElementById('umRole').value           = u.role||'teacher';
     document.querySelector('#umRole option[value="admin"]').hidden = u.role!=='admin';
@@ -572,7 +573,7 @@ window.openUserModal = (uid) => {
     document.getElementById('umName').value           = u.displayName||'';
     document.getElementById('umSchool').value         = u.school||'';
   } else {
-    document.getElementById('umTitle').textContent    = '新增帳號';
+    document.getElementById('umTitle').innerHTML = `<span class="modal-title-icon" aria-hidden="true">${ICONS.plus20}</span>新增帳號`;
     document.getElementById('umUid').value            = '';
     document.getElementById('umRole').value           = 'teacher';
     document.querySelector('#umRole option[value="admin"]').hidden = true;

@@ -74,17 +74,14 @@
 .parse-stat-label{font-size:.86rem;color:var(--text-muted);margin:0}
 
 /* ── 預覽表格 ── */
-.preview-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius);margin-bottom:14px}
-.preview-table{display:block;width:100%;border-collapse:collapse;font-size:.88rem}
-.preview-table thead,.preview-table tbody{display:block;scrollbar-gutter:stable}
-.preview-table thead{overflow-y:hidden;background:var(--bg-base)}
-.preview-table tbody{max-height:360px;overflow-y:auto;overflow-x:hidden}
-.preview-table tr{display:grid;grid-template-columns:44px 140px 76px 44px 44px 68px 90px 120px minmax(180px,1fr) 90px}
-.preview-table th,.preview-table td{min-width:0;box-sizing:border-box}
-.preview-table th{position:sticky;top:0;background:var(--bg-base);padding:7px 10px;border-bottom:2px solid var(--border);text-align:left;font-weight:600;font-size:.84rem;color:var(--text-secondary);white-space:nowrap;z-index:1}
-.preview-table td{padding:7px 10px;border-bottom:1px solid var(--border-light);vertical-align:top;max-width:280px}
-.preview-table tr:hover td{background:#faf8f5}
-.q-text-cell{max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.preview-wrap{overflow:auto;max-height:440px;border:1px solid var(--border);border-radius:var(--radius);margin-bottom:14px}
+.preview-table{width:100%;min-width:1140px;table-layout:fixed;border-collapse:collapse;font-size:.88rem}
+.preview-table th,.preview-table td{box-sizing:border-box;text-align:left;vertical-align:middle}
+.preview-table th{position:sticky;top:0;z-index:1;background:var(--bg-base);padding:12px 10px;border-bottom:1px solid var(--border);font-weight:600;font-size:.84rem;color:var(--text-secondary);white-space:nowrap}
+.preview-table td{padding:12px 10px;border-bottom:1px solid var(--border-light)}
+.preview-table tbody tr:nth-child(even){background:#fbfcf9}
+.preview-table tbody tr:hover{background:#f0f5e9}
+.q-text-cell{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .src-tag{display:inline-block;background:#e8eef6;color:var(--primary);font-size:.78rem;padding:1px 5px;border-radius:3px;font-weight:600}
 
 /* ── 進度 ── */
@@ -97,13 +94,12 @@
 .import-complete-icon svg{width:36px;height:36px}
 .import-complete-icon.is-error{background:#ffe5e8;color:var(--danger)}
 .import-complete-icon.is-warning{background:#fff3d6;color:#9a6700}
-.preview-table{min-width:1012px}
 @media(max-width:1000px){.import-intro{grid-template-columns:1fr}}
 
 @media(max-width:600px){.import-card .section-heading,.import-card-body{padding-left:14px;padding-right:14px}.import-fields{grid-template-columns:1fr}}
 #importedFilesModal .modal{display:flex;flex-direction:column;max-height:90vh;overflow:hidden}
 #importedFilesModal .modal-header,#importedFilesModal .modal-footer{flex:none;position:static}
-#importedFilesModal .imported-files-heading{display:flex;align-items:center;gap:8px;min-width:0;flex-wrap:wrap}
+#importedFilesModal .imported-files-heading{display:flex;align-items:baseline;gap:8px;min-width:0;flex-wrap:wrap}
 #importedFilesModal .imported-files-note{font-size:.84rem;font-weight:400;color:var(--text-secondary)}
 #importedFilesModal .modal-body{flex:1;min-height:0;max-height:none;overflow-y:auto}
 #importedFilesModal .table-wrapper{overflow:visible}
@@ -118,8 +114,9 @@
 #importedFilesModal .data-table th:last-child,#importedFilesModal .data-table td:last-child{width:88px;white-space:nowrap}
 </style>
 <link rel="stylesheet" href="css/site-redesign.css?v=20261013-control-states">
+<link rel="stylesheet" href="css/testbank-redesign.css?v=20261014-imported-files-icon-align">
 </head>
-<body>
+<body class="testbank-redesign-page">
 <script src="js/icons.js"></script>
 <script src="js/core.js?v=20261008-choice-images"></script>
 <div class="layout">
@@ -130,17 +127,18 @@
       <span class="topbar-title">題目匯入</span>
     </div>
     <div class="page-content">
-
-      <!-- 步驟 -->
-      <section class="import-progress" aria-label="題目匯入流程">
+      <header class="testbank-page-heading import-page-heading">
+        <div class="import-page-title"><h1>題目匯入</h1><p>選擇冊別並匯入題目檔案</p></div>
+        <section class="import-progress" aria-label="題目匯入流程">
         <div class="steps" id="stepsBar" role="list">
           <div class="step active" id="step1" role="listitem" aria-current="step"><span class="step-num">1</span><span class="step-copy"><strong>選擇科目</strong></span></div>
           <div class="step" id="step2" role="listitem"><span class="step-num">2</span><span class="step-copy"><strong>上傳檔案</strong></span></div>
           <div class="step" id="step3" role="listitem"><span class="step-num">3</span><span class="step-copy"><strong>解析預覽</strong></span></div>
           <div class="step" id="step4" role="listitem"><span class="step-num">4</span><span class="step-copy"><strong>匯入題目</strong></span></div>
         </div>
-        <div class="import-progress-track" id="importProgressTrack" role="progressbar" aria-label="題目匯入進度" aria-valuemin="0" aria-valuemax="4" aria-valuenow="1" aria-valuetext="第 1 步，共 4 步"><div class="import-progress-fill" id="importProgressFill"></div></div>
-      </section>
+          <div class="import-progress-track" id="importProgressTrack" role="progressbar" aria-label="題目匯入進度" aria-valuemin="0" aria-valuemax="4" aria-valuenow="1" aria-valuetext="第 1 步，共 4 步"><div class="import-progress-fill" id="importProgressFill"></div></div>
+        </section>
+      </header>
 
       <!-- Step 1：科目 -->
       <div id="panelStep1" class="import-intro">
@@ -187,7 +185,7 @@
             <div><h2>上傳入題檔</h2><p>支援一次選取多個 Word 檔案</p></div>
             <div class="import-header-actions"><button class="btn btn-previous btn-sm" onclick="backStep1()"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10.5 6-6 6 6 6"/><path d="m18 6-6 6 6 6" stroke-opacity=".5"/></svg>上一步</button><button class="btn btn-primary btn-sm" id="parseBtn" onclick="parseAllFiles()" disabled><span id="parseBtnIcon"></span><span id="parseBtnLabel">下一步：解析預覽</span></button></div>
           </div><div class="card-body import-card-body">
-            <div id="selectedSubjectInfo" style="background:#e8eef6;border-radius:var(--radius);padding:10px 14px;font-size:.9rem;margin-bottom:16px;color:var(--primary)"></div>
+            <div id="selectedSubjectInfo" class="selected-subject-info"></div>
 
             <!-- 上傳區 -->
             <div class="upload-zone" id="uploadZone"
@@ -226,6 +224,7 @@
             </div>
             <div class="preview-wrap">
               <table class="preview-table">
+                <colgroup><col style="width:48px"><col style="width:165px"><col style="width:90px"><col style="width:55px"><col style="width:55px"><col style="width:78px"><col style="width:78px"><col style="width:150px"><col><col style="width:90px"></colgroup>
                 <thead>
                   <tr><th>#</th><th>來源檔案</th><th>題型</th><th>章</th><th>節</th><th>難易</th><th>頁數</th><th>來源</th><th>題目</th><th>答案</th></tr>
                 </thead>
@@ -264,7 +263,7 @@
 
 <div class="modal-overlay hidden" id="importedFilesModal" role="dialog" aria-modal="true" aria-labelledby="importedFilesTitle">
   <div class="modal modal-lg">
-    <div class="modal-header"><div class="imported-files-heading"><h3 id="importedFilesTitle">已匯入檔案列表</h3><span class="imported-files-note">︱同檔名合併顯示 ，刪除可移除已匯入題目</span></div><button class="modal-close" onclick="document.getElementById('importedFilesModal').classList.add('hidden')" aria-label="關閉">✕</button></div>
+    <div class="modal-header"><div class="imported-files-heading"><h3 id="importedFilesTitle">已匯入檔案列表</h3><span class="imported-files-note">︱同檔名合併顯示，刪除可移除已匯入題目</span></div><button class="modal-close" onclick="document.getElementById('importedFilesModal').classList.add('hidden')" aria-label="關閉">✕</button></div>
     <div class="modal-body" id="importedFilesBody"></div>
     <div class="modal-footer"><button class="btn btn-ghost" onclick="document.getElementById('importedFilesModal').classList.add('hidden')">關閉</button></div>
   </div>
@@ -404,8 +403,7 @@ function setStep(n) {
   const progress = document.getElementById('importProgressTrack');
   progress.setAttribute('aria-valuenow', String(n));
   progress.setAttribute('aria-valuetext', `第 ${n} 步，共 4 步`);
-  const fill = document.getElementById('importProgressFill');
-  fill.style.width = `${n * 25}%`;
+  document.getElementById('importProgressFill').style.width = `${n * 25}%`;
   [1,2,3,4].forEach(i => {
     const s = document.getElementById('step'+i);
     s.classList.remove('active','done');
@@ -465,14 +463,13 @@ function renderFileList() {
     const name = UI.escapeHtml(f.name);
     const icons = { pending:I.test16, parsing:I.refresh16, done:I.check16, error:I.close16 };
     const statusText = { pending:'待解析', parsing:'解析中…', done:`解析完成（${f.questions.length} 題）`, error: f.errorMsg||'解析失敗' };
-    const statusColor = { pending:'color:var(--text-muted)', parsing:'color:var(--primary-light)', done:'color:var(--success)', error:'color:var(--danger)' };
     return `<div class="file-row ${f.status}" id="frow-${idx}">
       <span class="fr-icon">${icons[f.status]}</span>
       <div class="fr-info">
         <div class="fr-name" title="${name}">${name}</div>
         <div class="fr-meta">${(f.size/1024).toFixed(1)} KB</div>
       </div>
-      <span class="fr-status" style="${statusColor[f.status]}">${UI.escapeHtml(statusText[f.status])}</span>
+      <span class="fr-status">${UI.escapeHtml(statusText[f.status])}</span>
       ${!isParsing && f.status !== 'parsing'
         ? `<button class="fr-remove" onclick="removeFile(${idx})" title="移除" aria-label="移除檔案">${I.close16}</button>`
         : ''}
@@ -592,7 +589,7 @@ function buildPreview(qs, sc, bc) {
   let sumHTML = `<div class="parse-stat"><div class="parse-stat-num">${doneFiles.length}</div><div class="parse-stat-label">檔案數</div></div>`;
   sumHTML += `<div class="parse-stat"><div class="parse-stat-num">${qs.length}</div><div class="parse-stat-label">總題數</div></div>`;
   Object.entries(totalByType).forEach(([t,c]) =>
-    sumHTML += `<div class="parse-stat"><div class="parse-stat-num">${c}</div><div class="parse-stat-label">${QUESTION_TYPES[t]||t}</div></div>`
+    sumHTML += `<div class="parse-stat"><div class="parse-stat-num">${c}</div><div class="parse-stat-label">${UI.escapeHtml(QUESTION_TYPES[t]||t)}</div></div>`
   );
   document.getElementById('parseSummary').innerHTML = sumHTML;
   document.getElementById('importNote2').textContent =
@@ -605,7 +602,7 @@ function buildPreview(qs, sc, bc) {
   const noAnswer = qs.filter(q => !q.answer).length;
   if (noAnswer) warnings.push(`${noAnswer} 題缺少答案`);
   document.getElementById('parseWarnings').innerHTML = warnings.map(w =>
-    `<div style="display:flex;align-items:center;gap:7px;background:#fff8e1;border:1px solid #ffe082;border-radius:var(--radius);padding:7px 12px;font-size:.88rem;color:#7c5000;margin-bottom:6px">${I.info16} ${w}</div>`
+    `<div class="parse-warning">${I.info16} ${UI.escapeHtml(w)}</div>`
   ).join('');
 
   renderPreviewPage();
@@ -625,15 +622,16 @@ function renderPreviewPage() {
   // 分頁按鈕（上下各一組）
   const pagHTML = buildPagHTML(previewPage, totalPages);
   document.getElementById('previewPagBtns').innerHTML = pagHTML;
-  document.getElementById('previewPagBtns2').innerHTML = totalPages > 1 ? pagHTML.replace(/goPreviewPage/g,'goPreviewPage') : '';
+  document.getElementById('previewPagBtns2').innerHTML = pagHTML;
 
   // 表格
   document.getElementById('previewTbody').innerHTML = pageQs.map((q, i) => {
     const globalIdx = start + i + 1;
-    const short = q._srcFile ? q._srcFile.replace(/\.docx$/i,'').slice(0,18) : '—';
+    const sourceFile = UI.escapeHtml(q._srcFile || '');
+    const short = q._srcFile ? UI.escapeHtml(q._srcFile.replace(/\.docx$/i,'').slice(0,18)) : '—';
     return `<tr>
       <td style="color:var(--text-muted);font-size:.84rem">${globalIdx}</td>
-      <td><span class="src-tag" title="${q._srcFile||''}">${short}</span></td>
+      <td><span class="src-tag" title="${sourceFile}">${short}</span></td>
       <td>${UI.typeBadge(q.type)}</td>
       <td>${q.chapterNum||'—'}</td>
       <td>${q.sectionNum||'—'}</td>
@@ -641,7 +639,7 @@ function renderPreviewPage() {
       <td>${UI.escapeHtml(q.source || '—')}</td>
       <td>${UI.escapeHtml(SOURCE_CODES[q.sourceCode] || q.sourceCode || '—')}</td>
       <td class="q-text-cell" style="${q.type==='T5' ? 'white-space:normal' : ''}" title="${UI.escapeHtml(q.text||'')}">${q.type==='T5' ? UI.matchingQuestionHtml(q.text) : q.text ? UI.questionHtml(q.text) : '<span style="color:var(--danger)">缺少題目</span>'}</td>
-      <td style="font-size:.85rem;color:var(--primary);max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${q.answer||'—'}</td>
+      <td class="preview-answer">${UI.escapeHtml(q.answer||'—')}</td>
     </tr>`;
   }).join('');
 }
@@ -663,8 +661,8 @@ function buildPagHTML(cur, total) {
   }
   range.forEach(p => {
     if (p==='…') h += `<span style="padding:0 4px;color:var(--text-muted);font-size:.88rem">…</span>`;
-    else h += `<button class="btn btn-sm" onclick="goPreviewPage(${p})"
-      style="padding:3px 8px;font-size:.86rem;${p===cur?'background:var(--primary);color:white;border-color:var(--primary)':''}">${p}</button>`;
+    else h += `<button class="btn btn-sm ${p===cur?'is-current':''}" onclick="goPreviewPage(${p})"
+    ${p===cur?'aria-current="page"':''} style="padding:3px 8px;font-size:.86rem">${p}</button>`;
   });
   h += `<button class="btn btn-ghost btn-sm" onclick="goPreviewPage(${cur+1})" ${cur===total?'disabled':''}
     style="padding:3px 8px;font-size:.86rem">下頁 ›</button>`;
@@ -736,6 +734,8 @@ window.doImport = async () => {
 window.resetImport = () => {
   selectedFiles = [];
   parsedAll = [];
+  document.getElementById('importBtn').disabled = false;
+  document.getElementById('importBtnLabel').textContent = '下一步：匯入題目';
   renderFileList();
   document.getElementById('subjectSel').value = '';
   document.getElementById('bookSel').value = '';

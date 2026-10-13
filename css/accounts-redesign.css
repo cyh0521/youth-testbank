@@ -1,0 +1,65 @@
+/* 帳號管理沿用新版試卷管理的標題、工具列與綠色表格。 */
+.accounts-redesign-page>.layout>.main>.topbar{display:none}
+.accounts-redesign-page .accounts-page-heading{display:flex;align-items:baseline;gap:8px;margin:0 0 14px}
+.accounts-redesign-page .accounts-page-heading h1{margin:0;color:#214a35;font-size:1.65rem;font-weight:700;line-height:1.35;letter-spacing:.025em}
+.accounts-redesign-page .accounts-page-heading p{margin:0;color:#718775;font-size:.9rem;line-height:1.6}
+.accounts-redesign-page .accounts-page-heading p::before{content:'︱';color:#a5b5a4}
+.accounts-redesign-page .settings-page .accounts-card{border:1px solid #dce6d8;border-radius:14px;background:#fff;box-shadow:0 3px 14px #294d3510;overflow:hidden}
+.accounts-redesign-page .settings-page .accounts-card .card-body{padding:0}
+.accounts-redesign-page .settings-page .accounts-card .search-bar{margin:0;padding:18px 22px;gap:12px;border-bottom:1px solid #e5ecde;background:#fff}
+.accounts-redesign-page .settings-search{min-width:180px;max-width:300px}
+.accounts-redesign-page .form-control{min-height:40px;border-color:#dce6d8;border-radius:8px;background:#fff;font-size:.9rem}
+.accounts-redesign-page .form-control:focus{border-color:#83aa70;box-shadow:0 0 0 3px #34774d12}
+.accounts-redesign-page .user-count{color:#718775}
+.accounts-redesign-page .settings-page .accounts-card .data-table{min-width:1000px}
+.accounts-redesign-page .settings-page .accounts-card .data-table th{padding:12px 18px;background:#fbfcf9;color:#4b6d53;font-size:.9rem;border-bottom-color:#e5ecde;white-space:nowrap}
+.accounts-redesign-page .settings-page .accounts-card .data-table td{padding:12px 18px;border-bottom-color:#e8eee3;vertical-align:middle}
+.accounts-redesign-page .settings-page .accounts-card .data-table tbody tr:nth-child(even){background:#fbfcf9}
+.accounts-redesign-page .settings-page .accounts-card .data-table tbody tr:hover{background:#f0f5e9}
+.accounts-redesign-page .data-table th:last-child{width:240px}
+.accounts-redesign-page .data-table td:nth-child(3),.accounts-redesign-page .data-table td:nth-child(5){white-space:nowrap}
+.accounts-redesign-page .account-row-actions{display:flex;align-items:center;gap:6px;white-space:nowrap}
+.accounts-redesign-page #userTable tbody :is(td,strong,.role-badge,.btn){font-weight:400}
+.accounts-redesign-page :is(.role-badge,.account-self-badge){border-radius:9px}
+.accounts-redesign-page .account-self-badge{margin-left:4px;padding:1px 5px;background:#e6efdc;color:#315940;font-size:.82rem}
+.accounts-redesign-page .role-admin{background:#f1ecd8;color:#80662c}
+.accounts-redesign-page .role-teacher{background:#e4f0e7;color:#37764b}
+.accounts-redesign-page .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border-radius:8px;box-shadow:none;white-space:nowrap}
+.accounts-redesign-page .btn svg{display:block;flex:none;width:16px;height:16px}
+.accounts-redesign-page .btn-ghost{color:#416b4c}
+.accounts-redesign-page .btn-secondary{color:#315940;background:#e6efdc;border-color:#adc79b}
+.accounts-redesign-page .btn-secondary:hover{background:#dceacd;border-color:#83aa70}
+.accounts-redesign-page :is(#userModal,#accountInfoModal) .modal{display:flex;flex-direction:column;max-height:90vh;max-height:90dvh;border:1px solid #dce6d8;border-radius:14px;background:#fff;overflow:hidden;box-shadow:0 16px 48px #294d3526}
+.accounts-redesign-page :is(#userModal,#accountInfoModal) .modal-header{position:static;flex:none;padding:18px 22px;background:#f3f6ed;border-bottom:1px solid #e5ecde}
+.accounts-redesign-page :is(#userModal,#accountInfoModal) .modal-header h3{color:#214a35}
+.accounts-redesign-page :is(#userModal,#accountInfoModal) .modal-body{min-height:0;padding:20px 22px;overflow-y:auto;overscroll-behavior:contain;color:#315940;font-size:.9rem}
+.accounts-redesign-page :is(#userModal,#accountInfoModal) .modal-footer{flex:none;padding:16px 22px;background:#fbfcf9;border-top:1px solid #e5ecde}
+.accounts-redesign-page :is(#userModal,#accountInfoModal) .modal-close{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border-radius:8px;color:#718775}
+.accounts-redesign-page :is(#userModal,#accountInfoModal) .modal-close:hover{background:#e6efdc;color:#315940}
+.accounts-redesign-page :is(#userModal,#accountInfoModal) .modal-close:focus-visible{outline:2px solid #34774d;outline-offset:2px}
+.accounts-redesign-page #userModal .form-label{font-size:.9rem;font-weight:600;color:#4b6d53;margin-bottom:7px}
+.accounts-redesign-page #userModal .form-control:disabled{opacity:1;background:#f1f4ee;border-color:#e0e8da;color:#718775;cursor:not-allowed}
+.accounts-redesign-page #userModal .form-control::placeholder{color:#8a9a89}
+.accounts-redesign-page #userModal .field-hint{margin-top:7px;color:#718775;font-size:.84rem;line-height:1.65}
+.accounts-redesign-page #userModal .pw-eye{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;padding:0;border-radius:6px;color:#718775}
+.accounts-redesign-page #userModal .pw-eye:hover{background:#edf4e6;color:#34774d}
+.accounts-redesign-page #userModal .pw-eye:focus-visible{outline:2px solid #34774d;outline-offset:1px}
+.accounts-redesign-page #umPasswordResetGroup{margin-bottom:0;padding:14px 16px;border:0;border-radius:10px;background:#f5f8f1}
+.accounts-redesign-page #accountInfoIdentity{padding:12px 14px;border:0;border-radius:10px;background:#fbfcf9;overflow-wrap:anywhere;line-height:1.6}
+.accounts-redesign-page .account-info-item span{color:#718775;font-size:.88rem}
+.accounts-redesign-page .account-info-item strong{color:#214a35;font-size:1.15rem;line-height:1.5;overflow-wrap:anywhere}
+.accounts-redesign-page .account-info-note{padding-top:14px;border-top:1px solid #e5ecde;color:#718775;line-height:1.7}
+.accounts-redesign-page .account-info-item{border:0;border-radius:10px;background:#f5f8f1}
+.accounts-redesign-page :is(input[type=checkbox],input[type=radio]){accent-color:#34774d}
+@media(max-width:600px){
+  .accounts-redesign-page .settings-page .accounts-card .search-bar{padding:14px;gap:10px}
+  .accounts-redesign-page .settings-search{flex:1 1 100%;max-width:none;min-width:0}
+  .accounts-redesign-page #roleFilter{flex:1;max-width:none!important}
+  .accounts-redesign-page .settings-page .accounts-card .user-count{margin-left:0}
+  .accounts-redesign-page :is(#userModal,#accountInfoModal) :is(.modal-header,.modal-body,.modal-footer){padding:14px}
+}
+@media(max-width:470px){
+  .accounts-redesign-page .accounts-page-heading{flex-wrap:wrap;gap:4px 8px}
+  .accounts-redesign-page .accounts-page-heading h1{font-size:1.15rem}
+  .accounts-redesign-page .accounts-page-heading p{font-size:.8rem}
+}

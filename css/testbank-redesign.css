@@ -1,0 +1,158 @@
+/* 題庫管理三個頁面共用新版標題、卡片與綠色控制項。 */
+.testbank-redesign-page>.layout>.main>.topbar{display:none}
+.testbank-redesign-page .testbank-page-heading{display:flex;align-items:baseline;gap:8px;margin:0 0 14px}
+.testbank-redesign-page .testbank-page-heading h1{margin:0;color:#214a35;font-size:1.65rem;font-weight:700;line-height:1.35;letter-spacing:.025em}
+.testbank-redesign-page .testbank-page-heading p{margin:0;color:#718775;font-size:.9rem;line-height:1.6}
+.testbank-redesign-page .testbank-page-heading p::before{content:'︱';color:#a5b5a4}
+.testbank-redesign-page .btn{border-radius:8px;box-shadow:none}
+.testbank-redesign-page .btn-primary{background:#34774d;border-color:#34774d}
+.testbank-redesign-page .btn-primary:hover{background:#28603c;border-color:#28603c}
+.testbank-redesign-page .btn-outline{background:#fff;color:#34774d;border-color:#b5cca6}
+.testbank-redesign-page .btn-outline:hover{background:#edf4e6;color:#315940;border-color:#83aa70}
+.testbank-redesign-page .btn-ghost{color:#416b4c}
+.testbank-redesign-page .btn-ghost:hover{background:#edf4e6;color:#315940}
+.testbank-redesign-page .form-control{border-color:#dce6d8;border-radius:8px;background:#fff}
+.testbank-redesign-page .form-control:focus{border-color:#83aa70;box-shadow:0 0 0 3px #34774d12}
+.testbank-redesign-page select.form-control{box-sizing:border-box;max-width:100%;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.testbank-redesign-page :is(input[type=checkbox],input[type=radio]){accent-color:#34774d}
+.testbank-redesign-page :is(.tb-panel,.question-section,.import-card){border:1px solid #dce6d8;border-radius:14px;background:#fff;box-shadow:0 3px 14px #294d3510;overflow:hidden}
+.testbank-redesign-page :is(.tb-panel,.import-card) .section-heading h2{color:#214a35;font-size:1.08rem;font-weight:700}
+.testbank-redesign-page :is(.tb-panel,.import-card) .section-heading p{color:#718775}
+.testbank-redesign-page :is(.tb-panel,.import-card) .section-heading{background:#fff;border-bottom:1px solid #e5ecde}
+.testbank-redesign-page :is(.tb-panel,.import-card) .card-body{background:#fff}
+
+/* 課本管理 */
+.testbank-redesign-page .tb-panel{padding-top:0}
+.testbank-redesign-page .tb-panel .section-heading{min-height:68px;padding:16px 20px;margin:0;align-items:center}
+.testbank-redesign-page .tb-list{padding:8px 18px 16px}
+.testbank-redesign-page .tb-table td{border-bottom-color:#e8eee3}
+.testbank-redesign-page .tb-table tbody tr:nth-child(even){background:#fbfcf9}
+.testbank-redesign-page .tb-table tbody tr:hover{background:#f0f5e9}
+.testbank-redesign-page .tb-table tbody tr.tb-item-active{background:#e8f1df;box-shadow:inset 3px 0 #43845b}
+.testbank-redesign-page .tb-table .tb-code{color:#718775}
+.testbank-redesign-page .tb-table .chapter-title{color:#315940}
+.testbank-redesign-page .tb-more,.testbank-redesign-page .tb-more:hover{border-color:transparent;box-shadow:none}
+.testbank-redesign-page .tb-more{background:transparent;color:#718775}
+.testbank-redesign-page .tb-more:hover{background:#edf4e6;color:#34774d}
+.testbank-redesign-page .tb-action-menu{border-color:#dce6d8;box-shadow:0 10px 30px #193b3220}
+.testbank-redesign-page .tb-action-menu button:hover,.testbank-redesign-page .tb-action-menu button:focus-visible{background:#edf4e6}
+.testbank-redesign-page .level-names-box,.testbank-redesign-page .section-row{background:#f5f8f1;border-color:#dce6d8}
+.testbank-redesign-page :is(#subjectModal,#bookModal,#chapterModal) :is(.level-names-box,.section-row){border:0}
+
+/* 題目維護 */
+.testbank-redesign-page .question-section{padding:0}
+.testbank-redesign-page .question-section .filter-bar{margin:0 0 14px;padding:18px 22px;border-bottom:1px solid #e5ecde}
+.testbank-redesign-page .question-section .result-bar{padding:0 22px}
+.testbank-redesign-page .question-section .table-wrapper{padding:0 22px 16px}
+.testbank-redesign-page .question-section .question-pagination{padding:14px 22px 18px}
+.testbank-redesign-page .question-table th{background:#fbfcf9;color:#4b6d53;border-bottom-color:#e5ecde}
+.testbank-redesign-page .question-table td{border-bottom-color:#e8eee3}
+.testbank-redesign-page .question-table tbody tr:nth-child(even){background:#fbfcf9}
+.testbank-redesign-page .question-table tbody tr:hover{background:#f0f5e9}
+.testbank-redesign-page .q-card-grid{padding:0 22px 18px}
+.testbank-redesign-page .q-card-item{border-color:#dce6d8;border-radius:10px}
+.testbank-redesign-page .q-card-item:hover{border-color:#83aa70;box-shadow:0 2px 8px #294d3510}
+.testbank-redesign-page .q-card-item.selected{background:#f5f8f1;border-color:#83aa70}
+.testbank-redesign-page .view-toggle{border-color:#dce6d8}
+.testbank-redesign-page .view-toggle button.active{background:#34774d;color:#fff}
+.testbank-redesign-page .view-toggle button:not(.active):hover{background:#edf4e6}
+.testbank-redesign-page .question-table .q-answer{color:#34774d}
+.testbank-redesign-page :is(#qModal,#chapterPickerModal) .modal{border:1px solid #dce6d8;border-radius:14px;box-shadow:0 16px 48px #294d3526}
+.testbank-redesign-page :is(#qModal,#chapterPickerModal) .modal-header{background:#f3f6ed;border-bottom-color:#e5ecde}
+.testbank-redesign-page :is(#qModal,#chapterPickerModal) .modal-header h3{color:#214a35}
+.testbank-redesign-page :is(#qModal,#chapterPickerModal) .modal-footer{background:#fbfcf9;border-top-color:#e5ecde}
+.testbank-redesign-page .chapter-picker-item:hover,.testbank-redesign-page .chapter-picker-item:focus-visible{background:#edf4e6}
+.testbank-redesign-page .chapter-picker-item.selected{background:#e6efdc;color:#315940}
+.testbank-redesign-page .question-section .filter-bar>.filter-group{min-width:0;flex-shrink:0}
+.testbank-redesign-page .question-section .filter-bar>.filter-group:has(#fSubject){width:150px;flex-basis:150px}
+.testbank-redesign-page .question-section .filter-bar>.filter-group:has(#fBook){width:200px;flex-basis:200px}
+.testbank-redesign-page .question-section .filter-bar>.filter-group:has(#fChapter),.testbank-redesign-page .question-section .filter-bar>.filter-group:has(#fSection),.testbank-redesign-page .question-section .filter-bar>.filter-group:has(#fSubsection){width:150px;flex-basis:150px}
+.testbank-redesign-page .question-section .filter-bar>.filter-group:has(#fType){width:120px;flex-basis:120px}
+.testbank-redesign-page .question-section .filter-bar select.form-control{width:100%;max-width:100%;min-width:0;text-overflow:ellipsis}
+.testbank-redesign-page #qModal select.form-control,.testbank-redesign-page .question-pagination select.form-control{width:max-content;max-width:100%;min-width:0}
+.testbank-redesign-page #qModal :is(.question-image-path,.question-image-settings){background:#f5f8f1;border:0}
+
+/* 題目匯入：沿用出題模式的整合式流程頁首。 */
+.testbank-redesign-page .import-page-heading{position:relative;isolation:isolate;display:flex;align-items:center;gap:26px;min-height:72px;margin:0 0 16px;padding:10px 24px;border:0;border-radius:12px;background:radial-gradient(circle at 103% 115%,transparent 0 69px,#71975a14 70px 72px,transparent 73px 89px,#71975a0e 90px 92px,transparent 93px),radial-gradient(circle at 97% -35%,#94b67914 0 64px,transparent 65px),linear-gradient(112deg,#f2f6e9 0 44%,#e4edcf 44% 73%,#d7e6c3 73%);overflow:hidden}
+.testbank-redesign-page .import-page-title{flex:none}
+.testbank-redesign-page .import-page-title h1{font-size:1.4rem}
+.testbank-redesign-page .import-page-title p{font-size:.8rem}
+.testbank-redesign-page .import-page-title p::before{content:none}
+.testbank-redesign-page .import-page-heading .import-progress{position:relative;top:2px;flex:1;min-width:0;margin:0;padding:0;border:0;background:none;box-shadow:none}
+.testbank-redesign-page .import-page-heading .steps{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:0}
+.testbank-redesign-page .import-page-heading .step{position:relative;isolation:isolate;flex-direction:column;gap:7px;padding:0;--step-gap:12px}
+.testbank-redesign-page .import-page-heading .step:not(:last-child)::after,.testbank-redesign-page .import-page-heading .step:not(:last-child)::before{content:'';position:absolute;left:calc(50% + 22px);top:11px;width:calc(100% + var(--step-gap) - 44px);height:3px;border-radius:3px}
+.testbank-redesign-page .import-page-heading .step:not(:last-child)::after{z-index:-1;background:repeating-linear-gradient(90deg,#ccd9c4 0 5px,transparent 5px 9px)}
+.testbank-redesign-page .import-page-heading .step:not(:last-child)::before{z-index:0;background:linear-gradient(90deg,#34774d,#94b679);transform:scaleX(0);transform-origin:left;transition:transform .3s ease}
+.testbank-redesign-page .import-page-heading .step.done::before{transform:scaleX(1)}
+.testbank-redesign-page .import-page-heading .step-num{position:relative;z-index:1;width:24px;height:24px;border:1px solid #dae5d2;background:#f2f6e9;color:#7d9580;font-size:13px;transition:background .25s,color .25s,box-shadow .25s,transform .25s}
+.testbank-redesign-page .import-page-heading .step.done .step-num{background:#dfeace;color:#3c6949;border-color:#d1e1c5}
+.testbank-redesign-page .import-page-heading .step.active .step-num{background:#34774d;color:#fff;border-color:#34774d;box-shadow:0 0 0 4px #34774d15;transform:scale(1.04)}
+.testbank-redesign-page .import-page-heading .step-copy strong{display:block;color:#7d8f80;font-size:13px;font-weight:500;line-height:1.4}
+.testbank-redesign-page .import-page-heading .step:is(.active,.done) .step-copy strong{color:#214a35;font-weight:700}
+.testbank-redesign-page .import-page-heading .import-progress-track{position:absolute;width:1px;height:1px;left:auto;right:auto;bottom:auto;clip-path:inset(50%);overflow:hidden}
+.testbank-redesign-page .import-card .section-heading{min-height:68px;padding:16px 20px}
+.testbank-redesign-page .import-card-body{padding:20px}
+.testbank-redesign-page #panelStep2 .selected-subject-info{margin-bottom:16px;padding:10px 14px;border-radius:8px;background:#f1f5eb;color:#315940;font-size:.9rem}
+.testbank-redesign-page :is(#panelStep2,#panelStep3) .btn-previous{background:#edf3e8;border-color:#d9e5d3;color:#4b6d53}
+.testbank-redesign-page :is(#panelStep2,#panelStep3) .btn-previous:hover{background:#e2ebdb;border-color:#c8dabb;color:#315940}
+.testbank-redesign-page :is(#panelStep2,#panelStep3) .btn-previous:focus-visible,.testbank-redesign-page #panelStep2 .upload-zone:focus-visible{outline:2px solid #34774d;outline-offset:3px}
+.testbank-redesign-page .upload-zone{border-color:#b9cdbb;background:#f5f8f1}
+.testbank-redesign-page .upload-zone:hover,.testbank-redesign-page .upload-zone.drag-over{border-color:#83aa70;background:#edf4e6}
+.testbank-redesign-page .upload-icon,.testbank-redesign-page .file-row .fr-icon{background:#e6efdc;color:#34774d}
+.testbank-redesign-page .upload-title,.testbank-redesign-page .file-row .fr-name{color:#214a35}
+.testbank-redesign-page .file-row,.testbank-redesign-page .preview-wrap{border-color:#dce6d8}
+.testbank-redesign-page #panelStep2 .file-row.parsing{border-color:#b5cda9;background:#f1f6eb}
+.testbank-redesign-page #panelStep2 .file-row.pending .fr-status{color:#718775}
+.testbank-redesign-page #panelStep2 .file-row.parsing .fr-status{color:#34774d}
+.testbank-redesign-page #panelStep2 .file-row.done .fr-status{color:#267656}
+.testbank-redesign-page #panelStep2 .file-row.error .fr-status{color:#b64359}
+.testbank-redesign-page #panelStep2 .file-row .fr-remove{border-color:#dce6d8;color:#718775}
+.testbank-redesign-page #panelStep2 .file-row .fr-remove:hover{border-color:#d9aca8;color:#a23e3e;background:#fff5f3}
+.testbank-redesign-page .parse-stat-num{color:#34774d}
+.testbank-redesign-page #panelStep3 .parse-stat{border:0;background:#f1f5eb}
+.testbank-redesign-page #panelStep3 .parse-warning{display:flex;align-items:center;gap:7px;margin-bottom:6px;padding:7px 12px;border:0;border-radius:8px;background:#fff8e8;color:#7c5000;font-size:.88rem}
+.testbank-redesign-page #panelStep3 :is(#previewPagBtns,#previewPagBtns2){display:flex;align-items:center;flex-wrap:wrap;gap:4px}
+.testbank-redesign-page #panelStep3 :is(#previewPagBtns,#previewPagBtns2) .btn.is-current{background:#34774d;border-color:#34774d;color:#fff}
+.testbank-redesign-page #panelStep3 :is(#previewPagBtns,#previewPagBtns2) .btn:not(.is-current):hover{background:#edf4e6;border-color:#b5cca6;color:#315940}
+.testbank-redesign-page #panelStep3 .preview-answer{max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#315940;font-size:.85rem}
+.testbank-redesign-page #panelStep3 .preview-wrap{border:0;border-radius:0}
+.testbank-redesign-page .preview-table th{background:#fbfcf9;color:#4b6d53;border-bottom-color:#e5ecde}
+.testbank-redesign-page .preview-table td{border-bottom-color:#e8eee3}
+.testbank-redesign-page .preview-table tbody tr:hover{background:#f0f5e9}
+.testbank-redesign-page .preview-table .src-tag{max-width:100%;overflow-wrap:anywhere;white-space:normal;line-height:1.45}
+.testbank-redesign-page .src-tag{background:#e6efdc;color:#315940;border-radius:8px}
+.testbank-redesign-page #importedFilesModal .modal{border:1px solid #dce6d8;border-radius:14px;box-shadow:0 16px 48px #294d3526}
+.testbank-redesign-page #importedFilesModal .modal-header{background:#f3f6ed;border-bottom-color:#e5ecde}
+.testbank-redesign-page #importedFilesModal .imported-files-heading{align-items:baseline}
+.testbank-redesign-page #importedFilesModal .imported-files-heading h3{display:block;position:relative;padding-left:30px}
+.testbank-redesign-page #importedFilesModal .imported-files-heading h3 .modal-title-icon{position:absolute;left:0;top:50%;transform:translateY(-50%)}
+.testbank-redesign-page #importedFilesModal .imported-files-heading h3,.testbank-redesign-page #importedFilesModal .imported-files-note{margin:0;font-family:var(--font-sans);line-height:1.4}
+.testbank-redesign-page #importedFilesModal .modal-footer{background:#fbfcf9;border-top-color:#e5ecde}
+.testbank-redesign-page #importedFilesModal .data-table th{background:#fbfcf9;color:#4b6d53}
+.testbank-redesign-page #importedFilesModal tr.file-selected{background:#e6efdc}
+
+@media(max-width:1000px){
+  .testbank-redesign-page .import-page-heading{flex-direction:column;align-items:stretch;gap:12px;padding:12px 20px}
+  .testbank-redesign-page .import-page-heading .import-progress{top:0}
+  .testbank-redesign-page .import-page-heading .steps{gap:5px}
+  .testbank-redesign-page .import-page-heading .step{--step-gap:5px}
+}
+@media(max-width:700px){
+  .testbank-redesign-page .testbank-page-heading{flex-wrap:wrap;gap:2px 8px}
+  .testbank-redesign-page .testbank-page-heading h1{font-size:1.3rem}
+  .testbank-redesign-page .testbank-page-heading p{font-size:.82rem}
+  .testbank-redesign-page .import-page-heading{padding:13px 16px;gap:10px}
+  .testbank-redesign-page .import-page-title h1{font-size:1.25rem}
+  .testbank-redesign-page .import-page-heading .steps{gap:3px}
+  .testbank-redesign-page .import-page-heading .step{--step-gap:3px;gap:6px}
+  .testbank-redesign-page .import-page-heading .step-copy strong{font-size:12px}
+  .testbank-redesign-page .question-section .filter-bar{padding:14px}
+  .testbank-redesign-page .question-section .result-bar{padding:0 14px}
+  .testbank-redesign-page .question-section .table-wrapper{padding:0 14px 14px}
+  .testbank-redesign-page .question-section .question-pagination{padding:14px}
+  .testbank-redesign-page .q-card-grid{padding:0 14px 14px}
+}
+@media(prefers-reduced-motion:reduce){
+  .testbank-redesign-page .import-page-heading .step::before,.testbank-redesign-page .import-page-heading .step-num{transition:none}
+}

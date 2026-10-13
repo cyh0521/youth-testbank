@@ -11,7 +11,7 @@
 .filter-bar{flex-wrap:nowrap;overflow-x:auto}
 .filter-bar .filter-group,.filter-bar .filter-actions{flex-shrink:0}
 .filter-bar .filter-actions{margin-left:0}
-.filter-bar #fChapter,.filter-bar #fSection,.filter-bar #fSubsection{width:150px;max-width:150px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.filter-bar #fChapter,.filter-bar #fSection,.filter-bar #fSubsection{max-width:320px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .filter-bar #fChapter option,.filter-bar #fSection option,.filter-bar #fSubsection option{padding-right:16px}
 .filter-bar .keyword-filter{width:120px;flex:0 0 120px}
 .filter-bar .keyword-filter .form-control{width:100%;min-width:0}
@@ -168,8 +168,9 @@
 .q-card-answer .ans-val{min-width:0;white-space:pre-wrap;overflow-wrap:anywhere;color:inherit;font-weight:400;font-family:inherit}
 </style>
 <link rel="stylesheet" href="css/site-redesign.css?v=20261013-control-states">
+<link rel="stylesheet" href="css/testbank-redesign.css?v=20261014-filter-widths">
 </head>
-<body>
+<body class="testbank-redesign-page">
 <script src="js/icons.js"></script>
 <script src="js/core.js?v=20261008-choice-images"></script>
 <div class="layout">
@@ -180,6 +181,7 @@
       <span class="topbar-title">題目維護</span>
     </div>
     <div class="page-content">
+      <header class="testbank-page-heading"><h1>題目維護</h1><p>搜尋、編輯與管理題庫</p></header>
       <section class="card recent-section question-section" aria-label="題目清單">
 
       <!-- 篩選列 -->
@@ -198,19 +200,19 @@
         </div>
         <div class="filter-group">
           <span class="filter-label" id="fChapterLabel">章</span>
-          <select class="form-control" id="fChapter" style="min-width:130px" onchange="onChapterFilter()">
+          <select class="form-control" id="fChapter" onchange="onChapterFilter()">
             <option value="">全部</option>
           </select>
         </div>
         <div class="filter-group" id="fSectionGroup" style="display:none">
           <span class="filter-label" id="fSectionLabel">節</span>
-          <select class="form-control" id="fSection" style="min-width:130px" onchange="onSectionFilter()">
+          <select class="form-control" id="fSection" onchange="onSectionFilter()">
             <option value="">全部</option>
           </select>
         </div>
         <div class="filter-group" id="fSubsectionGroup" style="display:none">
           <span class="filter-label" id="fSubsectionLabel">小節</span>
-          <select class="form-control" id="fSubsection" style="min-width:130px" onchange="updateTypeOptions()">
+          <select class="form-control" id="fSubsection" onchange="updateTypeOptions()">
             <option value="">全部</option>
           </select>
         </div>
@@ -274,7 +276,7 @@
           <div class="pagination" id="pagination"></div>
           <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
             <span style="font-size:.88rem;color:var(--text-muted)">每頁</span>
-            <select class="form-control" id="pageSizeSel" style="width:70px;font-size:.88rem;padding:4px 6px" onchange="onPageSizeChange()">
+            <select class="form-control" id="pageSizeSel" style="font-size:.88rem;padding:4px 6px" onchange="onPageSizeChange()">
               <option value="20">20</option>
               <option value="50" selected>50</option>
               <option value="100">100</option>
@@ -292,7 +294,7 @@
           <div class="pagination" id="paginationCard"></div>
           <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
             <span style="font-size:.88rem;color:var(--text-muted)">每頁</span>
-            <select class="form-control" id="pageSizeSelCard" style="width:70px;font-size:.88rem;padding:4px 6px" onchange="onPageSizeChange(true)">
+            <select class="form-control" id="pageSizeSelCard" style="font-size:.88rem;padding:4px 6px" onchange="onPageSizeChange(true)">
               <option value="10">10</option>
               <option value="20" selected>20</option>
               <option value="50">50</option>
@@ -952,7 +954,7 @@ window.openEdit = async id => {
       <div class="form-group"><label class="form-label">答案 <span class="required">*</span></label>
         <div style="display:flex;gap:8px">
           <input class="form-control" id="eq-answer" style="flex:1;min-width:0;${q.type === 'T1' ? 'display:none' : ''}" value="${UI.escapeHtml(q.answer||'')}">
-          <select class="form-control" id="eq-truefalse-answers" aria-label="選擇是非題答案" style="width:100%;${q.type === 'T1' ? '' : 'display:none'}">
+          <select class="form-control" id="eq-truefalse-answers" aria-label="選擇是非題答案" style="${q.type === 'T1' ? '' : 'display:none'}">
             <option value="">選答案</option><option value="○" ${q.answer === '○' ? 'selected' : ''}>○</option><option value="Ｘ" ${q.answer === 'Ｘ' ? 'selected' : ''}>Ｘ</option>
           </select>
         </div>
