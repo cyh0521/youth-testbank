@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>試卷管理 — 幼獅題庫系統</title>
-<link rel="stylesheet" href="css/theme.css?v=20261005-tight-labels">
+<link rel="stylesheet" href="css/theme.css?v=20261013-dialog-colors">
 <link rel="stylesheet" href="css/dashboard.css?v=20261012-shared-exam-table">
 <link rel="stylesheet" href="css/exam-compose.css?v=20261011-scope-level-emphasis">
 
@@ -155,19 +155,21 @@ body.exam-editing .page-content{min-height:0;overflow-y:auto;overscroll-behavior
 #editQList .badge,#editQList .eq-full-replace{font-weight:400}
 .eq-compact>span.eq-compact-meta:not(.eq-qnum){display:inline-flex;align-items:center;line-height:1}
 </style>
-<link rel="stylesheet" href="css/site-redesign.css?v=20261013-sketch-line">
+<link rel="stylesheet" href="css/site-redesign.css?v=20261013-global-nav-arrows">
+<link rel="stylesheet" href="css/exams-redesign.css?v=20261013-compact-heading">
 </head>
-<body>
+<body class="exams-redesign-page">
 <script src="js/icons.js"></script>
 <script src="js/core.js?v=20261008-choice-images"></script>
 <div class="layout">
   <header class="site-header" id="sidebar"></header>
   <script src="js/shell.js?v=20261013-brand-line"></script>
   <div class="main" inert>
-    <div class="topbar">
-      <span class="topbar-title">試卷管理</span>
-    </div>
     <div class="page-content">
+      <header class="exams-page-heading">
+        <h1>試卷管理</h1>
+        <p>查找與管理已建立的試卷</p>
+      </header>
       <section id="listView" class="card recent-section">
         <div class="filter-row">
           <input class="form-control" id="searchInput" placeholder="🔍 搜尋試卷名稱…" oninput="filterExams()" style="max-width:220px">

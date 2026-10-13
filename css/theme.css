@@ -512,14 +512,14 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
 .modal-xl { max-width: 1000px; }
 .modal-header {
   padding: 16px 20px;
-  border-bottom: 1px solid var(--border-light);
+  border-bottom: 1px solid #e5ecde;
   display: flex; align-items: center; justify-content: space-between;
-  position: sticky; top: 0; background: white; z-index: 1;
+  position: sticky; top: 0; background: #f3f6ed; z-index: 1;
 }
 .modal-header h3 {
   display: inline-flex; align-items: center; gap: 9px; min-width: 0;
   font-family: var(--font-sans); font-size: 1.2rem; font-weight: 700;
-  letter-spacing: .01em; line-height: 1.35; color: var(--primary);
+  letter-spacing: .01em; line-height: 1.35; color: #214a35;
 }
 .modal-header h3 .modal-title-icon {
   display: inline-flex; flex: none; align-items: center; justify-content: center;
@@ -536,7 +536,8 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
 .modal-body { padding: 20px; }
 .modal-footer {
   padding: 14px 20px;
-  border-top: 1px solid var(--border-light);
+  border-top: 1px solid #e5ecde;
+  background: #fbfcf9;
   display: flex; justify-content: flex-end; gap: 10px;
 }
 

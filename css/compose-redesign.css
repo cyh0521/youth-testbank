@@ -145,8 +145,6 @@
 
 /* 下載視窗掛在 body，仍需使用電腦選題頁的主題。 */
 .selection-redesign-page #epPaperSizeModal .ep-layout-modal{border:1px solid #dce6d8;border-radius:14px;box-shadow:0 18px 55px #254d3524;background:#fff}
-.selection-redesign-page #epPaperSizeModal .modal-header{padding:18px 22px;border-bottom:1px solid #e5ecde;background:#f3f6ed}
-.selection-redesign-page #epPaperSizeModal .modal-header h3{font-size:1.1rem;color:#214a35}
 .selection-redesign-page #epPaperSizeModal .modal-close{color:#718775;border-radius:6px}
 .selection-redesign-page #epPaperSizeModal .modal-close:hover{background:#e5eedc;color:#34774d}
 .selection-redesign-page #epPaperSizeModal .ep-layout-body{padding:20px 22px}
@@ -168,8 +166,6 @@
 .selection-redesign-page #epPaperSizeModal .btn-ghost:hover{background:#edf4e6;color:#34774d}
 
 /* 章節比重設定保留滑桿操作，統一為新版視窗與章節標籤。 */
-.selection-redesign-page #sectionWeightModal .modal-header{padding:18px 22px;background:#f3f6ed;border-bottom:1px solid #e5ecde}
-.selection-redesign-page #sectionWeightModal .modal-header h3{color:#214a35;font-size:1.1rem}
 .selection-redesign-page #sectionWeightModal .section-weight-note{color:#718775;font-size:13px}
 .selection-redesign-page #sectionWeightModal .modal-body{padding:18px 22px}
 .selection-redesign-page #sectionWeightModal .section-weight-row{padding:13px 14px;margin-bottom:10px;border:1px solid #e0e8d7;border-radius:9px;background:#fbfcf9;gap:14px}
