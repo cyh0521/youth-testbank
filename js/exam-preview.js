@@ -681,6 +681,10 @@ export function togglePreviewPanel(panelId) {
   panelIds.forEach(id => {
     const panel = document.getElementById(id);
     if (!panel) return;
+    if (id === 'epPreviewOptions' && panel.dataset.alwaysVisible === 'true') {
+      panel.hidden = false;
+      return;
+    }
     const visible = id === panelId && expanded;
     if (id === 'epPreviewOptions') panel.hidden = !visible;
     else panel.classList.toggle('hidden', !visible);

@@ -18,6 +18,8 @@ window.DataService={getQuestionCount:async({bookCode})=>bookCode==='E'?0:1,getQu
 window._tbCache.booksBySubject.s.forEach(b=>Object.assign(b,{l1:'章',l2:'節',l3:'小節'}));
 window.DataService.getExamPreferences=()=>({});
 window.UI.choiceQuestionHtml=q=>q.text;
+window.UI.questionText=value=>String(value??'');
+window.UI.questionSummary=value=>String(value??'');
 document.addEventListener('DOMContentLoaded',()=>document.querySelector('.main')?.removeAttribute('inert'));
 `;
 const server=createServer(async(req,res)=>{
@@ -34,12 +36,8 @@ try {
   const page=await browser.newPage({viewport:{width:1500,height:950}});const errors=[];
   page.on('pageerror',e=>errors.push(e.message));
   await page.goto(`http://127.0.0.1:${server.address().port}/${name}.html`);
-  if(name==='booklet') {
-    await page.locator('.subject-node summary').click();
-    await page.locator('input[name="scopeBook"][value="B"]:not(:disabled)').waitFor({state:'attached'});
-    assert.equal(await page.locator('input[name="scopeBook"][value="E"]').isDisabled(),true);
-    await page.locator('#subjectTree').getByText('有題目冊次',{exact:true}).click();
-  } else {
+  {
+    await page.locator('#cSubject').selectOption('A');
     await page.locator('#cBook option[value="B"]:not(:disabled)').waitFor({state:'attached'});
     assert.equal(await page.locator('#scopeOverview').isVisible(),true);
     assert.equal(await page.locator('#subjectTree').count(),0);
@@ -86,6 +84,29 @@ try {
    if(name==='coded'){await page.locator('#qnumInput').fill('42');await page.locator('#addBtn').click();}
    else await page.locator('#bankList').getByRole('button',{name:'加入',exact:true}).click();
    assert.match(await page.locator('#selCountLabel').innerText(),/1 題/);
+   const statsRow = page.locator('.selected-result-info');
+   assert.equal(await statsRow.locator('#'+name+'FullBtn').count(),1);
+   assert.ok(await page.locator('#selList .'+name+'-compact-question').isVisible());
+   await page.locator('#'+name+'FullBtn').click();
+   assert.ok(await page.locator('#selList .'+name+'-full-question').isVisible());
+   assert.equal(await page.locator('#'+name+'FullBtn').getAttribute('aria-pressed'),'true');
+   await page.locator('#'+name+'ListBtn').click();
+   assert.ok(await page.locator('#selList .'+name+'-compact-question').isVisible());
+   await page.locator('#selList .result-q[data-id]').click();
+   assert.ok(await page.locator('#selList .'+name+'-full-question').isVisible());
+   assert.match(await statsRow.locator('#selectedStats').innerText(),/共 1 題/);
+   if (name === 'manual') {
+    assert.equal(await page.locator('.card-header #manualFilterMenu').count(),0);
+    const bankTitle = await page.locator('#bankList .result-section-title').first().boundingBox();
+    const selectedTitle = await page.locator('#selList .result-section-title').first().boundingBox();
+    assert.ok(Math.abs(bankTitle.y-selectedTitle.y)<1,'first type rows should align');
+    assert.ok(Math.abs(bankTitle.height-selectedTitle.height)<1,'type rows should have equal heights');
+    const card = await page.locator('.card:has(#bankList)').boundingBox();
+    const tools = await page.locator('.manual-bank-tools').boundingBox();
+    const bank = await page.locator('#bankList').boundingBox();
+    assert.ok(tools.x+tools.width<=card.x+card.width+1,'filter tools should stay inside the left card');
+    assert.ok(bank.x+bank.width<=card.x+card.width+1,'question list should stay inside the left card');
+   }
   }
   await page.evaluate(name=>window['go'+name[0].toUpperCase()+name.slice(1)+'Step'](1),name);
   await page.locator('#cBook').selectOption('S');
@@ -98,5 +119,18 @@ try {
   assert.deepEqual(errors,[]);
   console.log('PASS browser: '+name+' empty book, disabled chapter, row selection, child propagation, next step, stale request');
   await page.close();
+ }
+ for(const name of ['compose','manual','coded','booklet']) {
+  const page=await browser.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
+  await page.goto(`http://127.0.0.1:${server.address().port}/${name}.html?subject=A&book=S`);
+  await page.getByText('有題目章',{exact:true}).waitFor();
+  assert.equal(await page.locator('#cSubject').inputValue(),'A');
+  assert.equal(await page.locator('#cBook').inputValue(),'S');
+  assert.deepEqual(errors,[]);
+  await page.goto(`http://127.0.0.1:${server.address().port}/${name}.html?subject=A&book=E`);
+  await page.waitForFunction(()=>window.messages?.some(message=>message.includes('尚無')));
+  assert.equal(await page.locator('.chap-cb:checked').count(),0);
+  assert.deepEqual(errors,[]);await page.close();
+  console.log('PASS browser: '+name+' homepage book preset and empty book');
  }
 }finally{await browser.close();server.close();}

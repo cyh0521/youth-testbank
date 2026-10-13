@@ -206,9 +206,9 @@
       const I = window.ICONS || {};
       const previousAccount = el.querySelector('#siteAccount');
       const item = (page, icon, label, href = `${page}.html`) => `<a href="${href}" data-page="${page}">${icon ? `<span class="site-nav-icon">${icon}</span>` : ''}<span>${label}</span></a>`;
-      const group = (label, contents) => `<details class="site-nav-group"><summary>${label}<span aria-hidden="true">⌄</span></summary><div class="site-nav-menu">${contents}</div></details>`;
+      const group = (label, contents) => `<details class="site-nav-group"><summary>${label}</summary><div class="site-nav-menu">${contents}</div></details>`;
       el.innerHTML = `
-        <a class="site-brand" href="dashboard.html"><svg viewBox="0 0 32 28" aria-hidden="true"><path d="M16 5C11 1 5 1 1 3v22c5-2 10-2 15 2 5-4 10-4 15-2V3c-4-2-10-2-15 2Z" fill="#f5c444"/><path d="M16 5v22" stroke="#fff" stroke-width="1.5"/></svg><strong>幼獅文化</strong></a>
+        <a class="site-brand" href="dashboard.html"><span class="site-brand-mark" aria-hidden="true"><span class="brand-tiles"><i></i><i></i><i></i></span></span><strong>幼獅<span class="brand-name-accent">線上命題</span></strong></a>
         <nav class="site-nav" aria-label="主要導覽">
           ${item('dashboard', '', '首頁')}
           ${group('出題與列印',item('compose',I.navAuto20,'電腦選題')+item('manual',I.navManual20,'手動選題')+item('coded',I.navNumber20,'編碼選題')+item('booklet',I.navBooklet20,'題本列印'))}
@@ -220,11 +220,19 @@
       if (previousAccount) el.querySelector('#siteAccount').replaceChildren(...previousAccount.childNodes);
       el.querySelector('#siteAccount').inert = !document.documentElement.classList.contains('auth-ready');
       el.dataset.navRole = navRole;
-      el.addEventListener('toggle',event=>{
-        if(event.target.matches('.site-nav-group[open]'))el.querySelectorAll('.site-nav-group').forEach(group=>{if(group!==event.target)group.open=false;});
-      },true);
+      el.querySelectorAll('.site-nav-group').forEach(group => {
+        group.addEventListener('pointerenter',event=>{
+          if(event.pointerType==='touch'||!matchMedia('(hover: hover)').matches)return;
+          el.querySelectorAll('.site-nav-group').forEach(other=>{other.open=other===group;});
+        });
+        group.addEventListener('pointerleave',()=>{if(!group.contains(document.activeElement))group.open=false;});
+        group.addEventListener('focusout',event=>{if(!group.contains(event.relatedTarget)&&!group.matches(':hover'))group.open=false;});
+      });
       if (!el._navigationEvents) {
         el._navigationEvents = true;
+        el.addEventListener('toggle',event=>{
+          if(event.target.matches('.site-nav-group[open]'))el.querySelectorAll('.site-nav-group').forEach(group=>{if(group!==event.target)group.open=false;});
+        },true);
         document.addEventListener('pointerdown',event=>{if(!el.contains(event.target))el.querySelectorAll('.site-nav-group').forEach(group=>group.open=false);});
         el.addEventListener('keydown',event=>{if(event.key==='Escape'){const group=event.target.closest('.site-nav-group');if(group){group.open=false;group.querySelector('summary').focus();}}});
       }

@@ -7,40 +7,41 @@
 <link rel="stylesheet" href="css/process-bar.css">
 <link rel="stylesheet" href="css/exam-compose.css?v=20261012-chapter-controls-18">
 
-<link rel="stylesheet" href="css/site-redesign.css?v=20261012">
+<link rel="stylesheet" href="css/site-redesign.css?v=20261013-sketch-line">
+<link rel="stylesheet" href="css/compose-redesign.css?v=20261013-info-align">
 </head>
-<body class="booklet-page">
+<body class="booklet-page selection-redesign-page">
 <script src="js/icons.js"></script>
 <script src="js/core.js?v=20261008-choice-images"></script>
 <div class="layout">
   <header class="site-header" id="sidebar"></header>
-  <script src="js/shell.js?v=20261012-redesign"></script>
+  <script src="js/shell.js?v=20261013-brand-line"></script>
   <div class="main" inert>
     <div class="topbar"><span class="topbar-title">題本列印</span></div>
     <div class="page-content">
-      <section class="import-progress" aria-label="題本列印流程" style="--process-step-count:2;--process-initial-width:50%">
+      <header class="compose-page-heading"><h1>題本列印</h1><section class="import-progress" aria-label="題本列印流程" style="--process-step-count:2;--process-initial-width:50%">
         <div class="steps" role="list">
           <div class="step active" id="bookletStep1" role="listitem" aria-current="step"><span class="step-num">1</span><span class="step-copy"><strong>出題範圍</strong></span></div>
           <div class="step" id="bookletStep2" role="listitem"><span class="step-num">2</span><span class="step-copy"><strong>預覽題本</strong></span></div>
         </div>
         <div class="import-progress-track" id="bookletProgressTrack" role="progressbar" aria-label="題本列印進度" aria-valuemin="1" aria-valuemax="2" aria-valuenow="1" aria-valuetext="第 1 步，共 2 步"><div class="import-progress-fill" id="bookletProgressFill"></div></div>
-      </section>
-      <section id="bookletPanel1"><div id="examScope"></div></section>
+      </section></header>
+      <div class="booklet-layout"><section id="bookletPanel1"><div id="examScope"></div></section>
       <section id="bookletPanel2" hidden>
         <div class="scope-layout"><div class="card" style="grid-column:1/-1"><div class="card-header"><div class="scope-title"><h2>預覽題本</h2><span class="type-title-note">︱確認題本呈現</span></div><div class="scope-header-actions"><button type="button" class="btn btn-previous btn-sm" onclick="goBookletStep(1)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10.5 6-6 6 6 6"/><path d="m18 6-6 6 6 6" stroke-opacity=".5"/></svg>上一步</button><div id="bookletPreviewTools" class="compose-preview-tools"></div></div></div><div id="bookletPreview"></div></div></div>
-      </section>
+      </section></div>
     </div>
   </div>
 </div>
 <script type="module">
-import { renderScopePanel, mountScopeSelector } from './js/exam-scope.js?v=20261012-book-entry';
+import { renderScopePanel, mountScopeSelector } from './js/exam-scope.js?v=20261013-no-default-subject';
 import { showExamPreview, loadAppearance } from './js/exam-preview.js?v=20261012-simple-header-v2';
 import { guardPage } from './js/auth-guard.js';
 window._activeNav = 'booklet';
 const user = await guardPage(['admin','manager','teacher']);
 if (!user) throw new Error('not auth');
 await initTextbookCache();
-document.getElementById('examScope').innerHTML = renderScopePanel({nextAction:'goBookletStep(2)', nextLabel:'預覽題本',subjectOverview:false});
+document.getElementById('examScope').innerHTML = renderScopePanel({nextAction:'goBookletStep(2)', nextLabel:'預覽題本'});
 document.getElementById('cSubject').innerHTML = tbSubjectOptions();
 let bookletData = {title:'題本', booklet:true, appearance:loadAppearance()};
 let scopeRevision = 0;
@@ -88,5 +89,6 @@ window.goBookletStep = n => {
   document.querySelector('.page-content').scrollTo({top:0,behavior:'smooth'});
 };
 </script>
+<script src="js/selection-redesign.js?v=20261013"></script>
 </body>
 </html>

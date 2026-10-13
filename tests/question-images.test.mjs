@@ -35,10 +35,12 @@ test('舊題目圖片路徑改讀 images，重新儲存與壓縮檔也使用新�
   assert.equal(UI.imagePath('/question-images/x.png'), '');
 });
 
-test('側邊欄與首頁 Logo 都引用 images 中的現有檔案', () => {
+test('導覽列與首頁 Logo 都引用 images 中的現有檔案', () => {
   const shell = readFileSync(new URL('../js/shell.js', import.meta.url), 'utf8');
   const home = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
-  assert(shell.includes('src="images/youth.png"'));
+  const siteCss = readFileSync(new URL('../css/site-redesign.css',import.meta.url),'utf8');
+  assert(shell.includes('site-brand-mark'));
+  assert(siteCss.includes("url('../images/youth.png')"));
   assert.equal((home.match(/src="images\/youth.png"/g) || []).length, 2);
   assert(!shell.includes('src="img/'));
   assert(!home.includes('src="img/'));

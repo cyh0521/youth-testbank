@@ -1,0 +1,266 @@
+/* 四種出題流程共用首頁的草綠、米黃與輕描線條；試卷正文沿用原排版。 */
+.selection-redesign-page{--compose-green:#34774d;--compose-ink:#214a35;--compose-line:#dce6d8;--compose-soft:#f5f8f1}
+.selection-redesign-page>.layout>.main>.topbar{display:none}
+.selection-redesign-page .step-num{background:#f0f4eb;color:#7d9580;border:1px solid #e1e9db}
+.selection-redesign-page .step.active .step-num,.selection-redesign-page .step.done .step-num{background:var(--compose-green);color:#fff;border-color:var(--compose-green)}
+.selection-redesign-page .step-copy strong{color:#7d8f80;font-size:14px;font-weight:500}
+.selection-redesign-page .step.active .step-copy strong,.selection-redesign-page .step.done .step-copy strong{color:var(--compose-ink);font-weight:700}
+.selection-redesign-page :is(.compose-layout,.manual-layout,.coded-layout,.booklet-layout) .card{border:1px solid var(--compose-line);border-radius:14px;box-shadow:0 3px 14px #294d3510;overflow:hidden}
+.selection-redesign-page :is(.compose-layout,.manual-layout,.coded-layout,.booklet-layout) .card-header{min-height:66px;padding:16px 20px;border-bottom:1px solid #e7ede2;background:#fff;gap:12px;flex-wrap:wrap}
+.selection-redesign-page :is(.compose-layout,.manual-layout,.coded-layout,.booklet-layout) .card-header h2{font-size:1.08rem;font-weight:700;color:var(--compose-ink)}
+.selection-redesign-page :is(.compose-layout,.manual-layout,.coded-layout,.booklet-layout) :is(.type-title-note,.scope-available){font-size:13px;color:#788c7b}
+.selection-redesign-page :is(.compose-layout,.manual-layout,.coded-layout,.booklet-layout) .btn{border-radius:8px}
+.selection-redesign-page :is(.compose-layout,.manual-layout,.coded-layout,.booklet-layout) .btn-primary{background:var(--compose-green);border-color:var(--compose-green);box-shadow:none}
+.selection-redesign-page :is(.compose-layout,.manual-layout,.coded-layout,.booklet-layout) .btn-primary:hover{background:#28603c;border-color:#28603c}
+.selection-redesign-page :is(.compose-layout,.manual-layout,.coded-layout,.booklet-layout) .btn-previous{background:#edf3e8;border-color:#d9e5d3;color:#4b6d53}
+.selection-redesign-page :is(.compose-layout,.manual-layout,.coded-layout,.booklet-layout) .btn-previous:hover{background:#e2ebdb}
+.selection-redesign-page :is(.compose-layout,.manual-layout,.coded-layout,.booklet-layout) .btn-auto-score{background:#e6f1e0;border-color:#d6e6ce;color:#34774d}
+.selection-redesign-page :is(.compose-layout,.manual-layout,.coded-layout,.booklet-layout) :is(input[type=checkbox],input[type=radio]){accent-color:var(--compose-green)}
+.selection-redesign-page .scope-overview{padding:20px;background:#fbfcf9}
+.selection-redesign-page .scope-overview-filters .form-control{border-radius:8px;border-color:var(--compose-line);min-height:42px;background-color:#fff}
+.selection-redesign-page .scope-question-total{color:var(--compose-ink);margin:22px 0 20px;font-size:2.5rem}
+.selection-redesign-page .scope-bar-track{background:#edf2e7;height:8px}
+.selection-redesign-page .scope-bar-fill{background:#4c8861!important}
+.selection-redesign-page .scope-bar-item:nth-child(2) .scope-bar-fill{background:#79a77c!important}
+.selection-redesign-page .scope-bar-item:nth-child(3) .scope-bar-fill{background:#a4b87e!important}
+.selection-redesign-page .scope-bar-item:nth-child(4) .scope-bar-fill{background:#d9bc65!important}
+.selection-redesign-page .scope-bar-item:nth-child(5) .scope-bar-fill{background:#87a49a!important}
+.selection-redesign-page .scope-bar-item:nth-child(6) .scope-bar-fill{background:#63877a!important}
+.selection-redesign-page #chapterTree{padding:14px 16px 18px}
+.selection-redesign-page #chapterTree .chapter-item{border-radius:7px;margin-bottom:3px;padding-top:9px;padding-bottom:9px}
+.selection-redesign-page #chapterTree .chapter-item:hover{background:#f5f8f1}
+.selection-redesign-page #chapterTree .chapter-item:has(input:checked){background:#edf4e6}
+.selection-redesign-page #chapterTree .expand-btn{color:#558060}
+.selection-redesign-page #chapterTree .chapter-children{border-left-color:#c8d8bd}
+.selection-redesign-page .type-left-column{gap:20px}
+.selection-redesign-page .type-card-body,.selection-redesign-page .difficulty-card .card-body{padding:20px}
+.selection-redesign-page :is(.type-row,.score-config-row){padding:7px 12px;border:0;border-radius:7px;background:#f5f8f1;margin-bottom:7px}
+.selection-redesign-page .type-row.invalid{background:#fff3f1;box-shadow:inset 3px 0 var(--danger)}
+.selection-redesign-page .number-stepper{border-color:#d5e2ce;border-radius:7px;min-height:30px}
+.selection-redesign-page .number-stepper-buttons button{background:#f0f5eb;color:#527657}
+.selection-redesign-page .number-stepper-buttons button:hover{background:#e2ecd9}
+.selection-redesign-page .number-stepper:focus-within{border-color:#83ad8d;box-shadow:0 0 0 2px #43845b18}
+.selection-redesign-page :is(.difficulty-ratio strong,.difficulty-scale .is-current){color:#34774d}
+.selection-redesign-page .difficulty-range{accent-color:#34774d}
+.selection-redesign-page :is(.difficulty-range,.section-weight-range)::-webkit-slider-runnable-track{background:#e5eddc}
+.selection-redesign-page :is(.difficulty-range,.section-weight-range)::-webkit-slider-thumb{background:#34774d;box-shadow:0 0 0 4px #43845b18}
+.selection-redesign-page :is(.difficulty-range,.section-weight-range):hover::-webkit-slider-thumb{box-shadow:0 0 0 5px #43845b25}
+.selection-redesign-page :is(.difficulty-range,.section-weight-range)::-moz-range-track{background:#e5eddc}
+.selection-redesign-page :is(.difficulty-range,.section-weight-range)::-moz-range-thumb{background:#34774d;box-shadow:0 0 0 4px #43845b18}
+.selection-redesign-page :is(.difficulty-range,.section-weight-range):focus-visible{outline-color:#34774d}
+.selection-redesign-page .score-total{background:#edf4e6;color:#34774d;border:0;border-radius:9px}
+.selection-redesign-page .preview-stats>span{border-color:#dce8d2;background:#f2f6ec;color:#41674c}
+.selection-redesign-page :is(#composePanel3,#manualPanel2,#codedPanel2) .result-section-title{background:#edf4e6;color:#315940;border:0}
+.selection-redesign-page :is(#composePanel3,#manualPanel2,#codedPanel2) .result-q{border-color:#e4ebdf}
+.selection-redesign-page .section-weight-modal{border:1px solid var(--compose-line);border-radius:14px}
+
+.selection-redesign-page .compose-page-heading{display:flex;align-items:center;gap:32px;margin-bottom:16px;padding:0 0 16px;border-bottom:1px solid #e7ede2}
+.selection-redesign-page .compose-page-heading h1{flex:none;margin:0;color:var(--compose-ink);font-size:1.45rem;font-weight:750;line-height:1.4;letter-spacing:.02em}
+.selection-redesign-page .compose-page-heading .import-progress{flex:1;min-width:0;margin:0;padding:0;border:0;background:none;box-shadow:none}
+.selection-redesign-page .compose-page-heading .steps{margin:0;gap:12px}
+.selection-redesign-page .compose-page-heading .step{gap:7px}
+.selection-redesign-page .compose-page-heading .step-num{width:24px;height:24px;font-size:13px}
+.selection-redesign-page .compose-page-heading .import-progress-track{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+@media(max-width:1000px){.selection-redesign-page .compose-page-heading{flex-direction:column;align-items:stretch;gap:14px}.selection-redesign-page .compose-page-heading .steps{grid-template-columns:repeat(var(--process-step-count,5),minmax(0,1fr));gap:5px}.selection-redesign-page .compose-page-heading .step{justify-content:center;padding-left:0}}
+@media(max-width:760px){.selection-redesign-page :is(.compose-layout,.manual-layout,.coded-layout,.booklet-layout) .card-header{padding:14px 16px}.selection-redesign-page :is(.compose-layout,.manual-layout,.coded-layout,.booklet-layout) .scope-header-actions{flex-wrap:wrap}.selection-redesign-page .type-card-body,.selection-redesign-page .difficulty-card .card-body{padding:16px}}
+@media(max-width:600px){.selection-redesign-page .compose-page-heading .step{flex-direction:column;gap:5px}.selection-redesign-page .compose-page-heading .step-copy strong{font-size:12px}.selection-redesign-page .compose-page-heading{gap:12px;padding-bottom:14px}}
+@media(max-width:470px){.selection-redesign-page :is(.compose-layout,.manual-layout,.coded-layout,.booklet-layout) .scope-title{flex-wrap:wrap}.selection-redesign-page :is(.compose-layout,.manual-layout,.coded-layout,.booklet-layout) .type-title-note{white-space:normal}}
+
+/* 將插畫頁首與流程整合，保留視覺特色並減少垂直空間。 */
+.selection-redesign-page .compose-page-heading{position:relative;isolation:isolate;min-height:86px;padding:18px 24px 22px;gap:26px;border:0;border-radius:12px;background:linear-gradient(110deg,#f2f6e9 0 76%,#e4edcf 76%);overflow:hidden}
+.selection-redesign-page .compose-page-heading h1{position:relative;z-index:1;font-size:1.4rem}
+.selection-redesign-page .compose-heading-art{position:relative;z-index:1;order:3;flex:none;width:66px;height:60px;margin:-8px 0}
+.selection-redesign-page .compose-page-heading .import-progress{position:static;z-index:1}
+.selection-redesign-page .compose-page-heading .step-num{background:#fff9;color:#7d9580;border-color:#dae5d2}
+.selection-redesign-page .compose-page-heading .step.active .step-num,.selection-redesign-page .compose-page-heading .step.done .step-num{background:var(--compose-green);color:#fff;border-color:var(--compose-green)}
+.selection-redesign-page .compose-page-heading .import-progress-track{position:absolute;left:0;right:0;bottom:0;width:auto;height:4px;margin:0;clip-path:none;white-space:normal;background:#dae5d1;border-radius:0}
+.selection-redesign-page .compose-page-heading .import-progress-fill{background:var(--compose-green);border-radius:0}
+@media(max-width:1000px){.selection-redesign-page .compose-page-heading{display:grid;grid-template-columns:1fr 56px;gap:12px 16px;padding:15px 20px 20px;min-height:0}.selection-redesign-page .compose-heading-art{grid-column:2;grid-row:1;width:56px;height:48px;margin:-5px 0}.selection-redesign-page .compose-page-heading .import-progress{grid-column:1/-1}.selection-redesign-page .compose-page-heading h1{grid-column:1;grid-row:1}}
+@media(max-width:600px){.selection-redesign-page .compose-page-heading{padding:13px 16px 18px;gap:10px 12px}.selection-redesign-page .compose-page-heading h1{font-size:1.25rem}.selection-redesign-page .compose-heading-art{width:48px;height:42px}.selection-redesign-page .compose-page-heading .steps{gap:3px}.selection-redesign-page .compose-page-heading .step{gap:4px}}
+
+/* 圓點之間的線段與每個流程格對齊，不再按整個頁首切分。 */
+.selection-redesign-page .compose-page-heading{min-height:66px;padding-top:8px;padding-bottom:8px}
+.selection-redesign-page .compose-heading-art{width:140px;height:140px;margin:-44px -10px -44px 0;object-fit:contain;pointer-events:none}
+.selection-redesign-page .compose-page-heading{overflow:hidden;background:radial-gradient(circle at 103% 115%,transparent 0 69px,#71975a14 70px 72px,transparent 73px 89px,#71975a0e 90px 92px,transparent 93px),radial-gradient(circle at 97% -35%,#94b67914 0 64px,transparent 65px),linear-gradient(112deg,#f2f6e9 0 44%,#e4edcf 44% 73%,#d7e6c3 73%)}
+@media(max-width:1000px){.selection-redesign-page .compose-page-heading{grid-template-columns:1fr 110px}.selection-redesign-page .compose-heading-art{width:124px;height:124px;margin:-42px -8px -42px 0}}
+@media(max-width:600px){.selection-redesign-page .compose-page-heading{grid-template-columns:1fr 88px}.selection-redesign-page .compose-heading-art{width:104px;height:104px;margin:-34px -8px -34px 0}}
+@media(max-width:1000px){.selection-redesign-page .compose-page-heading{grid-template-columns:minmax(0,1fr)}}
+.selection-redesign-page .compose-page-heading .step{position:relative;flex-direction:column;gap:3px;padding-left:0;isolation:isolate}
+.selection-redesign-page .compose-page-heading .step:not(:last-child)::after{content:'';position:absolute;z-index:-1;left:50%;top:12px;width:calc(100% + 12px);height:2px;background:#d5e1cc}
+.selection-redesign-page .compose-page-heading .step.done::after{background:var(--compose-green)}
+.selection-redesign-page .compose-page-heading .step-num{position:relative;background:#f2f6e9}
+.selection-redesign-page .compose-page-heading .step-copy strong{font-size:13px}
+.selection-redesign-page .compose-page-heading .import-progress-track{position:absolute;width:1px;height:1px;left:auto;right:auto;bottom:auto;clip-path:inset(50%);overflow:hidden}
+.selection-redesign-page :is(#composeScopePreview,#manualScopePreview,#codedScopePreview) .ep-scope-card{border:0;box-shadow:none;background:#f1f5eb}
+.selection-redesign-page :is(#composeScopePreview,#manualScopePreview,#codedScopePreview) .ep-scope-heading{background:transparent;border-bottom:0}
+.selection-redesign-page :is(#composeScopePreview,#manualScopePreview,#codedScopePreview) .ep-scope-content{background:transparent}
+.selection-redesign-page :is(#composeScopePreview,#manualScopePreview,#codedScopePreview) .ep-scope-children{border-left:0}
+.selection-redesign-page :is(#composeScopePreview,#manualScopePreview,#codedScopePreview) .ep-scope-select:hover{background:#e6eedc}
+.selection-redesign-page :is(#composeScopePreview,#manualScopePreview,#codedScopePreview) .ep-scope-select[aria-pressed="true"]{background:#dfead5;color:#315940;box-shadow:none}
+@media(max-width:1000px){.selection-redesign-page .compose-page-heading{padding-top:12px;padding-bottom:12px;min-height:0}.selection-redesign-page .compose-page-heading .step:not(:last-child)::after{width:calc(100% + 5px)}}
+@media(max-width:600px){.selection-redesign-page .compose-page-heading .step-copy strong{font-size:12px}.selection-redesign-page .compose-page-heading .step:not(:last-child)::after{width:calc(100% + 3px)}}
+
+/* 短連接線保留呼吸空間；填色隨步驟前進與返回平滑變化。 */
+.selection-redesign-page .compose-page-heading{min-height:72px;padding-top:10px;padding-bottom:10px}
+.selection-redesign-page .compose-page-heading .step{gap:7px;--step-gap:12px}
+.selection-redesign-page .compose-page-heading .step:not(:last-child)::after,.selection-redesign-page .compose-page-heading .step:not(:last-child)::before{content:'';position:absolute;z-index:-1;left:calc(50% + 22px);top:11px;width:calc(100% + var(--step-gap) - 44px);height:3px;border-radius:3px}
+.selection-redesign-page .compose-page-heading .step:not(:last-child)::after{background:repeating-linear-gradient(90deg,#ccd9c4 0 5px,transparent 5px 9px)}
+.selection-redesign-page .compose-page-heading .step:not(:last-child)::before{z-index:0;background:linear-gradient(90deg,#34774d,#94b679);transform:scaleX(0);transform-origin:left;transition:transform .3s ease}
+.selection-redesign-page .compose-page-heading .step.done::before{transform:scaleX(1)}
+.selection-redesign-page .compose-page-heading .step-num{z-index:1;transition:background .25s,color .25s,box-shadow .25s,transform .25s}
+.selection-redesign-page .compose-page-heading .step.done .step-num{background:#dfeace;color:#3c6949;border-color:#d1e1c5}
+.selection-redesign-page .compose-page-heading .step.active .step-num{background:#34774d;color:#fff;box-shadow:0 0 0 4px #34774d15;transform:scale(1.04)}
+.selection-redesign-page .compose-page-heading .step-copy strong{display:block;transition:color .25s}
+@media(max-width:1000px){.selection-redesign-page .compose-page-heading .step{--step-gap:5px}}
+@media(max-width:600px){.selection-redesign-page .compose-page-heading .step{--step-gap:3px;gap:6px}}
+@media(prefers-reduced-motion:reduce){.selection-redesign-page .compose-page-heading .step::before,.selection-redesign-page .compose-page-heading .step-num,.selection-redesign-page .compose-page-heading .step-copy strong{transition:none}}
+
+/* 流程區以整組高度置中，抵消文字行高造成的視覺上偏。 */
+.selection-redesign-page .compose-page-heading{align-items:center}
+.selection-redesign-page .compose-page-heading .import-progress{align-self:center;position:relative;top:2px}
+.selection-redesign-page .compose-page-heading .step-copy strong{line-height:1.4}
+@media(max-width:1000px){.selection-redesign-page .compose-page-heading .import-progress{top:0;align-self:center}}
+
+/* 預覽功能與設定區沿用電腦選題的草綠樣式，試卷正文不受影響。 */
+.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) .compose-preview-tools{gap:8px}
+.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) .ep-panel-toggle[aria-expanded="true"],.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) .ep-panel-toggle[aria-expanded="true"]:hover{background:#e6efdc;border-color:#adc79b;color:#315940;box-shadow:none}
+.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) :is(#epHeaderPanel,#epToolbar,#epPreviewOptions){padding:12px 14px;background:#f3f6ed;border:0;border-radius:12px;color:#315940;margin:0 0 14px;font-family:var(--font-sans);font-size:.88rem;font-weight:400;line-height:1.5}
+.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) .ep-preview-options{gap:16px}
+.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) .ep-preview-options label{justify-content:flex-start;min-width:0;padding:4px 0;border:0;border-radius:0;background:transparent;color:#315940;font-family:var(--font-sans);font-size:.88rem;font-weight:500;line-height:1.5;box-shadow:none}
+.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) .ep-preview-options label:hover{background:transparent;color:#34774d}
+.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) .ep-preview-options label:has(input:checked){background:transparent;color:#315940;box-shadow:none}
+.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) .ep-preview-options label:has(input:focus-visible){outline:2px solid #34774d;outline-offset:2px}
+.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) .ep-preview-options input{width:16px;height:16px;accent-color:#34774d;margin:0}
+.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) .ep-toolbar{gap:14px;flex-wrap:wrap}
+.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) .ep-toolbar .group{gap:6px}
+.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) .ep-toolbar .group label{font-family:var(--font-sans);font-size:.88rem;font-weight:500;line-height:1.5;color:#315940}
+.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) .ep-toolbar .val{font-family:var(--font-sans);font-size:.88rem;font-weight:500;line-height:1.5;color:#315940}
+.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) .ep-toolbar .info-pill{background:#e7eedc;color:#4f6d4c;border-color:#dce6d2}
+.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) .ep-toolbar input[type=range]{accent-color:#34774d}
+.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) #epHeaderPanel .form-label{color:#315940;font-family:var(--font-sans);font-size:.88rem;font-weight:500;line-height:1.5}
+.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) :is(#epHeaderPanel,#epToolbar) .form-control{background:#fff;border-color:#d5e2cb;border-radius:7px}
+.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) :is(#epHeaderPanel,#epToolbar) .form-control:focus{border-color:#83ad8d;box-shadow:0 0 0 3px #43845b18}
+.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) .ep-inline-header-actions{gap:8px;flex-wrap:wrap}
+@media(max-width:600px){.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) :is(#epHeaderPanel,#epToolbar,#epPreviewOptions){padding:12px 14px}.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) .ep-toolbar .group{flex-wrap:wrap}}
+
+/* 下載視窗掛在 body，仍需使用電腦選題頁的主題。 */
+.selection-redesign-page #epPaperSizeModal .ep-layout-modal{border:1px solid #dce6d8;border-radius:14px;box-shadow:0 18px 55px #254d3524;background:#fff}
+.selection-redesign-page #epPaperSizeModal .modal-header{padding:18px 22px;border-bottom:1px solid #e5ecde;background:#f3f6ed}
+.selection-redesign-page #epPaperSizeModal .modal-header h3{font-size:1.1rem;color:#214a35}
+.selection-redesign-page #epPaperSizeModal .modal-close{color:#718775;border-radius:6px}
+.selection-redesign-page #epPaperSizeModal .modal-close:hover{background:#e5eedc;color:#34774d}
+.selection-redesign-page #epPaperSizeModal .ep-layout-body{padding:20px 22px}
+.selection-redesign-page #epPaperSizeModal .ep-layout-fieldset legend{font-size:.95rem;color:#315940}
+.selection-redesign-page #epPaperSizeModal .ep-layout-option{background:#fbfcf9;border-color:#dce6d8;border-radius:10px;gap:7px;transition:background .18s,border-color .18s}
+.selection-redesign-page #epPaperSizeModal .ep-layout-option:hover{background:#f0f5e9;border-color:#b5cca6}
+.selection-redesign-page #epPaperSizeModal .ep-layout-option:has(input:checked){background:#e8f1df;border-color:#83aa70;box-shadow:none}
+.selection-redesign-page #epPaperSizeModal .ep-layout-option:has(input:focus-visible){outline:2px solid #34774d;outline-offset:2px}
+.selection-redesign-page #epPaperSizeModal .ep-layout-option strong{color:#315940;font-weight:600}
+.selection-redesign-page #epPaperSizeModal :is(.ep-paper-icon,.ep-column-icon){border-color:#8fa982;color:#6f8b62;background:#fff}
+.selection-redesign-page #epPaperSizeModal :is(.ep-paper-icon,.ep-column-icon) i{background:#b0c3a5}
+.selection-redesign-page #epPaperSizeModal .ep-download-types{gap:14px}
+.selection-redesign-page #epPaperSizeModal .ep-download-types label{font-size:.9rem;line-height:1.5;color:#48634e}
+.selection-redesign-page #epPaperSizeModal .ep-download-types input{accent-color:#34774d}
+.selection-redesign-page #epPaperSizeModal .modal-footer{padding:14px 22px;border-top:1px solid #e5ecde;background:#fbfcf9;gap:10px}
+.selection-redesign-page #epPaperSizeModal .btn{border-radius:8px}
+.selection-redesign-page #epPaperSizeModal .btn-primary{background:#34774d;border-color:#34774d}
+.selection-redesign-page #epPaperSizeModal .btn-primary:hover{background:#28603c;border-color:#28603c}
+.selection-redesign-page #epPaperSizeModal .btn-ghost:hover{background:#edf4e6;color:#34774d}
+
+/* 章節比重設定保留滑桿操作，統一為新版視窗與章節標籤。 */
+.selection-redesign-page #sectionWeightModal .modal-header{padding:18px 22px;background:#f3f6ed;border-bottom:1px solid #e5ecde}
+.selection-redesign-page #sectionWeightModal .modal-header h3{color:#214a35;font-size:1.1rem}
+.selection-redesign-page #sectionWeightModal .section-weight-note{color:#718775;font-size:13px}
+.selection-redesign-page #sectionWeightModal .modal-body{padding:18px 22px}
+.selection-redesign-page #sectionWeightModal .section-weight-row{padding:13px 14px;margin-bottom:10px;border:1px solid #e0e8d7;border-radius:9px;background:#fbfcf9;gap:14px}
+.selection-redesign-page #sectionWeightModal .section-weight-row:last-child{margin-bottom:0}
+.selection-redesign-page #sectionWeightModal .section-weight-number{background:#e4eed9;color:#416b44;font-weight:600}
+.selection-redesign-page #sectionWeightModal .section-weight-number:nth-child(2){background:#f5eccb;color:#81703d}
+.selection-redesign-page #sectionWeightModal .section-weight-name{color:#315940}
+.selection-redesign-page #sectionWeightModal .section-weight-scale{color:#788c7b}
+.selection-redesign-page #sectionWeightModal .section-weight-scale .is-current{color:#34774d}
+.selection-redesign-page #sectionWeightModal .modal-footer{padding:14px 22px;background:#fbfcf9;border-top:1px solid #e5ecde;gap:10px}
+.selection-redesign-page #sectionWeightModal .btn{border-radius:8px}
+.selection-redesign-page #sectionWeightModal .btn-primary{background:#34774d;border-color:#34774d}
+.selection-redesign-page #sectionWeightModal .btn-primary:hover{background:#28603c;border-color:#28603c}
+.selection-redesign-page #sectionWeightModal .btn-ghost:hover{background:#edf4e6;color:#34774d}
+.selection-redesign-page #sectionWeightModal .modal-close{color:#718775;border-radius:6px}
+.selection-redesign-page #sectionWeightModal .modal-close:hover{background:#e5eedc;color:#34774d}
+
+/* 清單與完整模式共用題號欄及間距，切換時不改變起始位置。 */
+.selection-redesign-page :is(#composePanel3,#manualPanel2,#codedPanel2) .result-q,.selection-redesign-page :is(#composePanel3.compose-list-view,#manualPanel2.manual-list-view) .result-q:not(.is-expanded){column-gap:8px;align-items:flex-start}
+.selection-redesign-page :is(#composePanel3,#manualPanel2,#codedPanel2) .result-q .q-num{flex:0 0 18px;width:18px;min-width:18px;align-self:flex-start}
+.selection-redesign-page :is(#composePanel3,#manualPanel2,#codedPanel2) .result-q:hover{background:#f8faf5}
+.selection-redesign-page :is(#composePanel3,#manualPanel2,#codedPanel2) .q-catalog-num{background:#e8f0e0;color:#416b44}
+.selection-redesign-page :is(#composePanel3,#manualPanel2,#codedPanel2) .q-source{background:#f5eccb;color:#81703d}
+.selection-redesign-page :is(#composePanel3,#manualPanel2,#codedPanel2) .replace-question{background:#e8f0e0;color:#416b44}
+.selection-redesign-page :is(#composePanel3,#manualPanel2,#codedPanel2) .replace-question:hover{background:#dceacd;color:#315940}
+.selection-redesign-page :is(#composePanel3,#manualPanel2,#codedPanel2) .compose-result-info{--result-info-height:34px;margin-bottom:8px}
+.selection-redesign-page :is(#composePanel3,#manualPanel2,#codedPanel2) .compose-result-tools{gap:8px}
+.selection-redesign-page :is(#composePanel3,#manualPanel2,#codedPanel2) #regenerateAllBtn{height:34px;padding:0 12px;background:#fff;border:1px solid #dce6d8;border-radius:9px;color:#41674c;font-size:14px}
+.selection-redesign-page :is(#composePanel3,#manualPanel2,#codedPanel2) #regenerateAllBtn:hover{background:#f3f6ed;border-color:#aac4a7}
+.selection-redesign-page :is(#composePanel3,#manualPanel2,#codedPanel2) .edit-q-view-toggle{position:relative;isolation:isolate;box-sizing:border-box;display:inline-grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch;height:34px;padding:3px;background:#edf2e8;border:0;border-radius:9px;overflow:visible;gap:0}
+.selection-redesign-page :is(#composePanel3,#manualPanel2,#codedPanel2) .edit-q-view-toggle::before{content:"";position:absolute;z-index:-1;top:3px;bottom:3px;left:3px;width:calc((100% - 6px)/2);background:#fff;border-radius:6px;box-shadow:0 1px 3px #31594018;transition:transform 150ms ease-out}
+.selection-redesign-page :is(#composePanel3,#manualPanel2,#codedPanel2) .edit-q-view-toggle:has(button:last-child.active)::before{transform:translateX(100%)}
+.selection-redesign-page :is(#composePanel3,#manualPanel2,#codedPanel2) .edit-q-view-toggle button{position:relative;box-sizing:border-box;height:auto;min-height:0;min-width:0;margin:0;padding:0 12px;border:0;border-radius:6px;background:transparent;color:#607466;font-size:14px;line-height:1;transition:color 150ms ease-out}
+.selection-redesign-page :is(#composePanel3,#manualPanel2,#codedPanel2) .edit-q-view-toggle button.active,.selection-redesign-page :is(#composePanel3,#manualPanel2,#codedPanel2) .edit-q-view-toggle button.active:hover{background:transparent;color:#315940;box-shadow:none;font-weight:600}
+.selection-redesign-page :is(#composePanel3,#manualPanel2,#codedPanel2) .edit-q-view-toggle button:hover{background:transparent;color:#315940}
+.selection-redesign-page :is(#composePanel3,#manualPanel2,#codedPanel2) .edit-q-view-toggle svg{width:16px;height:16px}
+.selection-redesign-page :is(#composePanel3,#manualPanel2,#codedPanel2) :is(#regenerateAllBtn,.edit-q-view-toggle button):focus-visible{outline:2px solid #34774d;outline-offset:2px;border-radius:6px}
+@media(prefers-reduced-motion:reduce){.selection-redesign-page :is(#composePanel3,#manualPanel2,#codedPanel2) .edit-q-view-toggle::before,.selection-redesign-page :is(#composePanel3,#manualPanel2,#codedPanel2) .edit-q-view-toggle button{transition:none}}
+
+/* 統計共用一列，文字與數字沿同一基準線對齊。 */
+.selection-redesign-page :is(#composePanel3,#manualPanel2,#codedPanel2) .preview-stats{gap:0;align-items:center}
+.selection-redesign-page :is(#composePanel3,#manualPanel2,#codedPanel2) .compose-result-info .preview-stat{display:inline-block;height:auto;padding:0;line-height:1.5;vertical-align:middle;white-space:nowrap;background:transparent;border:0;border-radius:0;color:#607466;font-size:.88rem}
+.selection-redesign-page :is(#composePanel3,#manualPanel2,#codedPanel2) .preview-stat+.preview-stat{margin-left:14px;padding-left:14px;border-left:1px solid #dce6d8}
+.selection-redesign-page :is(#composePanel3,#manualPanel2,#codedPanel2) .preview-stat strong{font-family:inherit;font-size:inherit;font-weight:700;line-height:inherit;vertical-align:baseline;font-variant-numeric:tabular-nums;color:#315940}
+
+/* 手動與編碼模式保留各自的選題工具及拖曳操作。 */
+.selection-redesign-page :is(.manual-layout,.coded-layout) .total-score-bar{background:#edf4e6;color:#34774d;border:0;border-radius:9px}
+.selection-redesign-page :is(.manual-layout,.coded-layout,.booklet-layout) .btn-outline{border-color:#b5cca9;color:#41674c;background:#fff}
+.selection-redesign-page :is(.manual-layout,.coded-layout,.booklet-layout) .btn-outline:hover{background:#edf4e6;border-color:#83ad8d}
+.selection-redesign-page :is(#manualPanel2,#codedPanel2) .result-q.selected{background:#edf4e6}
+.selection-redesign-page :is(#manualPanel2,#codedPanel2) .result-q.selected:hover{background:#e5eedc}
+.selection-redesign-page :is(#manualPanel2,#codedPanel2) .q-ans{background:#edf4e6;color:#315940}
+.selection-redesign-page :is(#manualPanel2,#codedPanel2) #selList .result-q.drag-over{box-shadow:inset 0 2px #83ad8d}
+.selection-redesign-page .manual-filter-popover{border-color:#dce6d8;background:#fbfcf9;box-shadow:0 8px 24px #294d3518}
+.selection-redesign-page :is(.manual-filters,.coded-input-cards) .form-control{border-color:#d5e2cb;border-radius:7px}
+.selection-redesign-page :is(.manual-filters,.coded-input-cards) .form-control:focus{border-color:#83ad8d;box-shadow:0 0 0 3px #43845b18}
+.selection-redesign-page #bookletPreviewTools{gap:8px}
+.selection-redesign-page .settings-header-sample{background:#f1f5eb;color:#315940;border:0;border-radius:10px;box-shadow:none}
+.selection-redesign-page .settings-header-sample .ep-exam-header{border:0;padding:0;margin:0;color:inherit;background:transparent}
+.selection-redesign-page :is(#manualPanel2,#codedPanel2) .selected-result-info{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;padding:14px 20px 0;margin-bottom:0}
+.selection-redesign-page :is(#manualPanel2,#codedPanel2) .selected-result-info .preview-stats{margin-bottom:0}
+.selection-redesign-page :is(#manualPanel2,#codedPanel2) .selected-result-info .compose-result-tools{display:flex;align-items:center;margin-left:auto}
+.selection-redesign-page :is(#manualPanel2,#codedPanel2) .selected-list{padding-top:8px}
+@media(max-width:760px){.selection-redesign-page :is(#manualPanel2,#codedPanel2) .selected-result-info{padding-left:14px;padding-right:14px}}
+.selection-redesign-page #codedPanel2 .coded-compact-question{display:none;min-width:0;align-items:center;gap:8px}
+.selection-redesign-page #codedPanel2 .coded-compact-text{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.selection-redesign-page #codedPanel2.coded-list-view #selList .coded-full-question{display:none}
+.selection-redesign-page #codedPanel2.coded-list-view #selList .coded-compact-question{display:flex}
+.selection-redesign-page #codedPanel2.coded-list-view #selList .result-q{cursor:pointer}
+.selection-redesign-page #codedPanel2.coded-list-view #selList .result-q.is-expanded .coded-full-question{display:block}
+.selection-redesign-page #codedPanel2.coded-list-view #selList .result-q.is-expanded .coded-compact-question{display:none}
+
+/* 手動選題的兩張卡共用標題、工具及清單所在的列，內容換行也能對齊。 */
+.selection-redesign-page #manualPanel2 :is(.manual-bank-tools,.selected-result-info){box-sizing:border-box;min-height:48px;padding:14px 20px 0;margin:0;align-items:center;gap:8px 12px}
+.selection-redesign-page #manualPanel2 .manual-bank-tools{justify-content:flex-end;flex:none}
+.selection-redesign-page #manualPanel2 .manual-bank-tools .form-group{flex:0 1 180px;max-width:180px;min-width:95px}
+.selection-redesign-page #manualPanel2 .manual-bank-tools :is(.form-control,.manual-filter-menu>.btn){box-sizing:border-box;height:34px;min-height:34px}
+.selection-redesign-page #manualPanel2 :is(.bank-list,.selected-list){padding-top:8px}
+.selection-redesign-page #manualPanel2 .result-section-title{min-height:40px;box-sizing:border-box}
+.selection-redesign-page #manualPanel2 .result-type-toggle{min-height:40px;align-items:center}
+@media(min-width:1101px){
+  .selection-redesign-page #manualPanel2 .selection-layout{align-items:start}
+  .selection-redesign-page #manualPanel2 .selection-layout>.card{display:block;align-self:start}
+}
+@media(max-width:760px){.selection-redesign-page #manualPanel2 :is(.manual-bank-tools,.selected-result-info){padding-left:14px;padding-right:14px}}
+.selection-redesign-page :is(#manualPanel2,#codedPanel2) .selection-scroll-area{max-height:700px;min-height:0;overflow-y:auto;scrollbar-gutter:stable}
+.selection-redesign-page :is(#manualPanel2,#codedPanel2) .selection-scroll-area :is(.bank-list,.selected-list){max-height:none;overflow:visible}
+.selection-redesign-page #manualPanel2 .selection-scroll-area{min-width:0;width:100%;max-height:none;overflow:visible;scrollbar-gutter:auto}
+.selection-redesign-page #manualPanel2 .selection-scroll-area :is(.bank-list,.selected-list,.manual-bank-tools,.selected-result-info){box-sizing:border-box;min-width:0;width:100%;max-width:100%}
+
+/* 資訊選項與 epPaper 共用 4px 左側留白，四種預覽皆不加底框。 */
+.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) #epModal .ep-preview-options{padding:4px 4px 0;margin:0 0 14px;background:transparent;border:0;border-radius:0;box-shadow:none;gap:16px;color:#315940}
+.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) #epModal .ep-preview-options label,.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) #epModal .ep-preview-options label:hover,.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) #epModal .ep-preview-options label:has(input:checked){padding:4px 0;background:transparent;border:0;border-radius:0;box-shadow:none;color:#315940;font-size:.88rem;font-weight:500}
+.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) #epModal .ep-preview-options input{width:16px;height:16px;margin:0;accent-color:#34774d}

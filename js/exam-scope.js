@@ -431,7 +431,7 @@ export function mountScopeSelector({ cache, dataService, onChange }) {
         chart.innerHTML = '<div class="scope-empty">題型分布暫時無法載入，請重新選擇科目。</div>';
       }
     };
-    cSubject.value = _tbCache.subjectByCode[entrySubject] ? entrySubject : _tbCache.subjects[0]?.code || '';
+    cSubject.value = _tbCache.subjectByCode[entrySubject] ? entrySubject : '';
     cSubject.disabled = !_tbCache.subjects.length;
     queueMicrotask(() => window.onSubjectChange());
   } else {

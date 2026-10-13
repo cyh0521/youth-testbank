@@ -47,33 +47,35 @@
 .coded-input-cards{display:grid;gap:16px;min-width:0}.coded-input-cards .form-group{margin-bottom:0}.coded-input-row{display:flex;gap:8px;align-items:center}.coded-input-row .form-control{flex:1;min-width:0}#lookupResult:empty{display:none}#lookupResult{margin-top:12px}#lookupResult .result-q{padding-left:0;padding-right:0;background:transparent}#lookupResult .result-q:hover{background:transparent}#codedPanel2 .selection-layout{grid-template-columns:minmax(280px,1fr) minmax(0,1.4fr)}@media(max-width:1100px){#codedPanel2 .selection-layout{grid-template-columns:1fr}}
 .coded-single-input{align-items:stretch}.coded-single-input .form-control{font-size:.86rem;padding:5px 8px}.coded-single-input .btn{font-size:.86rem;padding:5px 10px;white-space:nowrap}#qnumHint:empty,#batchHint:empty{display:none}
 </style>
-<link rel="stylesheet" href="css/site-redesign.css?v=20261012">
+<link rel="stylesheet" href="css/site-redesign.css?v=20261013-sketch-line">
+<link rel="stylesheet" href="css/compose-redesign.css?v=20261013-info-align">
 </head>
-<body class="exam-compose-page">
+<body class="exam-compose-page selection-redesign-page">
 <script src="js/icons.js"></script>
 <script src="js/core.js?v=20261008-choice-images"></script>
 <div class="layout">
   <header class="site-header" id="sidebar"></header>
-  <script src="js/shell.js?v=20261012-redesign"></script>
+  <script src="js/shell.js?v=20261013-brand-line"></script>
   <div class="main" inert>
     <div class="topbar">
       <span class="topbar-title">編碼選題</span>
       <div class="topbar-breadcrumb"><span>首頁</span> › 編碼選題</div>
     </div>
     <div class="page-content">
-<section class="import-progress" aria-label="編碼選題流程" style="--process-step-count:5;--process-initial-width:20%"><div class="steps" role="list"><div class="step active" id="codedStep1" role="listitem"><span class="step-num">1</span><span class="step-copy"><strong>出題範圍</strong></span></div><div class="step" id="codedStep2" role="listitem"><span class="step-num">2</span><span class="step-copy"><strong>編碼選題</strong></span></div><div class="step" id="codedStep3" role="listitem"><span class="step-num">3</span><span class="step-copy"><strong>題型與配分</strong></span></div><div class="step" id="codedStep4" role="listitem"><span class="step-num">4</span><span class="step-copy"><strong>試卷設定</strong></span></div><div class="step" id="codedStep5" role="listitem"><span class="step-num">5</span><span class="step-copy"><strong>預覽試卷</strong></span></div></div><div class="import-progress-track" id="codedProgressTrack" role="progressbar" aria-label="編碼選題進度" aria-valuemin="1" aria-valuemax="5" aria-valuenow="1"><div class="import-progress-fill" id="codedProgressFill"></div></div></section><div class="coded-layout"><section id="codedPanel1" class="coded-panel"><div id="examScope"></div></section><section id="codedPanel2" class="coded-panel" hidden><div class="selection-layout"><div class="coded-input-cards"><section class="card"><div class="card-header"><div class="scope-title"><h2>單題編碼選題</h2><span class="scope-available" id="bankCount">︱共 0 題</span></div></div>
+<header class="compose-page-heading"><h1>編碼選題</h1><section class="import-progress" aria-label="編碼選題流程" style="--process-step-count:5;--process-initial-width:20%"><div class="steps" role="list"><div class="step active" id="codedStep1" role="listitem"><span class="step-num">1</span><span class="step-copy"><strong>出題範圍</strong></span></div><div class="step" id="codedStep2" role="listitem"><span class="step-num">2</span><span class="step-copy"><strong>編碼選題</strong></span></div><div class="step" id="codedStep3" role="listitem"><span class="step-num">3</span><span class="step-copy"><strong>題型與配分</strong></span></div><div class="step" id="codedStep4" role="listitem"><span class="step-num">4</span><span class="step-copy"><strong>試卷設定</strong></span></div><div class="step" id="codedStep5" role="listitem"><span class="step-num">5</span><span class="step-copy"><strong>預覽試卷</strong></span></div></div><div class="import-progress-track" id="codedProgressTrack" role="progressbar" aria-label="編碼選題進度" aria-valuemin="1" aria-valuemax="5" aria-valuenow="1"><div class="import-progress-fill" id="codedProgressFill"></div></div></section></header><div class="coded-layout"><section id="codedPanel1" class="coded-panel"><div id="examScope"></div></section><section id="codedPanel2" class="coded-panel coded-list-view" hidden><div class="selection-layout"><div class="coded-input-cards"><section class="card"><div class="card-header"><div class="scope-title"><h2>單題編碼選題</h2><span class="scope-available" id="bankCount">︱共 0 題</span></div></div>
 <div class="card-body"><div hidden><select id="fType"></select><select id="fDiff"></select><input id="fKeyword"></div>
 <div class="form-group"><label class="sr-only" for="qnumInput">題目編碼</label><div class="coded-input-row coded-single-input"><input class="form-control" id="qnumInput" inputmode="numeric" maxlength="5" placeholder="填入所選命題範圍內的題目編碼，如 00042。" oninput="onQnumInput()" onkeydown="if(event.key==='Enter')addByCode()"><button type="button" class="btn btn-primary" id="addBtn" onclick="addByCode()" disabled>加入</button><button type="button" class="btn btn-ghost" onclick="clearCodedInput()">清除</button></div><p class="difficulty-note" id="qnumHint" role="status"></p><div id="lookupResult"></div></div>
 </div></section><section class="card"><div class="card-header"><div class="scope-title"><h2>批次編碼選題</h2><span class="type-title-note">每行一個編碼，或以空白、逗號、頓號分隔。</span></div></div><div class="card-body"><div class="form-group"><label class="sr-only" for="batchInput">批次題目編碼</label><textarea class="form-control" id="batchInput" rows="6" placeholder="例：&#10;00125, 00136, 00159&#10;00237&#10;00269&#10;00398"></textarea><div class="coded-input-row"><button type="button" class="btn btn-outline btn-sm" onclick="addBatch()">批次加入</button><button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('batchInput').value=''">清除輸入</button></div><p class="difficulty-note" id="batchHint" role="status"></p></div>
 </div></section></div>
           <div class="card">
             <div class="card-header">
-              <div class="scope-title"><h2>已選題目</h2><span class="scope-available" id="selCountLabel">︱已選 0 題</span></div>
+              <div class="scope-title"><h2>已選題目</h2><span class="sr-only" id="selCountLabel">︱已選 0 題</span></div>
 <div class="scope-header-actions"><button class="btn btn-previous btn-sm" onclick="goCodedStep(1)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10.5 6-6 6 6 6"/><path d="m18 6-6 6 6 6" stroke-opacity=".5"/></svg>上一步</button><button class="btn btn-primary btn-sm" onclick="goCodedStep(3)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m13.5 6 6 6-6 6"/><path d="m6 6 6 6-6 6" stroke-opacity=".5"/></svg>下一步：題型與配分</button></div>
             </div>
+            <div class="selection-scroll-area"><div class="compose-result-info selected-result-info"><div id="selectedStats" class="preview-stats" aria-live="polite"><div class="preview-stat">共 <strong>0</strong> 題</div><div class="preview-stat">題型 <strong>0</strong> 種</div></div><div class="compose-result-tools"><div class="edit-q-view-toggle" role="group" aria-label="題目顯示模式"><button id="codedListBtn" class="active" type="button" onclick="setCodedQDisplay(false)" aria-pressed="true" aria-controls="selList"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>清單</button><button id="codedFullBtn" type="button" onclick="setCodedQDisplay(true)" aria-pressed="false" aria-controls="selList"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 10 5-10 5L2 7l10-5ZM2 12l10 5 10-5M2 17l10 5 10-5"/></svg>完整</button></div></div></div>
             <div id="selList" class="selected-list">
               <div style="text-align:center;padding:32px;color:var(--text-muted);font-size:.9rem">輸入編碼後點擊「加入」將題目加入試卷</div>
-            </div>
+            </div></div>
 </div><div class="wizard-actions"><button type="button" class="btn btn-ghost btn-sm" onclick="clearCodedSelection()">清除全部已選題目</button><button class="btn btn-outline btn-sm" id="shuffleBtn" onclick="shuffleSelected()" disabled>亂數排序</button></div></div></section><section id="codedPanel3" class="coded-panel" hidden><section class="card"><div class="card-header"><div class="scope-title"><h2>每題配分</h2><span class="type-title-note">︱自動配分或手動調整</span></div><div class="scope-header-actions"><button class="btn btn-previous btn-sm" onclick="goCodedStep(2)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10.5 6-6 6 6 6"/><path d="m18 6-6 6 6 6" stroke-opacity=".5"/></svg>上一步</button><button class="btn btn-primary btn-sm" onclick="goCodedStep(4)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m13.5 6 6 6-6 6"/><path d="m6 6 6 6-6 6" stroke-opacity=".5"/></svg>下一步：試卷設定</button></div></div><div class="type-card-body"><div class="score-cfg" id="scoreCfg"></div><div class="total-score-bar" id="totalScoreBar"><span id="totalScoreVal">總計：0 分</span></div><div class="score-tools"><label class="integer-score-option"><input type="checkbox" id="codedIntegerScores" checked onchange="toggleCodedIntegerScores()">以整數配分（未勾選時以 0.5 分為調整單位）</label><div class="score-tools-actions"><button type="button" class="btn btn-ghost btn-sm" onclick="clearCodedScores()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 3 5 5a2 2 0 0 1 0 3L11 21H6l-4-4a2 2 0 0 1 0-3L13 3a2 2 0 0 1 3 0zM8 8l8 8M11 21h11"/></svg>清除配分</button><button class="btn btn-auto-score btn-sm" onclick="autoCodedScores()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3-1.9 5.8L4 10l5.8 1.9L12 18l1.9-5.8L20 10l-5.8-1.9zM5 18l-.7 1.4L3 20l1.3.6L5 22l.7-1.4L7 20l-1.3-.6zM19 16l-.7 1.4L17 18l1.3.6L19 20l.7-1.4L21 18l-1.3-.6z"/></svg>自動配分</button></div></div></div></section></section><section id="codedPanel4" class="coded-panel" hidden>
           <div class="scope-layout settings-layout">
             <section class="card"><div class="card-header"><div class="scope-title"><h2>試卷檢視</h2><span class="type-title-note">︱確認題型、題數與配分，可拖曳整列調整排序</span></div><div class="scope-header-actions"><button type="button" class="btn btn-previous btn-sm" onclick="goCodedStep(3)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10.5 6-6 6 6 6"/><path d="m18 6-6 6 6 6" stroke-opacity=".5"/></svg>上一步</button><button type="button" class="btn btn-primary btn-sm" onclick="goCodedStep(5)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m13.5 6 6 6-6 6"/><path d="m6 6 6 6-6 6" stroke-opacity=".5"/></svg>下一步：預覽試卷</button></div></div><div class="type-card-body"><div id="codedSummary"></div></div></section>
@@ -108,9 +110,9 @@
 </div>
 
 <script type="module">
-import { renderScopePanel, mountScopeSelector } from './js/exam-scope.js?v=20261012-book-entry';
+import { renderScopePanel, mountScopeSelector } from './js/exam-scope.js?v=20261013-no-default-subject';
 import { guardPage } from './js/auth-guard.js';
-import { showExamPreview, showHeaderSettings, newExamHeader, loadAppearance, mountInlineHeaderEditor, buildHeaderHtml, fontStackById, togglePreviewPanel } from './js/exam-preview.js?v=20261012-simple-header-v2';
+import { showExamPreview, showHeaderSettings, newExamHeader, loadAppearance, mountInlineHeaderEditor, buildHeaderHtml, fontStackById, togglePreviewPanel } from './js/exam-preview.js?v=20261013-visible-info';
 import { allocateTypeScores, AUTO_SCORE_WEIGHTS } from './js/score-allocation.js?v=20261007-weighted-scores';
 import { blankCount } from './js/blank-selection.js';
 window._activeNav = 'coded';
@@ -162,12 +164,45 @@ window.applyFilters = () => {
 
 function codedQuestionBody(q, action = '') {
   const choice = q.type === 'T2' || q.type === 'T3';
-  return `<div class="q-meta"><span class="q-catalog-num">${UI.escapeHtml(q.qnum || '—')}</span>${UI.typeBadge(q.type)}${UI.diffBadge(q.difficulty)}<span class="q-source">頁數 ${UI.escapeHtml(q.source || '未註明')}</span>${action}</div>
+  return `<div class="q-meta"><span class="q-catalog-num">${UI.escapeHtml(q.qnum || '—')}</span>${UI.diffBadge(q.difficulty)}${UI.typeBadge(q.type)}<span class="q-source">頁數 ${UI.escapeHtml(q.source || '未註明')}</span>${action}</div>
     <div class="q-text">${q.type === 'T2' || q.type === 'T3' ? UI.choiceQuestionHtml(q, '—') : q.type === 'T5' ? UI.matchingQuestionHtml(q.text) : UI.questionHtml(q.text || '—')}</div>
     ${!choice && q.tail ? '<div class="q-tail">'+UI.questionHtml(q.tail)+'</div>' : ''}
     <div class="q-ans"><span class="answer-label">答案</span><span class="answer-text">${UI.questionHtml(q.answer || '—')}</span></div>`;
 }
 
+function codedSelectedQuestionBody(q, action) {
+  const choice = q.type === 'T2' || q.type === 'T3';
+  const options = choice && q.options?.length ? q.options.map((option,index)=>`(${String.fromCharCode(65+index)})${option}`).join(' ') : '';
+  const text = [q.text || '—', options, q.tail || ''].filter(Boolean).join(' ');
+  const summary = UI.escapeHtml(UI.questionSummary(UI.questionText(text)).replace(/[\s\u2029]+/g,' ').trim());
+  return `<div class="coded-compact-question"><span class="q-catalog-num">${UI.escapeHtml(q.qnum || '—')}</span>${UI.diffBadge(q.difficulty)}<span class="coded-compact-text">${summary}</span>${action}</div><div class="coded-full-question">${codedQuestionBody(q,action)}</div>`;
+}
+const expandedCodedQuestions = new Set();
+window.setCodedQDisplay = full => {
+  document.getElementById('codedPanel2').classList.toggle('coded-list-view',!full);
+  for (const [id,active] of [['codedListBtn',!full],['codedFullBtn',full]]) {
+    const button = document.getElementById(id);
+    button.classList.toggle('active',active);
+    button.setAttribute('aria-pressed',String(active));
+  }
+};
+function toggleCodedQuestionDisplay(row) {
+  if (!document.getElementById('codedPanel2').classList.contains('coded-list-view')) return;
+  const id = row.dataset.id;
+  const expanded = !expandedCodedQuestions.has(id);
+  if (expanded) expandedCodedQuestions.add(id); else expandedCodedQuestions.delete(id);
+  row.classList.toggle('is-expanded',expanded);
+}
+document.getElementById('selList').addEventListener('click',event => {
+  if (event.target.closest('button,input,select,a,.drag-handle')) return;
+  const row = event.target.closest('.result-q[data-id]');
+  if (row) toggleCodedQuestionDisplay(row);
+});
+document.getElementById('selList').addEventListener('keydown',event => {
+  if (event.target.matches('.result-q[data-id]') && (event.key === 'Enter' || event.key === ' ')) {
+    event.preventDefault(); toggleCodedQuestionDisplay(event.target);
+  }
+});
 const collapsedCodedTypes = { bank:new Set(), selected:new Set() };
 window.toggleCodedType = (side, code, button) => {
   const list = document.getElementById(`coded-${side}-${code}`);
@@ -257,6 +292,7 @@ function renderSelected() {
     list.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-muted);font-size:.9rem">輸入編碼後點擊「加入」將題目加入試卷</div>';
     document.getElementById('scoreCfg').style.display = 'none';
     document.getElementById('totalScoreBar').style.display = 'none';
+    calcTotal();
     return;
   }
   // 依題型分組顯示（同題目庫樣式）
@@ -276,12 +312,12 @@ function renderSelected() {
       <div class="result-section-title">${codedTypeToggle('selected', tCode, `${tLabel}（${items.length} 題${tCode === 'T4' ? `，共 ${items.reduce((sum,{q})=>sum+blankCount(q),0)} 格` : ''}）`)}</div>
       <div class="result-list" id="coded-selected-${tCode}"${collapsedCodedTypes.selected.has(tCode) ? ' hidden' : ''}>
         ${items.map(({q, id}, index) => {
-          return `<div class="result-q" data-id="${id}"
+          return `<div class="result-q${expandedCodedQuestions.has(String(id)) ? ' is-expanded' : ''}" data-id="${id}" tabindex="0"
             ondragover="dragOver(event,'${id}')" ondrop="dropOn(event,'${id}')" ondragend="dragEnd()">
             <button type="button" class="drag-handle" draggable="true" ondragstart="dragStart(event,'${id}')" title="拖曳排序" aria-label="拖曳調整${tLabel}第 ${index+1} 題順序"><svg width="16" height="18" viewBox="0 0 16 18" fill="currentColor" aria-hidden="true"><circle cx="5" cy="4" r="1.3"/><circle cx="11" cy="4" r="1.3"/><circle cx="5" cy="9" r="1.3"/><circle cx="11" cy="9" r="1.3"/><circle cx="5" cy="14" r="1.3"/><circle cx="11" cy="14" r="1.3"/></svg></button>
             <span class="q-num">${index+1}.</span>
             <div class="q-body">
-              ${codedQuestionBody(q, `<button type="button" class="btn btn-ghost btn-sm replace-question si-remove" onclick="toggleQ('${id}',false)">移除</button>`)}
+              ${codedSelectedQuestionBody(q, `<button type="button" class="btn btn-ghost btn-sm replace-question si-remove" onclick="toggleQ('${id}',false)">移除</button>`)}
             </div>
           </div>`;
         }).join('')}
@@ -304,6 +340,11 @@ function calcTotal() {
   let total=0;
   selectedOrder.forEach(id => { const q=selQuestions[id]; if(!q) return; const inp=document.getElementById('sc-'+q.type); total += (inp?Number(inp.value)||0:(TYPE_SCORES[q.type]||2)) * selectedScoreUnits(q); });
   document.getElementById('totalScoreVal').textContent = `總計：${total} 分`;
+  const questions = selectedOrder.map(id => selQuestions[id]).filter(Boolean);
+  document.getElementById('selectedStats').innerHTML = `
+    <div class="preview-stat">共 <strong>${questions.length}</strong> 題</div>
+
+    <div class="preview-stat">題型 <strong>${new Set(questions.map(q => q.type)).size}</strong> 種</div>`;
 }
 window.calcTotal = calcTotal;
 
@@ -485,18 +526,10 @@ function renderCodedExamPreview() {
   modal.querySelectorAll('.modal-header button').forEach(button => {
     if (!button.classList.contains('modal-close') && button.id !== 'epFullscreenToggle') tools.append(button);
   });
-  const infoToggle = tools.querySelector('[data-display-info-toggle]') || document.createElement('button');
-  infoToggle.type = 'button';
-  infoToggle.className = 'btn btn-ghost btn-sm ep-panel-toggle';
-  infoToggle.setAttribute('data-display-info-toggle', '');
-  infoToggle.setAttribute('aria-controls', 'epPreviewOptions');
-  infoToggle.setAttribute('aria-expanded', 'false');
-  infoToggle.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>顯示資訊';
-  tools.insertBefore(infoToggle, tools.querySelector('#epHeaderToggle'));
   const previewOptions = document.querySelector('.ep-preview-options');
   previewOptions.id = 'epPreviewOptions';
-  previewOptions.hidden = true;
-  infoToggle.onclick = () => togglePreviewPanel('epPreviewOptions');
+  previewOptions.dataset.alwaysVisible = 'true';
+  previewOptions.hidden = false;
   const download = tools.querySelector('button[onclick="window._epDoExport()"]');
   if (download) {
     download.classList.remove('btn-ghost');
@@ -566,5 +599,6 @@ const scopeSelector = mountScopeSelector({ cache:_tbCache, dataService:DataServi
   applyFilters(); renderSelected();
 } });
 </script>
+<script src="js/selection-redesign.js?v=20261013"></script>
 </body>
 </html>
