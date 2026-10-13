@@ -27,6 +27,8 @@ body>.layout>.main>.topbar{flex:none;padding:17px clamp(22px,4vw,64px) 0;min-hei
 @media(max-width:470px){.site-header{padding:8px 16px 0}.site-account #welcomeText{display:none}.site-nav{gap:0 12px}.site-brand strong{font-size:1rem}.site-brand svg{width:29px}body>.layout>.main>.page-content{padding:24px 20px 36px}.site-nav-menu{width:174px}}
 
 .site-nav-group>summary::before{content:'';order:1;width:6px;height:6px;margin-left:2px;margin-top:-3px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(45deg);flex:none}
+.topbar-heading{column-gap:8px}
+.topbar-subtitle::before{margin-right:0}
 
 /* 共用操作狀態：優先於舊版按鈕與動態預覽的狀態規則。 */
 body .btn.btn-outline:hover:not(:disabled){background:#edf4e6;border-color:#83ad8d;color:#315940}

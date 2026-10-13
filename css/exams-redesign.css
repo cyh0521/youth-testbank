@@ -1,9 +1,9 @@
 /* 試卷管理沿用新版綠色介面；樣式限於操作區，避免影響試卷正文。 */
-.exams-redesign-page .exams-page-heading{display:flex;align-items:baseline;gap:10px;margin:0 0 14px;white-space:nowrap}
+.exams-redesign-page .exams-page-heading{display:flex;align-items:baseline;gap:8px;margin:0 0 14px;white-space:nowrap}
 .exams-redesign-page .exams-page-heading h1{margin:0;color:#214a35;font-size:1.65rem;font-weight:700;line-height:1.35;letter-spacing:.025em}
 .exams-redesign-page .exams-page-heading p{margin:0;color:#718775;font-size:.9rem;line-height:1.6}
-.exams-redesign-page .exams-page-heading p::before{content:'︱';margin-right:6px;color:#a5b5a4}
-@media(max-width:470px){.exams-redesign-page .exams-page-heading{gap:10px}.exams-redesign-page .exams-page-heading h1{font-size:1.15rem}.exams-redesign-page .exams-page-heading p{font-size:.8rem}}
+.exams-redesign-page .exams-page-heading p::before{content:'︱';margin-right:0;color:#a5b5a4}
+@media(max-width:470px){.exams-redesign-page .exams-page-heading{gap:8px}.exams-redesign-page .exams-page-heading h1{font-size:1.15rem}.exams-redesign-page .exams-page-heading p{font-size:.8rem}}
 .exams-redesign-page:is(.exam-previewing,.exam-editing) .exams-page-heading{display:none}
 .exams-redesign-page #listView,.exams-redesign-page #editModal{border:1px solid #dce6d8;border-radius:14px;background:#fff;box-shadow:0 3px 14px #294d3510;overflow:hidden}
 .exams-redesign-page #listView{padding:0}
@@ -11,7 +11,8 @@
 .exams-redesign-page #editModal>.edit-card-inner>.modal-header{background:#fff}
 .exams-redesign-page:is(.exam-editing,.exam-previewing)>.layout{height:100vh;height:100dvh;min-height:0;overflow:hidden}
 .exams-redesign-page #editModal>.edit-card-inner>.modal-header{padding:18px 22px;border-bottom:1px solid #e5ecde;gap:14px}
-.exams-redesign-page #editModal .edit-card-heading h3{color:#214a35;line-height:1.2}
+.exams-redesign-page #editModal .edit-card-heading .scope-title{align-items:flex-end}
+.exams-redesign-page #editModal .edit-card-heading h3{margin:0;color:#214a35;line-height:1}
 .exams-redesign-page #editModal .edit-details-link{color:#718775}
 .exams-redesign-page #editModal .edit-card-actions{gap:8px}
 .exams-redesign-page #editModal .edit-card-actions .btn-ghost{border:1px solid #dce6d8;background:#fff}
@@ -63,6 +64,28 @@
 .exams-redesign-page #epModal.ep-management-preview :is(.ep-scope-toggle,.ep-scope-reopen):hover{color:#34774d}
 .exams-redesign-page #epModal .ep-scope-card{background:#fbfcf9}
 .exams-redesign-page #epModal .ep-preview-controls :is(.ep-preview-options,.ep-inline-header,.ep-toolbar){background:#f5f8f1;color:#315940}
+.exams-redesign-page #epModal.ep-management-preview{border:1px solid #dce6d8;border-radius:14px;background:#fff;box-shadow:0 3px 14px #294d3510}
+.exams-redesign-page #epModal.ep-management-preview .modal-header{padding:18px 22px;gap:14px;background:#fff;border-bottom:1px solid #e5ecde}
+.exams-redesign-page #epModal.ep-management-preview #epTitle{margin:0;color:#214a35;line-height:1}
+.exams-redesign-page #epModal.ep-management-preview .modal-header>div{gap:8px!important}
+.exams-redesign-page #epModal.ep-management-preview .modal-header .btn-ghost{background:#fff;border:1px solid #dce6d8;color:#416b4c}
+.exams-redesign-page #epModal.ep-management-preview .modal-header .btn-ghost:hover{background:#edf4e6;border-color:#b5cca6}
+.exams-redesign-page #epModal.ep-management-preview .modal-header .btn.ep-panel-toggle[aria-expanded="true"],.exams-redesign-page #epModal.ep-management-preview .modal-header .btn.ep-panel-toggle[aria-expanded="true"]:hover{background:#e6efdc;border-color:#adc79b;color:#315940;box-shadow:none}
+.exams-redesign-page #epModal.ep-management-preview .selection-preview-body{padding:20px 22px}
+.exams-redesign-page #epModal.ep-management-preview .ep-scope-card{background:#f1f5eb;color:#315940}
+.exams-redesign-page #epModal.ep-management-preview .ep-scope-select{color:#315940}
+.exams-redesign-page #epModal.ep-management-preview .ep-scope-select small{color:#718775}
+.exams-redesign-page #epModal.ep-management-preview .ep-scope-select:hover{background:#e2ecd9}
+.exams-redesign-page #epModal.ep-management-preview .ep-scope-select[aria-pressed="true"]{background:#dceacd;color:#214a35;box-shadow:inset 0 0 0 1px #adc79b}
+.exams-redesign-page #epModal.ep-management-preview .ep-preview-controls :is(.ep-preview-options,.ep-inline-header,.ep-toolbar){padding:16px 18px;margin-bottom:18px;border:0;border-radius:12px}
+.exams-redesign-page #epModal.ep-management-preview .ep-preview-options label,.exams-redesign-page #epModal.ep-management-preview .ep-preview-options label:hover,.exams-redesign-page #epModal.ep-management-preview .ep-preview-options label:has(input:checked){padding:4px 0;background:transparent;border:0;border-radius:0;box-shadow:none;color:#315940}
+.exams-redesign-page #epModal.ep-management-preview .ep-preview-options label:hover{color:#34774d}
+.exams-redesign-page #epModal.ep-management-preview .ep-preview-controls .ep-preview-options{padding:4px 4px 0;margin:0 0 14px;background:transparent;border:0;border-radius:0;box-shadow:none;gap:16px;color:#315940}
+.exams-redesign-page #epModal.ep-management-preview .ep-preview-options input{width:16px;height:16px;margin:0;accent-color:#34774d}
+.exams-redesign-page #epModal.ep-management-preview .ep-toolbar{gap:14px;flex-wrap:wrap}
+.exams-redesign-page #epModal.ep-management-preview .ep-toolbar input[type=range]{accent-color:#34774d}
+.exams-redesign-page #epModal.ep-management-preview .ep-toolbar .info-pill{background:#e7eedc;color:#4f6d4c;border-color:#dce6d2}
+@media(max-width:600px){.exams-redesign-page #epModal.ep-management-preview :is(.modal-header,.selection-preview-body){padding:14px}.exams-redesign-page #epModal.ep-management-preview #epTitle{flex-basis:100%!important}.exams-redesign-page #epModal.ep-management-preview .modal-header>div{flex-wrap:wrap}}
 .exams-redesign-page #epPaperSizeModal .ep-layout-option:hover{background:#f0f5e9;border-color:#b5cca6}
 .exams-redesign-page #epPaperSizeModal .ep-layout-option:has(input:checked){background:#e8f1df;border-color:#83aa70;box-shadow:none}
 .exams-redesign-page #epPaperSizeModal .ep-layout-option:has(input:focus-visible){outline:2px solid #34774d;outline-offset:2px}

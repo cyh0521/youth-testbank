@@ -1,5 +1,19 @@
 # 幼獅題庫系統 v2（出題列印版）
 
+## 2026-10-13 介面更新與目前進度
+
+本節依目前工作目錄及 10/12–10/13 的 Git 紀錄整理。工作目錄另有尚未提交的介面調整，與正式網站是否已部署分開記錄。
+
+- **全站導覽與風格（10/12 起）**：登入後頁面改為白底、綠色操作按鈕與插畫風格，頂部水平導覽取代原深色側欄。導覽提供首頁、出題方式、試卷管理，以及依角色開放的題庫管理與設定；帳號選單保留個人資料與登出，登出前顯示確認視窗。
+- **首頁改為冊別入口**：以課本冊別卡片及插畫呈現題庫，點選冊別後開啟出題方式視窗，可選電腦選題、手動選題、編碼選題或題本列印，並將科目／冊別參數帶入下一頁。首頁不再顯示最近試卷表格，已儲存試卷由「試卷管理」查找。
+- **首頁常用排序**：冊別卡片的更多選單可加入或取消「常用科目」，以科目與冊別的組合作為識別，儲存在帳號的 `homeFavoriteBooks`。已加入的冊別排在前方；此排序與「設定」中控制顯示科目／冊別的偏好分開。
+- **選題流程套用新介面（10/13）**：電腦、手動、編碼選題與題本列印使用綠色卡片、流程導覽與共用操作樣式。科目／冊別選擇加入課本插畫；首頁帶入的冊別會在有可用題目時預選。手動／編碼／題本步驟切換採淡入效果，尊重減少動態效果設定。
+- **編碼選題配分**：提供自動配分、清除配分與整數／0.5 分調整；填空按格計分，試卷摘要顯示各題型配分分布及總分，題型順序可拖曳調整。
+- **試卷管理改版（10/13）**：搜尋、冊別篩選、列表操作、頁內編輯與預覽套用共用綠色風格；保留題目拖曳、換題、刪除、題型排序、表頭及檔名／說明編輯。預覽沿用左側命題範圍與右側試卷配置，選項與操作按鈕統一狀態樣式。
+- **尚未提交的調整**：目前 `exams.html`、`css/exams-redesign.css`、`css/site-redesign.css` 還有修改：編輯標題加上「編輯：」、清單／完整切換改為滑動選取樣式，預覽的解答／解析／出處／難易度選項維持顯示，並調整按鈕、標籤與控制項狀態。以上已存在於本機，不代表已提交或已上線。
+- **說明文件**：HTML 說明頁為 [READMD.html](READMD.html)，由原 `features.html` 取代；本文與 HTML 說明頁同步整理功能、操作與進度。
+- **本機驗證**：靜態題庫仍為 1,998 題、4 冊，資料驗證通過；90 項 Node 測試全部通過。本次未執行 Playwright、登入正式網站或 Microsoft Word 目視驗收。
+
 ## 目前題庫來源：靜態 JSON 與 Firestore
 
 目前工作分支為 `main`，已納入靜態題庫功能。出題預設以 GitHub Pages 的 JSON 檔供應題目，資料位於 `data/testbank`，`js/textbank-mode.js` 預設為 `static`；全站實際來源仍以管理員的 Firestore 設定為優先。線上網站須推送並完成部署才會更新，本文不代表已驗收正式網站。
@@ -7,7 +21,7 @@
 1. 管理員在「題目匯入」第一步按「匯出靜態題庫」。此操作會從 Firestore 伺服器讀取全部題目、科目、冊別與章節目錄並下載 ZIP；請在讀取配額足夠時操作。匯出內容只包含出題所需欄位，不包含匯入檔名、建立者或時間戳記。
 2. 將 ZIP 內的 `data/testbank` 解壓至專案根目錄，保留 `manifest.json` 與 `books` 子目錄。原 Firestore 題目不要刪除。
 3. 在專案根目錄執行 `node scripts/verify-textbank.mjs`，核對每冊題數、題目 ID 與索引。再執行 `node --test tests/static-textbank.test.mjs`。
-4. 在測試分支以 `static` 模式測試各冊出題、題目搜尋、舊試卷預覽、圖片及匯出。畫面右下角會顯示題庫來源；靜態檔載入失敗會顯示錯誤並中止該次讀題，不會悄悄改讀 Firestore。可在瀏覽器開發者工具的「網路」分頁確認題目請求指向 `data/testbank/books/*.json`，且出題期間沒有 `questions` 的 Firestore 讀取請求。
+4. 在測試分支以 `static` 模式測試各冊出題、題目搜尋、舊試卷預覽、圖片及匯出。若主要管理員已開啟狀態提示，畫面右下角會顯示題庫來源；靜態檔載入失敗會顯示錯誤並中止該次讀題，不會悄悄改讀 Firestore。可在瀏覽器開發者工具的「網路」分頁確認題目請求指向 `data/testbank/books/*.json`，且出題期間沒有 `questions` 的 Firestore 讀取請求。
 5. 題目新增、編輯與刪除仍發生在 Firestore；題目或課本目錄每次變更後需要重新匯出、驗證，並透過 GitHub Desktop 發布 JSON。發布前，普通出題頁面仍會讀取上一版靜態題庫；管理員的題目維護、課本管理及匯入頁面直接讀 Firestore，以便檢查尚未發布的變更。靜態模式的出題頁則從同一份 manifest 引用的 `catalog-*.json` 讀取科目、冊別與章節，目錄保留原 ID 與空冊。
 
 管理員可到「進階設定 → 題庫來源」將全站讀題來源切換為 Firestore 備用模式，所有使用者的新讀題請求會採用新來源；已載入題目的頁面需重新整理。右下角狀態提示預設關閉，僅主要管理員可在同頁開啟，選項儲存在自己的帳號。此設定儲存在 Firestore 的 `settings/textbankMode`，每個登入頁面以一筆設定監聽取得，題目匯入與編輯仍寫入 Firestore。若設定文件不存在或讀取失敗，網站使用 `js/textbank-mode.js` 的預設值。Firestore 的原題目資料在整個試行期保留。切換版本前先確認 GitHub Pages 發布來源及快取；舊頁面可能短暫留在瀏覽器快取中。
@@ -16,7 +30,7 @@
 
 ## 2026-10-12 現況與補記進度
 
-以下依目前程式、靜態資料及 Git 紀錄補記；歷史段落保留當時調整，操作方式以「目前狀態」及「使用流程」為準。
+以下依目前程式、靜態資料及 Git 紀錄補記；歷史段落保留當時調整；導覽與首頁以 2026-10-13 更新為準，其他操作以「目前狀態」及「使用流程」為準。
 
 - **靜態題庫快照**：本機驗證通過，共 1,998 題、4 冊；科目代碼 A1／B1／C1／E1 分別為 224／922／500／352 題。題型為是非 649、選擇 1,146、填空 72、配合 25、問答 106 題；簡易 1,358、較難 640 題。這是儲存庫快照，尚未發布的 Firestore 異動須重新匯出才會反映。
 - **10/12 表頭簡化**：第一列改為一個「表頭資訊」自由文字欄，第二列固定為班級、姓名、座號，保留各欄 0–12 格設定；移除欄位位置拖曳。舊表頭的學校、學年度、科目、試別與範圍會合併顯示為第一列；新文字清空後不會再次恢復舊值。帳號預設與個別試卷皆使用此格式。
@@ -167,7 +181,7 @@ npx serve .
 youth-testbank/
 ├─ READMD.html                系統說明、功能與開發進度
 ├─ index.html                 帳號登入
-├─ dashboard.html             建立試卷入口與最近試卷
+├─ dashboard.html             冊別卡片、常用排序與出題入口
 ├─ textbooks.html             科目、冊別、章節管理
 ├─ import-textbooks.html      初次建立或重建課本結構工具
 ├─ import.html                Word 題目匯入
@@ -184,11 +198,15 @@ youth-testbank/
 │  ├─ dashboard.css           首頁與部分管理頁共用樣式
 │  ├─ exam-compose.css        共用選題版面與題本內容區捲動
 │  ├─ process-bar.css         多步驟流程導覽
+│  ├─ site-redesign.css       共用綠色導覽、控制項與操作狀態
+│  ├─ dashboard-redesign.css  冊別卡片與首頁插畫版面
+│  ├─ compose-redesign.css    選題與題本流程改版樣式
+│  ├─ exams-redesign.css      試卷列表、編輯與預覽改版樣式
 │  └─ dashboard-exam-editor.css 首頁試卷編輯視窗樣式
 ├─ js/
 │  ├─ firebase.js             Firebase 初始化與 DataService
 │  ├─ auth-guard.js           登入守衛與角色檢查
-│  ├─ shell.js                同步繪製側邊欄與收合控制
+│  ├─ shell.js                頂部導覽、帳號選單與登出確認
 │  ├─ core.js                 共用常數、UI 工具與選單資料
 │  ├─ exam-preview.js         表頭、預覽、列印與 Word 匯出
 │  ├─ exam-scope.js           共用科目／冊次／章節選擇與章節名稱資料
@@ -208,13 +226,18 @@ youth-testbank/
 │  ├─ exam-question-replacement.js 試卷換題候選選取
 │  ├─ section-selection.js    章節範圍勾選
 │  ├─ download-variants.js    下載卷型與 A／B 卷題序
+│  ├─ dashboard-home.js      首頁冊別、模式選擇與帳號常用排序
+│  ├─ dashboard-favorites.js 常用冊別識別與排序
+│  ├─ book-artwork.js         冊別插畫對照
+│  ├─ selection-redesign.js   選題步驟淡入與手動選題欄位對齊
 │  └─ icons.js                共用 SVG 圖示
 ├─ vendor/
 │  ├─ docx.iife.js            docx.js 9.6.1 瀏覽器版
 │  └─ docx.LICENSE            docx.js MIT 授權
 ├─ data/testbank/             manifest、課本目錄與每冊題目 JSON
 ├─ scripts/verify-textbank.mjs 靜態題庫資料驗證
-├─ images/                    網站 Logo 與題目圖片
+├─ images/                    網站 Logo、題目圖片與 ui-redesign 插畫
+├─ ui-redesign.html           介面設計展示頁
 └─ tests/                    選題、題本與 Word 匯出回歸測試
 ```
 
@@ -225,7 +248,7 @@ youth-testbank/
 | 頁面 | 功能 | 管理員 | 教師 |
 |---|---|:---:|:---:|
 | `index.html` | 管理員／教師登入 | ✓ | ✓ |
-| `dashboard.html` | 建立試卷、最近試卷與快速入口 | ✓ | ✓ |
+| `dashboard.html` | 冊別卡片、常用排序與出題入口 | ✓ | ✓ |
 | `textbooks.html` | 科目、冊別與章節管理 | ✓ | |
 | `import-textbooks.html` | 建立或重建課本資料 | ✓ | |
 | `import.html` | 從 `.docx` 批次匯入題目 | ✓ | |
@@ -244,14 +267,14 @@ youth-testbank/
 
 一般登入後頁面的載入順序如下：
 
-1. HTML 載入 `css/theme.css`；首頁、試卷管理及部分管理頁另載入 `css/dashboard.css`。
+1. HTML 載入 `css/theme.css` 與 `css/site-redesign.css`；首頁、選題與試卷管理另載入對應的 redesign 樣式，部分頁面仍沿用 `css/dashboard.css` 等基礎樣式。
 2. `js/icons.js` 提供共用圖示。
 3. `js/core.js` 提供題型常數、UI 工具、導覽與共用下拉選單。
-4. 側欄元素後立即載入 `js/shell.js`，同步繪製導覽，不等待 Firebase。主內容先顯示靜態版面，以 `inert` 暫停操作。
-5. 頁面內的 ES Module 匯入 `js/auth-guard.js`，載入 `js/firebase.js`、確認登入角色後啟用內容；角色相同時不重建側欄。
+4. 頁面保留導覽掛載元素，立即載入 `js/shell.js`，同步繪製頂部導覽，不等待 Firebase。主內容先顯示靜態版面，以 `inert` 暫停操作。
+5. 頁面內的 ES Module 匯入 `js/auth-guard.js`，載入 `js/firebase.js`、確認登入角色後啟用內容；角色相同時不重建導覽。
 6. 試卷相關頁面另外匯入 `js/exam-preview.js`。
 
-首頁已移除題庫概況。三種出題頁的科目與冊別選單顯示題數及題型分布，並同步載入章節；靜態模式使用同一版課本目錄與題目資料。
+首頁目前使用冊別插畫卡片與模式選擇視窗，已移除題庫概況及最近試卷表格。三種出題頁的科目與冊別選單顯示題數及題型分布，並同步載入章節；靜態模式使用同一版課本目錄與題目資料。
 
 各頁面應透過全域 `DataService` 存取 Firebase，不直接重複實作 Firestore 查詢。
 
@@ -303,7 +326,7 @@ Word 入題檔的表格欄位為：難易、章數、節數、小節、題型、
 
 ### 題本列印
 
-1. 從側邊欄進入「題本列印」，選擇科目、冊次及章節；至少勾選一個有題目的章節。
+1. 從頂部「出題方式」或首頁冊別卡片進入「題本列印」，選擇科目、冊次及章節；至少勾選一個有題目的章節。
 2. 點選「預覽題本」，檢視各章節全部題型與題目。可切換解答、解析、出處及難易度，或展開「字體與行距」調整版面。
 3. 點選「下載」，選擇 A3、A4 或 JIS B4 與單欄／雙欄；直接列印則先確認提醒，再於瀏覽器設定紙張。資訊行、章節分隔線與勾選內容沿用預覽設定。
 
@@ -322,15 +345,15 @@ node --test tests/*.test.mjs
 git diff --check
 ```
 
-`tests/exam-scope.browser.mjs` 為另行執行的 Playwright 瀏覽器測試，需可用的 Playwright 與 Chromium；執行方式為 `node tests/exam-scope.browser.mjs`，可用 `PLAYWRIGHT_MODULE_PATH` 指定套件位置、`PLAYWRIGHT_CHANNEL` 指定瀏覽器通道。
+`tests/exam-scope.browser.mjs` 與 `tests/ui-redesign.browser.mjs` 為另行執行的 Playwright 瀏覽器測試，需可用的 Playwright 與 Chromium；執行方式為 `node tests/exam-scope.browser.mjs` 或 `node tests/ui-redesign.browser.mjs`，可用 `PLAYWRIGHT_MODULE_PATH` 指定套件位置、`PLAYWRIGHT_CHANNEL` 指定瀏覽器通道。
 
-2026-10-12 本機檢查：靜態題庫驗證通過（1,998 題、4 冊），全部 87 項 Node 測試通過，README 變更通過 `git diff --check`。本次未執行 Playwright 或登入正式網站，亦未完成 Microsoft Word 目視驗收。
+2026-10-13 本機檢查：靜態題庫驗證通過（1,998 題、4 冊），全部 90 項 Node 測試通過，README 變更通過 `git diff --check`。本次未執行 Playwright 或登入正式網站，亦未完成 Microsoft Word 目視驗收。
 
 正式驗收需登入確認頂欄下方的捲動範圍，並以實際題本測試長題目、答案、解析、章節分隔線及單／雙欄的列印與 Word 輸出。Word 開啟顯示編輯標記時的「↵」屬非列印符號。
 
 ## 試卷管理介面
 
-試卷管理直接顯示全部試卷清單，沿用首頁「最近試卷」的表格樣式，呈現試卷名稱、冊別、題數、建立時間與操作按鈕，支援試卷名稱搜尋及冊別篩選。
+試卷管理直接顯示全部試卷清單，使用綠色改版表格樣式，呈現試卷名稱、冊別、題數、建立時間與操作按鈕，支援試卷名稱搜尋及冊別篩選。
 
 編輯試卷時可用「重新排序」隨機調整各題型內的題目順序；「題型排序」會開啟對話框，以拖曳調整題型先後。套用後的順序會儲存於試卷，並套用到預覽、列印及 DOCX。
 
@@ -345,7 +368,7 @@ git diff --check
 
 | Collection／文件 | 主要用途 |
 |---|---|
-| `users/{uid}` | 管理員與教師資料、角色、服務學校、頭像，以及登入和試卷數量統計 |
+| `users/{uid}` | 管理員與教師資料、角色、服務學校、頭像、首頁常用冊別，以及登入和試卷數量統計 |
 | `questions/{questionId}` | 題目、答案、解析、題型與課本位置 |
 | `exams/{examId}` | 試卷名稱、題目順序、配分與科目 |
 | `textbooks/{subjectId}` | 科目資料 |
