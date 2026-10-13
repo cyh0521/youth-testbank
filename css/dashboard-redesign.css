@@ -53,6 +53,10 @@
 
 #green-comic-test .gc-overlay{position:fixed;z-index:1100;align-items:center;padding:24px;overflow-y:auto}
 #green-comic-test .gc-modal{margin:auto}
+#green-comic-test .gc-modal-heading{display:flex;align-items:baseline;flex-wrap:wrap;column-gap:4px;row-gap:2px;margin:0 30px 11px 0}
+#green-comic-test .gc-modal-heading h2{margin:0}
+#green-comic-test .gc-modal-divider{color:#9baea0;font-size:15px;font-weight:400}
+#green-comic-test .gc-modal-description{color:#7b8e7f;font-size:13px;font-weight:400;line-height:1.5}
 #green-comic-test .gc-heading h1{font-size:1.45rem}
 
 #green-comic-test .gc-custom-art{display:grid;place-items:center;width:100%;height:110px;color:var(--book-tone)}
@@ -61,14 +65,18 @@
 
 #green-comic-test .gc-book-card{position:relative;min-width:0}
 #green-comic-test .gc-book-card>.gc-book{width:100%;height:100%}
-#green-comic-test .gc-book-actions{position:absolute;right:7px;top:7px;z-index:3}
-#green-comic-test .gc-book-more{display:grid;place-items:center;width:30px;height:30px;padding:4px;border:0;border-radius:0;background:transparent;color:#39644b;cursor:pointer;opacity:0;transition:opacity .15s,color .15s}
-#green-comic-test .gc-book-more svg{width:21px;height:21px;fill:currentColor}
-#green-comic-test .gc-book-card:hover .gc-book-more,#green-comic-test .gc-book-card:focus-within .gc-book-more{opacity:1}
-#green-comic-test .gc-book-more:hover{background:transparent;color:#163c29}
-#green-comic-test .gc-book-menu{position:absolute;top:30px;right:0;width:max-content;padding:3px;border:1px solid #dce6d8;border-radius:8px;background:#fff;box-shadow:0 5px 15px #254d3514}
-#green-comic-test .gc-book-menu[hidden]{display:none}
-#green-comic-test .gc-book-favorite{width:100%;padding:5px 8px;border:0;border-radius:5px;background:transparent;color:#214a35;font:inherit;font-size:.9rem;white-space:nowrap;text-align:left;cursor:pointer}
-#green-comic-test .gc-book-favorite:hover,#green-comic-test .gc-book-favorite:focus-visible{background:#edf4e8}
-#green-comic-test .gc-book-favorite:disabled{opacity:.6;cursor:wait}
-@media(hover:none){#green-comic-test .gc-book-more{opacity:1}}
+#green-comic-test .gc-book-check{position:absolute;right:9px;top:9px;z-index:3;display:grid;place-items:center;width:24px;height:24px;padding:0;border:0;background:transparent;color:#9ca7a1;cursor:pointer;opacity:0;transition:color .15s,transform .15s,opacity .15s}
+#green-comic-test .gc-book-check svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:2.7;stroke-linecap:round;stroke-linejoin:round;transform:rotate(-7deg)}
+#green-comic-test .gc-book-check .gc-check-fill{fill:#a8cda0;stroke:none;opacity:0;transition:opacity .15s}
+#green-comic-test .gc-book-check .gc-check-mark{stroke-width:3.2;opacity:0;transition:opacity .15s}
+#green-comic-test .gc-book-card:hover .gc-book-check,#green-comic-test .gc-book-card:focus-within .gc-book-check{opacity:1}
+#green-comic-test .gc-book-check[aria-pressed="true"]{color:#173d32}
+#green-comic-test .gc-book-check[aria-pressed="true"] .gc-check-fill,#green-comic-test .gc-book-check[aria-pressed="true"] .gc-check-mark{opacity:1}
+#green-comic-test .gc-book-check:hover{transform:scale(1.1);color:#173d32}
+#green-comic-test .gc-book-check:focus-visible{outline:2px solid #4b8064;outline-offset:2px}
+#green-comic-test .gc-book-check:disabled{cursor:wait}
+@media(hover:none){#green-comic-test .gc-book-check{opacity:1}}
+#green-comic-test .gc-mode-favorite{display:flex;align-items:center;gap:5px;margin-top:10px;padding:0;color:#355b43;font-size:14px;font-weight:600;cursor:pointer}
+#green-comic-test .gc-mode-favorite input{width:17px;height:17px;margin:0;accent-color:#4b8064;cursor:pointer}
+#green-comic-test .gc-mode-favorite:has(input:disabled){opacity:.65;cursor:wait}
+#green-comic-test .gc-footer{padding:32px 20px 22px;color:#99a99d;font-size:11px;line-height:1.6;text-align:center}
