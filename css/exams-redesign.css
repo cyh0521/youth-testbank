@@ -9,6 +9,35 @@
 .exams-redesign-page #listView{padding:0}
 .exams-redesign-page #listView .filter-row{margin:0;padding:18px 22px;background:#fff;border-bottom:1px solid #e5ecde;gap:12px}
 .exams-redesign-page #editModal>.edit-card-inner>.modal-header{background:#fff}
+.exams-redesign-page:is(.exam-editing,.exam-previewing)>.layout{height:100vh;height:100dvh;min-height:0;overflow:hidden}
+.exams-redesign-page #editModal>.edit-card-inner>.modal-header{padding:18px 22px;border-bottom:1px solid #e5ecde;gap:14px}
+.exams-redesign-page #editModal .edit-card-heading h3{color:#214a35;line-height:1.2}
+.exams-redesign-page #editModal .edit-details-link{color:#718775}
+.exams-redesign-page #editModal .edit-card-actions{gap:8px}
+.exams-redesign-page #editModal .edit-card-actions .btn-ghost{border:1px solid #dce6d8;background:#fff}
+.exams-redesign-page #editModal .edit-card-actions .btn-ghost:hover{background:#edf4e6;border-color:#b5cca6}
+.exams-redesign-page #editModal .edit-card-actions .btn.ep-panel-toggle[aria-expanded="true"],.exams-redesign-page #editModal .edit-card-actions .btn.ep-panel-toggle[aria-expanded="true"]:hover{background:#e6efdc;border-color:#adc79b;color:#315940;box-shadow:none}
+.exams-redesign-page #editModal>.edit-card-inner>.modal-body{padding:20px 22px!important}
+.exams-redesign-page #editModal #editHeaderPanel{padding:16px 18px;margin-bottom:18px;color:#315940}
+.exams-redesign-page #editModal .edit-list-toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px;color:#718775;font-size:.9rem}
+.exams-redesign-page #editModal .edit-list-toolbar #editQCount{color:#34774d!important}
+.exams-redesign-page #editModal .edit-q-section{padding:10px 14px;border-radius:12px}
+.exams-redesign-page #editModal .edit-q-item{padding:14px;border-bottom-color:#e8eee3}
+.exams-redesign-page #editModal .edit-q-item:hover{background:#fbfcf9}
+.exams-redesign-page #editQList :is(.eq-qnum,.eq-full-num){background:#edf4e6;color:#416b4c}
+.exams-redesign-page #editQList .eq-question-actions :is(.eq-full-replace,.eq-remove){display:inline-flex;align-items:center;justify-content:center;flex:none;width:26px;height:26px;padding:0;border:0;border-radius:6px;background:transparent;color:#788c7b;transition:color .15s ease}
+.exams-redesign-page #editQList .eq-question-actions svg{display:block;flex:none;width:16px;height:16px}
+.exams-redesign-page #editQList .eq-question-actions .eq-full-replace:hover{background:transparent;color:#34774d}
+.exams-redesign-page #editQList .eq-question-actions .eq-remove:hover{color:var(--danger)}
+.exams-redesign-page #editQList .eq-question-actions button:focus-visible{outline:2px solid #34774d;outline-offset:2px}
+.exams-redesign-page #editQList .eq-full-source{background:#f1f3e9;color:#65754e}
+.exams-redesign-page #editQList .eq-full-answer{background:#eef5e9;color:#315940}
+.exams-redesign-page #editQList :is(.drag-handle,.eq-num,.eq-remove){color:#788c7b}
+.exams-redesign-page #editQList .eq-remove:hover{color:var(--danger)}
+.exams-redesign-page #editTypeOrderModal .edit-type-order-item{border-color:#dce6d8;border-radius:8px;color:#315940;transition:background-color .15s ease,border-color .15s ease}
+.exams-redesign-page #editTypeOrderModal .edit-type-order-item:hover{background:#edf4e6;border-color:#b5cca6}
+.exams-redesign-page #editTypeOrderModal :is(.drop-before,.drop-after){border-color:#34774d}
+@media(max-width:600px){.exams-redesign-page #editModal>.edit-card-inner>.modal-header,.exams-redesign-page #editModal>.edit-card-inner>.modal-body{padding:14px!important}.exams-redesign-page #editModal .edit-card-heading,.exams-redesign-page #editModal .edit-card-actions{flex-basis:100%}.exams-redesign-page #editModal .edit-list-toolbar>span:first-child{flex-basis:100%}}
 .exams-redesign-page .form-control{border-color:#dce6d8;border-radius:8px;font-size:.9rem}
 .exams-redesign-page .form-control:focus{border-color:#83aa70;box-shadow:0 0 0 3px #34774d12}
 .exams-redesign-page #listView .form-control{min-height:40px;background-color:#fff}
@@ -28,7 +57,7 @@
 .exams-redesign-page .btn-outline:hover{background:#edf4e6;border-color:#83aa70}
 .exams-redesign-page :is(input[type=checkbox],input[type=radio]){accent-color:#34774d}
 .exams-redesign-page #editModal #editHeaderPanel{background:#f5f8f1}
-.exams-redesign-page .edit-q-section{background:#f5f8f1;color:#315940;border-color:#e5ecde}
+.exams-redesign-page .edit-q-section{background:#edf4e6;color:#315940;border-color:#e5ecde}
 .exams-redesign-page .edit-q-group{border-color:#dce6d8}
 .exams-redesign-page #editModal .edit-details-link:hover,.exams-redesign-page #editModal .edit-details-link:focus-visible{color:#34774d}
 .exams-redesign-page #epModal.ep-management-preview :is(.ep-scope-toggle,.ep-scope-reopen):hover{color:#34774d}
@@ -38,3 +67,13 @@
 .exams-redesign-page #epPaperSizeModal .ep-layout-option:has(input:checked){background:#e8f1df;border-color:#83aa70;box-shadow:none}
 .exams-redesign-page #epPaperSizeModal .ep-layout-option:has(input:focus-visible){outline:2px solid #34774d;outline-offset:2px}
 @media(max-width:600px){.exams-redesign-page #listView .filter-row{padding:14px;gap:10px}.exams-redesign-page #listView .filter-row .form-control{flex:1 1 160px;max-width:none!important}.exams-redesign-page #examCount{flex-basis:100%;margin-left:0!important}}
+
+.exams-redesign-page #editModal .edit-q-view-toggle{position:relative;isolation:isolate;box-sizing:border-box;display:inline-grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch;height:34px;padding:3px;background:#edf2e8;border:0;border-radius:9px;overflow:visible;gap:0}
+.exams-redesign-page #editModal .edit-q-view-toggle::before{content:"";position:absolute;z-index:-1;top:3px;bottom:3px;left:3px;width:calc((100% - 6px)/2);background:#fff;border-radius:6px;box-shadow:0 1px 3px #31594018;transition:transform 150ms ease-out}
+.exams-redesign-page #editModal .edit-q-view-toggle:has(button:last-child.active)::before{transform:translateX(100%)}
+.exams-redesign-page #editModal .edit-q-view-toggle button{position:relative;box-sizing:border-box;height:auto;min-height:0;min-width:0;margin:0;padding:0 12px;border:0;border-radius:6px;background:transparent;color:#607466;font-size:14px;line-height:1;transition:color 150ms ease-out}
+.exams-redesign-page #editModal .edit-q-view-toggle button.active,.exams-redesign-page #editModal .edit-q-view-toggle button.active:hover{background:transparent;color:#315940;box-shadow:none;font-weight:600}
+.exams-redesign-page #editModal .edit-q-view-toggle button:hover{background:transparent;color:#315940}
+.exams-redesign-page #editModal .edit-q-view-toggle svg{width:16px;height:16px}
+.exams-redesign-page #editModal .edit-q-view-toggle button:focus-visible{outline:2px solid #34774d;outline-offset:2px;border-radius:6px}
+@media(prefers-reduced-motion:reduce){.exams-redesign-page #editModal .edit-q-view-toggle::before,.exams-redesign-page #editModal .edit-q-view-toggle button{transition:none}}

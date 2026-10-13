@@ -27,3 +27,26 @@ body>.layout>.main>.topbar{flex:none;padding:17px clamp(22px,4vw,64px) 0;min-hei
 @media(max-width:470px){.site-header{padding:8px 16px 0}.site-account #welcomeText{display:none}.site-nav{gap:0 12px}.site-brand strong{font-size:1rem}.site-brand svg{width:29px}body>.layout>.main>.page-content{padding:24px 20px 36px}.site-nav-menu{width:174px}}
 
 .site-nav-group>summary::before{content:'';order:1;width:6px;height:6px;margin-left:2px;margin-top:-3px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(45deg);flex:none}
+
+/* 共用操作狀態：優先於舊版按鈕與動態預覽的狀態規則。 */
+body .btn.btn-outline:hover:not(:disabled){background:#edf4e6;border-color:#83ad8d;color:#315940}
+body .btn.btn-ghost:hover:not(:disabled){background:#edf4e6;color:#315940}
+body .btn.ep-panel-toggle[aria-expanded="true"],body .btn.ep-panel-toggle[aria-expanded="true"]:hover{background:#e6efdc;border-color:#adc79b;color:#315940;box-shadow:none}
+body .btn:focus-visible{outline:2px solid #34774d;outline-offset:2px}
+body .toolbar-account-toggle:hover,body .toolbar-account-toggle[aria-expanded="true"]{background:#edf4e6}
+body .ep-layout-option:hover{background:#f0f5e9;border-color:#b5cca6}
+body .ep-layout-option:has(input:checked){background:#e8f1df;border-color:#83aa70;box-shadow:none}
+body .ep-layout-option:has(input:focus-visible){outline:2px solid #34774d;outline-offset:2px}
+body .ep-preview-options label:hover{border-color:#83ad8d;background:#f5f8f1;color:#315940}
+body .ep-preview-options label:has(input:checked){background:#e6efdc;border-color:#adc79b;color:#315940;box-shadow:none}
+body .ep-preview-options label:has(input:focus-visible){outline:2px solid #34774d;outline-offset:2px}
+body :is(.ep-scope-toggle,.ep-scope-reopen):hover{background:#edf4e6;color:#34774d}
+body .ep-scope-select:hover{background:#edf4e6}
+body .ep-scope-select[aria-pressed="true"]{background:#e6efdc;color:#315940;box-shadow:inset 0 0 0 1px #adc79b}
+body :is(.ep-scope-toggle,.ep-scope-reopen,.ep-scope-select):focus-visible{outline:2px solid #34774d;outline-offset:2px}
+body .number-stepper-buttons button:hover{background:#e2ecd9;color:#315940}
+body .btn.btn-auto-score:hover{background:#dceacd;color:#315940}
+body .btn.btn-previous:hover{background:#e2ebdb;color:#315940}
+body .btn.btn-previous:focus-visible,body .btn.btn-auto-score:focus-visible{outline:2px solid #34774d;outline-offset:2px}
+body .chapter-picker-item:hover,body .chapter-picker-item:focus-visible{background:#edf4e6}
+body .upload-zone:hover,body .upload-zone.drag-over{background:#f0f5e9;border-color:#83ad8d}
