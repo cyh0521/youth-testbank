@@ -39,9 +39,12 @@ test('導覽列與首頁 Logo 都引用 images 中的現有檔案', () => {
   const shell = readFileSync(new URL('../js/shell.js', import.meta.url), 'utf8');
   const home = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   const siteCss = readFileSync(new URL('../css/site-redesign.css',import.meta.url),'utf8');
+  const loginCss = readFileSync(new URL('../css/login-redesign.css',import.meta.url),'utf8');
   assert(shell.includes('site-brand-mark'));
   assert(siteCss.includes("url('../images/youth.png')"));
-  assert.equal((home.match(/src="images\/youth.png"/g) || []).length, 2);
+  assert.match(home, /<span class="brand-mark" aria-hidden="true"><\/span>/);
+  assert.match(home, /href="css\/login-redesign\.css(?:\?[^"]*)?"/);
+  assert.match(loginCss, /\.brand-mark\s*\{[^}]*\bmask:url\('\.\.\/images\/youth\.png'\)/);
   assert(!shell.includes('src="img/'));
   assert(!home.includes('src="img/'));
   const logo = readFileSync(new URL('../images/youth.png', import.meta.url));

@@ -4,12 +4,12 @@ import { createRequire } from 'node:module';
 import test from 'node:test';
 
 const require = createRequire(import.meta.url);
-const { chromium } = require('playwright');
+const { chromium } = require(process.env.PLAYWRIGHT_MODULE_PATH || 'playwright');
 const source = readFileSync(new URL('../js/reverse-import.js', import.meta.url), 'utf8');
 const zipSource = readFileSync(new URL('../vendor/jszip.min.js', import.meta.url), 'utf8');
 
 test('舊版題本的另列答案分離至答案欄，保留空格、解析與選擇題答案', async () => {
-  const browser = await chromium.launch({ channel: 'msedge', headless: true });
+  const browser = await chromium.launch({ channel: process.env.PLAYWRIGHT_CHANNEL || 'msedge', headless: true });
   try {
     const page = await browser.newPage();
     await page.addScriptTag({ content: zipSource });

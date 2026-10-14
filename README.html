@@ -9,17 +9,17 @@
 @media print{.workspace{padding:0;max-width:none}.document{max-width:none}section{background:white;border:0;border-radius:0;padding:12px 0;margin-bottom:20px}.topic-block{margin-top:18px;padding-top:18px}.journal-entry{break-inside:avoid}.journal-entry dd,p,li{font-size:10pt}.section-title{break-after:avoid}table{table-layout:auto}}
 </style></head>
 <body id="top"><div class="workspace"><aside class="rail"><div class="mark">PROJECT NOTEBOOK / 02</div><h2>幼獅題庫系統</h2><nav aria-label="工作筆記目錄"><a href="#overview"><small>01</small>專案定位</a><a href="#features"><small>02</small>重點特色</a><a href="#engineering"><small>03</small>編寫重點</a><a href="#development"><small>04</small>開發過程與階段紀錄</a><a href="#usage"><small>05</small>操作與資料更新</a><a href="#maintenance"><small>06</small>維護與驗證</a><a href="#limitations"><small>07</small>修正筆記與待驗收項目</a></nav><div class="rail-foot"><button class="button" type="button" onclick="window.print()">列印筆記</button><a href="index.html">開啟系統</a></div></aside>
-<main class="document"><header class="hero"><p class="eyebrow">開發工作筆記 · 整理至 2026 年 10 月 14 日</p><h1>從題庫建置<br>到試卷輸出的開發紀錄</h1><p class="lead">記下功能如何形成、程式為什麼這樣安排，以及修正後還需要確認什麼。保留足夠脈絡，讓後續維護能接續工作。</p><div class="metadata"><span>原生前端 + Firebase</span><span>靜態題庫 1,998 題／4 冊</span><span>驗證與部署分開記錄</span></div></header><section id="overview" aria-labelledby="overview-title"><div class="section-title"><span>01</span><h2 id="overview-title">專案定位</h2></div>
+<main class="document"><header class="hero"><p class="eyebrow">開發工作筆記 · 整理至 2026 年 10 月 15 日</p><h1>從題庫建置<br>到試卷輸出的開發紀錄</h1><p class="lead">記下功能如何形成、程式為什麼這樣安排，以及修正後還需要確認什麼。保留足夠脈絡，讓後續維護能接續工作。</p><div class="metadata"><span>原生前端 + Firebase</span><span>靜態題庫 1,998 題／4 冊</span><span>驗證與部署分開記錄</span></div></header><section id="overview" aria-labelledby="overview-title"><div class="section-title"><span>01</span><h2 id="overview-title">專案定位</h2></div>
 <p>幼獅文化線上命題系統，供教師與管理員建立題庫、組卷、保存試卷及紙本輸出。採 HTML、CSS 與原生 JavaScript，搭配 Firebase 驗證／資料儲存及 GitHub Pages 靜態題庫。</p>
 <p>教師管理自己的試卷；管理員另負責課本目錄、題目匯入與維護及帳號管理。班級、姓名、座號是試卷表頭內容，目前不提供學生帳號、線上作答或成績管理。</p>
 <div class="note"><strong>筆記的閱讀方式</strong><p>先看目前功能與編寫決策，再沿時間查看開發紀錄。歷史紀錄保留當時做法，已被改版取代的導覽、表頭或輸出功能，請以目前說明為準。</p></div></section><section id="features" aria-labelledby="features-title"><div class="section-title"><span>02</span><h2 id="features-title">重點特色</h2></div><div class="section-opening">
 <div class="feature-grid"><div><h3>舊題本轉檔成入題檔</h3><p>管理員可批次解析舊版 DOCX 題本，確認科目、冊別、章節及題目欄位，分別下載選擇題／其他題型的入題表格，保留段落與內嵌圖片。</p></div>
-<div></div><div class="topic-block"><h3>三種選題方式</h3><p>電腦依條件組卷、手動逐題挑選、編碼批次加入；共用範圍、配分、表頭與預覽流程。</p></div>
-<div></div><div class="topic-block"><h3>有彈性的配分與選題</h3><p>支援六類題型、自動配分、整數／0.5 分調整、難易度比例及章節比重。填空按格計分，保留完整題目。</p></div>
-<div></div><div class="topic-block"><h3>試卷與題本輸出</h3><p>列印或下載真正的 DOCX；可產生附答案／解析、作答卷與 A／B 卷。題本依章節整理全部題目。</p></div>
-<div></div><div class="topic-block"><h3>預覽、編輯與再利用</h3><p>章節目錄可標示對應試題；支援題目與題型排序、換題、刪除，以及試卷搜尋、冊別篩選與再次輸出。</p></div>
-<div></div><div class="topic-block"><h3>帳號保存個人習慣</h3><p>常用冊別置頂；字型、行距、邊距與新試卷表頭依帳號保存。每張試卷另存自己的表頭與外觀。</p></div>
-<div></div><div class="topic-block"><h3>綠色插畫介面</h3><p>頂部導覽、冊別卡片與登入插畫統一視覺；插畫位於 <code>images/illustrations/</code>，支援窄螢幕與鍵盤操作。</p></div>
+<div><h3>三種選題方式</h3><p>電腦依條件組卷、手動逐題挑選、編碼批次加入；共用範圍、配分、表頭與預覽流程。</p></div>
+<div><h3>有彈性的配分與選題</h3><p>支援六類題型、自動配分、整數／0.5 分調整、難易度比例及章節比重。填空按格計分，保留完整題目。</p></div>
+<div><h3>試卷與題本輸出</h3><p>列印或下載真正的 DOCX；可產生附答案／解析、作答卷與 A／B 卷。題本依章節整理全部題目。</p></div>
+<div><h3>預覽、編輯與再利用</h3><p>章節目錄可標示對應試題；支援題目與題型排序、換題、刪除，以及試卷搜尋、冊別篩選與再次輸出。</p></div>
+<div><h3>帳號保存個人習慣</h3><p>常用冊別置頂；字型、行距、邊距與新試卷表頭依帳號保存。每張試卷另存自己的表頭與外觀。</p></div>
+<div><h3>綠色插畫介面</h3><p>頂部導覽、冊別卡片與登入插畫統一視覺；插畫位於 <code>images/illustrations/</code>，支援窄螢幕與鍵盤操作。</p></div>
 </div>
 </div><div class="topic-block"><h3>目前使用方式與功能邊界</h3>
 <ul><li>首頁按冊別顯示插畫卡片；卡片勾選及出題方式視窗的常用勾選同步，儲存成功後立即置頂。常用冊別排序與設定頁的科目顯示偏好是兩份設定。</li>
@@ -43,7 +43,11 @@
 </div><div class="topic-block"><h3>試卷快照：預設與成品分開</h3>
 <p>使用者的 <code>examPreferences</code> 保存新試卷預設；每張試卷另保存表頭與外觀。修改帳號預設前，為尚無快照的舊試卷保存當時值；草稿修改保留在草稿。這個分界避免改一次字型或表頭就改動其他已完成試卷。</p></div><div class="topic-block"><h3>反譯模組與圖片匯入</h3>
 <p><code>js/reverse-import.js</code> 以本地 JSZip 讀取 DOCX 的 XML 與關係檔，解析題目並使用 <code>assets/reverse-import/choice.docx</code>、<code>other.docx</code> 組裝入題檔。<code>js/reverse-import-page.js</code> 負責管理員驗證、檔案狀態、目錄比對、欄位編輯與下載。</p>
-<p>反譯檔案在瀏覽器處理，不直接寫題庫。題目匯入用 Mammoth 提取 PNG／JPG，以內容雜湊建立圖片相對路徑並保存圖片標記；題目與圖片檔分開發布，避免把圖片內容塞進 Firestore。</p></div></section><section id="development" aria-labelledby="development-title"><div class="section-title"><span>04</span><h2 id="development-title">開發過程與階段紀錄</h2></div><p class="section-intro">保留每個階段的成果與實作脈絡，依時間由新到舊排列。此處記錄本機開發，提交與部署以 Git 和正式網站為準。</p><div class="journal"><article class="journal-entry"><header><time>10/14 下午</time><h3>題本轉檔與入題圖片</h3></header><dl>
+<p>反譯檔案在瀏覽器處理，不直接寫題庫。題目匯入用 Mammoth 提取 PNG／JPG，以內容雜湊建立圖片相對路徑並保存圖片標記；題目與圖片檔分開發布，避免把圖片內容塞進 Firestore。</p></div></section><section id="development" aria-labelledby="development-title"><div class="section-title"><span>04</span><h2 id="development-title">開發過程與階段紀錄</h2></div><p class="section-intro">保留每個階段的成果與實作脈絡，依時間由新到舊排列。此處記錄本機開發，提交與部署以 Git 和正式網站為準。</p><div class="journal"><article class="journal-entry"><header><time datetime="2026-10-15">10/14 晚間–10/15</time><h3>題本轉檔流程與答案拆分修正</h3></header><dl>
+<div><dt>完成內容</dt><dd>題本轉檔加入管理員頂部導覽入口，拆成「上傳題本 → 確認與下載」兩步；解析後切換面板、捲至頁首並聚焦預覽標題。每檔結果顯示總題數、圖片與各題型統計，下載按鈕集中在檔案標題列。</dd></div>
+<div><dt>實作重點</dt><dd>批次檔案分別顯示待解析、解析中、已解析題數或失敗；解析期間停用選檔及移除，避免重複執行。填空、配合與問答等非選擇題將「【答案】」後內容拆到答案欄，移除題幹開頭的半形／全形題號，保留解析及原有選擇題答案邏輯。</dd></div>
+<div><dt>驗證／限制</dt><dd>新增答案分離回歸案例，涵蓋多段答案、缺答案、解析與選擇題。10/15 題庫驗證通過；初次測試遇到 Logo 舊條件與 Playwright 模組路徑問題，修正後 91 項全部通過，包含答案拆分案例。正式瀏覽器與 Word 輸出仍待驗收。</dd></div>
+</dl></article><article class="journal-entry"><header><time>10/14 下午</time><h3>題本轉檔與入題圖片</h3></header><dl>
 <div><dt>完成內容</dt><dd>新增 reverse-import.html，從題目匯入頁進入。支援多檔選擇、拖曳、移除與解析；每個 DOCX 上限 20 MB。原匯入流程同步支援 PNG／JPG 圖片。</dd></div>
 <div><dt>實作重點</dt><dd>直接讀取 OOXML，保留段落、段內換行、浮動／VML 圖片；依網站靜態課本目錄比對冊別及章節。預覽可逐欄修改，驗證成功後依範本輸出選擇題與其他題型表格，清除範本示範內容及私人文件資訊。</dd></div>
 <div><dt>驗證／限制</dt><dd>已納入提交 4eebb34、2327eb7。反譯瀏覽器測試涵蓋換段、圖片尺寸、字型、答案字寬與手機版，本次未執行；本次 Node 測試為 89 通過、1 失敗，靜態題庫驗證通過。題本需人工核對，下載不會直接寫入 Firestore。</dd></div>
@@ -58,11 +62,13 @@
 </div><div class="topic-block"><h3>題目維護與匯入</h3>
 <p>Word 入題檔依表格欄位解析難易度、章節、題型、出處、答案、題幹、選項與解析；匯入分為選科目、上傳、預覽、確認四步，每檔上限 20 MB。題目維護支援章節、題型與關鍵字篩選，以及表格／卡片檢視。</p>
 <p>單一換行與獨立段落分開保存：Shift+Enter 為段內換行，Enter 為換段。新插入的 PNG／JPG 先在本機頁面預覽，儲存題目時下載圖片 ZIP；尚未發布的圖片不會立即出現在其他裝置。</p></div><div class="topic-block"><h3>舊版題本轉檔流程</h3>
-<ol><li>管理員從「題目匯入 → 舊版題本轉檔成入題檔」開啟工具，上傳一個或多個 DOCX；不是一般試卷下載功能。</li>
-<li>解析後確認科目與冊別。若章節標題無法唯一辨識冊別，需手動選擇；逐題檢查題型、題目、答案、選項及章節序號。</li>
+<ol><li>管理員從頂部「題庫管理 → 題本轉檔」或題目匯入頁的轉檔入口開啟工具，上傳一個或多個 DOCX；不是一般試卷下載功能。</li>
+<li>按「下一步：解析題本」後切換至「確認與下載」，依檔案查看題數、圖片與題型統計，再確認科目與冊別。若章節標題無法唯一辨識冊別，需手動選擇；逐題檢查題型、題目、答案、選項及章節序號。</li>
 <li>可直接修改欄位；Enter 換段、Shift+Enter 段內換行。圖片以「⟦圖編號⟧」標記，可在欄位間移動，下載時還原為內嵌圖片。</li>
 <li>修正驗證錯誤後，分別下載選擇題或其他題型 DOCX，再返回題目匯入。匯入預覽中可下載「入題圖片 ZIP」，解壓至網站根目錄並發布 images 資料夾。</li></ol>
 <p>反譯會檢查題型、非空題目與答案、選項、答案指向的選項、圖片編號與冊別章節層級；驗證錯誤會停用下載。工具使用已發布靜態目錄，課本資料更新後須先重新匯出發布。</p>
+<p>可按「上一步」返回上傳面板；重新選檔或移除檔案會清除既有預覽及編輯內容，須重新解析。選檔支援多選，拖曳可追加檔案；相同名稱、大小與修改時間的檔案不重複加入，每檔上限 20 MB。解析失敗會列出檔名與原因，其餘檔案仍繼續處理。</p>
+<p>非選擇題以「【答案】」分離題幹與答案，解析另存「詳答/解析」。來源沒有可辨識答案時須人工補填；下載前核對答案、題號移除與多段文字，避免把來源排版誤當成題目內容。</p>
 <p>輸出全文新細明體；填空連續底線使用 Times New Roman，僅選擇題簡答欄英數字使用全形。圖片保留原尺寸，以段內換行附圖；選擇題題幹圖片移至結尾，選項／解析圖片仍保留所在欄位。</p>
 </div></section><section id="maintenance" aria-labelledby="maintenance-title"><div class="section-title"><span>06</span><h2 id="maintenance-title">維護與驗證</h2></div><div class="section-opening">
 <p>網站無建置步驟；使用 ES Modules，請透過 HTTP Server 開啟，例如 <code>npx serve .</code>，入口為 <code>index.html</code>。</p>
@@ -70,20 +76,30 @@
 node --test tests/*.test.mjs
 git diff --check</code></pre>
 <p>Playwright 測試另執行 <code>tests/exam-scope.browser.mjs</code> 與 <code>tests/ui-redesign.browser.mjs</code>，需可用的 Playwright／Chromium。</p>
-<ul><li>2026-10-13 的驗證紀錄：靜態題庫 1,998 題、4 冊；90 項 Node 測試通過。本次只整理文件與檢查連結，未重跑功能測試。</li><li>發布前確認 Firebase 設定及 Pages 來源；修改 <code>firestore.rules</code> 後另行部署規則。登入、個人設定與試卷仍需 Firebase。</li><li>正式驗收包含登入與角色操作、跨裝置設定、長題目／解析／圖片，以及瀏覽器列印與 Microsoft Word 分頁；測試通過不等於正式網站已上線。</li></ul>
+<ul><li>2026-10-13 的驗證紀錄：靜態題庫 1,998 題、4 冊；90 項 Node 測試通過。此為歷史結果；最新檢查另列於下方。</li><li>發布前確認 Firebase 設定及 Pages 來源；修改 <code>firestore.rules</code> 後另行部署規則。登入、個人設定與試卷仍需 Firebase。</li><li>正式驗收包含登入與角色操作、跨裝置設定、長題目／解析／圖片，以及瀏覽器列印與 Microsoft Word 分頁；測試通過不等於正式網站已上線。</li></ul>
 <p>後續進度以「日期、主要成果、驗證結果、待辦」記錄；bug 補上現象、原因與修正，不重複記錄已合併的微調。</p>
 </div><div class="topic-block"><h3>關鍵檔案與責任</h3>
 <div class="table-scroll"><table><thead><tr><th>範圍</th><th>主要檔案</th><th>責任</th></tr></thead><tbody>
 <tr><td>登入與資料</td><td><code>auth-guard.js</code>、<code>firebase.js</code>、<code>firestore.rules</code></td><td>登入、角色及資料存取限制。</td></tr>
 <tr><td>導覽與首頁</td><td><code>shell.js</code>、<code>dashboard-home.js</code>、<code>dashboard-favorites.js</code></td><td>導覽、帳號、冊別入口與常用排序。</td></tr>
 <tr><td>題庫版本</td><td><code>static-textbank.js</code>、<code>textbank-export.js</code>、<code>verify-textbank.mjs</code></td><td>匯出、載入、目錄／題目索引驗證。</td></tr>
+<tr><td>題本轉檔</td><td><code>reverse-import.html</code>、<code>js/reverse-import-page.js</code>、<code>js/reverse-import.js</code>、<code>assets/reverse-import/</code></td><td>兩步流程、DOCX 解析、欄位驗證及入題模板輸出。</td></tr>
 <tr><td>組卷與輸出</td><td><code>exam-scope.js</code>、<code>compose-selection.js</code>、<code>exam-preview.js</code>、<code>docx-export.js</code></td><td>範圍、選題、預覽及 DOCX 文件。</td></tr>
 </tbody></table></div>
 </div><div class="topic-block"><h3>部署檢查點</h3>
 <p>題庫異動後發布完整 <code>data/testbank/</code>，檔案與程式保持同一部署版本；若逐檔上傳，先題目與目錄、最後 manifest。更動科目／冊別代碼或章節編號前先同步題目歸屬，發布不會自動搬移題目。</p>
 <p>Firestore 保存 <code>users</code>、<code>questions</code>、<code>exams</code>、<code>textbooks</code> 及設定。Firebase 專案設定須同步修改 <code>index.html</code> 與 <code>js/firebase.js</code>；第一個主要管理員由維護人員在 Firebase Console 建立。前端無法完整刪除別人的 Auth 帳號或重設其密碼，需另用 Admin SDK／Cloud Functions。</p></div><div class="topic-block"><h3>2026-10-14 本次檢查</h3>
 <ul><li>靜態題庫驗證通過：1,998 題、4 冊。</li><li>Node 測試共 90 項，89 通過、1 失敗：<code>tests/question-images.test.mjs</code> 的「導覽列與首頁 Logo 都引用 images 中的現有檔案」檢查。此項仍待處理，不沿用 10/13 全數通過作為目前結果。</li><li>本次文件連結、章節 ID 與空白格式檢查通過；未執行 Playwright、正式網站或 Microsoft Word 目視驗收。</li></ul>
-<p><code>tests/reverse-import.browser.cjs</code> 為反譯的另行瀏覽器測試，使用指定本機依賴、Edge 及 <code>D:/source1.docx</code> 等來源測試檔；執行前須確認依賴及檔案齊備。</p></div></section><section id="limitations" aria-labelledby="limitations-title"><div class="section-title"><span>07</span><h2 id="limitations-title">修正筆記與待驗收項目</h2></div><div class="section-opening">
+<p><code>tests/reverse-import.browser.cjs</code> 為反譯的另行瀏覽器測試，使用指定本機依賴、Edge 及 <code>D:/source1.docx</code> 等來源測試檔；執行前須確認依賴及檔案齊備。</p></div><div class="topic-block"><h3>2026-10-15 本次更新與檢查</h3>
+<ul><li>補記 10/14 晚間至 10/15 的題本轉檔作業，修正導覽入口、返回及重新選檔說明，補齊答案分離與關鍵檔案責任。文件沿用現行 <code>README.html</code>；Git 紀錄顯示舊 <code>READMD.html</code> 已於 10/14 整併移除。</li>
+<li><code>node scripts/verify-textbank.mjs</code> 通過：1,998 題、4 冊。</li>
+<li><code>node --test tests/*.test.mjs</code> 初次摘要為 91 項、89 通過、2 失敗：Logo 測試仍預期首頁有兩個 <code>src="images/youth.png"</code>，實際符合數為 0；反譯測試因 <code>Cannot find module 'playwright'</code> 在載入時失敗，答案拆分案例未執行，不能記為功能驗證通過。</li>
+<li><code>tests/reverse-import.test.mjs</code> 雖以 Node 啟動，仍直接依賴 Playwright 與 Edge；需讓 Node 能解析 <code>playwright</code> 模組並備妥瀏覽器，才可重跑。修正後使用內建 Playwright 與 Edge 重跑，91 項全部通過，答案拆分案例已實際執行。其餘獨立瀏覽器測試、正式網站及 Microsoft Word 目視驗收本次未執行。</li></ul></div><div class="topic-block"><h3>10/15 測試修正與重跑方式</h3>
+<p>登入 Logo 已改用 <code>css/login-redesign.css</code> 的 CSS mask 引用 <code>images/youth.png</code>。Logo 測試改為確認品牌標記、樣式表引用、遮罩圖片路徑與 PNG 檔案，不再要求舊版兩個 img 元素。網站呈現程式無須更動。</p>
+<p>反譯測試比照其他瀏覽器測試，支援 <code>PLAYWRIGHT_MODULE_PATH</code> 與 <code>PLAYWRIGHT_CHANNEL</code>；未指定時仍使用一般安裝的 playwright 與 Edge。這次使用 Codex 已備妥的依賴，無須另下載。PowerShell 範例：</p>
+<pre><code>$env:PLAYWRIGHT_MODULE_PATH = Join-Path $env:USERPROFILE '.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright'
+node --test tests/*.test.mjs</code></pre>
+<p>重跑結果：91 項通過、0 失敗。上述內建路徑適用於本機 Codex 環境；其他環境請指定實際的 Playwright 模組路徑，或使用專案可解析的安裝位置。</p></div></section><section id="limitations" aria-labelledby="limitations-title"><div class="section-title"><span>07</span><h2 id="limitations-title">修正筆記與待驗收項目</h2></div><div class="section-opening">
 <ul>
 <li><strong>文件結構與視覺分開驗證：</strong>歷史 DOCX 曾檢查 ZIP／OOXML、字型、行距、粗體與單雙欄，也曾在 Word 開啟 20 題測試檔；完整真實試卷仍需目視確認。</li>
 <li><strong>帳號預設不覆寫試卷：</strong>草稿與既有試卷各自保存表頭及外觀；修正前已被改動且沒有快照的舊表頭，無法從現有資料還原。</li>
