@@ -1,6 +1,6 @@
 import {guardPage} from './auth-guard.js';
 import {StaticTextbank} from './static-textbank.js';
-import {readBooklet,catalogCandidates,applyCatalog,validateQuestions,exportImportFile,CHOICE_HEADERS} from './reverse-import.js';
+import {readBooklet,catalogCandidates,applyCatalog,validateQuestions,exportImportFile,formatScopeNumber,CHOICE_HEADERS} from './reverse-import.js';
 window._activeNav='import';
 const user=await guardPage(['admin','manager']);
 if(!user)throw Error('not auth');
@@ -120,14 +120,15 @@ async function render(result) {
     for(const key of CHOICE_HEADERS) {
       if(!['T2','T3'].includes(q['題型']) && /選項|結尾/.test(key))continue;
       const multiline=['題目','結尾','詳答/解析','簡答/答案'].includes(key)||key.startsWith('選項');
-      const label=el('label',key==='結尾'?'題尾':key),input=el(multiline?'div':'input');
-      if(multiline){input.className='reverse-editor';input.contentEditable='true';input.setAttribute('role','textbox');input.setAttribute('aria-multiline','true');input.setAttribute('aria-label',key==='結尾'?'題尾':key);fillEditor(input,q[key]||'');}
+      const label=el('label',key),input=el(multiline?'div':'input');
+      if(multiline){input.className='reverse-editor';input.contentEditable='true';input.setAttribute('role','textbox');input.setAttribute('aria-multiline','true');input.setAttribute('aria-label',key);fillEditor(input,q[key]||'');}
       else input.value=q[key]||'';
       label.append(input);
       if(multiline)row.append(label);else fields.append(label);
       input.oninput=()=>{q[key]=multiline?readEditor(input):input.value;validate();};
       if(multiline)input.addEventListener('paste',e=>{e.preventDefault();document.execCommand('insertText',false,e.clipboardData.getData('text/plain'));});
       if(['章數','節數','小節'].includes(key))scopeInputs.push({q,key,input});
+      if(['章數','節數','小節'].includes(key))input.onblur=()=>{q[key]=formatScopeNumber(input.value);input.value=q[key];validate();};
       for(const marker of (q[key]||'').matchAll(/⟦圖(\d+)⟧/g)) {
         const image=el('img');image.src=urls[+marker[1]];image.alt=`${key} 圖片 ${+marker[1]+1}`;image.className='reverse-picture';label.append(image);
       }

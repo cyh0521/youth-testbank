@@ -14,6 +14,22 @@ const http=require('http');
  const page=await browser.newPage();await page.goto(`http://127.0.0.1:${server.address().port}/reverse-import.html`);
  await page.evaluate(()=>{document.documentElement.classList.add('auth-ready');document.querySelector('.main').inert=false;});
  await page.addScriptTag({path:path.join(root,'vendor/jszip.min.js')});
+ if(process.argv.includes('--scope-only')) {
+  const values=await page.evaluate(async()=>{
+   const m=await import('/js/reverse-import.js');
+   const q=m.formatQuestion({_id:'1',題型:'T1',章數:'7',節數:'２',小節:'0',題目:'測試', '簡答/答案':'○'});
+   const out=await m.exportImportFile({questions:[q],images:[]},false,'TEST');
+   return {q,roundtrip:(await m.readBooklet(await out.blob.arrayBuffer())).questions[0],blank:m.formatScopeNumber('')};
+  });
+  for(const q of [values.q,values.roundtrip]){assert.equal(q['章數'],'07');assert.equal(q['節數'],'02');assert.equal(q['小節'],'00');}
+  assert.equal(values.blank,'');
+  await page.locator('#files').setInputFiles('D:/source1.docx');await page.locator('#parse').click();await page.waitForFunction(()=>document.querySelector('#status').textContent.startsWith('解析完成'));
+  await page.locator('.reverse-question').first().locator('summary').click();
+  const chapter=page.locator('.reverse-question').first().locator('.reverse-fields input').nth(1);
+  assert.equal(await chapter.inputValue(),'07');await chapter.fill('7');await chapter.blur();assert.equal(await chapter.inputValue(),'07');
+  console.log('Two-digit chapter, section and subsection values passed for parsing, catalog matching, editing and DOCX output; empty values preserved');
+  return;
+ }
  for(const name of ['source1','source2','其他題型','題型單選']) {
   const bytes=Array.from(fs.readFileSync('D:/'+name+'.docx'));
   const result=await page.evaluate(async({bytes,name})=>{
@@ -26,6 +42,14 @@ const http=require('http');
     const reread=await m.readBooklet(bytes,output.name);
     const zip=await JSZip.loadAsync(bytes),doc=new DOMParser().parseFromString(await zip.file('word/document.xml').async('string'),'application/xml');
     const W='http://schemas.openxmlformats.org/wordprocessingml/2006/main';
+    if(choice) {
+      const header=doc.getElementsByTagNameNS(W,'tr')[0].getElementsByTagNameNS(W,'tc')[15];
+      if(header.textContent!=='結尾')throw Error('欄位名稱應為結尾');
+    }
+    for(const drawing of Array.from(doc.getElementsByTagNameNS(W,'drawing')).concat(Array.from(doc.getElementsByTagNameNS(W,'pict')))) {
+      const run=drawing.parentNode,previous=run.previousElementSibling;
+      if(!previous||!previous.getElementsByTagNameNS(W,'br').length)throw Error('圖片前必須使用同段內 Shift+Enter 斷行');
+    }
     for(const run of doc.getElementsByTagNameNS(W,'r')) {
       const text=Array.from(run.getElementsByTagNameNS(W,'t')).map(n=>n.textContent).join('');
       const font=run.getElementsByTagNameNS(W,'rFonts')[0];
@@ -67,7 +91,9 @@ const http=require('http');
   const m=await import('/js/reverse-import.js');
   return [m.formatQuestion({題型:'T2',題目:'Ａ１⟦圖0⟧',簡答:'/Ａb２', '簡答/答案':'Ａb２',結尾:'尾句', '詳答/解析':'解析⟦圖1⟧'}),m.formatQuestion({題型:'T4',題目:'Ａ１___','簡答/答案':'Ｂ２'})];
  });
- assert.equal(rules[0]['簡答/答案'],'Ａｂ２');assert.equal(rules[0]['題目'],'A1');assert.equal(rules[0]['結尾'],'尾句\u2029⟦圖0⟧\u2029⟦圖1⟧');assert.equal(rules[1]['簡答/答案'],'B2');
+ assert.equal(rules[0]['簡答/答案'],'Ａｂ２');assert.equal(rules[0]['題目'],'A1');assert.equal(rules[0]['結尾'],'尾句\n⟦圖0⟧\n⟦圖1⟧');assert.equal(rules[1]['簡答/答案'],'B2');
+ const scope=await page.evaluate(async()=>{const m=await import('/js/reverse-import.js');return m.formatQuestion({題型:'T1',章數:'7',節數:'２',小節:'0'});});
+ assert.equal(scope['章數'],'07');assert.equal(scope['節數'],'02');assert.equal(scope['小節'],'00');
  const breaks=await page.evaluate(async()=>{
   const m=await import('/js/reverse-import.js'),zip=new JSZip();
   zip.file('word/_rels/document.xml.rels','<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"/>');

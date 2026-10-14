@@ -7,16 +7,21 @@ const serialize = n => new XMLSerializer().serializeToString(n);
 const clean = s => s.replace(/\u00a0/g,' ').trim();
 // U+2029 是 Enter 段落；LF 是 Shift+Enter 段內換行。
 export const PARAGRAPH_BREAK='\u2029';
-const stripImages = value => value.split(PARAGRAPH_BREAK).map(part=>({part,remaining:part.replace(/⟦圖\d+⟧/g,'')})).filter(({part,remaining})=>!(/⟦圖\d+⟧/.test(part)&&!remaining.trim())).map(({remaining})=>remaining).join(PARAGRAPH_BREAK);
+const stripImages = value => value.split(PARAGRAPH_BREAK).map(part=>({part,remaining:part.replace(/\n?⟦圖\d+⟧/g,'')})).filter(({part,remaining})=>!(/⟦圖\d+⟧/.test(part)&&!remaining.trim())).map(({remaining})=>remaining).join(PARAGRAPH_BREAK);
 const header = s => clean(s).replace(/\s/g,'').replace(/\(.*\)|（.*）/g,'').replace(/^簡答(?:\/答案)?$/, '簡答/答案').replace(/^詳答(?:\/解析)?$/, '詳答/解析').replace(/^題尾$/, '結尾');
 export const CHOICE_HEADERS = ['難易','章數','節數','小節','題型','頁數/出處','來源','答數','簡答/答案','題目','選項1','選項2','選項3','選項4','選項5','結尾','詳答/解析'];
 export const OTHER_HEADERS = [...CHOICE_HEADERS.slice(0,10),'詳答/解析'];
 const typeNames = {是非題:'T1',選擇題:'T2',單選題:'T2',複選題:'T3',多選題:'T3',填空題:'T4',配合題:'T5',問答題:'T6',簡答題:'T6'};
 const halfAlphanumeric = s => s.replace(/[Ａ-Ｚａ-ｚ０-９]/g,c=>String.fromCharCode(c.charCodeAt(0)-0xfee0));
 const fullAnswer = s => halfAlphanumeric(s).replace(/[A-Za-z0-9]/g,c=>String.fromCharCode(c.charCodeAt(0)+0xfee0));
+export function formatScopeNumber(value) {
+  const text=halfAlphanumeric(String(value??'')).trim();
+  return /^\d+$/.test(text)?text.padStart(2,'0'):text;
+}
 export function formatQuestion(question) {
   const q={...question}, choice=['T2','T3'].includes(q['題型']);
   for(const key of CHOICE_HEADERS)q[key]=key==='簡答/答案'&&choice?fullAnswer(String(q[key]||'')):halfAlphanumeric(String(q[key]||''));
+  for(const key of ['章數','節數','小節'])q[key]=formatScopeNumber(q[key]);
   const images=[];
   for(const key of CHOICE_HEADERS) {
     if(!choice&&['題目','詳答/解析'].includes(key))continue;
@@ -26,10 +31,10 @@ export function formatQuestion(question) {
   const destination=choice?'結尾':'題目';
   if(!choice)for(const key of ['題目','詳答/解析']) {
     const markers=q[key].match(/⟦圖\d+⟧/g)||[];
-    if(markers.length)q[key]=stripImages(q[key])+(q[key].replace(/⟦圖\d+⟧/g,'').trim()?PARAGRAPH_BREAK:'')+markers.join(PARAGRAPH_BREAK);
+    if(markers.length)q[key]=stripImages(q[key])+'\n'+markers.join('\n');
   }
   images.sort((a,b)=>Number(a.match(/\d+/)[0])-Number(b.match(/\d+/)[0]));
-  if(images.length)q[destination]+=(q[destination]?PARAGRAPH_BREAK:'')+images.join(PARAGRAPH_BREAK);
+  if(images.length)q[destination]+='\n'+images.join('\n');
   return q;
 }
 function setFont(run,font='新細明體') {
@@ -163,7 +168,7 @@ export function applyCatalog(result,book) {
     if(!q._headings?.length)continue;
     const paths=catalogPaths(book);
     const match=q._headings.slice().reverse().map(h=>paths.find(p=>normalize(p.title)===normalize(h))).find(Boolean);
-    if(match) ['章數','節數','小節'].forEach((key,i)=>q[key]=String(match.scope[i]));
+    if(match) ['章數','節數','小節'].forEach((key,i)=>q[key]=formatScopeNumber(match.scope[i]));
   }
 }
 export function validateQuestions(result,book) {
@@ -200,7 +205,7 @@ export async function exportImportFile(result,choice,bookCode) {
   const rows=Array.from(table.children).filter(n=>n.localName==='tr'), prototype=rows[1].cloneNode(true);
   if(choice) {
     const tail=Array.from(rows[0].children).filter(n=>n.localName==='tc')[15];
-    const texts=all(tail,'t');texts.forEach((t,i)=>t.textContent=i===0?'題尾':'');
+    const texts=all(tail,'t');texts.forEach((t,i)=>t.textContent=i===0?'結尾':'');
   }
   rows.slice(1).forEach(r=>r.remove());
   // 不保留範本的示範題、圖片關係與私人文件資訊。
