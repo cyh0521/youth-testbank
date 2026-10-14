@@ -49,6 +49,7 @@
 .testbank-redesign-page .question-table td{border-bottom-color:#e8eee3}
 .testbank-redesign-page .question-table tbody tr:nth-child(even){background:#fbfcf9}
 .testbank-redesign-page .question-table tbody tr:hover{background:#f0f5e9}
+.testbank-redesign-page .question-table tbody tr.q-search-placeholder:hover{background:transparent}
 .testbank-redesign-page .q-card-grid{padding:0 22px 18px}
 .testbank-redesign-page .q-card-item{border-color:#dce6d8;border-radius:10px}
 .testbank-redesign-page .q-card-item:hover{border-color:#83aa70;box-shadow:0 2px 8px #294d3510}

@@ -157,7 +157,7 @@
 .q-card-actions{grid-column:3;grid-row:1;flex-direction:row;gap:8px;min-width:0;align-self:start}
 @media(max-width:600px){.q-card-meta{padding-right:0}.q-card-actions{grid-column:2/-1;grid-row:2}}
 </style>
-<link rel="stylesheet" href="css/site-redesign.css?v=20261013-control-states">
+<link rel="stylesheet" href="css/site-redesign.css?v=20261014-brand-restored">
 <link rel="stylesheet" href="css/testbank-redesign.css?v=20261014-filter-widths">
 </head>
 <body class="testbank-redesign-page">
@@ -268,8 +268,8 @@
             <span style="font-size:.88rem;color:var(--text-muted)">每頁</span>
             <select class="form-control" id="pageSizeSel" style="font-size:.88rem;padding:4px 6px" onchange="onPageSizeChange()">
               <option value="20">20</option>
-              <option value="50" selected>50</option>
-              <option value="100">100</option>
+              <option value="50">50</option>
+              <option value="100" selected>100</option>
             </select>
           </div>
         </div>
@@ -286,8 +286,9 @@
             <span style="font-size:.88rem;color:var(--text-muted)">每頁</span>
             <select class="form-control" id="pageSizeSelCard" style="font-size:.88rem;padding:4px 6px" onchange="onPageSizeChange(true)">
               <option value="10">10</option>
-              <option value="20" selected>20</option>
+              <option value="20">20</option>
               <option value="50">50</option>
+              <option value="100" selected>100</option>
             </select>
           </div>
         </div>
@@ -488,8 +489,8 @@ window.onSectionFilter = () => {
 let allQuestions = [];
 let filtered     = [];
 let currentPage  = 1;
-let pageSize     = 50;
-let pageSizeCard = 20;
+let pageSize     = 100;
+let pageSizeCard = 100;
 let viewMode     = localStorage.getItem('qViewMode') || 'table';  // 'table' | 'card'
 let selected     = new Set();
 let selectionAnchorId = null;
@@ -498,7 +499,7 @@ async function loadAll() {
   // 不預先載入全部題目，等使用者選擇科目+冊次後再查詢
   document.getElementById('resultCount').textContent = '';
   document.getElementById('qTbody').innerHTML =
-    `<tr><td colspan="9" style="text-align:center;padding:48px 24px;color:var(--text-muted)">
+    `<tr class="q-search-placeholder"><td colspan="9" style="text-align:center;padding:48px 24px;color:var(--text-muted)">
       <div class="q-search-empty-icon" aria-hidden="true">${ICONS.search}</div>
       <div style="font-size:.9rem">尚未搜尋題目</div>
     </td></tr>`;

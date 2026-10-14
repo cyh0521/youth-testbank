@@ -57,3 +57,14 @@ body .btn.btn-previous:hover{background:#e2ebdb;color:#315940}
 body .btn.btn-previous:focus-visible,body .btn.btn-auto-score:focus-visible{outline:2px solid #34774d;outline-offset:2px}
 body .chapter-picker-item:hover,body .chapter-picker-item:focus-visible{background:#edf4e6}
 body .upload-zone:hover,body .upload-zone.drag-over{background:#f0f5e9;border-color:#83ad8d}
+/* 分頁及表單控制項沿用新版綠色系，涵蓋滑鼠移入與鍵盤焦點。 */
+body .page-btn{background:#fff;border-color:#dce8df;color:#34774d;box-shadow:none}
+body .page-btn:hover:not(:disabled){background:#edf4e6;border-color:#83ad8d;color:#315940}
+body .page-btn.active,body .page-btn.active:hover:not(:disabled){background:#34774d;border-color:#34774d;color:#fff}
+body .page-btn:focus-visible{outline:2px solid #34774d;outline-offset:2px}
+body .btn.btn-primary{background:#34774d;border-color:#34774d;color:#fff}
+body .btn.btn-primary:hover:not(:disabled){background:#28603c;border-color:#28603c;color:#fff}
+body input[type=checkbox],body input[type=radio],body .ep-preview-options input{accent-color:#34774d}
+body :is(button,a,input,select,textarea,[tabindex]):focus-visible{outline-color:#34774d}
+body .form-control:focus{border-color:#83ad8d;box-shadow:0 0 0 3px #43845b18}
+body .ep-scope-toggle,body .ep-scope-reopen.is-header-toggle{background:#e6efdc;color:#315940}

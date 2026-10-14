@@ -244,6 +244,8 @@
 .selection-redesign-page #manualPanel2 .manual-bank-tools{justify-content:flex-end;flex:none}
 .selection-redesign-page #manualPanel2 .manual-bank-tools .form-group{flex:0 1 180px;max-width:180px;min-width:95px}
 .selection-redesign-page #manualPanel2 .manual-bank-tools :is(.form-control,.manual-filter-menu>.btn){box-sizing:border-box;height:34px;min-height:34px}
+.selection-redesign-page #manualPanel2 .manual-filter-popover{box-sizing:border-box;width:max-content;min-width:0;padding:12px 24px 12px 16px}
+.selection-redesign-page #manualPanel2 .manual-filter-popover label{white-space:nowrap}
 .selection-redesign-page #manualPanel2 :is(.bank-list,.selected-list){padding-top:8px}
 .selection-redesign-page #manualPanel2 .result-section-title{min-height:40px;box-sizing:border-box}
 .selection-redesign-page #manualPanel2 .result-type-toggle{min-height:40px;align-items:center}

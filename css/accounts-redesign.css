@@ -63,3 +63,5 @@
   .accounts-redesign-page .accounts-page-heading h1{font-size:1.15rem}
   .accounts-redesign-page .accounts-page-heading p{font-size:.8rem}
 }
+/* 頭像選取狀態與全站新版配色一致。 */
+.avatar-choice[aria-pressed="true"]{border-color:#83aa70;background:#e8f1df}
