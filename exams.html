@@ -155,14 +155,14 @@ body.exam-editing .page-content{min-height:0;overflow-y:auto;overscroll-behavior
 .eq-compact>span.eq-compact-meta:not(.eq-qnum){display:inline-flex;align-items:center;line-height:1}
 </style>
 <link rel="stylesheet" href="css/site-redesign.css?v=20261014-beta-text">
-<link rel="stylesheet" href="css/exams-redesign.css?v=20261013-preview-style">
+<link rel="stylesheet" href="css/exams-redesign.css?v=20261014-scope-selection-no-border">
 </head>
 <body class="exams-redesign-page">
 <script src="js/icons.js"></script>
 <script src="js/core.js?v=20261008-choice-images"></script>
 <div class="layout">
   <header class="site-header" id="sidebar"></header>
-  <script src="js/shell.js?v=20261014-beta-text"></script>
+  <script src="js/shell.js?v=20261014-nav-order"></script>
   <div class="main" inert>
     <div class="page-content">
       <header class="exams-page-heading">
@@ -243,7 +243,7 @@ import { guardPage } from './js/auth-guard.js';
 import { confirmExamDeletion } from './js/confirm-exam-deletion.js';
 import { chooseExamReplacement } from './js/exam-question-replacement.js';
 import { examScopeSummaryHtml } from './js/exam-scope-summary.js';
-import { showExamPreview, downloadExam, printWithPaperChoice, showHeaderSettings, loadHeader, loadAppearance, mountInlineHeaderEditor, buildHeaderHtml, fontStackById, togglePreviewPanel } from './js/exam-preview.js?v=20261012-simple-header-v2';
+import { showExamPreview, downloadExam, printWithPaperChoice, showHeaderSettings, loadHeader, loadAppearance, mountInlineHeaderEditor, buildHeaderHtml, fontStackById, togglePreviewPanel } from './js/exam-preview.js?v=20261014-scope-selection-no-border';
 window.openHeaderSettings = showHeaderSettings;
 window._activeNav = 'exams';
 const user = await guardPage(['admin','manager','teacher']);

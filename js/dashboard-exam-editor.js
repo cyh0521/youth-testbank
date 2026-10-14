@@ -1,4 +1,4 @@
-import { showExamPreview, loadHeader, loadAppearance, mountInlineHeaderEditor, buildHeaderHtml, fontStackById } from './exam-preview.js?v=20261012-simple-header-v2';
+import { showExamPreview, loadHeader, loadAppearance, mountInlineHeaderEditor, buildHeaderHtml, fontStackById } from './exam-preview.js?v=20261014-scope-selection-no-border';
 import { chooseExamReplacement } from './exam-question-replacement.js';
 import { examScopeSummaryHtml } from './exam-scope-summary.js';
 

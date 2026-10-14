@@ -237,7 +237,7 @@ if (typeof document !== 'undefined') {
 // ── 路由：side bar 用 ────────────────────────────────
 function nav(page) {
   const pages = {
-    dashboard:'dashboard.html', import:'import.html', questions:'questions.html',
+    dashboard:'dashboard.html', import:'import.html', 'reverse-import':'reverse-import.html', questions:'questions.html',
     compose:'compose.html', manual:'manual.html', coded:'coded.html', booklet:'booklet.html',
     exams:'exams.html', settings:'settings.html',
     'catalog-settings':'settings.html?view=catalog', 'account-admin':'settings.html?view=accounts',

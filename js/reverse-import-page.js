@@ -1,7 +1,7 @@
 import {guardPage} from './auth-guard.js';
 import {StaticTextbank} from './static-textbank.js';
 import {readBooklet,catalogCandidates,applyCatalog,validateQuestions,exportImportFile,formatScopeNumber,CHOICE_HEADERS} from './reverse-import.js';
-window._activeNav='import';
+window._activeNav='reverse-import';
 const user=await guardPage(['admin','manager']);
 if(!user)throw Error('not auth');
 const status=document.getElementById('status'), parse=document.getElementById('parse'), files=document.getElementById('files');
@@ -10,7 +10,7 @@ let selectedFiles=[],isParsing=false;
 const fileStates=new Map();
 let catalog;
 let previewUrls=[];
-try {catalog=await new StaticTextbank().catalog();status.textContent='已載入網站課本目錄。';}catch(e){status.textContent='目錄載入失敗：'+e.message;}
+try {catalog=await new StaticTextbank().catalog();UI.toast('已載入網站課本目錄','success');}catch(e){status.textContent='目錄載入失敗：'+e.message;}
 const el=(tag,text,className)=>{const e=document.createElement(tag);if(text)e.textContent=text;if(className)e.className=className;return e;};
 function fillEditor(editor,value) {
   for(const paragraph of value.split('\u2029')) {
@@ -35,17 +35,23 @@ function resetPreview() {
   document.getElementById('results').replaceChildren();fileStates.clear();
   previewUrls.forEach(url=>URL.revokeObjectURL(url));previewUrls=[];
   document.getElementById('flowPreview').removeAttribute('aria-current');document.getElementById('flowUpload').setAttribute('aria-current','step');
+  document.getElementById('flowUpload').classList.remove('done');document.getElementById('flowUpload').classList.add('active');document.getElementById('flowPreview').classList.remove('active');
 }
 function renderFiles() {
   fileList.replaceChildren();
   selectedFiles.forEach(file=>{
-    const row=el('div',null,'file-row'),info=el('div',null,'fr-info'),remove=el('button','×','fr-remove');
-    info.append(el('div',file.name,'fr-name'),el('div',`${(file.size/1024/1024).toFixed(2)} MB · ${fileStates.get(file)||'等待解析'}`,'fr-meta'));
-    remove.type='button';remove.setAttribute('aria-label','移除 '+file.name);remove.disabled=isParsing;
+    const state=fileStates.get(file)||'待解析';
+    const stateClass=state==='解析失敗'?'error':state==='解析中…'?'parsing':state.startsWith('已解析')?'done':'pending';
+    const row=el('div',null,'file-row '+stateClass),info=el('div',null,'fr-info'),remove=el('button',null,'fr-remove'),icon=el('span',null,'fr-icon');
+    info.append(el('div',file.name,'fr-name'),el('div',`${(file.size/1024).toFixed(1)} KB`,'fr-meta'));
+    info.querySelector('.fr-name').title=file.name;
+    icon.innerHTML=window.ICONS.test16;icon.setAttribute('aria-hidden','true');
+    remove.innerHTML=window.ICONS.close16;remove.type='button';remove.title='移除';remove.setAttribute('aria-label','移除 '+file.name);remove.disabled=isParsing;
     remove.onclick=()=>{selectedFiles=selectedFiles.filter(f=>f!==file);resetPreview();renderFiles();};
-    row.append(el('span','DOCX','fr-icon'),info,remove);fileList.append(row);
+    row.append(icon,info,el('span',state,'fr-status'),remove);fileList.append(row);
   });
-  document.getElementById('fileCount').textContent=selectedFiles.length?`已選取 ${selectedFiles.length} 個檔案`:'尚未選取檔案';
+  document.getElementById('fileCount').textContent=selectedFiles.length?`已選 ${selectedFiles.length} 個檔案`:'';
+  document.getElementById('fileCount').parentElement.hidden=!selectedFiles.length;
   parse.disabled=isParsing||!catalog||!selectedFiles.length;
 }
 function selectFiles(incoming,append=false) {
@@ -56,7 +62,7 @@ function selectFiles(incoming,append=false) {
     if(file.size>20*1024*1024){rejected.push(file.name+'：超過 20 MB');continue;}
     if(!selectedFiles.some(f=>f.name===file.name&&f.size===file.size&&f.lastModified===file.lastModified))selectedFiles.push(file);
   }
-  resetPreview();status.textContent=rejected.length?rejected.join('；'):'已選取檔案，點擊「解析題本」開始。';renderFiles();
+  resetPreview();status.textContent=rejected.length?rejected.join('；'):'';renderFiles();
 }
 files.onchange=()=>{selectFiles(files.files);files.value='';};
 uploadZone.onclick=()=>{if(!isParsing)files.click();};
@@ -78,6 +84,7 @@ parse.onclick=async()=>{
   }
   status.textContent='解析完成。請確認冊別與各題欄位，再下載。';isParsing=false;files.disabled=false;uploadZone.removeAttribute('aria-disabled');renderFiles();
   document.getElementById('flowUpload').removeAttribute('aria-current');document.getElementById('flowPreview').setAttribute('aria-current','step');
+  document.getElementById('flowUpload').classList.remove('active');document.getElementById('flowUpload').classList.add('done');document.getElementById('flowPreview').classList.add('active');
 };
 async function render(result) {
   const card=el('section',null,'card'), body=el('div',null,'card-body');card.append(body);document.getElementById('results').append(card);

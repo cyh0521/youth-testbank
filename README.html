@@ -13,7 +13,7 @@
 <p>幼獅文化線上命題系統，供教師與管理員建立題庫、組卷、保存試卷及紙本輸出。採 HTML、CSS 與原生 JavaScript，搭配 Firebase 驗證／資料儲存及 GitHub Pages 靜態題庫。</p>
 <p>教師管理自己的試卷；管理員另負責課本目錄、題目匯入與維護及帳號管理。班級、姓名、座號是試卷表頭內容，目前不提供學生帳號、線上作答或成績管理。</p>
 <div class="note"><strong>筆記的閱讀方式</strong><p>先看目前功能與編寫決策，再沿時間查看開發紀錄。歷史紀錄保留當時做法，已被改版取代的導覽、表頭或輸出功能，請以目前說明為準。</p></div></section><section id="features" aria-labelledby="features-title"><div class="section-title"><span>02</span><h2 id="features-title">重點特色</h2></div><div class="section-opening">
-<div class="feature-grid"><div><h3>舊題本反譯成入題檔</h3><p>管理員可批次解析舊版 DOCX 題本，確認科目、冊別、章節及題目欄位，分別下載選擇題／其他題型的入題表格，保留段落與內嵌圖片。</p></div>
+<div class="feature-grid"><div><h3>舊題本轉檔成入題檔</h3><p>管理員可批次解析舊版 DOCX 題本，確認科目、冊別、章節及題目欄位，分別下載選擇題／其他題型的入題表格，保留段落與內嵌圖片。</p></div>
 <div></div><div class="topic-block"><h3>三種選題方式</h3><p>電腦依條件組卷、手動逐題挑選、編碼批次加入；共用範圍、配分、表頭與預覽流程。</p></div>
 <div></div><div class="topic-block"><h3>有彈性的配分與選題</h3><p>支援六類題型、自動配分、整數／0.5 分調整、難易度比例及章節比重。填空按格計分，保留完整題目。</p></div>
 <div></div><div class="topic-block"><h3>試卷與題本輸出</h3><p>列印或下載真正的 DOCX；可產生附答案／解析、作答卷與 A／B 卷。題本依章節整理全部題目。</p></div>
@@ -43,7 +43,7 @@
 </div><div class="topic-block"><h3>試卷快照：預設與成品分開</h3>
 <p>使用者的 <code>examPreferences</code> 保存新試卷預設；每張試卷另保存表頭與外觀。修改帳號預設前，為尚無快照的舊試卷保存當時值；草稿修改保留在草稿。這個分界避免改一次字型或表頭就改動其他已完成試卷。</p></div><div class="topic-block"><h3>反譯模組與圖片匯入</h3>
 <p><code>js/reverse-import.js</code> 以本地 JSZip 讀取 DOCX 的 XML 與關係檔，解析題目並使用 <code>assets/reverse-import/choice.docx</code>、<code>other.docx</code> 組裝入題檔。<code>js/reverse-import-page.js</code> 負責管理員驗證、檔案狀態、目錄比對、欄位編輯與下載。</p>
-<p>反譯檔案在瀏覽器處理，不直接寫題庫。題目匯入用 Mammoth 提取 PNG／JPG，以內容雜湊建立圖片相對路徑並保存圖片標記；題目與圖片檔分開發布，避免把圖片內容塞進 Firestore。</p></div></section><section id="development" aria-labelledby="development-title"><div class="section-title"><span>04</span><h2 id="development-title">開發過程與階段紀錄</h2></div><p class="section-intro">保留每個階段的成果與實作脈絡，依時間由新到舊排列。此處記錄本機開發，提交與部署以 Git 和正式網站為準。</p><div class="journal"><article class="journal-entry"><header><time>10/14 下午</time><h3>題本反譯與入題圖片</h3></header><dl>
+<p>反譯檔案在瀏覽器處理，不直接寫題庫。題目匯入用 Mammoth 提取 PNG／JPG，以內容雜湊建立圖片相對路徑並保存圖片標記；題目與圖片檔分開發布，避免把圖片內容塞進 Firestore。</p></div></section><section id="development" aria-labelledby="development-title"><div class="section-title"><span>04</span><h2 id="development-title">開發過程與階段紀錄</h2></div><p class="section-intro">保留每個階段的成果與實作脈絡，依時間由新到舊排列。此處記錄本機開發，提交與部署以 Git 和正式網站為準。</p><div class="journal"><article class="journal-entry"><header><time>10/14 下午</time><h3>題本轉檔與入題圖片</h3></header><dl>
 <div><dt>完成內容</dt><dd>新增 reverse-import.html，從題目匯入頁進入。支援多檔選擇、拖曳、移除與解析；每個 DOCX 上限 20 MB。原匯入流程同步支援 PNG／JPG 圖片。</dd></div>
 <div><dt>實作重點</dt><dd>直接讀取 OOXML，保留段落、段內換行、浮動／VML 圖片；依網站靜態課本目錄比對冊別及章節。預覽可逐欄修改，驗證成功後依範本輸出選擇題與其他題型表格，清除範本示範內容及私人文件資訊。</dd></div>
 <div><dt>驗證／限制</dt><dd>已納入提交 4eebb34、2327eb7。反譯瀏覽器測試涵蓋換段、圖片尺寸、字型、答案字寬與手機版，本次未執行；本次 Node 測試為 89 通過、1 失敗，靜態題庫驗證通過。題本需人工核對，下載不會直接寫入 Firestore。</dd></div>
@@ -57,8 +57,8 @@
 <p><strong>出題範圍 → 題型與配分 → 自動選題 → 試卷設定 → 預覽試卷。</strong>選章節可使用 Shift 範圍勾選，空冊／空章節停用。自動選題可切換清單／完整、拖曳同題型題目與換題；試卷設定核對摘要與總分，調整題型順序。儲存時再填名稱與說明，完成後保留在預覽頁。</p>
 </div><div class="topic-block"><h3>題目維護與匯入</h3>
 <p>Word 入題檔依表格欄位解析難易度、章節、題型、出處、答案、題幹、選項與解析；匯入分為選科目、上傳、預覽、確認四步，每檔上限 20 MB。題目維護支援章節、題型與關鍵字篩選，以及表格／卡片檢視。</p>
-<p>單一換行與獨立段落分開保存：Shift+Enter 為段內換行，Enter 為換段。新插入的 PNG／JPG 先在本機頁面預覽，儲存題目時下載圖片 ZIP；尚未發布的圖片不會立即出現在其他裝置。</p></div><div class="topic-block"><h3>舊版題本反譯流程</h3>
-<ol><li>管理員從「題目匯入 → 舊版題本反譯成入題檔」開啟工具，上傳一個或多個 DOCX；不是一般試卷下載功能。</li>
+<p>單一換行與獨立段落分開保存：Shift+Enter 為段內換行，Enter 為換段。新插入的 PNG／JPG 先在本機頁面預覽，儲存題目時下載圖片 ZIP；尚未發布的圖片不會立即出現在其他裝置。</p></div><div class="topic-block"><h3>舊版題本轉檔流程</h3>
+<ol><li>管理員從「題目匯入 → 舊版題本轉檔成入題檔」開啟工具，上傳一個或多個 DOCX；不是一般試卷下載功能。</li>
 <li>解析後確認科目與冊別。若章節標題無法唯一辨識冊別，需手動選擇；逐題檢查題型、題目、答案、選項及章節序號。</li>
 <li>可直接修改欄位；Enter 換段、Shift+Enter 段內換行。圖片以「⟦圖編號⟧」標記，可在欄位間移動，下載時還原為內嵌圖片。</li>
 <li>修正驗證錯誤後，分別下載選擇題或其他題型 DOCX，再返回題目匯入。匯入預覽中可下載「入題圖片 ZIP」，解壓至網站根目錄並發布 images 資料夾。</li></ol>

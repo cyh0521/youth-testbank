@@ -26,6 +26,7 @@
       dashboard: '查看題庫與試卷的最新狀態',
       textbooks: '管理科目、冊別與課本章節',
       import: '依步驟上傳並確認題目資料',
+      'reverse-import': '將舊版題本轉成可匯入的 Word 表格',
       questions: '搜尋、檢視與編輯題庫內容',
       compose: '設定條件，從題庫自動組卷',
       manual: '依科目與範圍挑選題目',
@@ -213,7 +214,7 @@
           ${item('dashboard', '', '首頁')}
           ${group('出題與列印',item('compose',I.navAuto20,'電腦選題')+item('manual',I.navManual20,'手動選題')+item('coded',I.navNumber20,'編碼選題')+item('booklet',I.navBooklet20,'題本列印'))}
           ${item('exams', '', '試卷管理')}
-          ${navRole === 'admin' ? group('題庫管理',item('textbooks',I.navTextbooks20,'課本管理')+item('import',I.navImport20,'題目匯入')+item('questions',I.navQuestions20,'題目維護')) : ''}
+          ${navRole === 'admin' ? group('題庫管理',item('textbooks',I.navTextbooks20,'課本管理')+item('questions',I.navQuestions20,'題目維護')+item('import',I.navImport20,'題目匯入')+item('reverse-import',I.navBooklet20,'題本轉檔')) : ''}
           ${navRole === 'admin' ? group('設定',item('settings',I.navSettings20,'進階設定')+item('account-admin',I.navAccounts20,'帳號管理','settings.html?view=accounts')) : item('settings','','設定')}
         </nav>
         <div id="siteAccount" class="site-account"></div>`;

@@ -15,7 +15,7 @@
 <script src="js/core.js?v=20261008-choice-images"></script>
 <div class="layout">
   <header class="site-header" id="sidebar"></header>
-  <script src="js/shell.js?v=20261014-beta-text"></script>
+  <script src="js/shell.js?v=20261014-nav-order"></script>
   <div class="main" inert>
     <div class="topbar"><span class="topbar-title">題本列印</span></div>
     <div class="page-content">
@@ -35,7 +35,7 @@
 </div>
 <script type="module">
 import { renderScopePanel, mountScopeSelector } from './js/exam-scope.js?v=20261013-no-default-subject';
-import { showExamPreview, loadAppearance } from './js/exam-preview.js?v=20261012-simple-header-v2';
+import { showExamPreview, loadAppearance } from './js/exam-preview.js?v=20261014-scope-selection-no-border';
 import { guardPage } from './js/auth-guard.js';
 window._activeNav = 'booklet';
 const user = await guardPage(['admin','manager','teacher']);
