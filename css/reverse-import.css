@@ -14,6 +14,9 @@
 .reverse-import-page .import-header-actions{display:flex;align-items:center;flex:none}
 .reverse-import-page .import-header-actions .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;line-height:1.4;white-space:nowrap}
 .reverse-import-page .import-header-actions .step-icon{display:block;flex:none;margin-right:-3px}
+.reverse-import-page #uploadPanel[hidden],.reverse-import-page #previewPanel[hidden]{display:none}
+.reverse-import-page .btn-previous{background:#edf3e8;border-color:#d9e5d3;color:#4b6d53}
+.reverse-import-page .btn-previous:hover{background:#e2ebdb;border-color:#c8dabb;color:#315940}
 .upload-zone{border:2px dashed #b9cdbb;border-radius:var(--radius-lg);padding:42px 24px;text-align:center;cursor:pointer;background:#f5f8f1;transition:background .2s,border-color .2s}
 .upload-zone:hover,.upload-zone.drag-over{border-color:var(--reverse-green);background:#edf5e6}.upload-zone:focus-visible{outline:2px solid var(--reverse-green);outline-offset:4px}
 .upload-icon{display:grid;place-items:center;width:58px;height:58px;margin:0 auto 12px;border-radius:16px;background:#e6efdc;color:#34774d}
@@ -31,9 +34,27 @@
 .reverse-question{border:1px solid var(--reverse-line);border-radius:8px;margin-bottom:9px;background:#fff}.reverse-question summary{padding:13px 16px;cursor:pointer;color:var(--reverse-ink);font-size:.9rem;overflow-wrap:anywhere}.reverse-question[open]{padding:0 16px 16px}.reverse-question[open] summary{margin:0 -16px 14px;border-bottom:1px solid var(--reverse-line);background:#f8fbf4}
 .reverse-question label{display:block;font-size:.82rem;color:#657260;margin-top:10px}.reverse-question input,.reverse-question textarea,.reverse-files select{width:100%;margin:5px 0 0;border:1px solid #d9e2d4;border-radius:7px;padding:9px 10px;font:inherit;color:#31472f;background:#fff}.reverse-question textarea{min-height:75px;resize:vertical;line-height:1.6}
 .reverse-fields{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0 12px}.reverse-files select{max-width:640px;display:block;margin-bottom:10px}.reverse-files .card-body>p{font-size:.86rem;line-height:1.7;color:var(--text-muted)}
-.reverse-picture{display:block;max-width:100%;max-height:300px;margin:8px 0;object-fit:contain}.reverse-files .reverse-warning{color:#a34435;white-space:pre-wrap;max-height:180px;overflow:auto}.reverse-warning:empty{display:none}
-.reverse-results{max-height:65vh;overflow:auto;margin-top:18px;padding-right:4px}.reverse-actions{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}
+.reverse-picture{display:block;max-width:100%;max-height:300px;margin:8px 0;object-fit:contain}.reverse-files .reverse-warning{color:#a34435;white-space:pre-wrap;overflow-wrap:anywhere}.reverse-warning:empty{display:none}
+.reverse-results{margin-top:18px}.reverse-actions{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}
 .reverse-editor{min-height:75px;margin-top:5px;border:1px solid #d9e2d4;border-radius:7px;padding:9px 10px;line-height:1.6;font:inherit;color:#31472f;background:#fff;white-space:pre-wrap;overflow-wrap:anywhere}
 .reverse-editor>div{min-height:1.6em}.reverse-editor>div+div{margin-top:8px}.reverse-editor:focus{outline:2px solid var(--reverse-green);outline-offset:1px}
+.reverse-result-card .section-heading{flex-wrap:wrap}
+.reverse-result-card .reverse-file-heading{flex:1;min-width:180px}
+.reverse-result-card .reverse-file-heading h2{font-size:1.08rem;font-weight:700;overflow-wrap:anywhere}
+.reverse-result-card .reverse-actions{gap:8px;margin:0;flex-wrap:wrap}
+.reverse-stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.reverse-stat{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:8px;background:#f1f5eb;color:#718775;font-size:.86rem}
+.reverse-stat strong{color:#34774d;font-size:.9rem}
+.reverse-scope{padding:14px 16px;background:#f5f8f1;border:0;border-radius:8px;margin-bottom:16px}
+.reverse-scope .form-label{margin:0;color:#4b6d53;font-size:.88rem}
+.reverse-scope select{width:max-content;max-width:100%;min-width:0;margin:8px 0;background:#fff}
+.reverse-scope-note{margin:6px 0 0;color:#718775;font-size:.84rem;line-height:1.6}
+.reverse-scope-note:empty{display:none}
+.reverse-result-card .reverse-warning:not(:empty){margin:0 0 16px;padding:10px 14px;border:0;border-radius:8px;background:#fff8e8;color:#7c5000;font-size:.88rem}
+.reverse-question{border-color:#e5ecde;border-radius:8px}
+.reverse-question summary{padding:12px 16px;background:#fbfcf9}
+.reverse-question summary:hover{background:#edf4e6}
+.reverse-question input,.reverse-editor{border-radius:8px;border-color:#dce6d8}
+.reverse-question input:focus{outline:2px solid #34774d;outline-offset:1px}
 @media(max-width:800px){.reverse-import-page .import-page-heading{flex-wrap:wrap;gap:12px}.reverse-fields{grid-template-columns:repeat(2,minmax(0,1fr))}.reverse-import-page .section-heading{align-items:flex-start;flex-wrap:wrap}}
 @media(max-width:500px){.reverse-import-page .card-body,.reverse-import-page .section-heading{padding:16px}.reverse-flow{gap:14px}.upload-zone{padding:26px 12px}.reverse-upload-actions{align-items:flex-start}.reverse-upload-actions .btn{white-space:nowrap}}

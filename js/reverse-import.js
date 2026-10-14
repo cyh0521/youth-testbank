@@ -114,6 +114,15 @@ export async function readBooklet(buffer, filename='題本.docx') {
       const lead=body.match(/^\s*[（(]\s*([^）)]*)[）)]\s*\d+[.．、]\s*/);
       current['簡答/答案']=lead?fullAnswer(clean(lead[1])):'';
       if(lead)body=body.slice(lead[0].length);
+      if(!['T2','T3'].includes(current['題型'])) {
+        // 填空、配合與問答題的答案另列於【答案】後，不能留在題幹。
+        const answer=body.match(/【\s*答案\s*】/);
+        if(answer) {
+          current['簡答/答案']=clean(body.slice(answer.index+answer[0].length));
+          body=body.slice(0,answer.index);
+        }
+        body=body.replace(/^\s*[0-9０-９]+[.．、]\s*/, '');
+      }
       if(['T2','T3'].includes(current['題型'])) {
         const options=[...body.matchAll(/[（(]\s*([A-EＡ-Ｅ])\s*[）)]/g)];
         current['題目']=clean(options.length?body.slice(0,options[0].index):body);

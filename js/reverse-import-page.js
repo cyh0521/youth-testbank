@@ -31,11 +31,21 @@ function readEditor(editor) {
     return value;
   }).join('\u2029');
 }
+function showStep(step) {
+  document.getElementById('uploadPanel').hidden=step!==1;
+  document.getElementById('previewPanel').hidden=step!==2;
+  ['flowUpload','flowPreview'].forEach((id,index)=>{
+    const indicator=document.getElementById(id);
+    indicator.classList.toggle('active',index+1===step);
+    indicator.classList.toggle('done',index+1<step);
+    if(index+1===step)indicator.setAttribute('aria-current','step');else indicator.removeAttribute('aria-current');
+  });
+}
+document.getElementById('backToUpload').onclick=()=>showStep(1);
 function resetPreview() {
   document.getElementById('results').replaceChildren();fileStates.clear();
   previewUrls.forEach(url=>URL.revokeObjectURL(url));previewUrls=[];
-  document.getElementById('flowPreview').removeAttribute('aria-current');document.getElementById('flowUpload').setAttribute('aria-current','step');
-  document.getElementById('flowUpload').classList.remove('done');document.getElementById('flowUpload').classList.add('active');document.getElementById('flowPreview').classList.remove('active');
+  showStep(1);
 }
 function renderFiles() {
   fileList.replaceChildren();
@@ -73,6 +83,7 @@ uploadZone.ondrop=e=>{e.preventDefault();uploadZone.classList.remove('drag-over'
 document.addEventListener('dragover',e=>e.preventDefault());document.addEventListener('drop',e=>e.preventDefault());
 renderFiles();
 parse.onclick=async()=>{
+  if(isParsing||!catalog||!selectedFiles.length)return;
   isParsing=true;files.disabled=true;uploadZone.setAttribute('aria-disabled','true');renderFiles();document.getElementById('results').replaceChildren();
   previewUrls.forEach(url=>URL.revokeObjectURL(url));previewUrls=[];
   for(const file of selectedFiles) {
@@ -82,29 +93,33 @@ parse.onclick=async()=>{
     catch(e){fileStates.set(file,'解析失敗');document.getElementById('results').append(el('p',file.name+'：'+e.message,'reverse-warning'));}
     renderFiles();
   }
-  status.textContent='解析完成。請確認冊別與各題欄位，再下載。';isParsing=false;files.disabled=false;uploadZone.removeAttribute('aria-disabled');renderFiles();
-  document.getElementById('flowUpload').removeAttribute('aria-current');document.getElementById('flowPreview').setAttribute('aria-current','step');
-  document.getElementById('flowUpload').classList.remove('active');document.getElementById('flowUpload').classList.add('done');document.getElementById('flowPreview').classList.add('active');
+  status.textContent='';isParsing=false;files.disabled=false;uploadZone.removeAttribute('aria-disabled');renderFiles();
+  showStep(2);
+  document.querySelector('.import-page-heading').scrollIntoView({block:'start'});
+  document.getElementById('previewTitle').focus({preventScroll:true});
 };
 async function render(result) {
-  const card=el('section',null,'card'), body=el('div',null,'card-body');card.append(body);document.getElementById('results').append(card);
+  const card=el('section',null,'card import-card reverse-result-card'), body=el('div',null,'card-body import-card-body'),header=el('div',null,'card-header section-heading'),title=el('div',null,'reverse-file-heading'),actions=el('div',null,'import-header-actions reverse-actions');
+  title.append(el('h2',result.filename));header.append(title,actions);card.append(header,body);document.getElementById('results').append(card);
   const counts={};result.questions.forEach(q=>counts[q['題型']]=(counts[q['題型']]||0)+1);
-  body.append(el('h2',result.filename),el('p',`${result.questions.length} 題，${result.images.length} 個圖片物件；`+Object.entries(counts).map(([t,n])=>`${QUESTION_TYPES[t]||t} ${n} 題`).join('、')));
-  const select=el('select'), label=el('label','科目與冊別');label.append(select);body.append(label);
+  const stats=el('div',null,'reverse-stats');
+  for(const [name,count] of [['總題數',result.questions.length],['圖片',result.images.length],...Object.entries(counts).map(([t,n])=>[QUESTION_TYPES[t]||t,n])]){const stat=el('span',null,'reverse-stat');stat.append(el('span',name),el('strong',String(count)));stats.append(stat);}
+  body.append(stats);
+  const select=el('select',null,'form-control'), label=el('label','科目與冊別','form-label'),scope=el('div',null,'reverse-scope');label.append(select);scope.append(label);body.append(scope);
   select.append(new Option('請確認科目與冊別',''));
   for(const s of catalog)for(const b of s.books)select.append(new Option(`${s.code} ${s.name} ／ ${b.code} ${b.name}`,b.code));
   const candidates=catalogCandidates(result,catalog);
   if(candidates.length===1)select.value=candidates[0].book.code;
-  body.append(el('p',candidates.length===1?'已依章節標題比對冊別，仍可調整。':'來源未提供足以唯一判斷冊別的資訊，請選擇正確冊別。'));
-  const warnings=el('p',null,'reverse-warning'), actions=el('div',null,'reverse-actions');body.append(warnings,actions);
+  scope.append(el('p',candidates.length===1?'已依章節標題比對冊別，仍可調整。':'來源未提供足以唯一判斷冊別的資訊，請選擇正確冊別。','reverse-scope-note'));
+  const warnings=el('p',null,'reverse-warning');body.append(warnings);
   const book=()=>catalog.flatMap(s=>s.books).find(b=>b.code===select.value);
   if(book())applyCatalog(result,book());
-  const levels=el('p');body.append(levels);
+  const levels=el('p',null,'reverse-scope-note');scope.append(levels);
   const buttons=[];
   for(const choice of [true,false]) {
     const count=result.questions.filter(q=>choice?['T2','T3'].includes(q['題型']):!['T2','T3'].includes(q['題型'])).length;
     if(!count)continue;
-    const button=el('button',`下載${choice?'選擇題':'其他題型'}入題檔（${count} 題）`,'btn btn-primary');actions.append(button);buttons.push(button);
+    const button=el('button',`下載${choice?'選擇題':'其他題型'}入題檔（${count} 題）`,'btn btn-primary btn-sm');actions.append(button);buttons.push(button);
     button.onclick=async()=>{
       button.disabled=true;
       try {const output=await exportImportFile(result,choice,select.value);const url=URL.createObjectURL(output.blob), a=el('a');a.href=url;a.download=output.name;a.click();setTimeout(()=>URL.revokeObjectURL(url),10000);}
