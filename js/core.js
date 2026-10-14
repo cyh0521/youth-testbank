@@ -71,10 +71,10 @@ const DocImporter = {
       subsectionNum: sub,
       catalogCode
     };
-    if (type === 'T2') {
+    if (type === 'T2' || type === 'T3') {
       q.options = [row['選項1']||'',row['選項2']||'',row['選項3']||'',row['選項4']||'',row['選項5']||'']
         .filter(o => o !== '');
-      q.tail = (row['結尾']||'').trim();
+      q.tail = (row['題尾']||row['結尾']||'').trim();
     }
     return q;
   }

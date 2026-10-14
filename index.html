@@ -62,17 +62,16 @@ body{min-height:100vh;background:#eef2f1;overflow-x:hidden}
 @media(max-width:480px){.hero{min-height:255px;padding:22px}.brand{gap:6px;margin-bottom:19px}.brand-mark{width:29px}.brand-name{font-size:.96rem}.hero-watermark{width:75vw;right:-25%}.hero-copy{padding:25px 0 12px}.hero h1{font-size:2rem}.eyebrow{font-size:.76rem;margin-top:17px}.hero-copy p{font-size:.9rem;margin-top:9px}.login-side{padding:30px 16px 48px}.panel{padding:24px}.form-heading h2{font-size:1.7rem}}
 @media(prefers-reduced-motion:reduce){.hero::before,.hero-watermark{animation:none}.big-btn{transition:none}}
 </style>
+<link rel="stylesheet" href="css/login-redesign.css?v=20261014-beta-text">
 </head>
 <body>
 <main class="page">
   <section class="hero" aria-labelledby="page-title">
     <div class="hero-grid" aria-hidden="true"></div>
-    <img class="hero-watermark" src="images/youth.png" alt="" aria-hidden="true">
+    <div class="brand"><span class="brand-mark" aria-hidden="true"></span><span class="brand-name">幼獅<span>線上命題</span></span><small class="brand-beta" aria-label="測試版本">beta</small></div>
     <div class="hero-copy">
-      <div class="brand"><img class="brand-mark" src="images/youth.png" alt=""><span class="brand-name">幼獅文化</span></div>
-      <h1 id="page-title">線上命題系統</h1>
-      <div class="eyebrow">BETTER QUESTIONS, BETTER TEACHING</div>
-      <p>專業命題，成就更好的教學。</p>
+      <h1 id="page-title"><span>每一道好題，</span><span>都從<em>這裡</em>開始。</span></h1>
+      <img class="login-art" src="images/illustrations/login-ad-option-1-v4.png" alt="老師輕鬆操作筆電，題目卡片向右上延伸的廣角插畫" width="1774" height="887" decoding="async">
     </div>
     <div class="hero-foot">YOUTH CULTURAL ENTERPRISE CO., LTD.</div>
   </section>
@@ -99,7 +98,6 @@ body{min-height:100vh;background:#eef2f1;overflow-x:hidden}
       </div>
       <button class="big-btn primary" id="loginBtn" onclick="doLogin()">登　入</button>
       <div class="hint">
-        <strong>說明</strong>
         教師帳號請聯繫幼獅業務同仁協助申請。
       </div>
     </div>

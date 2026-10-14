@@ -131,7 +131,7 @@
 #panelStep3 .preview-view-toggle button:focus-visible{outline:2px solid #34774d;outline-offset:2px;border-radius:9px}
 @media(prefers-reduced-motion:reduce){#panelStep3 .preview-view-toggle::before,#panelStep3 .preview-view-toggle button{transition:none}}
 </style>
-<link rel="stylesheet" href="css/site-redesign.css?v=20261014-brand-restored">
+<link rel="stylesheet" href="css/site-redesign.css?v=20261014-beta-text">
 <link rel="stylesheet" href="css/testbank-redesign.css?v=20261014-imported-files-icon-align">
 </head>
 <body class="testbank-redesign-page">
@@ -139,7 +139,7 @@
 <script src="js/core.js?v=20261008-choice-images"></script>
 <div class="layout">
   <header class="site-header" id="sidebar"></header>
-  <script src="js/shell.js?v=20261013-brand-line"></script>
+  <script src="js/shell.js?v=20261014-beta-text"></script>
   <div class="main" inert>
     <div class="topbar">
       <span class="topbar-title">題目匯入</span>
@@ -170,6 +170,7 @@
         <section class="card import-card">
           <div class="card-header section-heading"><div><h2>入題檔格式說明</h2><p>上傳前確認 Word 表格欄位</p></div><div class="import-header-actions"><button class="btn btn-outline btn-sm" onclick="openImportedFiles()"><span id="importedFilesButtonIcon"></span>已匯入檔案列表</button><button class="btn btn-primary btn-sm" onclick="goStep2()"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m13.5 6 6 6-6 6"/><path d="m6 6 6 6-6 6" stroke-opacity=".5"/></svg>下一步：上傳檔案</button></div></div><div class="card-body import-card-body">
             <div class="import-action" style="margin-bottom:14px">
+              <a class="btn btn-outline btn-sm" href="reverse-import.html">舊版題本反譯成入題檔</a>
               <button class="btn btn-outline btn-sm" id="exportTextbankBtn" onclick="exportStaticTextbank()">匯出靜態題庫</button>
               <span class="field-hint">會讀取 Firestore 全部題目一次，下載後請解壓到 GitHub 專案根目錄。</span>
             </div>
@@ -236,6 +237,8 @@
           </div><div class="card-body import-card-body">
             <div class="parse-summary" id="parseSummary"></div>
             <div id="parseWarnings" style="margin-bottom:10px"></div>
+            <button type="button" class="btn btn-outline btn-sm" id="importImagesBtn" onclick="downloadImportImages()" hidden>下載入題圖片 ZIP</button>
+            <p id="importImagesHint" class="field-hint" hidden>題目中的圖片已保留。請下載圖片 ZIP，解壓到網站根目錄，再發布 images 資料夾。</p>
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px">
               <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
                 <div class="preview-view-toggle" role="group" aria-label="解析預覽顯示方式"><button type="button" id="previewListBtn" class="active" aria-pressed="true" onclick="setPreviewView('list')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>清單</button><button type="button" id="previewFullBtn" aria-pressed="false" onclick="setPreviewView('full')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 10 5-10 5L2 7l10-5ZM2 12l10 5 10-5M2 17l10 5 10-5"/></svg>完整</button></div>
@@ -282,6 +285,16 @@
 import { guardPage } from './js/auth-guard.js';
 import { confirmDeletion } from './js/confirm-exam-deletion.js';
 import { buildTextbankFiles, createTextbankZip } from './js/textbank-export.js?v=testbank-catalog-1';
+import { imageArchive } from './js/question-image-editor.js';
+const importedImageSources = new Map();
+window.questionImagePreviews ||= new Map();
+window.downloadImportImages = async () => {
+  const entries = selectedFiles.filter(f => f.status === 'done').flatMap(f => Array.from(f.images || []));
+  const archive = await imageArchive(Array.from(new Map(entries)));
+  const url = URL.createObjectURL(archive), link = document.createElement('a');
+  link.href = url; link.download = '入題圖片.zip'; link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+};
 window._activeNav = 'import';
 const user = await guardPage(['admin','manager']);
 if (!user) throw new Error('not auth');
@@ -507,12 +520,22 @@ window.parseAllFiles = async () => {
     renderFileList();
     try {
       const arrayBuffer = await f.file.arrayBuffer();
-      const result = await mammoth.convertToHtml({ arrayBuffer });
+      f.images = new Map();
+      const result = await mammoth.convertToHtml({ arrayBuffer }, {convertImage:mammoth.images.imgElement(async image => {
+        if (!['image/png','image/jpeg'].includes(image.contentType)) throw new Error('入題圖片需為 PNG 或 JPG，請先在 Word 轉換圖片格式');
+        const bytes = await image.read('arrayBuffer');
+        const hash = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))).map(n=>n.toString(16).padStart(2,'0')).join('');
+        const path = `images/import-${hash}.${image.contentType === 'image/png' ? 'png' : 'jpg'}`;
+        const blob = new Blob([bytes], {type:image.contentType});
+        const url = window.questionImagePreviews.get(path) || URL.createObjectURL(blob);
+        window.questionImagePreviews.set(path, url); importedImageSources.set(url, path); f.images.set(path, blob);
+        return {src:url};
+      })});
       const tables = parseTablesFromHtml(result.value);
       const qs = [];
       tables.forEach(rows => {
         if (rows.length < 2) return;
-        const headers = rows[0].map(h => h.trim());
+        const headers = rows[0].map(h => h.replace(/\s/g,'').replace(/\(.*\)|（.*）/g,''));
         for (let r = 1; r < rows.length; r++) {
           const row = {};
           headers.forEach((h, ci) => { row[h] = rows[r][ci] || ''; });
@@ -555,6 +578,11 @@ function parseTablesFromHtml(html) {
       if (node.nodeType === Node.TEXT_NODE) { value += node.nodeValue; return; }
       if (node.nodeType !== Node.ELEMENT_NODE) return;
       const tag = node.tagName.toLowerCase();
+      if (tag === 'img') {
+        const path = importedImageSources.get(node.getAttribute('src'));
+        if (path) value += UI.imageMarker(path, Number(node.getAttribute('width')) || 320, node.getAttribute('alt') || '題目圖片');
+        return;
+      }
       if (tag === 'br') { value += '\n'; return; }
       for (const child of node.childNodes) walk(child);
       // Word 段落與段內換行分別保存，段距交由畫面和 Word 輸出控制。
@@ -591,6 +619,9 @@ let previewQs = [];
 
 function buildPreview(qs) {
   previewQs = qs;
+  const hasImages = selectedFiles.some(f => f.status === 'done' && f.images?.size);
+  document.getElementById('importImagesBtn').hidden = !hasImages;
+  document.getElementById('importImagesHint').hidden = !hasImages;
 
   const totalByType = {};
   qs.forEach(q => { totalByType[q.type] = (totalByType[q.type]||0)+1; });

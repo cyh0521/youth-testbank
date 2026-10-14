@@ -208,7 +208,7 @@
       const item = (page, icon, label, href = `${page}.html`) => `<a href="${href}" data-page="${page}">${icon ? `<span class="site-nav-icon">${icon}</span>` : ''}<span>${label}</span></a>`;
       const group = (label, contents) => `<details class="site-nav-group"><summary>${label}</summary><div class="site-nav-menu">${contents}</div></details>`;
       el.innerHTML = `
-        <a class="site-brand" href="dashboard.html"><span class="site-brand-mark" aria-hidden="true"><span class="brand-tiles"><i></i><i></i><i></i></span></span><strong>幼獅<span class="brand-name-accent">線上命題</span></strong></a>
+        <a class="site-brand" href="dashboard.html"><span class="site-brand-mark" aria-hidden="true"><span class="brand-tiles"><i></i><i></i><i></i></span></span><strong>幼獅<span class="brand-name-accent">線上命題</span></strong><small class="brand-beta" aria-label="測試版本">beta</small></a>
         <nav class="site-nav" aria-label="主要導覽">
           ${item('dashboard', '', '首頁')}
           ${group('出題與列印',item('compose',I.navAuto20,'電腦選題')+item('manual',I.navManual20,'手動選題')+item('coded',I.navNumber20,'編碼選題')+item('booklet',I.navBooklet20,'題本列印'))}

@@ -68,3 +68,5 @@ body input[type=checkbox],body input[type=radio],body .ep-preview-options input{
 body :is(button,a,input,select,textarea,[tabindex]):focus-visible{outline-color:#34774d}
 body .form-control:focus{border-color:#83ad8d;box-shadow:0 0 0 3px #43845b18}
 body .ep-scope-toggle,body .ep-scope-reopen.is-header-toggle{background:#e6efdc;color:#315940}
+
+.brand-beta{display:inline-block;align-self:flex-end;margin:0 0 2px -3px;padding:0;background:transparent;color:#a68032;font-family:var(--font-sans);font-size:11px;font-style:italic;font-weight:500;line-height:1;letter-spacing:.06em;flex:none}
