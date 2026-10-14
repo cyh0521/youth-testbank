@@ -69,21 +69,19 @@
 /* 將插畫頁首與流程整合，保留視覺特色並減少垂直空間。 */
 .selection-redesign-page .compose-page-heading{position:relative;isolation:isolate;min-height:86px;padding:18px 24px 22px;gap:26px;border:0;border-radius:12px;background:linear-gradient(110deg,#f2f6e9 0 76%,#e4edcf 76%);overflow:hidden}
 .selection-redesign-page .compose-page-heading h1{position:relative;z-index:1;font-size:1.4rem}
-.selection-redesign-page .compose-heading-art{position:relative;z-index:1;order:3;flex:none;width:66px;height:60px;margin:-8px 0}
 .selection-redesign-page .compose-page-heading .import-progress{position:static;z-index:1}
 .selection-redesign-page .compose-page-heading .step-num{background:#fff9;color:#7d9580;border-color:#dae5d2}
 .selection-redesign-page .compose-page-heading .step.active .step-num,.selection-redesign-page .compose-page-heading .step.done .step-num{background:var(--compose-green);color:#fff;border-color:var(--compose-green)}
 .selection-redesign-page .compose-page-heading .import-progress-track{position:absolute;left:0;right:0;bottom:0;width:auto;height:4px;margin:0;clip-path:none;white-space:normal;background:#dae5d1;border-radius:0}
 .selection-redesign-page .compose-page-heading .import-progress-fill{background:var(--compose-green);border-radius:0}
-@media(max-width:1000px){.selection-redesign-page .compose-page-heading{display:grid;grid-template-columns:1fr 56px;gap:12px 16px;padding:15px 20px 20px;min-height:0}.selection-redesign-page .compose-heading-art{grid-column:2;grid-row:1;width:56px;height:48px;margin:-5px 0}.selection-redesign-page .compose-page-heading .import-progress{grid-column:1/-1}.selection-redesign-page .compose-page-heading h1{grid-column:1;grid-row:1}}
-@media(max-width:600px){.selection-redesign-page .compose-page-heading{padding:13px 16px 18px;gap:10px 12px}.selection-redesign-page .compose-page-heading h1{font-size:1.25rem}.selection-redesign-page .compose-heading-art{width:48px;height:42px}.selection-redesign-page .compose-page-heading .steps{gap:3px}.selection-redesign-page .compose-page-heading .step{gap:4px}}
+@media(max-width:1000px){.selection-redesign-page .compose-page-heading{display:grid;grid-template-columns:1fr 56px;gap:12px 16px;padding:15px 20px 20px;min-height:0}.selection-redesign-page .compose-page-heading .import-progress{grid-column:1/-1}.selection-redesign-page .compose-page-heading h1{grid-column:1;grid-row:1}}
+@media(max-width:600px){.selection-redesign-page .compose-page-heading{padding:13px 16px 18px;gap:10px 12px}.selection-redesign-page .compose-page-heading h1{font-size:1.25rem}.selection-redesign-page .compose-page-heading .steps{gap:3px}.selection-redesign-page .compose-page-heading .step{gap:4px}}
 
 /* 圓點之間的線段與每個流程格對齊，不再按整個頁首切分。 */
 .selection-redesign-page .compose-page-heading{min-height:66px;padding-top:8px;padding-bottom:8px}
-.selection-redesign-page .compose-heading-art{width:140px;height:140px;margin:-44px -10px -44px 0;object-fit:contain;pointer-events:none}
 .selection-redesign-page .compose-page-heading{overflow:hidden;background:radial-gradient(circle at 103% 115%,transparent 0 69px,#71975a14 70px 72px,transparent 73px 89px,#71975a0e 90px 92px,transparent 93px),radial-gradient(circle at 97% -35%,#94b67914 0 64px,transparent 65px),linear-gradient(112deg,#f2f6e9 0 44%,#e4edcf 44% 73%,#d7e6c3 73%)}
-@media(max-width:1000px){.selection-redesign-page .compose-page-heading{grid-template-columns:1fr 110px}.selection-redesign-page .compose-heading-art{width:124px;height:124px;margin:-42px -8px -42px 0}}
-@media(max-width:600px){.selection-redesign-page .compose-page-heading{grid-template-columns:1fr 88px}.selection-redesign-page .compose-heading-art{width:104px;height:104px;margin:-34px -8px -34px 0}}
+@media(max-width:1000px){.selection-redesign-page .compose-page-heading{grid-template-columns:1fr 110px}}
+@media(max-width:600px){.selection-redesign-page .compose-page-heading{grid-template-columns:1fr 88px}}
 @media(max-width:1000px){.selection-redesign-page .compose-page-heading{grid-template-columns:minmax(0,1fr)}}
 .selection-redesign-page .compose-page-heading .step{position:relative;flex-direction:column;gap:3px;padding-left:0;isolation:isolate}
 .selection-redesign-page .compose-page-heading .step:not(:last-child)::after{content:'';position:absolute;z-index:-1;left:50%;top:12px;width:calc(100% + 12px);height:2px;background:#d5e1cc}

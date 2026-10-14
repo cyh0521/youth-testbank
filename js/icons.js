@@ -93,6 +93,7 @@
     const iconName = ['subjectModal', 'bookModal', 'chapterModal', 'chapterPickerModal'].includes(modalId) ? 'navTextbooks20'
       : ['userModal', 'accountInfoModal', 'profileModal', 'avatarModal'].includes(modalId) ? 'user20'
       : ['sectionWeightModal', 'epPaperSizeModal', 'hdModal', 'editTypeOrderModal'].includes(modalId) ? 'navSettings20'
+      : modalId === 'qModal' ? 'edit16'
       : modalId === 'epModal' ? 'eye20'
       : ['epPrintReminderTitle', 'logoutDialogTitle', 'deleteExamDialogTitle'].includes(title.id) ? 'alert20'
       : 'test20';

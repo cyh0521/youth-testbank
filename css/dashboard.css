@@ -1,26 +1,8 @@
-/* 首頁工作台：以出題與最近試卷為主要入口。 */
-.dashboard-overview { display: grid; grid-template-columns: minmax(0,1.5fr) minmax(0,1fr); align-items: start; gap: 18px; margin-bottom: 28px; }
-.dashboard-overview.dashboard-create-only{grid-template-columns:1fr}
-.create-card, .overview-card, .recent-section { padding: 22px; }
-.overview-heading, .section-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.overview-heading h2, .section-heading h2 { font-size: 1.35rem; letter-spacing: .01em; font-weight: 700; }
-.overview-heading p, .section-heading p { color: var(--text-light); font-size: .9rem; margin-top: 2px; }
-.create-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 18px; }
-.create-action { display: flex; align-items: center; gap: 14px; padding: 21px 16px; border: 1px solid transparent; border-radius: 11px; transition: background-color .15s ease, border-color .15s ease; min-width: 0; }
-.create-action:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
-.create-action strong { display: block; color: var(--text-primary); font-size: 1.05rem; margin-bottom: 5px; }
-.create-action small { display: block; color: #78869d; font-size: .84rem; line-height: 1.7; }
-.auto-action { background: #edf4ff; color: #3478f6; }
-.manual-action { background: #fff0ef; color: #d66a5d; }
-.coded-action { background: #edf8f3; color: #329775; }
-.print-action { background: #f3f0fb; color: #8b70b6; }
-.auto-action:hover, .auto-action:focus-visible { color: #246cec; border-color: #bcd4fa; background: #e7f0ff; }
-.manual-action:hover, .manual-action:focus-visible { color: #c9564b; border-color: #f0c4bd; background: #ffe7e3; }
-.coded-action:hover, .coded-action:focus-visible { color: #258362; border-color: #cce9dc; background: #e1f4eb; }
-.print-action:hover, .print-action:focus-visible { color: #7655a5; border-color: #d8c9ef; background: #eae3f6; }
-.create-icon { display: flex; flex-shrink: 0; }
-.create-icon svg { width: 39px; height: 39px; stroke-width: 1.6; }
-.action-arrow { margin-left: auto; font-size: 1.8rem; font-weight: 300; }
+/* 首頁與試卷管理共用的資訊及列表樣式。 */
+.recent-section { padding: 22px; }
+.section-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.section-heading h2 { font-size: 1.35rem; letter-spacing: .01em; font-weight: 700; }
+.section-heading p { color: var(--text-light); font-size: .9rem; margin-top: 2px; }
 .question-total { font-size: 2.7rem; font-weight: 700; letter-spacing: -.025em; line-height: 1.25; margin: 13px 0 3px; color: #142238; font-variant-numeric: tabular-nums; }
 .question-total span { font-size: .95rem; font-weight: 500; margin-left: 5px; color: var(--text-secondary); }
 .overview-filters { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 19px; }
@@ -51,8 +33,6 @@
 .exam-description { font-size: .82rem; }
 .exam-date { color: var(--text-light); font-size: .88rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .recent-table th:nth-child(4), .recent-table td.exam-date { padding-left: 10px; padding-right: 10px; }
-.exam-manage { display: inline-flex; align-items: center; gap: 6px; color: #4a6184; white-space: nowrap; font-size: .85rem; }
-.exam-manage:hover { color: #2570ec; }
 .nowrap { white-space: nowrap; }
 .bar-item { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: .85rem; }
 .bar-item:last-child { margin-bottom: 0; }
@@ -61,16 +41,9 @@
 .bar-fill { height: 100%; border-radius: 4px; }
 .bar-count { width: 45px; text-align: right; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
 .dash-empty { text-align: center; padding: 32px 16px !important; color: var(--text-light); font-size: .9rem; }
-.dash-skel-section { height: 240px; border-radius: 14px; }
-@media(max-width: 1180px) {
-  .dashboard-overview { grid-template-columns: 1fr; }
-  .create-action { padding: 20px; }
-}
-@media(max-width: 760px) {
-  .create-card, .overview-card, .recent-section { padding: 18px; }
-  .create-actions { grid-template-columns: 1fr; }
-  .create-action { padding: 16px; }
-  .overview-heading h2, .section-heading h2 { font-size: 1.15rem; }
+
+@media(max-width: 760px) { .recent-section { padding: 18px; }
+.section-heading h2 { font-size: 1.15rem; }
 }
 @media(max-width: 430px) {
   .overview-filters { grid-template-columns: 1fr; }
@@ -83,9 +56,6 @@
 .recent-exam-actions svg { display: block; flex: none; }
 .recent-exam-actions .btn-primary { background: #246cec; transition: background-color .15s ease, border-color .15s ease; }
 .recent-exam-actions .btn-primary:hover { background: #195dd3; }
-
-.recent-management-link { color: #2570ec; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
-.recent-management-link:hover { color: #174fae; }
 
 .recent-table .subject-tag { max-width: 100%; min-height: 26px; box-sizing: border-box; border: 1px solid transparent; padding: 4px 10px; white-space: normal; overflow-wrap: anywhere; display: inline-flex; align-items: center; vertical-align: middle; font-size: .88rem; line-height: 16px; }
 

@@ -53,13 +53,12 @@
 .testbank-redesign-page .q-card-item{border-color:#dce6d8;border-radius:10px}
 .testbank-redesign-page .q-card-item:hover{border-color:#83aa70;box-shadow:0 2px 8px #294d3510}
 .testbank-redesign-page .q-card-item.selected{background:#f5f8f1;border-color:#83aa70}
-.testbank-redesign-page .view-toggle{border-color:#dce6d8}
-.testbank-redesign-page .view-toggle button.active{background:#34774d;color:#fff}
-.testbank-redesign-page .view-toggle button:not(.active):hover{background:#edf4e6}
 .testbank-redesign-page .question-table .q-answer{color:#34774d}
 .testbank-redesign-page :is(#qModal,#chapterPickerModal) .modal{border:1px solid #dce6d8;border-radius:14px;box-shadow:0 16px 48px #294d3526}
 .testbank-redesign-page :is(#qModal,#chapterPickerModal) .modal-header{background:#f3f6ed;border-bottom-color:#e5ecde}
 .testbank-redesign-page :is(#qModal,#chapterPickerModal) .modal-header h3{color:#214a35}
+.testbank-redesign-page #qModal .modal-header{border-bottom:0}
+.testbank-redesign-page #qModal :is(.form-control,.btn,.question-image-path,.question-image-settings){border-radius:9px}
 .testbank-redesign-page :is(#qModal,#chapterPickerModal) .modal-footer{background:#fbfcf9;border-top-color:#e5ecde}
 .testbank-redesign-page .chapter-picker-item:hover,.testbank-redesign-page .chapter-picker-item:focus-visible{background:#edf4e6}
 .testbank-redesign-page .chapter-picker-item.selected{background:#e6efdc;color:#315940}
@@ -101,7 +100,7 @@
 .testbank-redesign-page .upload-zone:hover,.testbank-redesign-page .upload-zone.drag-over{border-color:#83aa70;background:#edf4e6}
 .testbank-redesign-page .upload-icon,.testbank-redesign-page .file-row .fr-icon{background:#e6efdc;color:#34774d}
 .testbank-redesign-page .upload-title,.testbank-redesign-page .file-row .fr-name{color:#214a35}
-.testbank-redesign-page .file-row,.testbank-redesign-page .preview-wrap{border-color:#dce6d8}
+.testbank-redesign-page .file-row{border-color:#dce6d8}
 .testbank-redesign-page #panelStep2 .file-row.parsing{border-color:#b5cda9;background:#f1f6eb}
 .testbank-redesign-page #panelStep2 .file-row.pending .fr-status{color:#718775}
 .testbank-redesign-page #panelStep2 .file-row.parsing .fr-status{color:#34774d}
@@ -112,16 +111,9 @@
 .testbank-redesign-page .parse-stat-num{color:#34774d}
 .testbank-redesign-page #panelStep3 .parse-stat{border:0;background:#f1f5eb}
 .testbank-redesign-page #panelStep3 .parse-warning{display:flex;align-items:center;gap:7px;margin-bottom:6px;padding:7px 12px;border:0;border-radius:8px;background:#fff8e8;color:#7c5000;font-size:.88rem}
-.testbank-redesign-page #panelStep3 :is(#previewPagBtns,#previewPagBtns2){display:flex;align-items:center;flex-wrap:wrap;gap:4px}
-.testbank-redesign-page #panelStep3 :is(#previewPagBtns,#previewPagBtns2) .btn.is-current{background:#34774d;border-color:#34774d;color:#fff}
-.testbank-redesign-page #panelStep3 :is(#previewPagBtns,#previewPagBtns2) .btn:not(.is-current):hover{background:#edf4e6;border-color:#b5cca6;color:#315940}
-.testbank-redesign-page #panelStep3 .preview-answer{max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#315940;font-size:.85rem}
-.testbank-redesign-page #panelStep3 .preview-wrap{border:0;border-radius:0}
 .testbank-redesign-page .preview-table th{background:#fbfcf9;color:#4b6d53;border-bottom-color:#e5ecde}
 .testbank-redesign-page .preview-table td{border-bottom-color:#e8eee3}
 .testbank-redesign-page .preview-table tbody tr:hover{background:#f0f5e9}
-.testbank-redesign-page .preview-table .src-tag{max-width:100%;overflow-wrap:anywhere;white-space:normal;line-height:1.45}
-.testbank-redesign-page .src-tag{background:#e6efdc;color:#315940;border-radius:8px}
 .testbank-redesign-page #importedFilesModal .modal{border:1px solid #dce6d8;border-radius:14px;box-shadow:0 16px 48px #294d3526}
 .testbank-redesign-page #importedFilesModal .modal-header{background:#f3f6ed;border-bottom-color:#e5ecde}
 .testbank-redesign-page #importedFilesModal .imported-files-heading{align-items:baseline}
@@ -156,3 +148,14 @@
 @media(prefers-reduced-motion:reduce){
   .testbank-redesign-page .import-page-heading .step::before,.testbank-redesign-page .import-page-heading .step-num{transition:none}
 }
+
+/* 題目維護：新版清單／完整切換。 */
+.testbank-redesign-page .view-toggle{position:relative;isolation:isolate;box-sizing:border-box;display:inline-grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch;height:34px;padding:3px;background:#edf2e8;border:0;border-radius:9px;overflow:visible;gap:0}
+.testbank-redesign-page .view-toggle::before{content:"";position:absolute;z-index:-1;top:3px;bottom:3px;left:3px;width:calc((100% - 6px)/2);background:#fff;border-radius:9px;box-shadow:0 1px 3px #31594018;transition:transform 150ms ease-out}
+.testbank-redesign-page .view-toggle:has(button:last-child.active)::before{transform:translateX(100%)}
+.testbank-redesign-page .view-toggle button{display:inline-flex;align-items:center;justify-content:center;gap:5px;cursor:pointer;white-space:nowrap;position:relative;box-sizing:border-box;height:auto;min-height:0;min-width:0;margin:0;padding:0 12px;border:0;border-radius:9px;background:transparent;color:#607466;font-size:14px;line-height:1;transition:color 150ms ease-out}
+.testbank-redesign-page .view-toggle button.active,.testbank-redesign-page .view-toggle button.active:hover{background:transparent;color:#315940;box-shadow:none;font-weight:600}
+.testbank-redesign-page .view-toggle button:hover{background:transparent;color:#315940}
+.testbank-redesign-page .view-toggle svg{display:block;flex:none;width:16px;height:16px}
+.testbank-redesign-page .view-toggle button:focus-visible{outline:2px solid #34774d;outline-offset:2px;border-radius:9px}
+@media(prefers-reduced-motion:reduce){.testbank-redesign-page .view-toggle::before,.testbank-redesign-page .view-toggle button{transition:none}}
