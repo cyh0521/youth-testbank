@@ -359,6 +359,7 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
   background: #fbfcf9;
   display: flex; justify-content: flex-end; gap: 10px;
 }
+body .modal-footer .btn{height:34px;min-height:34px;box-sizing:border-box;padding:0 16px;line-height:1;align-items:center;justify-content:center}
 
 /* ── 分頁 Pagination ── */
 .pagination {

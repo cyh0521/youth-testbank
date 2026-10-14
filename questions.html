@@ -964,8 +964,8 @@ window.openEdit = async id => {
   });
 
   document.getElementById('qModalFooter').innerHTML = `
-    <button class="btn btn-ghost" onclick="closeQModal()">取消</button>
     ${canEdit?`<button class="btn btn-danger" onclick="closeQModal();deleteOne('${q.id}')">${ICONS.trash16}刪除</button>`:''}
+    <button class="btn btn-ghost" onclick="closeQModal()">取消</button>
     <button class="btn btn-primary" id="eq-save" onclick="saveEdit()">儲存</button>`;
   document.getElementById('qModal').classList.remove('hidden');
 };

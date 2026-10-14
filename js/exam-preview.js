@@ -314,8 +314,8 @@ function ensureHeaderModal() {
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="document.getElementById('hdModal').classList.add('hidden')">取消</button>
       <button class="btn btn-outline" id="hdResetBtn">清除表頭文字</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('hdModal').classList.add('hidden')">取消</button>
       <button class="btn btn-primary" id="hdSaveBtn">儲存</button>
     </div>
   </div>
@@ -384,7 +384,7 @@ export function mountInlineHeaderEditor(container, examData, onChange, onCancel,
   container.innerHTML = `<div class="ep-inline-header-fields" style="display:block">
     <label class="form-group"><span class="form-label">表頭資訊</span><input class="form-control header-example-input" data-header-field="titleText" placeholder="例：幼獅高中 115 學年度第一學期 第一次段考 二年級家政科"></label>
     <div style="margin-top:12px"><div class="ep-inline-header-lengths">${Object.entries(HEADER_BLANK_LABELS).map(([field,label]) => `<label class="form-group"><span class="form-label">${label.replace('：','')}</span><select class="form-control" data-header-length="${field}">${Array.from({length:13}, (_,n) => `<option value="${n}">${n} 格</option>`).join('')}</select></label>`).join('')}</div></div>
-  </div><div class="ep-inline-header-actions"><button class="btn btn-primary btn-sm" type="button" data-header-save>儲存變更</button><button class="btn btn-outline btn-sm" type="button" data-header-clear>清除</button><button class="btn btn-ghost btn-sm" type="button" data-header-cancel>取消</button></div>`;
+  </div><div class="ep-inline-header-actions"><button class="btn btn-outline btn-sm" type="button" data-header-clear>清除</button><button class="btn btn-ghost btn-sm" type="button" data-header-cancel>取消</button><button class="btn btn-primary btn-sm" type="button" data-header-save>儲存變更</button></div>`;
   container.querySelector('[data-header-field="titleText"]').value = headerTitleText(header);
   for (const field of Object.keys(HEADER_BLANK_LABELS)) container.querySelector(`[data-header-length="${field}"]`).value = headerBlankParts(header, field).length;
   const update = () => {

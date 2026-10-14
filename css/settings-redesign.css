@@ -1,0 +1,68 @@
+/* 進階設定沿用新版頁面的綠色控制項與卡片。 */
+.settings-redesign-page>.layout>.main>.topbar{display:none}
+.settings-redesign-page .settings-page-heading{display:flex;align-items:baseline;gap:8px;margin:0 0 18px}
+.settings-redesign-page .settings-page-heading h1{margin:0;color:#214a35;font-size:1.65rem;font-weight:700;line-height:1.35;letter-spacing:.025em}
+.settings-redesign-page .settings-page-heading p{margin:0;color:#718775;font-size:.9rem;line-height:1.6}
+.settings-redesign-page .settings-page-heading p::before{content:'︱';color:#a5b5a4}
+.settings-redesign-page .settings-tabs{gap:8px;margin-bottom:20px}
+.settings-redesign-page .settings-tab{min-height:40px;padding:8px 16px;border-color:#dce6d8;border-radius:8px;color:#607466;background:#fff}
+.settings-redesign-page .settings-tab:hover{background:#edf4e6;border-color:#83aa70;color:#315940}
+.settings-redesign-page .settings-tab.active{background:#e6efdc;border-color:#adc79b;color:#315940}
+.settings-redesign-page .settings-tab:focus-visible{outline:2px solid #34774d;outline-offset:2px}
+.settings-redesign-page .settings-page .card{border:1px solid #dce6d8;border-radius:14px;background:#fff;box-shadow:0 3px 14px #294d3510}
+.settings-redesign-page .settings-page .card-header h2{color:#214a35;font-size:1.2rem;line-height:1.4}
+.settings-redesign-page .settings-page .card-header{min-height:66px;padding:16px 22px;border-bottom:1px solid #e7ede2;gap:6px 8px;align-items:baseline;flex-wrap:wrap;flex-direction:row}
+.settings-redesign-page .settings-page .card-header h2{flex:none;margin:0}
+.settings-redesign-page .settings-card-description{flex:1 1 240px;min-width:0;color:#788c7b;font-size:.84rem;font-weight:400;line-height:1.65}
+.settings-redesign-page .settings-card-description::before{content:'︱';color:#a5b5a4}
+.settings-redesign-page .settings-page .card-body{padding:18px 22px 22px}
+.settings-redesign-page .settings-page .card-body-with-description{padding-top:18px}
+.settings-redesign-page .settings-page #spanel-profile .card-header+.card-body{padding-top:18px}
+.settings-redesign-page .form-control{min-height:40px;border-color:#dce6d8;border-radius:8px;background:#fff;font-size:.9rem}
+.settings-redesign-page .form-control:focus{border-color:#83aa70;box-shadow:0 0 0 3px #34774d12}
+.settings-redesign-page .form-control:disabled{opacity:1;background:#f1f4ee;color:#718775;border-color:#e0e8da}
+.settings-redesign-page .form-control::placeholder{color:#8a9a89}
+.settings-redesign-page .form-label,.settings-redesign-page .password-field label{color:#4b6d53}
+.settings-redesign-page .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border-radius:8px;box-shadow:none}
+.settings-redesign-page .settings-page .card .btn{height:34px;box-sizing:border-box;padding:0 14px;font-size:.9rem;line-height:1;white-space:nowrap}
+.settings-redesign-page .settings-page .card :is(input,select).form-control{height:40px;box-sizing:border-box}
+.settings-redesign-page .btn svg{display:block;width:16px;height:16px;flex:none}
+.settings-redesign-page .btn-primary{background:#34774d;border-color:#34774d}
+.settings-redesign-page .btn-primary:hover{background:#28603c;border-color:#28603c}
+.settings-redesign-page .btn-outline{background:#fff;color:#34774d;border-color:#b5cca6}
+.settings-redesign-page .btn-ghost{color:#416b4c}
+.settings-redesign-page .catalog-actions{margin:16px 0 0;gap:10px}
+.settings-redesign-page .catalog-subject{border-color:#dce6d8;border-radius:10px}
+.settings-redesign-page .catalog-subject-header{background:#f3f6ed;color:#4b6d53}
+.settings-redesign-page .settings-page #spanel-subjects .card-header+.card-body{padding-top:24px}
+.settings-redesign-page #textbankStatusVisible{width:18px;height:18px;margin:0;flex:none;cursor:pointer}
+.settings-redesign-page .catalog-books{background:#fbfcf9;gap:12px 20px}
+.settings-redesign-page :is(input[type=checkbox],input[type=radio]){accent-color:#34774d}
+.settings-redesign-page .role-admin{background:#f1ecd8;color:#80662c}
+.settings-redesign-page .role-teacher{background:#e4f0e7;color:#37764b}
+.settings-redesign-page .role-badge{border-radius:9px}
+.settings-redesign-page :is(.password-hint,.field-hint,.profile-detail){color:#718775;line-height:1.65}
+.settings-redesign-page :is(#profileModal,#avatarModal) .modal{display:flex;flex-direction:column;max-height:90vh;max-height:90dvh;border:1px solid #dce6d8;border-radius:14px;overflow:hidden;box-shadow:0 16px 48px #294d3526}
+.settings-redesign-page :is(#profileModal,#avatarModal) .modal-header{position:static;flex:none;padding:18px 22px;background:#f3f6ed;border-bottom-color:#e5ecde}
+.settings-redesign-page :is(#profileModal,#avatarModal) .modal-header h3{color:#214a35}
+.settings-redesign-page :is(#profileModal,#avatarModal) .modal-body{min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:20px 22px}
+.settings-redesign-page :is(#profileModal,#avatarModal) .modal-footer{flex:none;background:#fbfcf9;border-top-color:#e5ecde;padding:16px 22px}
+.settings-redesign-page .avatar-choice{border-color:#dce6d8;border-radius:8px}
+.settings-redesign-page .avatar-choice:hover{background:#edf4e6;border-color:#83aa70}
+.settings-redesign-page .avatar-choice[aria-pressed="true"]{background:#e6efdc;border-color:#83aa70}
+.settings-redesign-page :is(.pw-eye,.password-toggle){display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;padding:0;border-radius:6px;color:#718775}
+.settings-redesign-page :is(.pw-eye,.password-toggle):hover{background:#edf4e6;color:#34774d}
+.settings-redesign-page :is(.pw-eye,.password-toggle):focus-visible{outline:2px solid #34774d;outline-offset:1px}
+@media(max-width:600px){
+  .settings-redesign-page .settings-tabs{gap:6px}
+  .settings-redesign-page .settings-tab{padding:8px 10px}
+  .settings-redesign-page .settings-page .card-header{padding:16px}
+  .settings-redesign-page .settings-page .card-body{padding:16px}
+  .settings-redesign-page .settings-page .card-body-with-description{padding-top:16px}
+  .settings-redesign-page :is(#profileModal,#avatarModal) :is(.modal-header,.modal-body,.modal-footer){padding:16px}
+}
+@media(max-width:470px){
+  .settings-redesign-page .settings-page-heading{flex-wrap:wrap;gap:4px 8px}
+  .settings-redesign-page .settings-page-heading h1{font-size:1.15rem}
+  .settings-redesign-page .settings-page-heading p{font-size:.8rem}
+}

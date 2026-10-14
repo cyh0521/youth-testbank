@@ -117,6 +117,7 @@
 </style>
 <link rel="stylesheet" href="css/site-redesign.css?v=20261013-control-states">
 <link rel="stylesheet" href="css/accounts-redesign.css?v=20261014-label-radius">
+<link rel="stylesheet" href="css/settings-redesign.css?v=20261014-settings">
 </head>
 <body>
 <script src="js/icons.js"></script>
@@ -293,6 +294,7 @@ import { DEFAULT_WORD_MARGINS, loadWordMargins, saveWordMargins, resetWordMargin
 
 const settingsView = new URLSearchParams(location.search).get('view');
 document.body.classList.toggle('accounts-redesign-page', settingsView === 'accounts');
+document.body.classList.toggle('settings-redesign-page', settingsView !== 'accounts');
 document.getElementById('accountInfoTitle').innerHTML = `<span class="modal-title-icon" aria-hidden="true">${ICONS.info20}</span>帳號資訊`;
 window._activeNav = settingsView === 'accounts' ? 'account-admin' : 'settings';
 const user = await guardPage();
@@ -322,7 +324,7 @@ function buildTabs() {
   </div>` : ''}
   ${tabs.map((t,i)=>`<div class="tab-panel ${i===0?'active':''}" id="spanel-${t.id}"></div>`).join('')}`;
 
-  document.getElementById('pageContent').innerHTML = tabsHTML;
+  document.getElementById('pageContent').innerHTML = (settingsView === 'accounts' ? '' : '<header class="settings-page-heading"><h1>進階設定</h1><p>個人資料與試卷預設值</p></header>') + tabsHTML;
 
   // 渲染每個 tab 的內容
   if (settingsView === 'accounts' && isAdmin) buildAccountsPanel();
@@ -346,9 +348,9 @@ window.switchTab = id => {
 function buildTextbankPanel() {
   const panel = document.getElementById('spanel-textbank');
   panel.innerHTML = `<div class="card">
-    <div class="card-header"><h2>全站題庫來源</h2></div>
+    <div class="card-header"><h2>全站題庫來源</h2><span class="settings-card-description">切換讀題請求所使用來源，已載入頁面須重新整理</span></div>
     <div class="card-body card-body-with-description">
-      <p class="password-hint" style="margin:0 0 14px">切換讀題請求所使用來源，已載入頁面須重新整理。</p>
+
       <p id="textbankModeStatus" role="status" style="margin:16px 0;font-weight:700"></p>
       <div class="import-action" style="display:flex;gap:10px;flex-wrap:wrap">
         <button class="btn btn-outline" type="button" data-textbank-mode="static">使用 GitHub 靜態題庫</button>
@@ -851,47 +853,47 @@ window.saveAvatar = async () => {
 async function buildCatalogPanel() {
   const panel = document.createElement('div');
   panel.innerHTML = `<section class="card catalog-section" data-section="subjects">
-    <div class="card-header"><h2>選擇要顯示的科目</h2></div>
+    <div class="card-header"><h2>選擇要顯示的科目</h2><span class="settings-card-description">勾選要在系統中顯示的命題課本，未勾選將隱藏並且無法命題</span></div>
     <div class="card-body card-body-with-description">
-      <p style="font-size:.9rem;color:var(--text-secondary);margin:0 0 14px">勾選要在系統中顯示的科目與冊別。未勾選的內容將從選單、題目與試卷清單隱藏。</p>
+
       <div id="catalogChoices" aria-busy="true">載入科目中…</div>
       <div class="catalog-actions">
         <button class="btn btn-outline btn-sm" type="button" id="catalogSelectAll">全選</button>
-        <button class="btn btn-outline btn-sm" type="button" id="catalogClearAll">全部取消</button>
+        <button class="btn btn-outline btn-sm" type="button" id="catalogClearAll">全部取消勾選</button>
         <button class="btn btn-primary" type="button" id="catalogSave">儲存變更</button>
       </div>
     </div>
   </section>
   <section class="card catalog-section" data-section="appearance">
-    <div class="card-header"><h2>試卷表頭</h2></div>
+    <div class="card-header"><h2>試卷表頭</h2><span class="settings-card-description">設定新試卷的預設表頭資訊，試卷儲存後仍可個別調整</span></div>
     <div class="card-body card-body-with-description">
-      <p style="font-size:.9rem;color:var(--text-secondary);margin:0 0 14px">設定新試卷的預設表頭資訊與班級、姓名、座號的空格數。個別試卷可另行調整。</p>
+
       <div id="headerLayoutFields"></div>
     </div>
   </section>
   <section class="card catalog-section" data-section="appearance" style="margin-top:16px">
-    <div class="card-header"><h2>字體與行距</h2></div>
+    <div class="card-header"><h2>字體與行距</h2><span class="settings-card-description">設定新試卷的預設字型、大小與行距</span></div>
     <div class="card-body card-body-with-description">
-      <p style="font-size:.9rem;color:var(--text-secondary);margin:0 0 14px">設定新試卷的預設字型、大小與行距。個別試卷可在預覽視窗調整，不會改動此處的預設值。</p>
+
       <div class="grid-3">
         <div class="form-group"><label class="form-label" for="defaultExamFont">預設字型</label><select class="form-control" id="defaultExamFont"></select></div>
         <div class="form-group"><label class="form-label" for="defaultExamFontSize">字體大小（px）</label><select class="form-control" id="defaultExamFontSize" required></select></div>
         <div class="form-group"><label class="form-label" for="defaultExamLineHeight">行距</label><input class="form-control" id="defaultExamLineHeight" type="number" min="1.0" max="2.4" step="0.05" required></div>
       </div>
-      <div class="catalog-actions"><button class="btn btn-primary" type="button" id="appearanceSave">儲存變更</button><button class="btn btn-outline" type="button" id="appearanceReset">恢復預設</button></div>
+      <div class="catalog-actions"><button class="btn btn-outline" type="button" id="appearanceReset">恢復預設</button><button class="btn btn-primary" type="button" id="appearanceSave">儲存變更</button></div>
     </div>
   </section>
   <section class="card catalog-section" data-section="appearance" style="margin-top:16px">
-    <div class="card-header"><h2>試卷邊距</h2></div>
+    <div class="card-header"><h2>試卷邊距</h2><span class="settings-card-description">單位為 mm，可設定 5 至 50。設定會隨帳號在不同裝置同步。</span></div>
     <div class="card-body card-body-with-description">
-      <p style="font-size:.9rem;color:var(--text-secondary);margin:0 0 14px">單位為 mm，可設定 5 至 50。設定會隨帳號在不同裝置同步。</p>
+
       <div class="exam-margins-grid">
         <div class="form-group"><label class="form-label" for="examMargin-top">上邊距（mm）</label><input class="form-control" id="examMargin-top" type="number" min="5" max="50" step="1" required></div>
         <div class="form-group"><label class="form-label" for="examMargin-bottom">下邊距（mm）</label><input class="form-control" id="examMargin-bottom" type="number" min="5" max="50" step="1" required></div>
         <div class="form-group"><label class="form-label" for="examMargin-left">左邊距（mm）</label><input class="form-control" id="examMargin-left" type="number" min="5" max="50" step="1" required></div>
         <div class="form-group"><label class="form-label" for="examMargin-right">右邊距（mm）</label><input class="form-control" id="examMargin-right" type="number" min="5" max="50" step="1" required></div>
       </div>
-      <div class="catalog-actions"><button class="btn btn-primary" type="button" id="examMarginsSave">儲存變更</button><button class="btn btn-outline" type="button" id="examMarginsReset">恢復預設</button></div>
+      <div class="catalog-actions"><button class="btn btn-outline" type="button" id="examMarginsReset">恢復預設</button><button class="btn btn-primary" type="button" id="examMarginsSave">儲存變更</button></div>
     </div>
   </section>`;
   panel.querySelectorAll('.catalog-section').forEach(card => document.getElementById(`spanel-${card.dataset.section}`).append(card));
@@ -1022,9 +1024,9 @@ function buildHeaderSettings() {
 function buildPasswordPanel() {
   document.getElementById('passwordContainer').innerHTML = `
     <section class="card password-card" aria-labelledby="passwordHeading">
-      <div class="card-header"><h2 id="passwordHeading">更新密碼</h2></div>
+      <div class="card-header"><h2 id="passwordHeading">更新密碼</h2><span class="settings-card-description">請先輸入目前密碼，再設定新密碼</span></div>
       <form class="card-body" id="passwordForm">
-        <p class="password-hint">請先輸入目前密碼，再設定新密碼。</p>
+
         <div class="password-field"><label for="currentPassword">目前密碼</label><div class="password-input"><input class="form-control" id="currentPassword" type="password" autocomplete="current-password" required><button class="password-toggle" type="button" data-toggle="currentPassword" aria-label="顯示目前密碼">顯示</button></div></div>
         <div class="password-field"><label for="newPassword">新密碼</label><div class="password-input"><input class="form-control" id="newPassword" type="password" autocomplete="new-password" minlength="6" required><button class="password-toggle" type="button" data-toggle="newPassword" aria-label="顯示新密碼">顯示</button></div><small class="password-hint">至少 6 個字元</small></div>
         <div class="password-field"><label for="confirmPassword">確認新密碼</label><div class="password-input"><input class="form-control" id="confirmPassword" type="password" autocomplete="new-password" minlength="6" required><button class="password-toggle" type="button" data-toggle="confirmPassword" aria-label="顯示確認新密碼">顯示</button></div></div>

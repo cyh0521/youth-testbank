@@ -1,4 +1,6 @@
 :root{--primary:#214a35;--primary-light:#43845b;--primary-dark:#153a28;--bg-base:#fff;--text-primary:#173d32;--text-secondary:#607466;--text-light:#7b8e80;--border:#dce8df;--border-light:#e8eee8;--sidebar-width:0px;--sidebar-collapsed-width:0px}
+/* 卡片標題統一採用進階設定的大小。 */
+body>.layout>.main>.page-content :is(.card-header,.section-heading,.scope-title) h2{font-size:1.2rem}
 body>.layout{display:flex;flex-direction:column;background:#fff;overflow:visible}
 body>.layout>.main{margin-left:0!important;width:100%;flex:1;min-height:0;height:auto;display:flex;flex-direction:column;overflow:hidden}
 body>.layout>.main>.page-content{flex:1;width:100%;max-width:1560px;margin:0 auto;padding:26px clamp(22px,4vw,64px) 44px}
@@ -33,6 +35,9 @@ body>.layout>.main>.topbar{flex:none;padding:17px clamp(22px,4vw,64px) 0;min-hei
 /* 共用操作狀態：優先於舊版按鈕與動態預覽的狀態規則。 */
 body .btn.btn-outline:hover:not(:disabled){background:#edf4e6;border-color:#83ad8d;color:#315940}
 body .btn.btn-ghost:hover:not(:disabled){background:#edf4e6;color:#315940}
+/* 次要操作使用一致描邊；純圖示選單與警示操作維持各自語意。 */
+:root body .btn:is(.btn-outline,.btn-ghost,.btn-secondary):not(.tb-more):not([style*="--danger"]):not([style*="--warning"]):not([style*="border:none"]){background:#fff;color:#34774d;border-color:#b5cca6;box-shadow:none}
+:root body .btn:is(.btn-outline,.btn-ghost,.btn-secondary):not(.tb-more):not([style*="--danger"]):not([style*="--warning"]):not([style*="border:none"]):hover:not(:disabled){background:#edf4e6;color:#315940;border-color:#83aa70}
 body .btn.ep-panel-toggle[aria-expanded="true"],body .btn.ep-panel-toggle[aria-expanded="true"]:hover{background:#e6efdc;border-color:#adc79b;color:#315940;box-shadow:none}
 body .btn:focus-visible{outline:2px solid #34774d;outline-offset:2px}
 body .toolbar-account-toggle:hover,body .toolbar-account-toggle[aria-expanded="true"]{background:#edf4e6}
