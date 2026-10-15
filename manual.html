@@ -127,7 +127,7 @@
 <!-- 儲存 Modal -->
 <div class="modal-overlay hidden" id="saveModal">
   <div class="modal">
-    <div class="modal-header"><h3>儲存試卷</h3><button class="modal-close" onclick="document.getElementById('saveModal').classList.add('hidden')">✕</button></div>
+    <div class="modal-header"><h3>儲存試卷</h3><button class="modal-close" onclick="closeSaveModal()">✕</button></div>
     <div class="modal-body">
       <div class="alert alert-danger hidden" id="saveErr"></div>
       <div class="form-group">
@@ -140,7 +140,7 @@
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="document.getElementById('saveModal').classList.add('hidden')">取消</button>
+      <button class="btn btn-ghost" onclick="closeSaveModal()">取消</button>
       <button class="btn btn-primary" onclick="doSaveExam()">儲存</button>
     </div>
   </div>
@@ -436,11 +436,29 @@ window.previewSelected = () => {
     header:draftPreviewData?.header ?? newExamHeader(), appearance:draftPreviewData?.appearance ?? loadAppearance() };
   showExamPreview(draftPreviewData, qs, { scopeDisplay: 'grouped' });
 };
+let saveModalValues = null;
+window.closeSaveModal = () => {
+  if (saveModalValues) {
+    document.getElementById('examTitle').value = saveModalValues.title;
+    document.getElementById('examDesc').value = saveModalValues.description;
+  }
+  const error = document.getElementById('saveErr');
+  error.textContent = '';
+  error.classList.add('hidden');
+  document.getElementById('saveModal').classList.add('hidden');
+};
 window.openSaveModal = async () => {
   if (!selectedOrder.length) { UI.toast('請先選題','warning'); return; }
-  document.getElementById('saveErr').classList.add('hidden');
+  saveModalValues = {
+    title:document.getElementById('examTitle').value,
+    description:document.getElementById('examDesc').value,
+  };
+  const error = document.getElementById('saveErr');
+  error.textContent = '';
+  error.classList.add('hidden');
   document.getElementById('saveModal').classList.remove('hidden');
 };
+
 window.doSaveExam = async () => {
   const title = document.getElementById('examTitle').value.trim();
   if (!title) { document.getElementById('saveErr').textContent='請填寫試卷名稱'; document.getElementById('saveErr').classList.remove('hidden'); return; }
