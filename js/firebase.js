@@ -508,15 +508,17 @@ window.DataService = {
   },
 
   // ── 批次新增題目（匯入用，含自動流水號 + stats 同步）──
-  async addQuestions(questions, onProgress) {
+  async addQuestions(questions, onProgress, prepareQuestion = question => question) {
     const BATCH_SIZE = 400;
     const seqNums = await DataService._nextSeqNums(questions.length);
     let count = 0;
-    // 累計本次匯入的 stats 增量
-    const delta = { total: 0, byType: {}, bySubject: {}, byDifficulty: {} };
     for (let i = 0; i < questions.length; i += BATCH_SIZE) {
+      const delta = { total: 0, byType: {}, bySubject: {}, byDifficulty: {} };
       const batch = writeBatch(db);
-      const chunk = questions.slice(i, i + BATCH_SIZE);
+      const chunk = questions.slice(i, i + BATCH_SIZE).map((q, idx) => {
+        const qnum = seqNums[i + idx];
+        return {...prepareQuestion(q, qnum), qnum};
+      });
       chunk.forEach((q, idx) => {
         const ref = doc(collection(db, 'questions'));
         batch.set(ref, {
@@ -532,10 +534,9 @@ window.DataService = {
       });
       await batch.commit();
       count += chunk.length;
-      onProgress?.(count);
+      onProgress?.(count, chunk);
+      await DataService._applyStatsDelta(delta);
     }
-    // 一次更新 stats（用 increment 累加）
-    await DataService._applyStatsDelta(delta);
     return count;
   },
 

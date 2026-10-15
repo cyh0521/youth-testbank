@@ -69,8 +69,7 @@
 .parse-summary{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
 .import-preview-toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px}
 .import-preview-toolbar .parse-summary{flex:1 1 auto;margin-bottom:0}
-.parse-summary #importImagesBtn{margin-left:auto}
-.parse-summary #importImagesBtn[hidden]{display:none}
+#importImagesBtn[hidden]{display:none}
 .import-preview-toolbar #previewPagInfo{margin-left:auto}
 .parse-stat{display:inline-flex;flex-direction:row-reverse;align-items:center;gap:8px;padding:6px 12px;background:white;border:1px solid var(--border);border-radius:var(--radius);white-space:nowrap;line-height:1.4}
 .parse-stat-num{display:inline-flex;align-items:center;font-size:.9rem;font-weight:400;color:var(--primary);font-family:inherit;line-height:1}
@@ -241,7 +240,7 @@
           </div><div class="card-body import-card-body">
             <div id="parseWarnings" style="margin-bottom:10px"></div>
             <div class="import-preview-toolbar">
-              <div class="parse-summary" id="parseSummary"><button type="button" class="btn btn-outline btn-sm" id="importImagesBtn" onclick="downloadImportImages()" title="題目內附圖，下載後解壓到網站 images 資訊料後再發布更新" hidden>下載入題圖片 ZIP</button></div>
+              <div class="parse-summary" id="parseSummary"></div>
               <div id="previewPagInfo" style="font-size:.88rem;color:var(--text-secondary)"></div>
                 <div class="preview-view-toggle" role="group" aria-label="解析預覽顯示方式"><button type="button" id="previewListBtn" class="active" aria-pressed="true" onclick="setPreviewView('list')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>清單</button><button type="button" id="previewFullBtn" aria-pressed="false" onclick="setPreviewView('full')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 10 5-10 5L2 7l10-5ZM2 12l10 5 10-5M2 17l10 5 10-5"/></svg>完整</button></div>
             </div>
@@ -255,6 +254,7 @@
   <div class="card-header section-heading">
     <div><h2>匯入題目</h2><p>查看匯入結果</p></div>
     <div class="import-header-actions">
+      <button type="button" class="btn btn-outline btn-sm" id="importImagesBtn" onclick="downloadImportImages()" title="下載已成功匯入題目的圖片，解壓後上傳至網站 images 資料夾" hidden>下載入題圖片 ZIP</button>
       <button class="btn btn-outline btn-sm" onclick="resetImport()"><span id="continueImportIcon"></span>繼續匯入</button>
       <button class="btn btn-primary btn-sm" onclick="nav('dashboard')"><span id="homeIcon"></span>回到首頁</button>
     </div>
@@ -287,11 +287,13 @@ import { guardPage } from './js/auth-guard.js';
 import { confirmDeletion } from './js/confirm-exam-deletion.js';
 import { buildTextbankFiles, createTextbankZip } from './js/textbank-export.js?v=testbank-catalog-1';
 import { imageArchive } from './js/question-image-editor.js';
+import { prepareImportImages } from './js/import-question-images.js';
+let committedImportImages = new Map();
 import { readBooklet } from './js/reverse-import.js';
 const importedImageSources = new Map();
 window.questionImagePreviews ||= new Map();
 window.downloadImportImages = async () => {
-  const entries = Array.from(new Map(selectedFiles.filter(f => f.status === 'done').flatMap(f => Array.from(f.images || []))));
+  const entries = [...committedImportImages];
   if (!entries.length) { UI.toast('目前沒有可下載的入題圖片', 'warning'); return; }
   try {
     const archive = await imageArchive(entries);
@@ -625,8 +627,6 @@ let previewQs = [];
 
 function buildPreview(qs) {
   previewQs = qs;
-  const hasImages = selectedFiles.some(f => f.status === 'done' && f.images?.size);
-  document.getElementById('importImagesBtn').hidden = !hasImages;
 
   const totalByType = {};
   qs.forEach(q => { totalByType[q.type] = (totalByType[q.type]||0)+1; });
@@ -638,9 +638,7 @@ function buildPreview(qs) {
   Object.entries(totalByType).sort(([a],[b]) => ['T1','T2','T3','T4','T5','T6'].indexOf(a) - ['T1','T2','T3','T4','T5','T6'].indexOf(b)).forEach(([t,c]) =>
     sumHTML += `<div class="parse-stat"><div class="parse-stat-num">${c}</div><div class="parse-stat-label">${UI.escapeHtml(QUESTION_TYPES[t]||t)}</div></div>`
   );
-  const imageButton = document.getElementById('importImagesBtn');
   document.getElementById('parseSummary').innerHTML = sumHTML;
-  document.getElementById('parseSummary').appendChild(imageButton);
 
   // 警告
   const errorFiles = selectedFiles.filter(f => f.status === 'error');
@@ -678,8 +676,14 @@ function renderPreviewPage() {
 window.doImport = async () => {
   if (!parsedAll.length) return;
   const btn = document.getElementById('importBtn');
-  btn.disabled = true; document.getElementById('importBtnLabel').textContent = '匯入中…';
+  if (btn.disabled) return;
+  btn.disabled = true;
+  document.getElementById('importBtnLabel').textContent = '匯入中…';
 
+  committedImportImages = new Map();
+  document.getElementById('importImagesBtn').hidden = true;
+  const imageSources = new Map(selectedFiles.filter(f => f.status === 'done').flatMap(f => [...(f.images || [])]));
+  const preparedImages = new Map();
   const validQs = parsedAll.filter(q => q.text);
   const log = [];
   let ok = 0, fail = 0;
@@ -698,7 +702,16 @@ window.doImport = async () => {
     );
     document.getElementById('importLog').innerHTML = log.join('<br>');
 
-    const count = await DataService.addQuestions(validQs, count => { ok = count; });
+    const count = await DataService.addQuestions(validQs, (count, committed) => {
+      ok = count;
+      for (const q of committed) {
+        for (const [path, blob] of preparedImages.get(q.qnum) || []) committedImportImages.set(path, blob);
+      }
+    }, (question, qnum) => {
+      const prepared = prepareImportImages(question, qnum, imageSources);
+      preparedImages.set(qnum, prepared.entries);
+      return prepared.question;
+    });
     ok = count;
     log.push(`<span class="log-ok">[完成] 成功寫入 ${count} 題，已分配題目編號</span>`);
 
@@ -726,10 +739,16 @@ window.doImport = async () => {
   document.getElementById('importResult').textContent =
     `成功匯入 ${ok} 題${fail ? `，匯入失敗 ${fail} 題` : ''}${skipped ? `，略過 ${skipped} 題` : ''}`;
   document.getElementById('importLog').innerHTML = log.join('<br>');
+  document.getElementById('importImagesBtn').hidden = committedImportImages.size === 0;
+  if (committedImportImages.size) {
+    document.getElementById('importResult').textContent += '。請下載入題圖片 ZIP，解壓後將 images 資料夾內的圖片上傳並發布更新。';
+  }
   setStep(4);
 };
 
 window.resetImport = () => {
+  committedImportImages.clear();
+  document.getElementById('importImagesBtn').hidden = true;
   selectedFiles = [];
   parsedAll = [];
   document.getElementById('importBtn').disabled = false;
