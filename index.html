@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>幼獅文化線上命題系統 — 登入</title>
+<link rel="preload" href="images/illustrations/login-intro.png?v=handdrawn" as="image">
 <link rel="stylesheet" href="css/theme.css?v=20261013-dialog-colors">
 <script>if(localStorage.getItem("sidebarCollapsed")==="1")document.documentElement.classList.add("sidebar-collapsed");</script>
 <script>try{sessionStorage.removeItem('youth.shellRole');sessionStorage.removeItem('youth.shellAccount');}catch{}</script>
@@ -62,7 +63,7 @@ body{min-height:100vh;background:#eef2f1;overflow-x:hidden}
 @media(max-width:480px){.hero{min-height:255px;padding:22px}.brand{gap:6px;margin-bottom:19px}.brand-mark{width:29px}.brand-name{font-size:.96rem}.hero-watermark{width:75vw;right:-25%}.hero-copy{padding:25px 0 12px}.hero h1{font-size:2rem}.eyebrow{font-size:.76rem;margin-top:17px}.hero-copy p{font-size:.9rem;margin-top:9px}.login-side{padding:30px 16px 48px}.panel{padding:24px}.form-heading h2{font-size:1.7rem}}
 @media(prefers-reduced-motion:reduce){.hero::before,.hero-watermark{animation:none}.big-btn{transition:none}}
 </style>
-<link rel="stylesheet" href="css/login-redesign.css?v=20261014-beta-text">
+<link rel="stylesheet" href="css/login-redesign.css?v=20261015-welcome-line">
 </head>
 <body>
 <main class="page">
@@ -70,8 +71,11 @@ body{min-height:100vh;background:#eef2f1;overflow-x:hidden}
     <div class="hero-grid" aria-hidden="true"></div>
     <div class="brand"><span class="brand-mark" aria-hidden="true"></span><span class="brand-name">幼獅<span>線上命題</span></span><small class="brand-beta" aria-label="測試版本">beta</small></div>
     <div class="hero-copy">
-      <h1 id="page-title"><span>每一道好題，</span><span>都從<em>這裡</em>開始。</span></h1>
-      <img class="login-art" src="images/illustrations/login-ad-option-1-v4.png" alt="老師輕鬆操作筆電，題目卡片向右上延伸的廣角插畫" width="1774" height="887" decoding="async">
+      <h1 id="page-title"><img src="images/illustrations/login-intro.png?v=handdrawn" alt="每一道好題，都從這裡開始。" width="706" height="222" decoding="async"></h1>
+      <picture>
+        <source media="(max-width:700px)" srcset="images/illustrations/login-ad-mobile-v1.png" width="1774" height="887">
+        <img class="login-art" src="images/illustrations/login-ad-option-1-v4.png" alt="老師輕鬆操作筆電，題目卡片向右上延伸的廣角插畫" width="1774" height="887" decoding="async">
+      </picture>
     </div>
     <div class="hero-foot">YOUTH CULTURAL ENTERPRISE CO., LTD.</div>
   </section>
@@ -87,8 +91,8 @@ body{min-height:100vh;background:#eef2f1;overflow-x:hidden}
       <div class="msg ok"  id="loginOk"></div>
 
       <div class="form-group">
-        <label class="form-label">電子信箱 <span class="req">*</span></label>
-        <input class="form-control" type="email" id="loginEmail" placeholder="請輸入電子信箱"
+        <label class="form-label" for="loginEmail">帳號 <span class="req">*</span></label>
+        <input class="form-control" type="email" id="loginEmail" placeholder="請輸入帳號"
                onkeydown="if(event.key==='Enter')doLogin()">
       </div>
       <div class="form-group">
@@ -165,7 +169,7 @@ window.doLogin = async () => {
   const email = document.getElementById('loginEmail').value.trim();
   const pw    = document.getElementById('loginPw').value;
   const btn   = document.getElementById('loginBtn');
-  if (!email) return showMsg('loginErr','請輸入電子信箱');
+  if (!email) return showMsg('loginErr','請輸入帳號');
   if (!pw)    return showMsg('loginErr','請輸入密碼');
 
   btn.disabled = true; btn.innerHTML = '<div class="spin"></div> 登入中…';
@@ -196,7 +200,7 @@ window.doLogin = async () => {
       'auth/user-not-found':'帳號不存在',
       'auth/wrong-password':'密碼錯誤',
       'auth/invalid-credential':'帳號或密碼錯誤',
-      'auth/invalid-email':'電子信箱格式錯誤',
+      'auth/invalid-email':'帳號格式錯誤，請輸入電子信箱',
       'auth/too-many-requests':'嘗試次數過多，請稍後再試',
       'auth/network-request-failed':'網路連線失敗',
     };
