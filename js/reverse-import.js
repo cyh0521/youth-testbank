@@ -11,6 +11,14 @@ const stripImages = value => value.split(PARAGRAPH_BREAK).map(part=>({part,remai
 const header = s => clean(s).replace(/\s/g,'').replace(/\(.*\)|（.*）/g,'').replace(/^簡答(?:\/答案)?$/, '簡答/答案').replace(/^詳答(?:\/解析)?$/, '詳答/解析').replace(/^題尾$/, '結尾');
 export const CHOICE_HEADERS = ['難易','章數','節數','小節','題型','頁數/出處','來源','答數','簡答/答案','題目','選項1','選項2','選項3','選項4','選項5','結尾','詳答/解析'];
 export const OTHER_HEADERS = [...CHOICE_HEADERS.slice(0,10),'詳答/解析'];
+export function imageQuestionReminders(result) {
+  return result.questions.flatMap((question,index)=>{
+    const locations=(['T2','T3'].includes(question['題型'])?CHOICE_HEADERS:OTHER_HEADERS)
+      .map(field=>({field,count:(String(question[field]||'').match(/⟦圖\d+⟧/g)||[]).length}))
+      .filter(location=>location.count);
+    return locations.length?[{index,id:question._id||String(index+1),type:question['題型'],locations,count:locations.reduce((sum,location)=>sum+location.count,0)}]:[];
+  });
+}
 const typeNames = {是非題:'T1',選擇題:'T2',單選題:'T2',複選題:'T3',多選題:'T3',填空題:'T4',配合題:'T5',問答題:'T6',簡答題:'T6'};
 const halfAlphanumeric = s => s.replace(/[Ａ-Ｚａ-ｚ０-９]/g,c=>String.fromCharCode(c.charCodeAt(0)-0xfee0));
 const fullAnswer = s => halfAlphanumeric(s).replace(/[A-Za-z0-9]/g,c=>String.fromCharCode(c.charCodeAt(0)+0xfee0));
@@ -266,5 +274,6 @@ export async function exportImportFile(result,choice,bookCode) {
     table.append(row);
   }
   zip.file('word/document.xml',serialize(d));zip.file('word/_rels/document.xml.rels',serialize(rels));zip.file('[Content_Types].xml',serialize(ct));
-  return {name:bookCode+'-'+(choice?'選擇題':'其他題型')+'-'+result.filename,blob:await zip.generateAsync({type:'blob',compression:'DEFLATE'})};
+  const sourceName=String(result.filename||'題本.docx').replace(/\.docx$/i,'');
+  return {name:`${bookCode}-${sourceName}-${choice?'單選':'其他'}.docx`,blob:await zip.generateAsync({type:'blob',compression:'DEFLATE'})};
 }

@@ -14,15 +14,62 @@ const http=require('http');
  const page=await browser.newPage();await page.goto(`http://127.0.0.1:${server.address().port}/reverse-import.html`);
  await page.evaluate(()=>{document.documentElement.classList.add('auth-ready');document.querySelector('.main').inert=false;});
  await page.addScriptTag({path:path.join(root,'vendor/jszip.min.js')});
+ if(process.argv.includes('--assets-only')) {
+  const sources=[['choice.docx',true],['other.docx',false]];
+  for(const [name,choice] of sources) {
+   const bytes=Array.from(fs.readFileSync(path.join(root,'assets/reverse-import',name)));
+   const result=await page.evaluate(async({name,choice,bytes})=>{
+    const m=await import('/js/reverse-import.js'),original=await m.readBooklet(new Uint8Array(bytes),name);
+    const reminders=m.imageQuestionReminders(original),output=await m.exportImportFile(original,choice,'TEST');
+    const again=await m.readBooklet(await output.blob.arrayBuffer(),output.name);
+    return {name,count:original.questions.length,images:original.images.length,reminders:reminders.length,listedImages:reminders.reduce((sum,item)=>sum+item.count,0),exportedCount:again.questions.length,exportedImages:again.images.length,outputName:output.name};
+   },{name,choice,bytes});
+   assert(result.count>0);assert(result.images>0);assert(result.reminders>0);assert.equal(result.listedImages,result.images);
+   assert.equal(result.exportedCount,result.count);assert.equal(result.exportedImages,result.images);
+   assert.equal(result.outputName,`TEST-${name.replace(/\.docx$/,'')}-${choice?'單選':'其他'}.docx`);
+   console.log(JSON.stringify(result));
+  }
+  await page.locator('#files').setInputFiles(sources.map(([name])=>path.join(root,'assets/reverse-import',name)));
+  await page.locator('#parse').click();await page.locator('.reverse-result-card').nth(1).waitFor();
+  assert.equal(await page.locator('.reverse-result-card').count(),2);
+  for(const [index] of sources.entries()){
+   const card=page.locator('.reverse-result-card').nth(index);
+   assert(await card.locator('.reverse-image-reminders').isVisible());
+   assert(await card.locator('.reverse-image-link').count()>0);
+   await card.locator('.reverse-image-link').first().click();
+   assert(await card.locator('.reverse-question[open]').count()>0);
+  }
+  console.log('Both asset examples parsed, exported, and showed clickable image-question reminders in the page');
+  return;
+ }
  if(process.argv.includes('--scope-only')) {
   const values=await page.evaluate(async()=>{
    const m=await import('/js/reverse-import.js');
    const q=m.formatQuestion({_id:'1',題型:'T1',章數:'7',節數:'２',小節:'0',題目:'測試', '簡答/答案':'○'});
-   const out=await m.exportImportFile({questions:[q],images:[]},false,'TEST');
-   return {q,roundtrip:(await m.readBooklet(await out.blob.arrayBuffer())).questions[0],blank:m.formatScopeNumber('')};
+   const out=await m.exportImportFile({filename:'題本.docx',questions:[q],images:[]},false,'TEST');
+   const choice=await m.exportImportFile({filename:'題本.docx',questions:[m.formatQuestion({_id:'2',題型:'T2',章數:'7',題目:'測試選擇',選項1:'甲',選項2:'乙','簡答/答案':'Ａ'})],images:[]},true,'TEST');
+   return {q,roundtrip:(await m.readBooklet(await out.blob.arrayBuffer())).questions[0],blank:m.formatScopeNumber(''),names:[choice.name,out.name]};
   });
   for(const q of [values.q,values.roundtrip]){assert.equal(q['章數'],'07');assert.equal(q['節數'],'02');assert.equal(q['小節'],'00');}
   assert.equal(values.blank,'');
+  assert.deepEqual(values.names,['TEST-題本-單選.docx','TEST-題本-其他.docx']);
+  const imageFixture=Buffer.from(await page.evaluate(async()=>{
+    const z=new JSZip(),W='http://schemas.openxmlformats.org/wordprocessingml/2006/main',R='http://schemas.openxmlformats.org/officeDocument/2006/relationships';
+    const cells=['題型','章數','簡答/答案','題目'].map(t=>`<w:tc><w:p><w:r><w:t>${t}</w:t></w:r></w:p></w:tc>`).join('');
+    z.file('word/document.xml',`<w:document xmlns:w="${W}" xmlns:r="${R}" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><w:body><w:tbl><w:tr>${cells}</w:tr><w:tr><w:tc><w:p><w:r><w:t>T1</w:t></w:r></w:p></w:tc><w:tc><w:p><w:r><w:t>1</w:t></w:r></w:p></w:tc><w:tc><w:p><w:r><w:t>○</w:t></w:r></w:p></w:tc><w:tc><w:p><w:r><w:t>有圖的題目</w:t><w:drawing><a:blip r:embed="rId1"/></w:drawing></w:r></w:p></w:tc></w:tr></w:tbl></w:body></w:document>`);
+    z.file('word/_rels/document.xml.rels',`<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="${R}/image" Target="media/image1.png"/></Relationships>`);
+    z.file('word/media/image1.png',Uint8Array.from(atob('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScL/nwAAAABJRU5ErkJggg=='),c=>c.charCodeAt(0)));
+    return Array.from(await z.generateAsync({type:'uint8array'}));
+  }));
+  await page.locator('#files').setInputFiles({name:'含圖測試.docx',mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',buffer:imageFixture});
+  await page.locator('#parse').click();await page.locator('.reverse-image-reminders').waitFor({state:'visible'});
+  assert.match(await page.locator('.reverse-image-reminders').innerText(),/含圖片題目提醒：1 題，共 1 張圖片/);
+  assert.match(await page.locator('.reverse-image-link').innerText(),/編碼 1（是非題）：題目 1 張/);
+  await page.locator('.reverse-image-link').click();assert(await page.locator('.reverse-question').isVisible());
+  await page.locator('.reverse-question [contenteditable=true]').nth(1).fill('圖片已移除');
+  assert(await page.locator('.reverse-image-reminders').isHidden());
+  console.log('Image-question reminder lists file section, question number and field; selecting it opens the question and editing updates the reminder');
+  if(!fs.existsSync('D:/source1.docx')){console.log('Both export filenames passed; external DOCX fixtures are unavailable');return;}
   await page.locator('#files').setInputFiles('D:/source1.docx');await page.locator('#parse').click();await page.waitForFunction(()=>document.querySelector('#status').textContent.startsWith('解析完成'));
   await page.locator('.reverse-question').first().locator('summary').click();
   const chapter=page.locator('.reverse-question').first().locator('.reverse-fields input').nth(1);

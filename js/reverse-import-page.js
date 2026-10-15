@@ -1,6 +1,6 @@
 import {guardPage} from './auth-guard.js';
 import {StaticTextbank} from './static-textbank.js';
-import {readBooklet,catalogCandidates,applyCatalog,validateQuestions,exportImportFile,formatScopeNumber,CHOICE_HEADERS} from './reverse-import.js';
+import {readBooklet,catalogCandidates,applyCatalog,validateQuestions,exportImportFile,formatScopeNumber,imageQuestionReminders,CHOICE_HEADERS} from './reverse-import.js';
 window._activeNav='reverse-import';
 const user=await guardPage(['admin','manager']);
 if(!user)throw Error('not auth');
@@ -103,8 +103,22 @@ async function render(result) {
   title.append(el('h2',result.filename));header.append(title,actions);card.append(header,body);document.getElementById('results').append(card);
   const counts={};result.questions.forEach(q=>counts[q['題型']]=(counts[q['題型']]||0)+1);
   const stats=el('div',null,'reverse-stats');
-  for(const [name,count] of [['總題數',result.questions.length],['圖片',result.images.length],...Object.entries(counts).map(([t,n])=>[QUESTION_TYPES[t]||t,n])]){const stat=el('span',null,'reverse-stat');stat.append(el('span',name),el('strong',String(count)));stats.append(stat);}
+  for(const [name,count] of [['總題數',result.questions.length],['圖片',result.images.length],...Object.entries(counts).sort(([a],[b])=>['T1','T2','T3','T4','T5','T6'].indexOf(a)-['T1','T2','T3','T4','T5','T6'].indexOf(b)).map(([t,n])=>[QUESTION_TYPES[t]||t,n])]){const stat=el('span',null,'reverse-stat');stat.append(el('span',name),el('strong',String(count)));stats.append(stat);}
   body.append(stats);
+  const pictureReminder=el('section',null,'reverse-image-reminders');
+  pictureReminder.setAttribute('aria-label','含圖片題目提醒');body.append(pictureReminder);
+  const questionRows=[];
+  function showImageReminders() {
+    const items=imageQuestionReminders(result);pictureReminder.replaceChildren();pictureReminder.hidden=!items.length;
+    if(!items.length)return;
+    pictureReminder.append(el('h3',`含圖片題目提醒：${items.length} 題，共 ${items.reduce((sum,item)=>sum+item.count,0)} 張圖片`));
+    const list=el('ul');pictureReminder.append(list);
+    for(const item of items) {
+      const li=el('li'),link=el('button',`編碼 ${item.id}（${QUESTION_TYPES[item.type]||item.type}）：${item.locations.map(location=>`${location.field} ${location.count} 張`).join('、')}`,'reverse-image-link');
+      link.type='button';link.onclick=()=>{const row=questionRows[item.index];if(!row)return;row.open=true;row.scrollIntoView({block:'center',behavior:'smooth'});row.querySelector('summary')?.focus({preventScroll:true});};
+      li.append(link);list.append(li);
+    }
+  }
   const select=el('select',null,'form-control'), label=el('label','科目與冊別','form-label'),scope=el('div',null,'reverse-scope');label.append(select);scope.append(label);body.append(scope);
   select.append(new Option('請確認科目與冊別',''));
   for(const s of catalog)for(const b of s.books)select.append(new Option(`${s.code} ${s.name} ／ ${b.code} ${b.name}`,b.code));
@@ -126,7 +140,7 @@ async function render(result) {
       catch(e){warnings.textContent=e.message;}finally{validate();}
     };
   }
-  function validate(){const selected=book();levels.textContent=selected?`此冊層級：${[selected.l1,selected.l2,selected.l3].filter(Boolean).join(' → ')}。章數／節數／小節填入各層序號，依網站目錄驗證。`:'';const errors=validateQuestions(result,selected);warnings.textContent=[...result.warnings,...errors].join('\n');buttons.forEach(b=>b.disabled=!select.value||errors.length>0);}
+  function validate(){const selected=book();levels.textContent=selected?`此冊層級：${[selected.l1,selected.l2,selected.l3].filter(Boolean).join(' → ')}。章數／節數／小節填入各層序號，依網站目錄驗證。`:'';const errors=validateQuestions(result,selected);warnings.textContent=[...result.warnings,...errors].join('\n');buttons.forEach(b=>b.disabled=!select.value||errors.length>0);showImageReminders();}
   const scopeInputs=[];
   select.onchange=()=>{if(book())applyCatalog(result,book());scopeInputs.forEach(({q,key,input})=>input.value=q[key]||'');validate();};
   const list=el('div',null,'reverse-results');body.append(list);
@@ -147,15 +161,19 @@ async function render(result) {
       else input.value=q[key]||'';
       label.append(input);
       if(multiline)row.append(label);else fields.append(label);
-      input.oninput=()=>{q[key]=multiline?readEditor(input):input.value;validate();};
+      const refreshPictures=()=>{
+        label.querySelectorAll('.reverse-picture').forEach(image=>image.remove());
+        for(const marker of String(q[key]||'').matchAll(/⟦圖(\d+)⟧/g)) {
+          const image=el('img');image.src=urls[+marker[1]]||'';image.alt=`${key} 圖片 ${+marker[1]+1}`;image.className='reverse-picture';label.append(image);
+        }
+      };
+      input.oninput=()=>{q[key]=multiline?readEditor(input):input.value;refreshPictures();validate();};
       if(multiline)input.addEventListener('paste',e=>{e.preventDefault();document.execCommand('insertText',false,e.clipboardData.getData('text/plain'));});
       if(['章數','節數','小節'].includes(key))scopeInputs.push({q,key,input});
       if(['章數','節數','小節'].includes(key))input.onblur=()=>{q[key]=formatScopeNumber(input.value);input.value=q[key];validate();};
-      for(const marker of (q[key]||'').matchAll(/⟦圖(\d+)⟧/g)) {
-        const image=el('img');image.src=urls[+marker[1]];image.alt=`${key} 圖片 ${+marker[1]+1}`;image.className='reverse-picture';label.append(image);
-      }
+      refreshPictures();
     }
-    list.append(row);
+    list.append(row);questionRows.push(row);
   }
   body.append(el('p','Enter 另起段落，Shift+Enter 在同段內換行。⟦圖編號⟧ 表示原檔圖片，可在欄位間移動；下載時會還原為內嵌圖片。章節必須符合所選冊別目錄。'));
   validate();

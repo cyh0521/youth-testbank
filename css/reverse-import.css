@@ -51,6 +51,12 @@
 .reverse-scope-note{margin:6px 0 0;color:#718775;font-size:.84rem;line-height:1.6}
 .reverse-scope-note:empty{display:none}
 .reverse-result-card .reverse-warning:not(:empty){margin:0 0 16px;padding:10px 14px;border:0;border-radius:8px;background:#fff8e8;color:#7c5000;font-size:.88rem}
+.reverse-image-reminders{margin:14px 0 18px;padding:13px 16px;border:1px solid #e8d4a6;border-radius:9px;background:#fffaf0;color:#72531e}
+.reverse-image-reminders[hidden]{display:none}
+.reverse-image-reminders h3{margin:0 0 8px;font-size:.95rem;color:#72531e}
+.reverse-image-reminders ul{display:flex;flex-wrap:wrap;gap:6px 12px;list-style:none;margin:0;padding:0}
+.reverse-image-link{padding:3px 0;border:0;background:none;color:#73541f;cursor:pointer;text-align:left;text-decoration:underline;text-underline-offset:3px;font:inherit;font-size:.85rem}
+.reverse-image-link:hover,.reverse-image-link:focus-visible{color:#3a651f}
 .reverse-question{border-color:#e5ecde;border-radius:8px}
 .reverse-question summary{padding:12px 16px;background:#fbfcf9}
 .reverse-question summary:hover{background:#edf4e6}
