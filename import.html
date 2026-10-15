@@ -125,6 +125,11 @@
 #importedFilesModal .btn-danger{padding:4px 8px;display:inline-flex;align-items:center;justify-content:center;gap:4px;font-size:.88rem;line-height:1;white-space:nowrap}
 #importedFilesModal .btn-danger svg{display:block;width:16px;height:16px}
 #importedFilesModal .data-table th:last-child,#importedFilesModal .data-table td:last-child{width:88px;white-space:nowrap}
+#importedFilesModal .imported-subject-heading th{width:auto;text-align:left;background:#edf2e8;color:#315940;padding:10px 12px;font-weight:400}
+#importedFilesModal .data-table tr.imported-subject-heading>th,#importedFilesModal .data-table tr.imported-book-heading>th{width:auto;text-align:left}
+#importedFilesModal .imported-book-heading th{background:#f5f8f1}
+#importedFilesModal .imported-book-heading button{display:block;width:100%;padding:0;border:0;background:none;color:#315940;font:inherit;text-align:left;cursor:pointer}
+#importedFilesModal tr[hidden]{display:none}
 #panelStep3 .preview-view-toggle{position:relative;isolation:isolate;box-sizing:border-box;display:inline-grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch;height:34px;padding:3px;background:#edf2e8;border:0;border-radius:9px;overflow:visible;gap:0}
 #panelStep3 .preview-view-toggle::before{content:"";position:absolute;z-index:-1;top:3px;bottom:3px;left:3px;width:calc((100% - 6px)/2);background:#fff;border-radius:9px;box-shadow:0 1px 3px #31594018;transition:transform 150ms ease-out}
 #panelStep3 .preview-view-toggle:has(button:last-child.active)::before{transform:translateX(100%)}
@@ -273,7 +278,7 @@
 
 <div class="modal-overlay hidden" id="importedFilesModal" role="dialog" aria-modal="true" aria-labelledby="importedFilesTitle">
   <div class="modal modal-lg">
-    <div class="modal-header"><div class="imported-files-heading"><h3 id="importedFilesTitle">已匯入檔案列表</h3><span class="imported-files-note">︱同檔名合併顯示，刪除可移除已匯入題目</span></div><button class="modal-close" onclick="document.getElementById('importedFilesModal').classList.add('hidden')" aria-label="關閉">✕</button></div>
+    <div class="modal-header"><div class="imported-files-heading"><h3 id="importedFilesTitle">已匯入檔案列表</h3><span class="imported-files-note">︱依科目與冊別分類，同冊同檔名合併顯示</span></div><button class="modal-close" onclick="document.getElementById('importedFilesModal').classList.add('hidden')" aria-label="關閉">✕</button></div>
     <div class="modal-body" id="importedFilesBody"></div>
     <div class="modal-footer"><button class="btn btn-ghost" onclick="document.getElementById('importedFilesModal').classList.add('hidden')">關閉</button></div>
   </div>
@@ -343,14 +348,39 @@ document.getElementById('continueImportIcon').innerHTML = I.refresh16;
 document.getElementById('homeIcon').innerHTML = I.home16;
 
 let importedFileQuestions = [], importedFileRows = [], importedFileSelection = new Set(), importedFileAnchor = null, importedFilesBusy = false;
+const collapsedImportedBooks = new Set();
+const importedFileKey = q => JSON.stringify([q.subjectCode || '',q.bookCode || '',q._srcFile]);
+window.toggleImportedBook = index => {
+  const [subject,book] = JSON.parse(importedFileRows[index][0]);
+  const key = JSON.stringify([subject,book]);
+  if (collapsedImportedBooks.has(key)) collapsedImportedBooks.delete(key);
+  else collapsedImportedBooks.add(key);
+  importedFileAnchor = null;
+  renderImportedFiles();
+};
 function renderImportedFiles() {
   const files = new Map();
   importedFileQuestions.forEach(q => {
-    if (q._srcFile) files.set(q._srcFile, (files.get(q._srcFile) || 0) + 1);
+    if (!q._srcFile) return;
+    const key = importedFileKey(q);
+    files.set(key, (files.get(key) || 0) + 1);
   });
-  importedFileRows = [...files].sort(([a],[b]) => a.localeCompare(b,'zh-Hant'));
+  importedFileRows = [...files].sort(([a],[b]) => JSON.parse(a)[0].localeCompare(JSON.parse(b)[0],'zh-Hant') || JSON.parse(a)[1].localeCompare(JSON.parse(b)[1],'zh-Hant',{numeric:true}) || JSON.parse(a)[2].localeCompare(JSON.parse(b)[2],'zh-Hant'));
   importedFileSelection = new Set([...importedFileSelection].filter(name => files.has(name)));
-  document.getElementById('importedFilesBody').innerHTML = files.size ? `<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px"><button class="btn btn-danger btn-sm" id="deleteImportedFilesBtn" style="${importedFileSelection.size < 2 ? 'display:none' : ''}" onclick="deleteImportedFiles()" ${!importedFileSelection.size || importedFilesBusy ? 'disabled' : ''}>${ICONS.trash16}批次刪除</button><span>已選 ${importedFileSelection.size} 個檔案</span></div><table class="data-table"><thead><tr><th><input type="checkbox" aria-label="全選檔案" ${importedFileSelection.size === files.size ? 'checked' : ''} ${importedFilesBusy ? 'disabled' : ''} onchange="selectAllImportedFiles(this.checked)"></th><th>Word 檔名</th><th>題目數</th><th>操作</th></tr></thead><tbody>${importedFileRows.map(([name,count],i) => `<tr data-file-index="${i}" class="${importedFileSelection.has(name) ? 'file-selected' : ''}" onclick="selectImportedFile(event,${i})"><td><input type="checkbox" aria-label="${UI.escapeHtml('選取 '+name)}" ${importedFileSelection.has(name) ? 'checked' : ''} ${importedFilesBusy ? 'disabled' : ''}></td><td>${UI.escapeHtml(name)}</td><td>${count}</td><td><button class="btn btn-danger btn-sm" ${importedFilesBusy ? 'disabled' : ''} onclick="event.stopPropagation();deleteImportedFiles(${i})">${ICONS.trash16}刪除</button></td></tr>`).join('')}</tbody></table>` : '<div class="empty-state">尚無已記錄來源檔名的題目</div>';
+  let previousSubject = null, previousBook = null;
+  document.getElementById('importedFilesBody').innerHTML = files.size ? `<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px"><button class="btn btn-danger btn-sm" id="deleteImportedFilesBtn" style="${importedFileSelection.size < 2 ? 'display:none' : ''}" onclick="deleteImportedFiles()" ${!importedFileSelection.size || importedFilesBusy ? 'disabled' : ''}>${ICONS.trash16}批次刪除</button><span>已選 ${importedFileSelection.size} 個檔案</span></div><table class="data-table"><thead><tr><th><input type="checkbox" aria-label="全選檔案" ${importedFileSelection.size === files.size ? 'checked' : ''} ${importedFilesBusy ? 'disabled' : ''} onchange="selectAllImportedFiles(this.checked)"></th><th>Word 檔名</th><th>題目數</th><th>操作</th></tr></thead><tbody>${importedFileRows.map(([name,count],i) => {
+    const [subject,book,filename] = JSON.parse(name);
+    const inSubject = importedFileRows.filter(([key]) => JSON.parse(key)[0] === subject);
+    let heading = previousSubject !== subject ? '<tr class="imported-subject-heading"><th colspan="4">'+UI.escapeHtml(subject ? tbSubjectName(subject) : '未分類')+'（'+inSubject.length+' 個檔案，'+inSubject.reduce((sum,[,n]) => sum+n,0)+' 題）</th></tr>' : '';
+    const groupKey = JSON.stringify([subject,book]);
+    const collapsed = collapsedImportedBooks.has(groupKey);
+    if (previousSubject !== subject || previousBook !== book) {
+      const inBook = inSubject.filter(([key]) => JSON.parse(key)[1] === book);
+      heading += '<tr class="imported-book-heading"><th colspan="4"><button type="button" aria-expanded="'+!collapsed+'" onclick="toggleImportedBook('+i+')">'+(collapsed ? '▸' : '▾')+' '+UI.escapeHtml(book ? tbBookName(book) : '未指定冊別')+'（'+inBook.length+' 個檔案，'+inBook.reduce((sum,[,n]) => sum+n,0)+' 題）</button></th></tr>';
+    }
+    previousSubject = subject;
+    previousBook = book;
+    return heading + `<tr ${collapsed ? 'hidden' : ''} data-file-index="${i}" class="${importedFileSelection.has(name) ? 'file-selected' : ''}" onclick="selectImportedFile(event,${i})"><td><input type="checkbox" aria-label="${UI.escapeHtml('選取 '+filename)}" ${importedFileSelection.has(name) ? 'checked' : ''} ${importedFilesBusy ? 'disabled' : ''}></td><td>${UI.escapeHtml(filename)}</td><td>${count}</td><td><button class="btn btn-danger btn-sm" ${importedFilesBusy ? 'disabled' : ''} onclick="event.stopPropagation();deleteImportedFiles(${i})">${ICONS.trash16}刪除</button></td></tr>`; }).join('')}</tbody></table>` : '<div class="empty-state">尚無已記錄來源檔名的題目</div>';
 }
 window.selectImportedFile = (event,index) => {
   if (importedFilesBusy) return;
@@ -375,13 +405,13 @@ window.deleteImportedFiles = async index => {
   if (importedFilesBusy || !canEdit) return;
   const names = index === undefined ? [...importedFileSelection] : [importedFileRows[index][0]];
   if (!names.length) return;
-  const count = importedFileQuestions.filter(q => names.includes(q._srcFile)).length;
-  if (!await confirmDeletion({title:'刪除匯入檔案題目',message:`確定刪除 ${names.length} 個檔案所匯入的 ${count} 題？同名檔案的題目會一併刪除，電腦上的 Word 檔案不受影響。`,actionLabel:'刪除題目'})) return;
+  const count = importedFileQuestions.filter(q => names.includes(importedFileKey(q))).length;
+  if (!await confirmDeletion({title:'刪除匯入檔案題目',message:`確定刪除 ${names.length} 個檔案所匯入的 ${count} 題？同科目同冊別內同名檔案的題目會一併刪除，電腦上的 Word 檔案不受影響。`,actionLabel:'刪除題目'})) return;
   importedFilesBusy = true;
   renderImportedFiles();
   let removed = 0;
   try {
-    await DataService.deleteImportedFiles(names, ids => {
+    await DataService.deleteImportedFiles(names.map(key => { const [subjectCode,bookCode,name] = JSON.parse(key); return {subjectCode,bookCode,name}; }), ids => {
       const deleted = new Set(ids);
       removed += ids.length;
       importedFileQuestions = importedFileQuestions.filter(q => !deleted.has(q.id));

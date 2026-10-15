@@ -577,8 +577,13 @@ window.DataService = {
   },
 
   async deleteImportedFiles(names, onDeleted) {
-    for (const name of new Set(names)) {
-      const questions = await DataService.getQuestionsFromFirestore({ sourceFile:name });
+    for (const file of names) {
+      const sourceFile = typeof file === 'string' ? file : file.name;
+      const subjectCode = typeof file === 'string' ? undefined : file.subjectCode;
+      const bookCode = typeof file === 'string' ? undefined : file.bookCode;
+      const questions = (await DataService.getQuestionsFromFirestore({ sourceFile, subjectCode, bookCode }))
+        .filter(q => (subjectCode === undefined || (q.subjectCode || '') === subjectCode)
+          && (bookCode === undefined || (q.bookCode || '') === bookCode));
       for (let i = 0; i < questions.length; i += 400) {
         const chunk = questions.slice(i, i + 400);
         const batch = writeBatch(db);
