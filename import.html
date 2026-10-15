@@ -86,7 +86,7 @@
 .preview-table,.preview-table .badge{font-weight:400}
 .preview-table .badge,.parse-stat{border-radius:9px}
 .preview-answer-cell{white-space:pre-wrap;overflow-wrap:anywhere;color:#176d49;line-height:1.65}
-.preview-full-list:not(.show-full) .preview-question-row:not(.is-expanded) td{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:middle}
+.preview-full-list:not(.show-full) .preview-question-row:not(.is-expanded) td{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:top}
 .preview-full-list:not(.show-full) .preview-question-row:not(.is-expanded) .preview-answer-cell br{display:none}
 .preview-full-list:not(.show-full) .preview-question-row:not(.is-expanded) .question-paragraph-break{display:inline;margin:0;height:auto}
 .preview-filename{overflow-wrap:anywhere}
@@ -240,9 +240,8 @@
             <div class="import-header-actions"><button class="btn btn-previous btn-sm" onclick="backStep2()"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10.5 6-6 6 6 6"/><path d="m18 6-6 6 6 6" stroke-opacity=".5"/></svg>上一步</button><button class="btn btn-primary btn-sm" id="importBtn" onclick="doImport()"><span id="importBtnIcon"></span><span id="importBtnLabel">下一步：匯入題目</span></button></div>
           </div><div class="card-body import-card-body">
             <div id="parseWarnings" style="margin-bottom:10px"></div>
-            <p id="importImagesHint" class="field-hint" hidden>題目中的圖片已保留。請下載圖片 ZIP，解壓到網站根目錄，再發布 images 資料夾。</p>
             <div class="import-preview-toolbar">
-              <div class="parse-summary" id="parseSummary"><button type="button" class="btn btn-outline btn-sm" id="importImagesBtn" onclick="downloadImportImages()" hidden>下載入題圖片 ZIP</button></div>
+              <div class="parse-summary" id="parseSummary"><button type="button" class="btn btn-outline btn-sm" id="importImagesBtn" onclick="downloadImportImages()" title="題目內附圖，下載後解壓到網站 images 資訊料後再發布更新" hidden>下載入題圖片 ZIP</button></div>
               <div id="previewPagInfo" style="font-size:.88rem;color:var(--text-secondary)"></div>
                 <div class="preview-view-toggle" role="group" aria-label="解析預覽顯示方式"><button type="button" id="previewListBtn" class="active" aria-pressed="true" onclick="setPreviewView('list')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>清單</button><button type="button" id="previewFullBtn" aria-pressed="false" onclick="setPreviewView('full')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 10 5-10 5L2 7l10-5ZM2 12l10 5 10-5M2 17l10 5 10-5"/></svg>完整</button></div>
             </div>
@@ -280,6 +279,7 @@
   </div>
 </div>
 
+<script src="vendor/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 
 <script type="module">
@@ -287,6 +287,7 @@ import { guardPage } from './js/auth-guard.js';
 import { confirmDeletion } from './js/confirm-exam-deletion.js';
 import { buildTextbankFiles, createTextbankZip } from './js/textbank-export.js?v=testbank-catalog-1';
 import { imageArchive } from './js/question-image-editor.js';
+import { readBooklet } from './js/reverse-import.js';
 const importedImageSources = new Map();
 window.questionImagePreviews ||= new Map();
 window.downloadImportImages = async () => {
@@ -526,29 +527,29 @@ window.parseAllFiles = async () => {
     try {
       const arrayBuffer = await f.file.arrayBuffer();
       f.images = new Map();
-      const result = await mammoth.convertToHtml({ arrayBuffer }, {convertImage:mammoth.images.imgElement(async image => {
-        if (!['image/png','image/jpeg'].includes(image.contentType)) throw new Error('入題圖片需為 PNG 或 JPG，請先在 Word 轉換圖片格式');
-        const bytes = await image.read('arrayBuffer');
+      const result = await readBooklet(arrayBuffer, f.name);
+      const imageMarkers = await Promise.all(result.images.map(async image => {
+        const media = image.files.find(file => /\.(?:png|jpe?g)$/i.test(file.path));
+        if (!media) throw new Error('入題圖片需為 PNG 或 JPG，請先在 Word 轉換圖片格式');
+        const bytes = media.data;
         const hash = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))).map(n=>n.toString(16).padStart(2,'0')).join('');
-        const path = `images/import-${hash}.${image.contentType === 'image/png' ? 'png' : 'jpg'}`;
-        const blob = new Blob([bytes], {type:image.contentType});
+        const extension = /\.png$/i.test(media.path) ? 'png' : 'jpg';
+        const path = `images/import-${hash}.${extension}`;
+        const blob = new Blob([bytes], {type:extension === 'png' ? 'image/png' : 'image/jpeg'});
         const url = window.questionImagePreviews.get(path) || URL.createObjectURL(blob);
-        window.questionImagePreviews.set(path, url); importedImageSources.set(url, path); f.images.set(path, blob);
-        return {src:url};
-      })});
-      const tables = parseTablesFromHtml(result.value);
+        window.questionImagePreviews.set(path, url); f.images.set(path, blob);
+        const widthEmu = image.drawing.match(/\b(?:wp:)?cx="(\d+)"/)?.[1];
+        const width = widthEmu ? Math.round(Number(widthEmu) / 9525) : 320;
+        return UI.imageMarker(path, width);
+      }));
+      const withImages = value => String(value || '').replace(/⟦圖(\d+)⟧/g, (_, index) => imageMarkers[Number(index)] || '');
       const qs = [];
-      tables.forEach(rows => {
-        if (rows.length < 2) return;
-        const headers = rows[0].map(h => h.replace(/\s/g,'').replace(/\(.*\)|（.*）/g,''));
-        for (let r = 1; r < rows.length; r++) {
-          const row = {};
-          headers.forEach((h, ci) => { row[h] = rows[r][ci] || ''; });
-          if (!row['題型']) continue;
-          const q = DocImporter.rowToQuestion(row, sc, bc);
-          if (q.text) { q._srcFile = f.name; qs.push(q); }
-        }
-      });
+      for (const question of result.questions) {
+        const row = Object.fromEntries(Object.entries(question).map(([key, value]) => [key, withImages(value)]));
+        if (!row['題型']) continue;
+        const q = DocImporter.rowToQuestion(row, sc, bc);
+        if (q.text) { q._srcFile = f.name; qs.push(q); }
+      }
       f.questions = qs;
       f.status = qs.length ? 'done' : 'error';
       f.errorMsg = qs.length ? '' : '未解析到有效題目（請確認欄位名稱）';
@@ -626,7 +627,6 @@ function buildPreview(qs) {
   previewQs = qs;
   const hasImages = selectedFiles.some(f => f.status === 'done' && f.images?.size);
   document.getElementById('importImagesBtn').hidden = !hasImages;
-  document.getElementById('importImagesHint').hidden = !hasImages;
 
   const totalByType = {};
   qs.forEach(q => { totalByType[q.type] = (totalByType[q.type]||0)+1; });
