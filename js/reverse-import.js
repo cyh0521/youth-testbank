@@ -5,6 +5,15 @@ const xml = s => { const d = new DOMParser().parseFromString(s, 'application/xml
 const all = (n, name) => Array.from(n.getElementsByTagNameNS(W, name));
 const serialize = n => new XMLSerializer().serializeToString(n);
 const clean = s => s.replace(/\u00a0/g,' ').trim();
+function splitQuestionAfterOptions(value) {
+  // 舊題本偶有「(A)…(D)國防法 的主旨是…」的排法；空白與語意起句是分界。
+  const text=String(value||'');
+  const sameLine=text.match(/^(.{1,80}?)[ \t　]+((?:的(?:主旨|目的|意義|功能|作用|內容|精神|規定|重點|範圍|原則)|下列|以下|何者|何項|何種|何謂|為何|如何|請問|試問|關於|有關|依據|依照|根據)[\s\S]+)$/);
+  if(sameLine)return {option:clean(sameLine[1]),question:clean(sameLine[2])};
+  const separate=text.match(/^([^\u2029\n]+)[\u2029\n]+([^\s][\s\S]+)$/);
+  if(separate)return {option:clean(separate[1]),question:clean(separate[2])};
+  return null;
+}
 // U+2029 是 Enter 段落；LF 是 Shift+Enter 段內換行。
 export const PARAGRAPH_BREAK='\u2029';
 const stripImages = value => value.split(PARAGRAPH_BREAK).map(part=>({part,remaining:part.replace(/\n?⟦圖\d+⟧/g,'')})).filter(({part,remaining})=>!(/⟦圖\d+⟧/.test(part)&&!remaining.trim())).map(({remaining})=>remaining).join(PARAGRAPH_BREAK);
@@ -102,7 +111,7 @@ export async function readBooklet(buffer, filename='題本.docx') {
     for(const tr of rows.slice(1)) {
       const cells=Array.from(tr.children).filter(n=>n.localName==='tc'); const q={_id:String(questions.length+1)};
       for(let i=0;i<heads.length;i++) q[heads[i]]=(await Promise.all(all(cells[i]||tr,'p').map(content))).join(PARAGRAPH_BREAK).replace(/\u00a0/g,' ');
-      if(!q['題目'])continue;
+      if(!q['題目']&&!(['T2','T3'].includes((q['題型']||'').trim())&&q['結尾']))continue;
       q['題型']=q['題型'].replace(/\s/g,''); q['簡答/答案']=fullAnswer(q['簡答/答案']||'');
       questions.push(q);
     }
@@ -136,10 +145,14 @@ export async function readBooklet(buffer, filename='題本.docx') {
         current['題目']=clean(options.length?body.slice(0,options[0].index):body);
         options.forEach((m,i)=>current['選項'+(m[1].normalize('NFKC').charCodeAt(0)-64)]=clean(body.slice(m.index+m[0].length,options[i+1]?.index??body.length)));
         const last='選項'+options.length;
+        current['結尾']='';
+        if(!current['題目']&&options.length>=2) {
+          const moved=splitQuestionAfterOptions(current[last]);
+          if(moved){current[last]=moved.option;current['結尾']=moved.question;}
+        }
         const trailingImages=(current[last]||'').match(/(?:\s*⟦圖\d+⟧)+\s*$/)?.[0]||'';
         if(trailingImages)current[last]=clean(current[last].slice(0,-trailingImages.length));
-        current['結尾']='';
-        if(current[last]?.endsWith('。')) {current[last]=current[last].slice(0,-1).trim();current['結尾']='。';}
+        if(!current['結尾']&&current[last]?.endsWith('。')) {current[last]=current[last].slice(0,-1).trim();current['結尾']='。';}
         // 題幹圖片移到結尾，選項與解析圖片仍留在原欄位。
         const pics=current['題目'].match(/⟦圖\d+⟧/g)||[];
         current['題目']=clean(current['題目'].replace(/⟦圖\d+⟧/g,''));
@@ -147,7 +160,7 @@ export async function readBooklet(buffer, filename='題本.docx') {
         if(trailingImages)current['結尾']+=PARAGRAPH_BREAK+clean(trailingImages);
       } else current['題目']=clean(body);
       current['答數']=current['題型']==='T3'?String((current['簡答/答案'].match(/[Ａ-Ｅ]/g)||[]).length):'1';
-      if(!current['題目'])warnings.push('編碼 '+current._id+' 缺少題目');
+      if(!current['題目']&&!(['T2','T3'].includes(current['題型'])&&current['結尾']))warnings.push('編碼 '+current._id+' 缺少題目');
       if(!current['簡答/答案'])warnings.push('編碼 '+current._id+' 缺少答案，請補填');
       delete current.body;questions.push(current);current=null;
     }
@@ -193,7 +206,7 @@ export function validateQuestions(result,book) {
   for(const q of result.questions) {
     const tag='題 '+q._id;
     if(!/^T[1-6]$/.test(q['題型']))errors.push(tag+'：題型不明');
-    if(!q['題目']||!q['簡答/答案'])errors.push(tag+'：題目或答案空白');
+    if((!q['題目']&&!(['T2','T3'].includes(q['題型'])&&q['結尾']))||!q['簡答/答案'])errors.push(tag+'：題目或答案空白');
     if(q['題型']==='T2' && (!q['選項1']||!q['選項2']))errors.push(tag+'：缺少選項（表格式選擇題須有獨立選項欄）');
     if(['T2','T3'].includes(q['題型']))for(const answer of (q['簡答/答案']||'').match(/[Ａ-ＥA-E]/g)||[])if(!q['選項'+(answer.normalize('NFKC').charCodeAt(0)-64)])errors.push(tag+'：答案指向空白選項');
     for(const marker of Object.values(q).filter(v=>typeof v==='string').join('\n').matchAll(/⟦圖(\d+)⟧/g))if(!result.images[+marker[1]])errors.push(tag+'：圖片編號不存在');

@@ -98,13 +98,25 @@
 .preview-view-toggle{margin-left:0;flex:none}
 
 /* ── 進度 ── */
-.import-log{background:#1a2a3a;color:#a8c7e8;font-family:var(--font-mono);font-size:.85rem;padding:12px 14px;border-radius:var(--radius);margin-top:10px;overflow-wrap:anywhere}
-.import-log .log-ok{color:#5dade2}
-.import-log .log-err{color:#ec7063}
-.import-log .log-info{color:#a8c7e8}
-.import-log .log-warn{color:#f0ad4e}
-.import-complete-icon{display:flex;align-items:center;justify-content:center;width:72px;height:72px;margin:0 auto 16px;border-radius:20px;background:#ddf4e9;color:#267656}
-.import-complete-icon svg{width:36px;height:36px}
+.import-result-banner{display:flex;align-items:center;gap:16px;padding:18px 20px;border-radius:9px;background:#f1f5eb;margin-bottom:18px}
+.import-result-banner h2{font-size:1.2rem;margin-bottom:5px}
+.import-result-banner #importResult{font-size:.9rem;color:var(--text-secondary);line-height:1.65}
+.import-log-heading{font-size:.95rem;font-weight:400;color:#214a35;margin:0 0 10px}
+.import-log{background:#fbfcf9;color:#607466;font-family:inherit;font-size:.88rem;padding:14px 16px;border:1px solid #e5ecde;border-radius:9px;line-height:1.9;overflow-wrap:anywhere;text-align:left}
+.import-log .log-ok{color:#34774d}
+.import-log .log-err{color:#b42332}
+.import-log .log-info{color:#607466}
+.import-log .log-warn{color:#916500}
+.import-complete-icon{display:flex;align-items:center;justify-content:center;flex:none;width:48px;height:48px;border-radius:9px;background:#e0ecd5;color:#34774d}
+.import-complete-icon svg{width:26px;height:26px}
+.import-image-reminder{padding:12px 16px;margin:0 0 18px;border-radius:9px;background:#edf4e6;color:#315940;font-size:.88rem;line-height:1.7}
+.import-image-reminder[hidden]{display:none}
+.parse-image-notice{margin-bottom:14px;padding:12px 16px;border-radius:9px;background:#edf4e6;color:#315940;font-size:.88rem;line-height:1.7}
+.parse-image-notice summary{cursor:pointer}
+.parse-image-notice ul{margin:8px 0 0;padding-left:20px}
+.parse-image-notice a{color:inherit;text-decoration:underline;text-underline-offset:3px}
+#panelStep4 .section-heading{flex-wrap:wrap}
+#panelStep4 .import-header-actions{margin-left:auto;flex-wrap:wrap}
 .import-complete-icon.is-error{background:#ffe5e8;color:var(--danger)}
 .import-complete-icon.is-warning{background:#fff3d6;color:#9a6700}
 @media(max-width:1000px){.import-intro{grid-template-columns:1fr}}
@@ -264,10 +276,13 @@
       <button class="btn btn-primary btn-sm" onclick="nav('dashboard')"><span id="homeIcon"></span>回到首頁</button>
     </div>
   </div>
-  <div class="card-body import-card-body" style="text-align:center">
-    <div class="import-complete-icon" id="completeIcon"></div>
-    <h2 id="importResultTitle" style="margin-bottom:8px;color:var(--success)">匯入完成！</h2>
-    <div id="importResult" style="font-size:.9rem;color:var(--text-secondary);margin-bottom:20px"></div>
+  <div class="card-body import-card-body">
+    <div class="import-result-banner" role="status" aria-live="polite">
+      <div class="import-complete-icon" id="completeIcon" aria-hidden="true"></div>
+      <div><h2 id="importResultTitle">匯入完成！</h2><div id="importResult"></div></div>
+    </div>
+    <div class="import-image-reminder" id="importImageReminder" hidden>請下載右上方的「入題圖片 ZIP」，解壓後將 images 資料夾內的圖片上傳並發布更新。</div>
+    <h3 class="import-log-heading">匯入紀錄</h3>
     <div class="import-log" id="importLog"></div>
   </div>
 </section>
@@ -580,7 +595,7 @@ window.parseAllFiles = async () => {
         const row = Object.fromEntries(Object.entries(question).map(([key, value]) => [key, withImages(value)]));
         if (!row['題型']) continue;
         const q = DocImporter.rowToQuestion(row, sc, bc);
-        if (q.text) { q._srcFile = f.name; qs.push(q); }
+        if (q.text || (['T2','T3'].includes(q.type) && q.tail)) { q._srcFile = f.name; qs.push(q); }
       }
       f.questions = qs;
       f.status = qs.length ? 'done' : 'error';
@@ -679,6 +694,20 @@ function buildPreview(qs) {
   document.getElementById('parseWarnings').innerHTML = warnings.map(w =>
     `<div class="parse-warning">${I.info16} ${UI.escapeHtml(w)}</div>`
   ).join('');
+  const filePositions = new Map();
+  const imageQuestions = [];
+  qs.forEach((q,index) => {
+    const file = q._srcFile || '未記錄檔名';
+    const position = (filePositions.get(file) || 0) + 1;
+    filePositions.set(file,position);
+    const paths = new Set([q.text,q.tail,q.answer,q.analysis,...(q.options || [])]
+      .flatMap(value => UI.questionImageParts(value).filter(part => part.path).map(part => part.path)));
+    if (paths.size) imageQuestions.push({index,file,position,count:paths.size});
+  });
+  if (imageQuestions.length) {
+    document.getElementById('parseWarnings').insertAdjacentHTML('beforeend',
+      `<details class="parse-image-notice" open><summary>有 ${imageQuestions.length} 題含圖片，匯入完成後請下載「入題圖片 ZIP」。</summary><ul>${imageQuestions.map(item => `<li><a href="#preview-question-${item.index}">預覽第 ${item.index+1} 題</a>：${UI.escapeHtml(item.file)} 的第 ${item.position} 題（${item.count} 張圖片）</li>`).join('')}</ul></details>`);
+  }
 
   renderPreviewPage();
 }
@@ -694,10 +723,10 @@ function renderPreviewPage() {
   }
   const list = document.getElementById('previewFullList');
   list.classList.toggle('show-full',previewView === 'full');
-  list.innerHTML = '<table class="preview-table"><colgroup><col style="width:180px"><col style="width:90px"><col style="width:75px"><col style="width:80px"><col style="width:85px"><col style="width:120px"><col><col style="width:110px"></colgroup><thead><tr><th>檔名</th><th>題型</th><th>難易度</th><th>頁數</th><th>章節</th><th>來源</th><th>題目</th><th>答案</th></tr></thead><tbody>'+pageQs.map(q => {
+  list.innerHTML = '<table class="preview-table"><colgroup><col style="width:180px"><col style="width:90px"><col style="width:75px"><col style="width:80px"><col style="width:85px"><col style="width:120px"><col><col style="width:110px"></colgroup><thead><tr><th>檔名</th><th>題型</th><th>難易度</th><th>頁數</th><th>章節</th><th>來源</th><th>題目</th><th>答案</th></tr></thead><tbody>'+pageQs.map((q,index) => {
     const text = q.type === 'T2' || q.type === 'T3' ? UI.choiceQuestionHtml(q, '—') : q.type === 'T5' ? UI.matchingQuestionHtml(q.text) : UI.questionHtml(q.text || '—');
     const compact = [q.text,...((q.type === 'T2' || q.type === 'T3') ? (q.options || []).map((o,j) => '('+String.fromCharCode(65+j)+') '+o) : []),q.tail].filter(Boolean).join(' ');
-    return '<tr class="preview-question-row" onclick="togglePreviewQuestion(event)" tabindex="0" onkeydown="if(event.keyCode===13||event.keyCode===32){event.preventDefault();togglePreviewQuestion(event)}"><td class="preview-filename" title="'+UI.escapeHtml(q._srcFile || '')+'">'+UI.escapeHtml(q._srcFile || '—')+'</td><td>'+UI.typeBadge(q.type)+'</td><td>'+UI.diffBadge(q.difficulty)+'</td><td>'+UI.escapeHtml(q.source || '—')+'</td><td>'+([q.chapterNum,q.sectionNum,q.subsectionNum].filter(Boolean).join('-') || '—')+'</td><td>'+UI.escapeHtml(SOURCE_CODES[q.sourceCode] || q.sourceCode || '—')+'</td><td><div class="preview-compact-text" title="'+UI.escapeHtml(compact)+'">'+UI.escapeHtml(compact)+'</div><div class="preview-full-content"><div class="preview-full-question">'+text+'</div>'+((q.type !== 'T2' && q.type !== 'T3' && q.tail) ? '<div>'+UI.questionHtml(q.tail)+'</div>' : '')+'</div></td><td class="preview-answer-cell">'+UI.questionHtml(q.answer || '—')+'</td></tr>';
+    return '<tr id="preview-question-'+index+'" class="preview-question-row" onclick="togglePreviewQuestion(event)" tabindex="0" onkeydown="if(event.keyCode===13||event.keyCode===32){event.preventDefault();togglePreviewQuestion(event)}"><td class="preview-filename" title="'+UI.escapeHtml(q._srcFile || '')+'">'+UI.escapeHtml(q._srcFile || '—')+'</td><td>'+UI.typeBadge(q.type)+'</td><td>'+UI.diffBadge(q.difficulty)+'</td><td>'+UI.escapeHtml(q.source || '—')+'</td><td>'+([q.chapterNum,q.sectionNum,q.subsectionNum].filter(Boolean).join('-') || '—')+'</td><td>'+UI.escapeHtml(SOURCE_CODES[q.sourceCode] || q.sourceCode || '—')+'</td><td><div class="preview-compact-text" title="'+UI.escapeHtml(compact)+'">'+UI.escapeHtml(compact)+'</div><div class="preview-full-content"><div class="preview-full-question">'+text+'</div>'+((q.type !== 'T2' && q.type !== 'T3' && q.tail) ? '<div>'+UI.questionHtml(q.tail)+'</div>' : '')+'</div></td><td class="preview-answer-cell">'+UI.questionHtml(q.answer || '—')+'</td></tr>';
   }).join('')+'</tbody></table>';
   document.getElementById('previewPagInfo').textContent = `共 ${total} 題`;
 }
@@ -714,7 +743,7 @@ window.doImport = async () => {
   document.getElementById('importImagesBtn').hidden = true;
   const imageSources = new Map(selectedFiles.filter(f => f.status === 'done').flatMap(f => [...(f.images || [])]));
   const preparedImages = new Map();
-  const validQs = parsedAll.filter(q => q.text);
+  const validQs = parsedAll.filter(q => q.text || (['T2','T3'].includes(q.type) && q.tail));
   const log = [];
   let ok = 0, fail = 0;
   const skipped = parsedAll.length - validQs.length;
@@ -770,9 +799,7 @@ window.doImport = async () => {
     `成功匯入 ${ok} 題${fail ? `，匯入失敗 ${fail} 題` : ''}${skipped ? `，略過 ${skipped} 題` : ''}`;
   document.getElementById('importLog').innerHTML = log.join('<br>');
   document.getElementById('importImagesBtn').hidden = committedImportImages.size === 0;
-  if (committedImportImages.size) {
-    document.getElementById('importResult').textContent += '。請下載入題圖片 ZIP，解壓後將 images 資料夾內的圖片上傳並發布更新。';
-  }
+  document.getElementById('importImageReminder').hidden = committedImportImages.size === 0;
   setStep(4);
 };
 

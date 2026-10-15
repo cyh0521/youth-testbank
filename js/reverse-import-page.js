@@ -41,14 +41,15 @@ function showStep(step) {
     if(index+1===step)indicator.setAttribute('aria-current','step');else indicator.removeAttribute('aria-current');
   });
 }
-document.getElementById('backToUpload').onclick=()=>showStep(1);
-document.querySelector('#convertNewFile .reverse-action-icon').innerHTML=window.ICONS.refresh16;
+document.querySelector('#continueImport .reverse-action-icon').innerHTML=window.ICONS.refresh16;
+document.querySelector('#backHome .reverse-action-icon').innerHTML=window.ICONS.home16;
+document.getElementById('backHome').onclick=()=>nav('dashboard');
 function resetPreview() {
   document.getElementById('results').replaceChildren();fileStates.clear();
   previewUrls.forEach(url=>URL.revokeObjectURL(url));previewUrls=[];
   showStep(1);
 }
-document.getElementById('convertNewFile').onclick=()=>{
+document.getElementById('continueImport').onclick=()=>{
   selectedFiles=[];files.value='';status.textContent='';resetPreview();renderFiles();
   document.querySelector('.import-page-heading').scrollIntoView({block:'start'});
   uploadZone.focus({preventScroll:true});

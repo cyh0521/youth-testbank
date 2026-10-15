@@ -39,11 +39,13 @@ const http=require('http');
    await card.locator('.reverse-image-link').first().click();
    assert(await card.locator('.reverse-question[open]').count()>0);
   }
-  const previousBox=await page.locator('#backToUpload').boundingBox();
-  const newFileBox=await page.locator('#convertNewFile').boundingBox();
+  const previousBox=await page.locator('#continueImport').boundingBox();
+  const newFileBox=await page.locator('#backHome').boundingBox();
   assert(previousBox&&newFileBox&&newFileBox.x>previousBox.x+previousBox.width);
   assert(Math.abs(newFileBox.y-previousBox.y)<2);
-  await page.locator('#convertNewFile').click();
+  assert.equal(await page.locator('#continueImport svg').count(),1);
+  assert.equal(await page.locator('#backHome svg').count(),1);
+  await page.locator('#continueImport').click();
   assert(await page.locator('#uploadPanel').isVisible());
   assert.equal(await page.locator('.file-row').count(),0);
   assert.equal(await page.locator('.reverse-result-card').count(),0);

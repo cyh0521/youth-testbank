@@ -144,7 +144,7 @@ const UI = {
   },
 
   choiceQuestionHtml(q, emptyText = '') {
-    const parts = this.questionImageParts(this.questionText(q.text || emptyText));
+    const parts = this.questionImageParts(this.questionText(q.text || (q.tail ? '' : emptyText)));
     const text = parts.filter(part => !part.path).map(part => part.text).join('');
     const images = parts.filter(part => part.path).map(part => this.imageMarker(part.path, part.width, part.alt)).join('');
     const options = q.options?.length ? ' ' + q.options.map((option, index) => `(${String.fromCharCode(65 + index)})${this.questionHtml(option)}`).join(' ') : '';
