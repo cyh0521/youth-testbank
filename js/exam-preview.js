@@ -1,6 +1,6 @@
-import { mountPreviewScope, loadPreviewScopeCatalog, applyScopeHighlight, questionScopeCode } from './preview-scope.js?v=20261011-scope-level-emphasis';
+import { mountPreviewScope, loadPreviewScopeCatalog, applyScopeHighlight, questionScopeCode } from './preview-scope.js?v=20261015-selected-only';
 import { DOWNLOAD_TYPES, buildDownloadVariants, downloadFilename } from './download-variants.js';
-import { createDocxBlob } from './docx-export.js?v=20261007-images-block';
+import { createDocxBlob } from './docx-export.js?v=20261015-answer-paragraph';
 
 /**
  * 幼獅題庫系統 — 試卷預覽 & Word 輸出模組 v3
@@ -1072,7 +1072,10 @@ function renderQPreview(q, num, type, previewOptions) {
       ? `<div class="ep-essay-blank${previewOptions?.answers && answer ? ' ep-labeled-answer' : ''}">${previewOptions?.answers && answer ? labeledAnswer : ''}</div>`
       : previewOptions?.answers && answer
         ? `<div class="ep-answer-blank ep-labeled-answer">${labeledAnswer}</div>` : '';
-    body = `<table class="ep-answer-table ep-indented-question" role="presentation"><tr><td class="ep-answer-prefix">${difficultyTag}${numberLabel}</td><td>${questionText}${sourceTag}${answerArea}</td></tr></table>`;
+    const separatedAnswer = (type === 'T5' || type === 'T6') && previewOptions?.answers && answer
+      ? answerArea.replace('class="', 'style="margin-top:.45em" class="ep-separated-answer ')
+      : answerArea;
+    body = `<table class="ep-answer-table ep-indented-question" role="presentation"><tr><td class="ep-answer-prefix">${difficultyTag}${numberLabel}</td><td>${questionText}${sourceTag}${separatedAnswer}</td></tr></table>`;
   } else {
     body = `${difficultyTag}${numberLabel}${UI.questionHtml(q.text)}${sourceTag}`;
     if (previewOptions?.answers && answer) body += `<div class="ep-answer-blank">【答案】<span class="ep-answer-value">${escapeText(answer)}</span></div>`;
@@ -1156,6 +1159,7 @@ export async function exportToWord(examData, questions, paperKey = 'A4', columns
     externalAnalyses.forEach(analysis => paragraph.appendChild(analysis));
     const answerLabel = paragraph.querySelector('.ep-labeled-answer .ep-answer-label');
     if (answerLabel) paragraph.dataset.answerIndent = String(Math.ceil(measure.measureText(answerLabel.textContent).width));
+    if (paragraph.querySelector('.ep-separated-answer')) paragraph.dataset.answerGap = String(a.fontSize * .45);
     const essayBlank = paragraph.querySelector('.ep-essay-blank');
     if (essayBlank && !essayBlank.classList.contains('ep-labeled-answer')) {
       essayBlank.replaceChildren(document.createElement('br'));

@@ -202,10 +202,11 @@ export async function createDocxBlob({ docx, content, title, appearance, margins
       const analysisOffset = Number(item.dataset?.analysisOffset) || 0;
       const analysisGap = Number(item.dataset?.analysisGap ?? 6);
       const answerIndent = Number(item.dataset?.answerIndent);
+      const answerGap = Number(item.dataset?.answerGap ?? 4);
       parts.forEach((runs, index) => questions.push(paragraph(runs, {
         alignment:docx.AlignmentType.LEFT,
         indent:runs.isAnalysis && Number.isFinite(analysisIndent) ? { left:pxToTwips(analysisOffset + analysisIndent), hanging:pxToTwips(analysisIndent) } : runs.isAnswer && Number.isFinite(answerIndent) ? {left:indent + pxToTwips(answerIndent), hanging:pxToTwips(answerIndent)} : index ? { left:indent } : { left:indent, hanging:indent },
-        spacing:{ ...spacing, before:runs.isAnalysis ? pxToTwips(Number.isFinite(analysisIndent) ? analysisGap : 2) : runs.isAnswer ? pxToTwips(4) : index ? pxToTwips(appearance.fontSize * .45) : 0, after:index === parts.length - 1 ? pxToTwips(questionGap) : 0 },
+        spacing:{ ...spacing, before:runs.isAnalysis ? pxToTwips(Number.isFinite(analysisIndent) ? analysisGap : 2) : runs.isAnswer ? pxToTwips(answerGap) : index ? pxToTwips(appearance.fontSize * .45) : 0, after:index === parts.length - 1 ? pxToTwips(questionGap) : 0 },
       })));
       continue;
     }

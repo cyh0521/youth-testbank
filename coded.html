@@ -112,7 +112,8 @@
 <script type="module">
 import { renderScopePanel, mountScopeSelector } from './js/exam-scope.js?v=20261013-no-default-subject';
 import { guardPage } from './js/auth-guard.js';
-import { showExamPreview, showHeaderSettings, newExamHeader, loadAppearance, mountInlineHeaderEditor, buildHeaderHtml, fontStackById, togglePreviewPanel } from './js/exam-preview.js?v=20261014-scope-selection-no-border';
+import { showExamPreview, showHeaderSettings, newExamHeader, loadAppearance, mountInlineHeaderEditor, buildHeaderHtml, fontStackById, togglePreviewPanel } from './js/exam-preview.js?v=20261015-selected-scope';
+import { examScopeSnapshot } from './js/preview-scope.js?v=20261015-scope-audit';
 import { allocateTypeScores, AUTO_SCORE_WEIGHTS } from './js/score-allocation.js?v=20261007-weighted-scores';
 import { blankCount } from './js/blank-selection.js';
 window._activeNav = 'coded';
@@ -371,6 +372,7 @@ window.previewSelected = () => {
   const qs = selectedOrder.map(id=>selQuestions[id]).filter(Boolean);
   const firstQ = qs[0];
   draftPreviewData = { typeOrder:[...settingsTypeOrder], title:'（預覽）', typeScores, scoreUnits:{T4:'blank'}, subjectCode:firstQ?.subjectCode||'', bookCode:firstQ?.bookCode||'',
+    scopeChapters:scopeSelector.getSelectedChapters(),
     header:draftPreviewData?.header ?? newExamHeader(), appearance:draftPreviewData?.appearance ?? loadAppearance() };
   showExamPreview(draftPreviewData, qs, { scopeDisplay: 'grouped' });
 };
@@ -391,6 +393,7 @@ window.doSaveExam = async () => {
     totalScore, typeScores, scoreUnits:{T4:'blank'}, questionIds:[...selectedOrder],
     questionCount: selectedOrder.length, composeMode:'coded',
     scopeChapters: scopeSelector.getSelectedChapters(),
+    scopeSnapshot: examScopeSnapshot(scopeSelector.getSelectedChapters(), selectedOrder.map(id => selQuestions[id]).filter(Boolean), scopeSelector.getChapterCatalog()),
   };
   try {
     await DataService.saveExam(exam);

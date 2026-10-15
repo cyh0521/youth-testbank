@@ -10,14 +10,32 @@ const q = (id, sec, type = 'T1', extra = {}) => ({id,chapterNum:1,sectionNum:sec
 
 test('目錄原順序、最後兩層名稱、不重複節名且只包含已選範圍', () => {
   const catalog = {labels:['章','節','小節'],chapters:[{chapterNum:1,sections:[{sectionNum:2,title:'第2節 乙'},{sectionNum:1,title:'第1節 甲'}]},{chapterNum:2,sections:[{sectionNum:1}]}]};
-  assert.deepEqual(selectedSections(catalog,['1'],[]).map(s => s.label),['第1章 第2節 乙','第1章 第1節 甲']);
-  assert.equal(selectedSections(catalog,['1-2'],[]).length,1);
+  const pool = [q('a',1),q('b',2)];
+  assert.deepEqual(selectedSections(catalog,['1'],pool).map(s => s.label),['第1章 第2節 乙','第1章 第1節 甲']);
+  assert.equal(selectedSections(catalog,['1-2'],pool).length,1);
+});
+test('勾選上層單元不將停用的空章節納入涵蓋；非指定題型仍保留', () => {
+  const catalog = {labels:['單元','章','節'],chapters:[{chapterNum:1,sections:[
+    {sectionNum:1,title:'有題章',subsections:[{num:1,title:'有題節'}]},
+    {sectionNum:2,title:'空章',subsections:[{num:1,title:'空節'}]},
+    {sectionNum:3,title:'其他題型',subsections:[{num:1,title:'選擇題節'}]}
+  ]}]};
+  const pool = [q('a',1,'T1',{subsectionNum:1}),q('b',3,'T2',{subsectionNum:1})];
+  const covered = selectedSections(catalog,['1','1-1','1-1-1','1-3'],pool);
+  assert.deepEqual(covered.map(s=>s.code),['1-1-1','1-3-1']);
+  assert.throws(()=>selectSectionQuestions({pool,sections:covered,counts:{T1:2}}),/選擇題節.*沒有/);
+  assert.equal(selectSectionQuestions({pool,sections:selectedSections(catalog,['1-1'],pool),counts:{T1:1}}).length,1);
 });
 test('3:2:1 分配且每節至少一題，題型數與唯一性固定', () => {
   const pool = sections.flatMap((_,i) => Array.from({length:20},(_,j) => q(`${i}-${j}`,i+1)));
   const picked = selectSectionQuestions({pool,sections,counts:{T1:12},weights:{'1-1':3,'1-2':2,'1-3':1},random:()=>.4});
   assert.deepEqual(sections.map(s => picked.filter(q => questionInSection(q,s.code)).length),[6,4,2]);
   assert.equal(new Set(picked.map(q => q.id)).size,12);
+});
+test('目錄補零編號與勾選編號一致，父節點不擴大明確選取的子範圍',()=>{
+  const catalog={labels:['章','節'],chapters:[{chapterNum:'01',sections:[{sectionNum:'01'},{sectionNum:'02'}]}]};
+  const pool=[q('a',1),q('b',2)];
+  assert.deepEqual(selectedSections(catalog,['1','01-01'],pool).map(s=>s.code),['1-1']);
 });
 test('稀有題型的章節優先覆蓋，避免一般題搶走其名額', () => {
   const pool=[q('a',1,'T1'),q('b',1,'T2'),q('c',2,'T1')];

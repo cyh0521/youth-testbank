@@ -29,6 +29,12 @@ test('舊試卷與缺少目錄時由題目章節建立層級，零值不顯示',
   assert.equal(questionScopeCode({chapterNum:'01',sectionNum:0,subsectionNum:0}),'1');
   assert.equal(questionScopeCode({chapterNum:0}),'');
 });
+test('勾選上層後，預覽不帶入未選取的空章節，但保留明確選取的零題節',()=>{
+  const pool=questions.slice(0,2);
+  assert.deepEqual(previewScopeNodes({scopeChapters:['1','1-2','1-2-1','1-2-2']},pool,catalog).map(n=>n.code),['1','1-2','1-2-1','1-2-2']);
+  assert.deepEqual(previewScopeNodes({scopeChapters:['1']},pool,catalog).map(n=>n.code),['1','1-2','1-2-1','1-2-2']);
+  assert.equal(previewScopeNodes({scopeChapters:['1','1-2','1-3']},pool,catalog).find(n=>n.code==='1-3').count,0);
+});
 test('章節標示包含下層且不混淆第1與第10章；清除不改变題目',()=>{
   const nodes=['1-2','1-2-1','1-3','10-2'].map(code=>({dataset:{epScope:code},classList:{toggle(name,value){this[name]=value;}}}));
   const paper={querySelectorAll:()=>nodes};

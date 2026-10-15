@@ -9,23 +9,26 @@ export function requiresSectionCoverage(questionCount, sections) {
   return questionCount >= sections.length;
 }
 
-// Use catalog leaves, including empty leaves, so missing coverage is reported.
+// Only include populated catalog leaves; selecting a parent must not re-enable empty children.
 export function selectedSections(catalog, selected, pool = []) {
   const rows = [];
+  const normalized = selected.map(code => String(code).split('-').map(value => String(Number(value))).join('-'));
+  const roots = normalized.filter(code => !normalized.some(other => other !== code && other.startsWith(code + '-')));
   const add = (parts, title = '') => {
     const code = parts.join('-');
-    if (!selected.some(parent => parent === code || code.startsWith(parent + '-'))) return;
+    if (!roots.some(parent => parent === code || code.startsWith(parent + '-'))) return;
+    if (!pool.some(question => questionInSection(question, code))) return;
     const name = String(title).replace(/^(?:第\s*[0-9０-９一二三四五六七八九十百千零〇]+\s*(?:單元|章|節|課)|(?:單元|章|節|課)\s*[0-9０-９一二三四五六七八九十百千零〇]+)\s*/, '').trim();
     const levels = parts.map((num, i) => `第${num}${catalog.labels[i] || ['章','節','小節'][i]}`).slice(-2);
     rows.push({ code, label:levels.join(' ') + (name ? ' ' + name : ''), numberLabels:levels, title:name });
   };
   (catalog.chapters || []).forEach(chapter => {
-    const ch = [String(chapter.chapterNum)];
+    const ch = [String(Number(chapter.chapterNum))];
     if (!chapter.sections?.length) add(ch, chapter.title);
     (chapter.sections || []).forEach(section => {
-      const sec = [...ch, String(section.sectionNum)];
+      const sec = [...ch, String(Number(section.sectionNum))];
       if (!section.subsections?.length) add(sec, section.title);
-      (section.subsections || []).forEach(sub => add([...sec, String(sub.num)], sub.title));
+      (section.subsections || []).forEach(sub => add([...sec, String(Number(sub.num))], sub.title));
     });
   });
   // Preserve questions whose legacy location is absent from the catalog.

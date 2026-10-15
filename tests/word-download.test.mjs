@@ -7,6 +7,20 @@ const source = readFileSync(new URL('../js/exam-preview.js', import.meta.url), '
 const variantSource = readFileSync(new URL('../js/download-variants.js', import.meta.url), 'utf8');
 const {downloadFilename} = await import('data:text/javascript;base64,' + Buffer.from(variantSource).toString('base64'));
 
+test('另列答案以 Word 段落分隔，不使用段內換行', async () => {
+  const exporter = readFileSync(new URL('../js/docx-export.js', import.meta.url), 'utf8');
+  const context = {};
+  runInNewContext(exporter.slice(0, exporter.indexOf('export async function createDocxBlob(')), context);
+  const answer = {nodeType:1,tagName:'DIV',classList:{contains:name=>['ep-answer-blank','ep-separated-answer'].includes(name)},childNodes:[{nodeType:3,textContent:'【答案】說明'}]};
+  const docx = {TextRun:class {constructor(options){this.options=options;}}};
+  const runs = await context.runsFromNodes([{nodeType:3,textContent:'題目'},answer],docx,{size:30});
+  const parts = context.splitQuestionParagraphs(runs);
+  assert.equal(parts.length,2);
+  assert.equal(parts[1].isAnswer,true);
+  assert.equal(parts[1][0].options.text,'【答案】說明');
+  assert.equal(parts[1][0].options.break,undefined);
+});
+
 test('Word 題目與解析分成不同段落', async () => {
   const exporter = readFileSync(new URL('../js/docx-export.js', import.meta.url), 'utf8');
   const context = {};

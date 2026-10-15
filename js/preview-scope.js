@@ -20,11 +20,15 @@ export function scopeContains(scope, questionCode) {
 
 export function previewScopeNodes(exam, questions, catalog = {chapters:[],labels:['章','節','小節']}) {
   const actual = questions.map(questionScopeCode).filter(Boolean);
-  const roots = (exam.scopeChapters?.length ? exam.scopeChapters : actual).map(normalizeScopeCode).filter(Boolean);
+  const selected = (exam.scopeChapters?.length ? exam.scopeChapters : actual).map(normalizeScopeCode).filter(Boolean);
+  // 父節點勾選只是子節點全選的狀態，不可藉此重新納入未選取的兄弟節點。
+  const roots = selected.filter(code => !selected.some(other => other !== code && scopeContains(code,other)));
   const nodes = new Map();
   const add = (parts, title = '') => {
     const code = parts.map(part).join('-');
     if (!roots.some(root => scopeContains(root,code) || scopeContains(code,root))) return;
+    const count = actual.filter(q => scopeContains(code,q)).length;
+    if (!count && !roots.some(root => scopeContains(code,root))) return;
     const level = parts.length - 1;
     const kind = catalog.labels?.[level] || ['章','節','小節'][level];
     const numbered = /^(?:第\s*[0-9０-９一二三四五六七八九十百千零〇]+\s*(?:單元|章|節|課)|(?:單元|章|節|課)\s*[0-9０-９一二三四五六七八九十百千零〇]+)/;
@@ -33,7 +37,7 @@ export function previewScopeNodes(exam, questions, catalog = {chapters:[],labels
     const prefix = numberedPrefix.trim() || `第${parts.at(-1)}${kind}`;
     const scopeTitle = numberedPrefix ? name.slice(numberedPrefix.length).trim() : name;
     const label = prefix + (scopeTitle ? ' ' + scopeTitle : '');
-    if (!nodes.has(code)) nodes.set(code,{code,label,prefix,title:scopeTitle,level,count:actual.filter(q => scopeContains(code,q)).length});
+    if (!nodes.has(code)) nodes.set(code,{code,label,prefix,title:scopeTitle,level,count});
   };
   (catalog.chapters || []).forEach(ch => {
     const first = [part(ch.chapterNum)]; add(first,ch.title);

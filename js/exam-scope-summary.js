@@ -60,8 +60,15 @@ function scopeLabel(parts, chapters, book) {
 
 export async function examScopeSummaryHtml(exam, options = {}) {
   if (options.allLevels) {
+    const normalize = code => String(code).split('-').map(value => String(Number(value))).join('-');
+    const selected = (exam.scopeChapters || []).map(normalize);
+    const roots = selected.filter(code => !selected.some(other => other !== code && other.startsWith(code + '-')));
+    const recorded = (exam.scopeSnapshot?.nodes || []).filter(node => {
+      const code = normalize(node.code);
+      return !roots.length || roots.some(root => code === root || code.startsWith(root + '-') || root.startsWith(code + '-'));
+    });
     return exam.scopeSnapshot?.version === 1 && Array.isArray(exam.scopeSnapshot.nodes)
-      ? examScopeTreeHtml(exam.scopeSnapshot.nodes)
+      ? examScopeTreeHtml(recorded)
       : '<p class="edit-scope-empty">此試卷建立時尚未儲存命題範圍。</p>';
   }
   if (!Array.isArray(exam.scopeChapters) || !exam.scopeChapters.length) {

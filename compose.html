@@ -98,13 +98,13 @@
 <script type="module">
 import { renderScopePanel, mountScopeSelector } from './js/exam-scope.js?v=20261013-no-default-subject';
 import { guardPage } from './js/auth-guard.js';
-import { showExamPreview, showHeaderSettings, newExamHeader, loadAppearance, mountInlineHeaderEditor, buildHeaderHtml, fontStackById, togglePreviewPanel } from './js/exam-preview.js?v=20261014-scope-selection-no-border';
+import { showExamPreview, showHeaderSettings, newExamHeader, loadAppearance, mountInlineHeaderEditor, buildHeaderHtml, fontStackById, togglePreviewPanel } from './js/exam-preview.js?v=20261015-selected-scope';
 import { allocateTypeScores, AUTO_SCORE_WEIGHTS } from './js/score-allocation.js?v=20261007-weighted-scores';
 import { blankCount, reachableBlankCounts } from './js/blank-selection.js';
 import { filterComposePool } from './js/compose-selection.js';
-import { selectedSections, questionInSection, selectSectionQuestions, requiresSectionCoverage } from './js/section-selection.js?v=20261007-coverage';
+import { selectedSections, questionInSection, selectSectionQuestions, requiresSectionCoverage } from './js/section-selection.js?v=20261015-scope-audit';
 import { confirmAction } from './js/confirm-exam-deletion.js';
-import { examScopeSnapshot } from './js/preview-scope.js';
+import { examScopeSnapshot } from './js/preview-scope.js?v=20261015-selected-only';
 window._activeNav = 'compose';
 const user = await guardPage(['admin','manager','teacher']);
 if (!user) throw new Error('not auth');
