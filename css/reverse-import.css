@@ -12,8 +12,10 @@
 .reverse-import-page .btn-primary:hover{background:#28603c;border-color:#28603c}
 .reverse-import-page .import-page-heading .steps{grid-template-columns:repeat(2,minmax(0,1fr))}
 .reverse-import-page .import-header-actions{display:flex;align-items:center;flex:none}
+.reverse-import-page #previewPanel .section-heading>.import-header-actions{align-items:center;justify-content:flex-end;flex-wrap:nowrap;gap:8px;margin-left:auto}
 .reverse-import-page .import-header-actions .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;line-height:1.4;white-space:nowrap}
 .reverse-import-page .import-header-actions .step-icon{display:block;flex:none;margin-right:-3px}
+.reverse-import-page .import-header-actions .reverse-action-icon,.reverse-import-page .import-header-actions .reverse-action-icon svg{display:block;width:16px;height:16px;flex:none}
 .reverse-import-page #uploadPanel[hidden],.reverse-import-page #previewPanel[hidden]{display:none}
 .reverse-import-page .btn-previous{background:#edf3e8;border-color:#d9e5d3;color:#4b6d53}
 .reverse-import-page .btn-previous:hover{background:#e2ebdb;border-color:#c8dabb;color:#315940}

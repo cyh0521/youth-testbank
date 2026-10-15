@@ -26,7 +26,7 @@ const http=require('http');
    },{name,choice,bytes});
    assert(result.count>0);assert(result.images>0);assert(result.reminders>0);assert.equal(result.listedImages,result.images);
    assert.equal(result.exportedCount,result.count);assert.equal(result.exportedImages,result.images);
-   assert.equal(result.outputName,`TEST-${name.replace(/\.docx$/,'')}-${choice?'單選':'其他'}.docx`);
+   assert.equal(result.outputName,`TEST-${name.replace(/\.docx$/,'')}${choice?'單選':'其他'}.docx`);
    console.log(JSON.stringify(result));
   }
   await page.locator('#files').setInputFiles(sources.map(([name])=>path.join(root,'assets/reverse-import',name)));
@@ -39,6 +39,15 @@ const http=require('http');
    await card.locator('.reverse-image-link').first().click();
    assert(await card.locator('.reverse-question[open]').count()>0);
   }
+  const previousBox=await page.locator('#backToUpload').boundingBox();
+  const newFileBox=await page.locator('#convertNewFile').boundingBox();
+  assert(previousBox&&newFileBox&&newFileBox.x>previousBox.x+previousBox.width);
+  assert(Math.abs(newFileBox.y-previousBox.y)<2);
+  await page.locator('#convertNewFile').click();
+  assert(await page.locator('#uploadPanel').isVisible());
+  assert.equal(await page.locator('.file-row').count(),0);
+  assert.equal(await page.locator('.reverse-result-card').count(),0);
+  assert(await page.locator('#parse').isDisabled());
   console.log('Both asset examples parsed, exported, and showed clickable image-question reminders in the page');
   return;
  }
@@ -52,7 +61,7 @@ const http=require('http');
   });
   for(const q of [values.q,values.roundtrip]){assert.equal(q['章數'],'07');assert.equal(q['節數'],'02');assert.equal(q['小節'],'00');}
   assert.equal(values.blank,'');
-  assert.deepEqual(values.names,['TEST-題本-單選.docx','TEST-題本-其他.docx']);
+  assert.deepEqual(values.names,['TEST-題本單選.docx','TEST-題本其他.docx']);
   const imageFixture=Buffer.from(await page.evaluate(async()=>{
     const z=new JSZip(),W='http://schemas.openxmlformats.org/wordprocessingml/2006/main',R='http://schemas.openxmlformats.org/officeDocument/2006/relationships';
     const cells=['題型','章數','簡答/答案','題目'].map(t=>`<w:tc><w:p><w:r><w:t>${t}</w:t></w:r></w:p></w:tc>`).join('');

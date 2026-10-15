@@ -275,5 +275,5 @@ export async function exportImportFile(result,choice,bookCode) {
   }
   zip.file('word/document.xml',serialize(d));zip.file('word/_rels/document.xml.rels',serialize(rels));zip.file('[Content_Types].xml',serialize(ct));
   const sourceName=String(result.filename||'題本.docx').replace(/\.docx$/i,'');
-  return {name:`${bookCode}-${sourceName}-${choice?'單選':'其他'}.docx`,blob:await zip.generateAsync({type:'blob',compression:'DEFLATE'})};
+  return {name:`${bookCode}-${sourceName}${choice?'單選':'其他'}.docx`,blob:await zip.generateAsync({type:'blob',compression:'DEFLATE'})};
 }

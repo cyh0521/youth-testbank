@@ -42,11 +42,17 @@ function showStep(step) {
   });
 }
 document.getElementById('backToUpload').onclick=()=>showStep(1);
+document.querySelector('#convertNewFile .reverse-action-icon').innerHTML=window.ICONS.refresh16;
 function resetPreview() {
   document.getElementById('results').replaceChildren();fileStates.clear();
   previewUrls.forEach(url=>URL.revokeObjectURL(url));previewUrls=[];
   showStep(1);
 }
+document.getElementById('convertNewFile').onclick=()=>{
+  selectedFiles=[];files.value='';status.textContent='';resetPreview();renderFiles();
+  document.querySelector('.import-page-heading').scrollIntoView({block:'start'});
+  uploadZone.focus({preventScroll:true});
+};
 function renderFiles() {
   fileList.replaceChildren();
   selectedFiles.forEach(file=>{
