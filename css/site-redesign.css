@@ -70,3 +70,10 @@ body .form-control:focus{border-color:#83ad8d;box-shadow:0 0 0 3px #43845b18}
 body .ep-scope-toggle,body .ep-scope-reopen.is-header-toggle{background:#e6efdc;color:#315940}
 
 .brand-beta{display:inline-block;align-self:flex-end;margin:0 0 2px -3px;padding:0;background:transparent;color:#a68032;font-family:var(--font-sans);font-size:11px;font-style:italic;font-weight:500;line-height:1;letter-spacing:.06em;flex:none}
+/* 內頁標題使用統一黃色隨筆，其他操作沿用原配色。 */
+body:not(.dashboard-page) :is(.compose-page-title,.import-page-title,.exams-page-heading,.testbank-page-heading,.settings-page-heading,.accounts-page-heading) h1,
+body:not(.dashboard-page) .topbar-title{position:relative;isolation:isolate;width:fit-content}
+body:not(.dashboard-page) :is(.compose-page-title,.import-page-title,.exams-page-heading,.testbank-page-heading,.settings-page-heading,.accounts-page-heading) h1::after,
+body:not(.dashboard-page) .topbar-title::after{content:'';position:absolute;z-index:-1;left:-2px;right:-3px;bottom:1px;height:7px;border-radius:3px;background:#efd17b;transform:rotate(-2deg);pointer-events:none}
+body:not(.dashboard-page) .page-content .card-header h2{display:inline-flex;align-items:center;gap:9px}
+body:not(.dashboard-page) .page-content .card-header h2::before{content:'';width:5px;height:17px;flex:none;border-radius:3px;background:#d4b457;transform:rotate(8deg);pointer-events:none}

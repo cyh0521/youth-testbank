@@ -10,7 +10,7 @@ export const bookArtwork = Object.freeze({
   "C1-02": "images/illustrations/books/C1-02.webp",
   "C1-03": "images/illustrations/books/C1-03.webp",
   "C1-04": "images/illustrations/books/C1-04.webp",
-  "C1-06": "images/illustrations/books/C1-06.webp",
+  "C1-05": "images/illustrations/books/C1-05.webp",
   "D1-01": "images/illustrations/books/D1-01.webp",
   "D1-03": "images/illustrations/books/D1-03.webp",
   "E1-01": "images/illustrations/books/E1-01.webp",

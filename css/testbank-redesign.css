@@ -22,6 +22,11 @@
 .testbank-redesign-page :is(.tb-panel,.import-card) .card-body{background:#fff}
 
 /* 課本管理 */
+.testbank-redesign-page .tb-panel .section-heading>div:first-child{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 8px;min-width:0}
+.testbank-redesign-page .tb-panel .section-heading h2{display:inline-flex;align-items:center;gap:9px;margin:0;flex:none}
+.testbank-redesign-page .tb-panel .section-heading h2::before{content:'';width:5px;height:17px;flex:none;border-radius:3px;background:#d4b457;transform:rotate(8deg)}
+.testbank-redesign-page .tb-panel .section-heading p{margin:0;font-size:.84rem;line-height:1.5}
+.testbank-redesign-page .tb-panel .section-heading p::before{content:'︱';color:#a5b5a4}
 .testbank-redesign-page .tb-panel{padding-top:0}
 .testbank-redesign-page .tb-panel .section-heading{min-height:68px;padding:16px 20px;margin:0;align-items:center}
 .testbank-redesign-page .tb-list{padding:8px 18px 16px}

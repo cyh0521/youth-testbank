@@ -1,5 +1,5 @@
 import { guardPage } from './auth-guard.js';
-import { bookArtwork } from './book-artwork.js?v=20261014-illustrations';
+import { bookArtwork } from './book-artwork.js?v=20261016-current-code';
 import { favoriteBookKey, orderFavoriteBooks, setFavoriteBook } from './dashboard-favorites.js';
 
 window._activeNav = 'dashboard';
