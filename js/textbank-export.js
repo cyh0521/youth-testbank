@@ -56,7 +56,68 @@ export async function buildTextbankFiles(questions, exportedAt = new Date().toIS
   return { files, manifest };
 }
 
+// 只更新目錄與索引，保留已發布題庫分檔的路徑及題目統計。
+export async function buildTextbankMetadataFiles(manifest, catalog) {
+  const available = new Set(catalog.flatMap(subject => subject.books.map(book => JSON.stringify([subject.code,book.code]))));
+  if (manifest.books.some(book => !available.has(JSON.stringify([book.subjectCode,book.bookCode])))) {
+    throw new Error('已發布題庫的科目或冊別代碼已變更，請先勾選相關冊別匯出靜態題庫，再下載目錄與索引');
+  }
+  const content = JSON.stringify(catalog);
+  const path = `catalog-${(await digest(content)).slice(0,16)}.json`;
+  const updated = {...manifest,catalog:path,exportedAt:new Date().toISOString()};
+  return {files:[[`data/testbank/${path}`,content],['data/testbank/manifest.json',JSON.stringify(updated)]],manifest:updated};
+}
+
 // ZIP STORE; the export has no dependency on a third-party service.
+export async function buildSubjectTextbankFiles(subjectCode, questions, catalog, existingQuestions, existingCatalog) {
+  if (!subjectCode || questions.some(q => q.subjectCode !== subjectCode) || catalog.some(s => s.code !== subjectCode)) throw new Error('匯出科目與資料不一致');
+  return buildTextbankFiles([
+    ...existingQuestions.filter(q => q.subjectCode !== subjectCode), ...questions
+  ], new Date().toISOString(), [
+    ...existingCatalog.filter(s => s.code !== subjectCode), ...catalog
+  ]);
+}
+
+export function resolveBookExportScopes(scopes, existingCatalog) {
+  return scopes.map(scope => {
+    const previousSubject = scope.subjectId ? existingCatalog.find(s => s.id === scope.subjectId) : null;
+    const previousBook = scope.bookId ? previousSubject?.books.find(b => b.id === scope.bookId) : null;
+    const sourceCodes = [{subjectCode:scope.subjectCode,bookCode:scope.bookCode}];
+    if (previousBook && (previousSubject.code !== scope.subjectCode || previousBook.code !== scope.bookCode)) sourceCodes.push({subjectCode:previousSubject.code,bookCode:previousBook.code});
+    return {...scope,sourceCodes};
+  });
+}
+
+export function normalizeBookExportQuestions(scope, questions) {
+  return questions.map(question => {
+    const catalogCode = question.catalogCode;
+    const prefix = `${question.subjectCode}-${question.bookCode}-`;
+    return {...question,subjectCode:scope.subjectCode,bookCode:scope.bookCode,
+      ...(typeof catalogCode === 'string' && catalogCode.startsWith(prefix) ? {catalogCode:`${scope.subjectCode}-${scope.bookCode}-${catalogCode.slice(prefix.length)}`} : {})};
+  });
+}
+
+export async function buildBookTextbankFiles(scopes, questions, catalog, existingQuestions, existingCatalog) {
+  const selected = new Set(scopes.map(s => JSON.stringify([s.subjectCode,s.bookCode])));
+  const replaced = new Set(scopes.flatMap(s => s.sourceCodes || [s]).map(s => JSON.stringify([s.subjectCode,s.bookCode])));
+  const key = q => JSON.stringify([q.subjectCode,q.bookCode]);
+  if (!selected.size || questions.some(q => !selected.has(key(q)))) throw new Error('匯出冊別與資料不一致');
+  const subjects = new Map(existingCatalog.map(s => [s.code,{...s,books:s.books.filter(b => !replaced.has(JSON.stringify([s.code,b.code])))}]).filter(([,s]) => s.books.length || !scopes.some(scope => scope.subjectId === s.id && scope.subjectCode !== s.code)));
+  for (const subject of catalog) {
+    if (subject.books.some(b => !selected.has(JSON.stringify([subject.code,b.code])))) throw new Error('匯出冊別與目錄不一致');
+    const previous = subjects.get(subject.code);
+    subjects.set(subject.code,{...subject,books:[...(previous?.books || []).filter(b => !subject.books.some(newBook => newBook.code === b.code)),...subject.books]});
+  }
+  const merged = [...subjects.values()].sort((a,b)=>(a.order||0)-(b.order||0));
+  merged.forEach(s=>s.books.sort((a,b)=>(a.order||0)-(b.order||0)));
+  const result = await buildTextbankFiles([...existingQuestions.filter(q=>!replaced.has(key(q))),...questions],new Date().toISOString(),merged);
+  const selectedPaths = new Set(result.manifest.books
+    .filter(book => selected.has(key(book)))
+    .map(book => `data/testbank/${book.path}`));
+  result.files = result.files.filter(([path]) => !path.startsWith('data/testbank/books/') || selectedPaths.has(path));
+  return result;
+}
+
 export function createTextbankZip(files) {
   const local = [], central = [];
   let offset = 0;

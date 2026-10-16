@@ -205,10 +205,13 @@ export function validateQuestions(result,book) {
   const errors=[];
   for(const q of result.questions) {
     const tag='題 '+q._id;
+    const imageOnlyOptions=['T2','T3'].includes(q['題型'])
+      && ![1,2,3,4,5].some(n=>String(q['選項'+n]||'').trim())
+      && [...[q['題目'],q['結尾']].join('\n').matchAll(/⟦圖(\d+)⟧/g)].some(match=>result.images[Number(match[1])]);
     if(!/^T[1-6]$/.test(q['題型']))errors.push(tag+'：題型不明');
     if((!q['題目']&&!(['T2','T3'].includes(q['題型'])&&q['結尾']))||!q['簡答/答案'])errors.push(tag+'：題目或答案空白');
-    if(q['題型']==='T2' && (!q['選項1']||!q['選項2']))errors.push(tag+'：缺少選項（表格式選擇題須有獨立選項欄）');
-    if(['T2','T3'].includes(q['題型']))for(const answer of (q['簡答/答案']||'').match(/[Ａ-ＥA-E]/g)||[])if(!q['選項'+(answer.normalize('NFKC').charCodeAt(0)-64)])errors.push(tag+'：答案指向空白選項');
+    if(!imageOnlyOptions&&q['題型']==='T2' && (!q['選項1']||!q['選項2']))errors.push(tag+'：缺少選項（表格式選擇題須有獨立選項欄，附圖提供全部選項時可留空）');
+    if(!imageOnlyOptions&&['T2','T3'].includes(q['題型']))for(const answer of (q['簡答/答案']||'').match(/[Ａ-ＥA-E]/g)||[])if(!q['選項'+(answer.normalize('NFKC').charCodeAt(0)-64)])errors.push(tag+'：答案指向空白選項');
     for(const marker of Object.values(q).filter(v=>typeof v==='string').join('\n').matchAll(/⟦圖(\d+)⟧/g))if(!result.images[+marker[1]])errors.push(tag+'：圖片編號不存在');
     const c=book?.chapters.find(c=>Number(c.chapterNum)===Number(q['章數']));
     if(!c){errors.push(tag+'：章數不在冊別目錄');continue;}

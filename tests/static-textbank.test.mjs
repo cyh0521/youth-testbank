@@ -12,7 +12,7 @@ const load = async name => {
   return import('data:text/javascript;base64,' + Buffer.from(source).toString('base64'));
 };
 
-const { buildTextbankFiles, createTextbankZip } = await load('textbank-export.js');
+const { buildTextbankFiles, buildSubjectTextbankFiles, buildBookTextbankFiles, resolveBookExportScopes, normalizeBookExportQuestions, createTextbankZip } = await load('textbank-export.js');
 const { StaticTextbank } = await load('static-textbank.js');
 const { resolveTextbankSource } = await load('textbank-source.js');
 
@@ -21,6 +21,60 @@ const samples = [
   { id:'q2', subjectCode:'A', bookCode:'01', qnum:'00002', type:'T2', chapterNum:2, text:'題目二', answer:'A' },
   { id:'q3', subjectCode:'A', bookCode:'02', qnum:'00003', type:'T1', chapterNum:1, text:'題目三', answer:'X' }
 ];
+
+test('指定科目匯出會替換該科全部題目與目錄，保留其他科目的靜態資料', async () => {
+  const other = {...samples[0], id:'other', subjectCode:'B'};
+  const fresh = {...samples[0], id:'fresh'};
+  const catalogA = {id:'a', code:'A', books:[]}, catalogB = {id:'b', code:'B', books:[]};
+  const {manifest, files} = await buildSubjectTextbankFiles('A', [fresh], [catalogA], [...samples, other], [{...catalogA,name:'舊目錄'},catalogB]);
+  assert.equal(manifest.count,2);
+  assert.deepEqual(Object.keys(manifest.byId).sort(), ['fresh','other']);
+  const catalog = JSON.parse(files.find(([path]) => path.endsWith(manifest.catalog))[1]);
+  assert.deepEqual(catalog,[catalogB,catalogA]);
+  const cleared = await buildSubjectTextbankFiles('A', [], [catalogA], [...samples,other], [catalogA,catalogB]);
+  assert.deepEqual(Object.keys(cleared.manifest.byId),['other']);
+  await assert.rejects(() => buildSubjectTextbankFiles('A',[other],[catalogA],[],[]), /科目與資料不一致/);
+});
+
+test('指定冊別更新會保留同科其他冊別及其他科目，並合併多冊目錄', async () => {
+  const oldCatalog = [{code:'A', books:[{code:'01',name:'舊冊'},{code:'02',name:'保留冊'}]},{code:'B',books:[{code:'01'}]}];
+  const other = {...samples[0],id:'other',subjectCode:'B'};
+  const scopes = [{subjectCode:'A',bookCode:'01'},{subjectCode:'A',bookCode:'03'}];
+  const fresh = {...samples[0],id:'fresh'}, added = {...samples[0],id:'added',bookCode:'03'};
+  const {manifest,files} = await buildBookTextbankFiles(scopes,[fresh,added],[{code:'A',books:[{code:'01',name:'新冊'}]},{code:'A',books:[{code:'03'}]}],[...samples,other],oldCatalog);
+  assert.deepEqual(Object.keys(manifest.byId).sort(),['added','fresh','other','q3']);
+  const catalog = JSON.parse(files.find(([path])=>path.endsWith(manifest.catalog))[1]);
+  assert.equal(catalog[0].books.length,3);
+  assert.equal(catalog[0].books.find(b=>b.code==='01').name,'新冊');
+  assert.deepEqual(catalog[1],oldCatalog[1]);
+  const shards = files.filter(([path])=>path.startsWith('data/testbank/books/'));
+  assert.equal(shards.length,2);
+  assert.deepEqual(shards.flatMap(([,content])=>JSON.parse(content)).map(q=>q.id).sort(),['added','fresh']);
+  assert.ok(files.some(([path])=>path==='data/testbank/manifest.json'));
+  assert.ok(files.some(([path])=>path===`data/testbank/${manifest.catalog}`));
+  assert.ok(manifest.byId.other);
+  assert.ok(manifest.byId.q3);
+  await assert.rejects(()=>buildBookTextbankFiles(scopes,[other],[],[],[]),/冊別與資料不一致/);
+});
+
+test('冊別或科目改代號後依固定 ID 對應舊題目，匯出不殘留舊代號', async () => {
+  const existingCatalog = [{id:'subject',code:'A',books:[{id:'book',code:'01'}]},{id:'other',code:'B',books:[{id:'otherBook',code:'02'}]}];
+  const other = {...samples[0],id:'other',subjectCode:'B',bookCode:'02'};
+  const old = {...samples[0],catalogCode:'A-01-010203'};
+  for (const subjectCode of ['A','NEW']) {
+    const [scope] = resolveBookExportScopes([{subjectId:'subject',bookId:'book',subjectCode,bookCode:'99'}],existingCatalog);
+    assert.deepEqual(scope.sourceCodes,[{subjectCode,bookCode:'99'},{subjectCode:'A',bookCode:'01'}]);
+    const normalized = normalizeBookExportQuestions(scope,[old]);
+    assert.equal(normalized[0].catalogCode,`${subjectCode}-99-010203`);
+    assert.equal(old.catalogCode,'A-01-010203');
+    const {manifest,files} = await buildBookTextbankFiles([scope],normalized,[{id:'subject',code:subjectCode,books:[{id:'book',code:'99'}]}],[old,other],existingCatalog);
+    assert.equal(manifest.count,2);
+    assert(!manifest.books.some(b=>b.subjectCode==='A'&&b.bookCode==='01'));
+    const catalog = JSON.parse(files.find(([path])=>path.endsWith(manifest.catalog))[1]);
+    assert(!catalog.some(s=>s.books.some(b=>s.code==='A'&&b.code==='01')));
+    assert(catalog.some(s=>s.code===subjectCode&&s.books.some(b=>b.code==='99')));
+  }
+});
 
 test('匯出保留題目 ID、按冊分檔並可按條件讀取', async () => {
   const { files, manifest } = await buildTextbankFiles(samples, '2026-10-08T00:00:00.000Z');

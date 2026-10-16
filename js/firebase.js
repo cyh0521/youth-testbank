@@ -431,9 +431,13 @@ window.DataService = {
     return readFirestoreTextbank('題目讀取', () => DataService.getQuestionsFromFirestore(opts));
   },
 
-  async getAllQuestionsForExport() {
+  async getAllQuestionsForExport(subjectCode = '', bookCode = '') {
     if (!DataService.isAdmin()) throw new Error('權限不足');
-    return docsToArr(await getDocsFromServer(collection(db, 'questions')));
+    const source = collection(db, 'questions');
+    const filters = [];
+    if (subjectCode) filters.push(where('subjectCode', '==', subjectCode));
+    if (bookCode) filters.push(where('bookCode', '==', bookCode));
+    return docsToArr(await getDocsFromServer(filters.length ? query(source, ...filters) : source));
   },
 
   async getQuestionsFromFirestore(opts = {}) {
@@ -879,12 +883,21 @@ window.DataService = {
 
   // ── 科目 ──────────────────────────────────────────
   // ── 課本快取：一次讀取所有科目與冊別（供各頁面下拉選單使用）──
-  async getCatalogForExport() {
-    if (!DataService.isAdmin()) throw new Error('只有管理員可以匯出目錄');
+  async getExportBookOptions() {
+    if (!DataService.isAdmin()) throw new Error('只有管理員可以匯出題庫');
     const subjects = docsToArr(await getDocsFromServer(collection(db, 'textbooks')));
+    subjects.sort((a,b)=>(a.order||0)-(b.order||0));
+    return Promise.all(subjects.map(async subject => ({...subject,books:docsToArr(await getDocsFromServer(collection(db,'textbooks',subject.id,'books'))).sort((a,b)=>(a.order||0)-(b.order||0))})));
+  },
+
+  async getCatalogForExport(subjectCode = '', bookCode = '') {
+    if (!DataService.isAdmin()) throw new Error('只有管理員可以匯出目錄');
+    const source = collection(db, 'textbooks');
+    const subjects = docsToArr(await getDocsFromServer(subjectCode ? query(source, where('code', '==', subjectCode)) : source));
     subjects.sort((a, b) => (a.order || 0) - (b.order || 0));
     return Promise.all(subjects.map(async subject => {
-      const books = docsToArr(await getDocsFromServer(collection(db, 'textbooks', subject.id, 'books')));
+      const bookSource = collection(db, 'textbooks', subject.id, 'books');
+      const books = docsToArr(await getDocsFromServer(bookCode ? query(bookSource, where('code', '==', bookCode)) : bookSource));
       books.sort((a, b) => (a.order || 0) - (b.order || 0));
       return { ...subject, books:await Promise.all(books.map(async book => ({
         ...book, chapters:await DataService.getChapterDefs(subject.id, book.id, { firestore:true })

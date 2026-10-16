@@ -151,6 +151,16 @@
 #panelStep3 .preview-view-toggle svg{display:block;flex:none;width:16px;height:16px}
 #panelStep3 .preview-view-toggle button:focus-visible{outline:2px solid #34774d;outline-offset:2px;border-radius:9px}
 @media(prefers-reduced-motion:reduce){#panelStep3 .preview-view-toggle::before,#panelStep3 .preview-view-toggle button{transition:none}}
+#textbankExportModal .modal{display:flex;flex-direction:column;max-height:90vh;overflow:hidden}
+#textbankExportModal .modal-header,#textbankExportModal .modal-footer{flex:none;position:static}
+#textbankExportModal .modal-body{flex:1;min-height:0;max-height:none;overflow-y:auto}
+#textbankExportModal input[type=checkbox]{display:block;width:18px;height:18px;min-height:0;margin:0;padding:0;align-self:center;justify-self:center}
+#textbankExportModal :is(.export-select-all,.book-node){display:grid;grid-template-columns:18px minmax(0,1fr);align-items:center;column-gap:8px;line-height:24px}
+#textbankExportModal :is(.export-select-all,.book-node)>span{display:block;line-height:24px}
+#textbankExportModal .export-select-all{padding-bottom:6px;border-bottom:1px solid var(--border-light)}
+#textbankExportModal #exportBookList{padding-top:6px;padding-bottom:6px}
+#textbankExportModal #exportBookStatus{margin:0;padding-top:6px;border-top:1px solid var(--border-light)}
+#textbankExportModal .modal-footer{flex-wrap:wrap}
 </style>
 <link rel="stylesheet" href="css/site-redesign.css?v=20261014-beta-text">
 <link rel="stylesheet" href="css/testbank-redesign.css?v=20261014-imported-files-icon-align">
@@ -191,8 +201,8 @@
         <section class="card import-card">
           <div class="card-header section-heading"><div><h2>入題檔格式說明</h2><p>上傳前確認 Word 表格欄位</p></div><div class="import-header-actions"><button class="btn btn-outline btn-sm" onclick="openImportedFiles()"><span id="importedFilesButtonIcon"></span>已匯入檔案列表</button><button class="btn btn-primary btn-sm" onclick="goStep2()"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m13.5 6 6 6-6 6"/><path d="m6 6 6 6-6 6" stroke-opacity=".5"/></svg>下一步：上傳檔案</button></div></div><div class="card-body import-card-body">
             <div class="import-action" style="margin-bottom:14px">
-              <button class="btn btn-outline btn-sm" id="exportTextbankBtn" onclick="exportStaticTextbank()">匯出靜態題庫</button>
-              <span class="field-hint">會讀取 Firestore 全部題目一次，下載後請解壓到 GitHub 專案根目錄。</span>
+              <button class="btn btn-outline btn-sm" id="exportTextbankBtn" onclick="openTextbankExport()">匯出靜態題庫</button>
+              <span class="field-hint">下載後請解壓到 GitHub 專案根目錄。</span>
             </div>
             <div class="table-wrapper">
               <table class="data-table" style="font-size:.88rem">
@@ -299,13 +309,21 @@
   </div>
 </div>
 
+<div class="modal-overlay hidden" id="textbankExportModal" role="dialog" aria-modal="true" aria-labelledby="textbankExportTitle">
+  <div class="modal modal-lg">
+    <div class="modal-header"><h3 id="textbankExportTitle">選擇匯出冊別</h3><button type="button" class="modal-close" onclick="closeTextbankExport()" aria-label="關閉">✕</button></div>
+    <div class="modal-body"><label class="export-select-all"><input type="checkbox" id="exportAllBooks" onchange="toggleExportBooks(this.checked)"><span>全選</span></label><div id="exportBookList" class="scope-tree"></div><p id="exportBookStatus" role="status" aria-live="polite"></p></div>
+    <div class="modal-footer"><button type="button" class="btn btn-ghost" onclick="closeTextbankExport()">取消</button><button type="button" class="btn btn-outline" id="downloadMetadataBtn" onclick="exportTextbankMetadata()" title="不需勾選冊別；匯出最新課本目錄與已發布題庫的索引，不含題目檔">下載目錄與索引</button><button type="button" class="btn btn-primary" id="downloadTextbankBtn" onclick="exportStaticTextbank()" disabled>下載靜態題庫</button></div>
+  </div>
+</div>
 <script src="vendor/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 
 <script type="module">
 import { guardPage } from './js/auth-guard.js';
 import { confirmDeletion } from './js/confirm-exam-deletion.js';
-import { buildTextbankFiles, createTextbankZip } from './js/textbank-export.js?v=testbank-catalog-1';
+import { buildTextbankMetadataFiles, buildBookTextbankFiles, resolveBookExportScopes, normalizeBookExportQuestions, createTextbankZip } from './js/textbank-export.js?v=20261016-incremental-export';
+import { StaticTextbank } from './js/static-textbank.js';
 import { imageArchive } from './js/question-image-editor.js';
 import { prepareImportImages } from './js/import-question-images.js';
 let committedImportImages = new Map();
@@ -328,29 +346,113 @@ const user = await guardPage(['admin','manager']);
 if (!user) throw new Error('not auth');
 const I = window.ICONS;
 const canEdit = DataService.isAdmin();
-window.exportStaticTextbank = async () => {
-  const button = document.getElementById('exportTextbankBtn');
+let exportBusy = false, exportBooks = [], exportListVersion = 0;
+window.closeTextbankExport = () => {
+  if (exportBusy) return;
+  exportListVersion++;
+  document.getElementById('textbankExportModal').classList.add('hidden');
+  document.getElementById('exportTextbankBtn').focus();
+};
+function updateExportBooks() {
+  const checked = document.querySelectorAll('#exportBookList input:checked').length;
+  document.getElementById('downloadTextbankBtn').disabled = !checked || exportBusy;
+  document.getElementById('exportAllBooks').checked = checked > 0 && checked === exportBooks.length;
+  document.getElementById('exportAllBooks').indeterminate = checked > 0 && checked < exportBooks.length;
+  document.getElementById('exportBookStatus').textContent = `已選 ${checked} 冊`;
+}
+window.toggleExportBooks = checked => { document.querySelectorAll('#exportBookList input').forEach(input => input.checked = checked); updateExportBooks(); };
+window.openTextbankExport = async () => {
+  const version = ++exportListVersion;
+  exportBooks = [];
+  document.getElementById('exportBookList').replaceChildren();
+  updateExportBooks();
+  document.getElementById('exportAllBooks').disabled = true;
+  document.getElementById('exportBookStatus').textContent = '讀取最新科目與冊別中…';
+  document.getElementById('textbankExportModal').classList.remove('hidden');
+  try {
+    const subjects = await DataService.getExportBookOptions();
+    if (version !== exportListVersion) return;
+    document.getElementById('exportBookList').innerHTML = subjects.map(subject => {
+      return `<details class="subject-node" open><summary>${UI.escapeHtml(subject.code + ' ' + subject.name)}</summary>${subject.books.map(book => {
+        const index = exportBooks.push({subjectId:subject.id,bookId:book.id,subjectCode:subject.code,bookCode:book.code}) - 1;
+        return `<label class="book-node"><input type="checkbox" value="${index}"><span>${UI.escapeHtml(book.code + ' ' + book.name)}</span></label>`;
+      }).join('')}</details>`;
+    }).join('');
+    document.getElementById('exportAllBooks').disabled = false;
+    updateExportBooks();
+    document.getElementById('exportAllBooks').focus();
+  } catch (error) {
+    if (version === exportListVersion) document.getElementById('exportBookStatus').textContent = '目錄載入失敗：' + error.message;
+  }
+};
+document.getElementById('exportBookList').addEventListener('change', updateExportBooks);
+document.addEventListener('keydown', event => { if (event.key === 'Escape' && !document.getElementById('textbankExportModal').classList.contains('hidden')) closeTextbankExport(); });
+window.exportTextbankMetadata = async () => {
+  if (exportBusy) return;
+  exportBusy = true;
+  const button = document.getElementById('downloadMetadataBtn');
   button.disabled = true;
+  document.getElementById('downloadTextbankBtn').disabled = true;
+  button.textContent = '產生目錄與索引中…';
+  try {
+    const bank = new StaticTextbank();
+    const [manifest,catalog] = await Promise.all([bank.manifest(),DataService.getCatalogForExport()]);
+    const {files} = await buildTextbankMetadataFiles(manifest,catalog);
+    const url = URL.createObjectURL(createTextbankZip(files));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = '課本目錄與題庫索引.zip';
+    document.body.appendChild(link); link.click(); link.remove();
+    setTimeout(() => URL.revokeObjectURL(url),60000);
+    UI.toast('已下載最新課本目錄與題庫索引；題目沿用已發布版本，解壓後再發布','success',8000);
+  } catch(error) {
+    UI.toast('匯出失敗：'+error.message,'danger',8000);
+  } finally {
+    exportBusy = false;
+    button.disabled = false;
+    button.textContent = '下載目錄與索引';
+    updateExportBooks();
+  }
+};
+window.exportStaticTextbank = async () => {
+  if (exportBusy) return;
+  let scopes = [...document.querySelectorAll('#exportBookList input:checked')].map(input => exportBooks[Number(input.value)]);
+  if (!scopes.length) return;
+  const button = document.getElementById('downloadTextbankBtn');
+  exportBusy = true;
+  button.disabled = true;
+  document.querySelectorAll('#textbankExportModal input').forEach(input => input.disabled = true);
   button.textContent = '讀取題庫與目錄中…';
   try {
-    const [questions, catalog] = await Promise.all([DataService.getAllQuestionsForExport(), DataService.getCatalogForExport()]);
+    const bank = new StaticTextbank(), existingCatalog = await bank.catalog();
+    scopes = resolveBookExportScopes(scopes, existingCatalog);
+    const oldManifest = await bank.manifest();
+    const selected = book => scopes.some(scope => scope.sourceCodes.some(s => s.subjectCode === book.subjectCode && s.bookCode === book.bookCode));
+    const existingQuestions = (await Promise.all(oldManifest.books.filter(book => !selected(book)).map(book => bank.shard(book)))).flat();
+    const batches = await Promise.all(scopes.map(async scope => {
+      const [lists,catalog] = await Promise.all([Promise.all(scope.sourceCodes.map(source => DataService.getAllQuestionsForExport(source.subjectCode,source.bookCode))),DataService.getCatalogForExport(scope.subjectCode,scope.bookCode)]);
+      return {questions:normalizeBookExportQuestions(scope,lists.flat()),catalog};
+    }));
+    const questions = batches.flatMap(b => b.questions), catalog = batches.flatMap(b => b.catalog);
     button.textContent = '產生檔案中…';
-    const { files, manifest } = await buildTextbankFiles(questions, new Date().toISOString(), catalog);
+    const { files, manifest } = await buildBookTextbankFiles(scopes, questions, catalog, existingQuestions, existingCatalog);
     const archive = createTextbankZip(files);
     const url = URL.createObjectURL(archive);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `靜態題庫-${new Date().toISOString().slice(0, 10)}.zip`;
+    link.download = `靜態題庫-${scopes.length}冊-${new Date().toISOString().slice(0, 10)}.zip`;
     document.body.appendChild(link);
     link.click();
     link.remove();
     setTimeout(() => URL.revokeObjectURL(url), 60000);
-    UI.toast(`已匯出 ${manifest.count} 題、${manifest.books.length} 冊及課本目錄；解壓後再由 GitHub Desktop 發布`, 'success', 8000);
+    UI.toast(`已更新 ${scopes.length} 冊、${questions.length} 題；僅打包勾選冊別的題目檔，並附完整目錄與索引。請合併覆蓋發布，保留其他題庫檔案`, 'success', 8000);
   } catch (error) {
     UI.toast(`匯出失敗：${error.message}`, 'danger', 8000);
   } finally {
-    button.disabled = false;
-    button.textContent = '匯出靜態題庫';
+    exportBusy = false;
+    document.querySelectorAll('#textbankExportModal input').forEach(input => input.disabled = false);
+    button.textContent = '下載靜態題庫';
+    updateExportBooks();
   }
 };
 document.getElementById('uploadIcon').innerHTML = I.upload;

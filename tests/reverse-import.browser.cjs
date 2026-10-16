@@ -20,6 +20,19 @@ const http=require('http');
    const bytes=Array.from(fs.readFileSync(path.join(root,'assets/reverse-import',name)));
    const result=await page.evaluate(async({name,choice,bytes})=>{
     const m=await import('/js/reverse-import.js'),original=await m.readBooklet(new Uint8Array(bytes),name);
+    if(choice) {
+     const q=m.formatQuestion({_id:'image-options',題型:'T2',章數:'1',題目:'請依附圖選出正確答案。',結尾:'⟦圖0⟧','簡答/答案':'Ｃ'});
+     const fixture={filename:'附圖選項.docx',questions:[q],images:original.images};
+     const book={chapters:[{chapterNum:1}]};
+     if(m.validateQuestions(fixture,book).length)throw Error('附圖提供全部選項時應允許選項欄留空');
+     const output=await m.exportImportFile(fixture,true,'TEST');
+     const again=await m.readBooklet(await output.blob.arrayBuffer());
+     if(again.images.length!==1||!again.questions[0]['結尾'].includes('⟦圖0⟧')||again.questions[0]['選項1'])throw Error('附圖選項匯出後遺失圖片或產生多餘文字選項');
+     if(!m.validateQuestions({...fixture,images:[]},book).length)throw Error('沒有附圖時仍應阻擋空白選項');
+     if(!m.validateQuestions({...fixture,questions:[{...q,選項1:'只有一個文字選項'}]},book).length)throw Error('部分選項缺漏仍應阻擋');
+     if(!m.validateQuestions({...fixture,questions:[{...q,結尾:'', '詳答/解析':'⟦圖0⟧'}]},book).length)throw Error('解析圖片不能替代題目選項');
+     if(m.validateQuestions({...fixture,questions:[{...q,題型:'T3','簡答/答案':'ＡＣ'}]},book).length)throw Error('複選題應支援附圖選項');
+    }
     const reminders=m.imageQuestionReminders(original),output=await m.exportImportFile(original,choice,'TEST');
     const again=await m.readBooklet(await output.blob.arrayBuffer(),output.name);
     return {name,count:original.questions.length,images:original.images.length,reminders:reminders.length,listedImages:reminders.reduce((sum,item)=>sum+item.count,0),exportedCount:again.questions.length,exportedImages:again.images.length,outputName:output.name};
