@@ -383,6 +383,8 @@ window.DataService = {
 
   // 尚未設定時顯示完整題庫；設定後只顯示勾選的科目與冊別。
   getVisibleCatalog() {
+    // 管理目錄與題目時必須可見全部資料；個人偏好僅供使用題庫時篩選。
+    if (DataService.isAdmin() && ['textbooks', 'questions', 'import', 'reverse-import'].includes(window._activeNav)) return null;
     const value = DataService._currentUser?.visibleCatalog;
     return value && typeof value === 'object' && !Array.isArray(value) ? value : null;
   },
@@ -906,7 +908,9 @@ window.DataService = {
   },
 
   async loadTextbookCache(options = {}) {
-    const subjects = await DataService.getVisibleSubjects(options);
+    const subjects = options.includeHidden
+      ? await DataService.getSubjects(options)
+      : await DataService.getVisibleSubjects(options);
     const cache = {
       subjects: [],          // [{id, code, name, order}]
       books: {},             // bookCode -> {id, subjectId, code, name, order, l1, l2, l3}
@@ -919,7 +923,9 @@ window.DataService = {
       cache.subjectByCode[s.code] = s;
       cache.subjectById[s.id]     = s;
       cache.booksBySubject[s.id]  = [];
-      const books = await DataService.getVisibleBooks(s.id, s.code, options);
+      const books = options.includeHidden
+        ? await DataService.getBooks(s.id, options)
+        : await DataService.getVisibleBooks(s.id, s.code, options);
       for (const b of books) {
         const entry = { ...b, subjectId: s.id };
         cache.books[b.code] = entry;

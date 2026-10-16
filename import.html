@@ -330,13 +330,15 @@ let committedImportImages = new Map();
 import { readBooklet } from './js/reverse-import.js';
 const importedImageSources = new Map();
 window.questionImagePreviews ||= new Map();
-window.downloadImportImages = async () => {
-  const entries = [...committedImportImages];
+window.downloadImportImages = async (preview = false) => {
+  const entries = preview
+    ? [...new Map(selectedFiles.filter(f => f.status === 'done').flatMap(f => [...(f.images || [])]))]
+    : [...committedImportImages];
   if (!entries.length) { UI.toast('目前沒有可下載的入題圖片', 'warning'); return; }
   try {
     const archive = await imageArchive(entries);
     const url = URL.createObjectURL(archive), link = document.createElement('a');
-    link.href = url; link.download = '入題圖片.zip';
+    link.href = url; link.download = preview ? '入題圖片-解析預覽.zip' : '入題圖片.zip';
     document.body.appendChild(link); link.click(); link.remove();
     setTimeout(() => URL.revokeObjectURL(url), 60000);
   } catch (error) { UI.toast('圖片 ZIP 產生失敗：' + error.message, 'danger'); }
@@ -561,7 +563,8 @@ window.openImportedFiles = async () => {
 
 // ── 初始化科目下拉（從課本管理系統讀取）─────────
 const subjectSel = document.getElementById('subjectSel');
-await initTextbookCache();
+// 匯入歸屬須提供完整目錄，不受個人出題顯示偏好影響。
+window._tbCache = await DataService.loadTextbookCache({ firestore:true, includeHidden:true });
 document.getElementById('importBookTree').innerHTML = (window._tbCache.subjects || []).map(subject => {
   const books = window._tbCache.booksBySubject[subject.id] || [];
   return `<details class="subject-node"><summary>${UI.escapeHtml(subject.name)}</summary>${books.length ? books.map(book => `<label class="book-node"><input type="radio" name="importBook" data-subject="${UI.escapeHtml(subject.code)}" value="${UI.escapeHtml(book.code)}"><span>${UI.escapeHtml(book.name)}</span></label>`).join('') : '<div class="scope-empty">尚無冊次</div>'}</details>`;
@@ -786,6 +789,9 @@ function buildPreview(qs) {
     sumHTML += `<div class="parse-stat"><div class="parse-stat-num">${c}</div><div class="parse-stat-label">${UI.escapeHtml(QUESTION_TYPES[t]||t)}</div></div>`
   );
   document.getElementById('parseSummary').innerHTML = sumHTML;
+  if (selectedFiles.some(f => f.status === 'done' && f.images?.size)) {
+    document.getElementById('parseSummary').insertAdjacentHTML('beforeend', '<button type="button" class="btn btn-outline btn-sm" onclick="downloadImportImages(true)" title="暫存檔名版本；發布請使用匯入完成後的正式題號圖片 ZIP">下載入題圖片 ZIP</button>');
+  }
 
   // 警告
   const errorFiles = selectedFiles.filter(f => f.status === 'error');

@@ -1,5 +1,5 @@
 /** 每頁驗證登入及角色；shell.js 只負責提前顯示導覽外觀。 */
-import './firebase.js?v=20261016-catalog-manual';
+import './firebase.js?v=20261016-management-full-catalog';
 
 export async function guardPage(allowedRoles) {
   await window._dsReady;
