@@ -214,7 +214,7 @@
         <div class="account-info-item"><span>累計建立試卷</span><strong id="accountInfoCreated">—</strong></div>
         <div class="account-info-item"><span>目前保留試卷</span><strong id="accountInfoCurrent">—</strong></div>
       </div>
-      <p class="account-info-note">登入與累計建卷次數從統計啟用後開始記錄；目前保留試卷數直接從試卷資料查詢。</p>
+      <p class="account-info-note">登入與累計建卷次數從統計啟用後開始記錄；其他帳號的保留試卷數取自帳號統計，可能有更新延遲，未有紀錄時顯示「—」。</p>
     </div>
     <div class="modal-footer"><button class="btn btn-ghost" type="button" onclick="closeAccountInfo()">關閉</button></div>
   </div>
@@ -503,7 +503,7 @@ window.openAccountInfo = async uid => {
     const count = await DataService.getExamCountForUser(uid);
     if (document.getElementById('accountInfoModal').classList.contains('hidden') ||
         document.getElementById('accountInfoModal').dataset.uid !== uid) return;
-    currentCount.textContent = count;
+    currentCount.textContent = count ?? '—';
     target.examCurrentCount = count;
   } catch (error) {
     if (!document.getElementById('accountInfoModal').classList.contains('hidden') &&

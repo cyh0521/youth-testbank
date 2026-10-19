@@ -149,7 +149,7 @@ test('Word 圖片保持原始比例並以顯示寬度輸出，未發布的圖片
   assert.equal(narrow.options.transformation.width,200);
   assert.equal(narrow.options.transformation.height,100);
   word.fetch = async()=>({ok:false});
-  await assert.rejects(word.nodeRuns(node,docx,{}), /圖片已上傳至 GitHub/);
+  await assert.rejects(word.nodeRuns(node,docx,{}), /圖片已上傳至網頁空間/);
 });
 
 test('Word 有圖片的段落使用最小行高，文字段落仍維持原本固定行高', async () => {

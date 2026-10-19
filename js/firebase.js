@@ -788,7 +788,13 @@ window.DataService = {
   },
 
   async getExamCountForUser(uid) {
-    if (!DataService.isAdmin() && uid !== DataService._currentUser?.uid) throw new Error('權限不足');
+    if (uid !== DataService._currentUser?.uid) {
+      if (!DataService.isAdmin()) throw new Error('權限不足');
+      // 跨帳號只讀取既有統計，不開放教師試卷文件的查詢權限。
+      const account = await getDoc(doc(db, 'users', uid));
+      const count = account.exists() ? account.data().examCurrentCount : null;
+      return Number.isInteger(count) && count >= 0 ? count : null;
+    }
     const source = query(collection(db, 'exams'), where('createdBy', '==', uid));
     return (await getCountFromServer(source)).data().count;
   },
