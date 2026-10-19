@@ -7,6 +7,7 @@
  */
 
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { prepareQuestionMove } from './move-imported-questions.js';
 import {
   getFirestore, collection, doc, getDoc, getDocs, addDoc, setDoc,
   getDocFromServer, getDocsFromServer, getCountFromServer,
@@ -582,6 +583,31 @@ window.DataService = {
     return docs.length;
   },
 
+  async moveImportedFile(file, target, onMoved) {
+    if (!DataService.isAdmin()) throw new Error('只有管理員可以移動題目');
+    if (file.subjectCode === target.subjectCode && file.bookCode === target.bookCode) throw new Error('目標課本與原課本相同');
+    const [questions,catalog] = await Promise.all([
+      DataService.getQuestionsFromFirestore({sourceFile:file.name,subjectCode:file.subjectCode,bookCode:file.bookCode}),
+      DataService.getCatalogForExport(target.subjectCode,target.bookCode)
+    ]);
+    const source = questions.filter(q => q._srcFile === file.name && q.subjectCode === file.subjectCode && q.bookCode === file.bookCode);
+    if (!source.length) throw new Error('來源檔案已無題目，請重新開啟列表');
+    const book = catalog.find(s => s.code === target.subjectCode)?.books.find(b => b.code === target.bookCode);
+    const updates = prepareQuestionMove(source,target,book);
+    let moved = 0;
+    for (let i=0;i<updates.length;i+=400) {
+      const chunk = updates.slice(i,i+400), batch = writeBatch(db);
+      chunk.forEach(({id,...fields}) => batch.update(doc(db,'questions',id),{...fields,updatedAt:serverTimestamp()}));
+      await batch.commit();
+      moved += chunk.length;
+      onMoved?.(chunk);
+      if (file.subjectCode !== target.subjectCode) {
+        await DataService._applyStatsDelta({total:0,bySubject:{[file.subjectCode]:-chunk.length,[target.subjectCode]:chunk.length}});
+      }
+    }
+    return moved;
+  },
+
   async deleteImportedFiles(names, onDeleted) {
     for (const file of names) {
       const sourceFile = typeof file === 'string' ? file : file.name;
@@ -630,7 +656,7 @@ window.DataService = {
   // ── Stats Aggregation —————————————————————————————————
   // 將增量套用到 settings/questionStats 文件（用 dot-notation 增減）
   async _applyStatsDelta(delta) {
-    if (!delta || !delta.total) return;
+    if (!delta || (!delta.total && !Object.values(delta.bySubject || {}).some(Boolean))) return;
     const ref = doc(db, 'settings', 'questionStats');
     const payload = {
       total:     increment(delta.total),

@@ -136,7 +136,13 @@
 #importedFilesModal .data-table input[type=checkbox]{display:block;width:18px;height:18px;margin:0 auto;cursor:pointer}
 #importedFilesModal .btn-danger{padding:4px 8px;display:inline-flex;align-items:center;justify-content:center;gap:4px;font-size:.88rem;line-height:1;white-space:nowrap}
 #importedFilesModal .btn-danger svg{display:block;width:16px;height:16px}
-#importedFilesModal .data-table th:last-child,#importedFilesModal .data-table td:last-child{width:88px;white-space:nowrap}
+#importedFilesModal .data-table th:last-child,#importedFilesModal .data-table td:last-child{width:210px;white-space:nowrap}
+#importedFilesModal .file-actions{display:flex;align-items:center;gap:8px}
+#moveImportedModal{z-index:1100}
+#moveImportedModal .modal{display:flex;flex-direction:column;max-height:90vh;overflow:hidden}
+#moveImportedModal .modal-body{min-height:0;overflow:auto}
+#moveImportedModal .modal-header,#moveImportedModal .modal-footer{flex:none;position:static}
+#moveImportedModal .move-status{margin-top:12px;line-height:1.6;white-space:pre-wrap;color:var(--text-secondary)}
 #importedFilesModal .imported-subject-heading th{width:auto;text-align:left;background:#edf2e8;color:#315940;padding:10px 12px;font-weight:400}
 #importedFilesModal .data-table tr.imported-subject-heading>th,#importedFilesModal .data-table tr.imported-book-heading>th{width:auto;text-align:left}
 #importedFilesModal .imported-book-heading th{background:#f5f8f1}
@@ -309,6 +315,19 @@
   </div>
 </div>
 
+<div class="modal-overlay hidden" id="moveImportedModal" role="dialog" aria-modal="true" aria-labelledby="moveImportedTitle">
+  <div class="modal">
+    <div class="modal-header"><h3 id="moveImportedTitle">移至其他課本</h3><button type="button" class="modal-close" onclick="closeMoveImportedFile()" aria-label="關閉">✕</button></div>
+    <div class="modal-body">
+      <p id="moveImportedSource" style="margin-bottom:14px;overflow-wrap:anywhere"></p>
+      <label class="form-label" for="moveImportedTarget">目標科目與冊別</label>
+      <select class="form-control" id="moveImportedTarget"><option value="">請選擇</option></select>
+      <p class="field-hint" style="margin-top:10px">保留原章節序號；移動前會檢查目標目錄。題號、題目內容、答案與圖片路徑不變。</p>
+      <p id="moveImportedStatus" class="move-status" role="status" aria-live="polite"></p>
+    </div>
+    <div class="modal-footer"><button type="button" class="btn btn-ghost" id="moveImportedCancel" onclick="closeMoveImportedFile()">取消</button><button type="button" class="btn btn-primary" id="moveImportedConfirm" onclick="confirmMoveImportedFile()" disabled>確認移動</button></div>
+  </div>
+</div>
 <div class="modal-overlay hidden" id="textbankExportModal" role="dialog" aria-modal="true" aria-labelledby="textbankExportTitle">
   <div class="modal modal-lg">
     <div class="modal-header"><h3 id="textbankExportTitle">選擇匯出冊別</h3><button type="button" class="modal-close" onclick="closeTextbankExport()" aria-label="關閉">✕</button></div>
@@ -499,7 +518,7 @@ function renderImportedFiles() {
     }
     previousSubject = subject;
     previousBook = book;
-    return heading + `<tr ${collapsed ? 'hidden' : ''} data-file-index="${i}" class="${importedFileSelection.has(name) ? 'file-selected' : ''}" onclick="selectImportedFile(event,${i})"><td><input type="checkbox" aria-label="${UI.escapeHtml('選取 '+filename)}" ${importedFileSelection.has(name) ? 'checked' : ''} ${importedFilesBusy ? 'disabled' : ''}></td><td>${UI.escapeHtml(filename)}</td><td>${count}</td><td><button class="btn btn-danger btn-sm" ${importedFilesBusy ? 'disabled' : ''} onclick="event.stopPropagation();deleteImportedFiles(${i})">${ICONS.trash16}刪除</button></td></tr>`; }).join('')}</tbody></table>` : '<div class="empty-state">尚無已記錄來源檔名的題目</div>';
+    return heading + `<tr ${collapsed ? 'hidden' : ''} data-file-index="${i}" class="${importedFileSelection.has(name) ? 'file-selected' : ''}" onclick="selectImportedFile(event,${i})"><td><input type="checkbox" aria-label="${UI.escapeHtml('選取 '+filename)}" ${importedFileSelection.has(name) ? 'checked' : ''} ${importedFilesBusy ? 'disabled' : ''}></td><td>${UI.escapeHtml(filename)}</td><td>${count}</td><td><div class="file-actions"><button type="button" class="btn btn-outline btn-sm" ${importedFilesBusy ? 'disabled' : ''} onclick="event.stopPropagation();openMoveImportedFile(${i})">移至其他課本</button><button class="btn btn-danger btn-sm" ${importedFilesBusy ? 'disabled' : ''} onclick="event.stopPropagation();deleteImportedFiles(${i})">${ICONS.trash16}刪除</button></div></td></tr>`; }).join('')}</tbody></table>` : '<div class="empty-state">尚無已記錄來源檔名的題目</div>';
 }
 window.selectImportedFile = (event,index) => {
   if (importedFilesBusy) return;
@@ -520,6 +539,81 @@ window.selectAllImportedFiles = checked => {
   importedFileAnchor = null;
   renderImportedFiles();
 };
+let moveImportedSource = null, moveImportedTargets = [], moveImportedSaving = false;
+window.closeMoveImportedFile = () => {
+  if (moveImportedSaving) return;
+  document.getElementById('moveImportedModal').classList.add('hidden');
+  moveImportedSource = null;
+  importedFilesBusy = false;
+  renderImportedFiles();
+};
+window.openMoveImportedFile = async index => {
+  if (importedFilesBusy || !canEdit) return;
+  const [subjectCode,bookCode,name] = JSON.parse(importedFileRows[index][0]);
+  moveImportedSource = {subjectCode,bookCode,name};
+  importedFilesBusy = true;
+  renderImportedFiles();
+  const modal = document.getElementById('moveImportedModal'), select = document.getElementById('moveImportedTarget');
+  modal.classList.remove('hidden');
+  const count = importedFileQuestions.filter(q => q._srcFile === name && q.subjectCode === subjectCode && q.bookCode === bookCode).length;
+  document.getElementById('moveImportedSource').textContent = tbSubjectName(subjectCode)+' ／ '+tbBookName(bookCode)+' ／ '+name+'（'+count+' 題）';
+  document.getElementById('moveImportedStatus').textContent = '載入目標課本中…';
+  document.getElementById('moveImportedConfirm').disabled = true;
+  select.innerHTML = '<option value="">請選擇目標課本</option>';
+  moveImportedTargets = [];
+  const request = moveImportedSource;
+  try {
+    const subjects = await DataService.getExportBookOptions();
+    if (moveImportedSource !== request) return;
+    select.innerHTML += subjects.map(subject => '<optgroup label="'+UI.escapeHtml(subject.name)+'">'+subject.books.filter(book => subject.code !== subjectCode || book.code !== bookCode).map(book => {
+      const value = moveImportedTargets.push({subjectCode:subject.code,bookCode:book.code})-1;
+      return '<option value="'+value+'">'+UI.escapeHtml(book.name+'（'+book.code+'）')+'</option>';
+    }).join('')+'</optgroup>').join('');
+    document.getElementById('moveImportedStatus').textContent = '請核對目標課本；移動後若使用靜態題庫，需匯出來源及目標冊別並重新發布。';
+    select.focus();
+  } catch(error) {
+    if (moveImportedSource === request) document.getElementById('moveImportedStatus').textContent = '載入失敗：'+error.message;
+  }
+};
+document.getElementById('moveImportedTarget').addEventListener('change',event => {
+  document.getElementById('moveImportedConfirm').disabled = event.target.value === '' || moveImportedSaving;
+});
+window.confirmMoveImportedFile = async () => {
+  const select = document.getElementById('moveImportedTarget');
+  if (moveImportedSaving || !moveImportedSource || select.value === '') return;
+  const target = moveImportedTargets[Number(select.value)];
+  if (!target) return;
+  moveImportedSaving = true;
+  select.disabled = true;
+  document.getElementById('moveImportedConfirm').disabled = true;
+  document.getElementById('moveImportedCancel').disabled = true;
+  const status = document.getElementById('moveImportedStatus');
+  status.textContent = '檢查章節並移動題目中…';
+  let moved = 0;
+  try {
+    await DataService.moveImportedFile(moveImportedSource,target,updates => {
+      const byId = new Map(updates.map(q => [q.id,q]));
+      importedFileQuestions = importedFileQuestions.map(q => byId.has(q.id) ? {...q,...byId.get(q.id)} : q);
+      moved += updates.length;
+      status.textContent = '已移動 '+moved+' 題…';
+    });
+    importedFileSelection.clear();
+    importedFileAnchor = null;
+    collapsedImportedBooks.delete(JSON.stringify([target.subjectCode,target.bookCode]));
+    moveImportedSaving = false;
+    closeMoveImportedFile();
+    UI.toast('已移動 '+moved+' 題；請匯出來源及目標冊別的靜態題庫並重新發布','success',8000);
+  } catch(error) {
+    status.textContent = (moved ? '已移動 '+moved+' 題，其餘未完成。' : '')+error.message;
+    renderImportedFiles();
+  } finally {
+    moveImportedSaving = false;
+    select.disabled = false;
+    document.getElementById('moveImportedCancel').disabled = false;
+    document.getElementById('moveImportedConfirm').disabled = select.value === '';
+  }
+};
+
 window.deleteImportedFiles = async index => {
   if (importedFilesBusy || !canEdit) return;
   const names = index === undefined ? [...importedFileSelection] : [importedFileRows[index][0]];
@@ -552,6 +646,10 @@ window.openImportedFiles = async () => {
   body.textContent = '載入中…';
   try {
     importedFileQuestions = await DataService.getQuestionsFromFirestore();
+    collapsedImportedBooks.clear();
+    importedFileQuestions.forEach(q => {
+      if (q._srcFile) collapsedImportedBooks.add(JSON.stringify([q.subjectCode || '',q.bookCode || '']));
+    });
     importedFileSelection.clear();
     importedFileAnchor = null;
     renderImportedFiles();

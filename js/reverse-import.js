@@ -169,6 +169,10 @@ export async function readBooklet(buffer, filename='題本.docx') {
       if(!text){if(current)current.body.push(raw);continue;}
       const t=Object.keys(typeNames).find(n=>new RegExp('^[一二三四五六七八九十\\d]+[、.．]\\s*'+n+'$').test(text));
       if(t){finish();type=typeNames[t];continue;}
+      // 導論不帶課次編號，保留標題後交由冊別目錄決定實際章數。
+      if (/^導論(?:[\s　：:]|$)/.test(text)) {
+        finish();headings.push(text);chapter='';section='';subsection='';continue;
+      }
       const h=text.match(/^(?:第)?([零一二三四五六七八九十\d]+)(章|課|單元|節|小節)\s*(.*)$/) || text.match(/^(單元)([零一二三四五六七八九十\d]+)\s*(.*)$/)?.map((v,i,a)=>i===1?a[2]:i===2?a[1]:v);
       if(h){finish();headings.push(text); const n=String(chineseNumber(h[1])); if(h[2]==='小節')subsection=n;else if(h[2]==='節'){section=n;subsection='';}else{chapter=n;section='';subsection='';}continue;}
       const meta=text.match(/^編碼[：:]\s*(\S+)\s+難易度[：:]\s*(\S+)\s+來源[：:]\s*(.*)$/);

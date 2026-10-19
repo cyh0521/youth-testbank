@@ -1,6 +1,6 @@
 import {guardPage} from './auth-guard.js';
 import {StaticTextbank} from './static-textbank.js';
-import {readBooklet,catalogCandidates,applyCatalog,validateQuestions,exportImportFile,formatScopeNumber,imageQuestionReminders,CHOICE_HEADERS} from './reverse-import.js';
+import {readBooklet,catalogCandidates,applyCatalog,validateQuestions,exportImportFile,formatScopeNumber,imageQuestionReminders,CHOICE_HEADERS} from './reverse-import.js?v=20261019-intro-heading';
 window._activeNav='reverse-import';
 const user=await guardPage(['admin','manager']);
 if(!user)throw Error('not auth');

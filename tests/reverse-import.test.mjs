@@ -8,6 +8,28 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE_PATH || 'playwright')
 const source = readFileSync(new URL('../js/reverse-import.js', import.meta.url), 'utf8');
 const zipSource = readFileSync(new URL('../vendor/jszip.min.js', import.meta.url), 'utf8');
 
+test('未編號的導論標題依冊別目錄對應01，不沿用第一課的原始課次', async () => {
+  const browser = await chromium.launch({channel:process.env.PLAYWRIGHT_CHANNEL || 'msedge',headless:true});
+  try {
+    const page = await browser.newPage();
+    await page.addScriptTag({content:zipSource});
+    const parsed = await page.evaluate(async source => {
+      const {readBooklet,applyCatalog,catalogCandidates,validateQuestions} = await import('data:text/javascript;base64,'+btoa(unescape(encodeURIComponent(source))));
+      const paragraphs=['導論　生活與美感','一、是非題','編碼：00398 難易度：簡易題 來源：課本','（○）1.美感力是生活素養。【P.7】','第一課　土地與工藝','一、是非題','編碼：00399 難易度：簡易題 來源：課本','（Ｘ）1.測試題。【P.8】'];
+      const zip=new JSZip();
+      zip.file('word/document.xml','<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>'+paragraphs.map(text=>'<w:p><w:r><w:t>'+text+'</w:t></w:r></w:p>').join('')+'</w:body></w:document>');
+      zip.file('word/_rels/document.xml.rels','<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"/>');
+      const result=await readBooklet(await zip.generateAsync({type:'arraybuffer'}),'導論.docx');
+      const book={code:'G1-03',l1:'課',l2:'',l3:'',chapters:[{chapterNum:1,title:'導論 生活與美感'},{chapterNum:2,title:'第一課 土地與工藝'}]};
+      applyCatalog(result,book);
+      return {chapters:result.questions.map(q=>q['章數']),candidates:catalogCandidates(result,[{code:'G1',books:[book]}]).map(c=>c.book.code),errors:validateQuestions(result,book)};
+    },source);
+    assert.deepEqual(parsed.chapters,['01','02']);
+    assert.deepEqual(parsed.candidates,['G1-03']);
+    assert.deepEqual(parsed.errors,[]);
+  } finally {await browser.close();}
+});
+
 test('舊版題本的另列答案分離至答案欄，保留空格、解析與選擇題答案', async () => {
   const browser = await chromium.launch({ channel: process.env.PLAYWRIGHT_CHANNEL || 'msedge', headless: true });
   try {
