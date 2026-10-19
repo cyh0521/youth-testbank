@@ -78,7 +78,7 @@ function showTextbankStatus(message, failed = false) {
 async function readStaticTextbank(label, operation) {
   try {
     const result = await operation();
-    if (activeTextbankMode === 'static') showTextbankStatus(`題庫來源：GitHub 靜態檔（${label}成功）`);
+    if (activeTextbankMode === 'static') showTextbankStatus(`題庫來源：網頁空間靜態檔（${label}成功）`);
     return result;
   } catch (error) {
     if (activeTextbankMode === 'static') showTextbankStatus(`靜態題庫讀取失敗：${error.message}`, true);
@@ -232,7 +232,7 @@ window.DataService = {
     await DataService.updateProfile(DataService._currentUser.uid, { textbankStatusVisible: visible === true });
     if (!visible) document.getElementById('textbankSourceStatus')?.remove();
     else {
-      const status = latestTextbankStatus || { message: `目前題庫來源：${activeTextbankMode === 'static' ? 'GitHub 靜態題庫' : 'Firestore'}`, failed: false };
+      const status = latestTextbankStatus || { message: `目前題庫來源：${activeTextbankMode === 'static' ? '網頁空間靜態題庫' : 'Firestore'}`, failed: false };
       staticTextbankFailed = false;
       showTextbankStatus(status.message, status.failed);
     }

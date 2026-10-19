@@ -353,7 +353,7 @@ function buildTextbankPanel() {
 
       <p id="textbankModeStatus" role="status" style="margin:16px 0;font-weight:700"></p>
       <div class="import-action" style="display:flex;gap:10px;flex-wrap:wrap">
-        <button class="btn btn-outline" type="button" data-textbank-mode="static">使用 GitHub 靜態題庫</button>
+        <button class="btn btn-outline" type="button" data-textbank-mode="static">使用網頁空間靜態題庫</button>
         <button class="btn btn-outline" type="button" data-textbank-mode="firestore">緊急改用 Firestore</button>
       </div>
       <p class="field-hint" style="margin-top:14px">Firestore 模式會增加題目讀取次數，僅在靜態檔失效時暫時啟用。題目匯入與編輯都寫入 Firestore。</p>
@@ -365,7 +365,7 @@ function buildTextbankPanel() {
   </div>`;
   const render = () => {
     const mode = DataService.getTextbankMode();
-    panel.querySelector('#textbankModeStatus').textContent = `目前全站來源：${mode === 'static' ? 'GitHub 靜態題庫' : 'Firestore 備用模式'}`;
+    panel.querySelector('#textbankModeStatus').textContent = `目前全站來源：${mode === 'static' ? '網頁空間靜態題庫' : 'Firestore 備用模式'}`;
     panel.querySelectorAll('[data-textbank-mode]').forEach(button => {
       button.disabled = button.dataset.textbankMode === mode;
     });
@@ -374,7 +374,7 @@ function buildTextbankPanel() {
     const button = event.target.closest('[data-textbank-mode]');
     if (!button || button.disabled) return;
     const mode = button.dataset.textbankMode;
-    const label = mode === 'static' ? 'GitHub 靜態題庫' : 'Firestore';
+    const label = mode === 'static' ? '網頁空間靜態題庫' : 'Firestore';
     if (!await confirmAction({
       title: '切換全站題庫來源',
       message: `確定要讓所有使用者改用 ${label} 讀取題目嗎？已開啟的出題畫面須重新整理。`,

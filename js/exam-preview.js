@@ -1,6 +1,6 @@
 import { mountPreviewScope, loadPreviewScopeCatalog, applyScopeHighlight, questionScopeCode } from './preview-scope.js?v=20261015-selected-only';
 import { DOWNLOAD_TYPES, buildDownloadVariants, downloadFilename } from './download-variants.js';
-import { createDocxBlob } from './docx-export.js?v=20261015-answer-paragraph';
+import { createDocxBlob } from './docx-export.js?v=20261019-hosting-copy';
 
 /**
  * 幼獅題庫系統 — 試卷預覽 & Word 輸出模組 v3

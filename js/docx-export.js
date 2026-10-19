@@ -38,7 +38,7 @@ async function nodeRuns(node, docx, base, imageWidthLimit = 500) {
       const height = Math.max(1, Math.round(width * naturalHeight / naturalWidth));
       return [new docx.ImageRun({ data:new Uint8Array(await blob.arrayBuffer()), type, transformation:{ width, height } })];
     } catch (error) {
-      if (node.dataset?.questionImage) throw new Error(`題目圖片無法載入：${node.dataset.questionImage}。請確認圖片已上傳至 GitHub 並完成發布。`);
+      if (node.dataset?.questionImage) throw new Error(`題目圖片無法載入：${node.dataset.questionImage}。請確認圖片已上傳至網頁空間並完成發布。`);
       return [new docx.TextRun({ text:node.alt || '［圖片］', ...base })];
     }
   }

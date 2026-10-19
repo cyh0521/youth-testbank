@@ -324,7 +324,7 @@
 <script type="module">
 import { guardPage } from './js/auth-guard.js';
 import { confirmDeletion } from './js/confirm-exam-deletion.js';
-import { QuestionImageEditor, editorHtml, editorText, imageArchive, downloadArchive } from './js/question-image-editor.js?v=20261007-images-dir';
+import { QuestionImageEditor, editorHtml, editorText, imageArchive, downloadArchive } from './js/question-image-editor.js?v=20261019-hosting-copy';
 window._activeNav = 'questions';
 const user = await guardPage(['admin','manager']);
 if (!user) throw new Error('not auth');
@@ -1022,7 +1022,7 @@ window.saveEdit = async () => {
     savingQuestion = false;
     closeQModal();
     doSearch();
-    UI.toast(archive ? '題目已更新並下載圖片，請將解壓後的圖片上傳至 GitHub 的 images 資料夾' : '題目已更新','success', archive ? 8000 : 3000);
+    UI.toast(archive ? '題目已更新並下載圖片，請將解壓後的圖片上傳至網頁空間的 images 資料夾' : '題目已更新','success', archive ? 8000 : 3000);
   } catch(e) { UI.toast('儲存失敗：'+e.message,'danger'); }
   finally {
     savingQuestion = false;

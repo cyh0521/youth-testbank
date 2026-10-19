@@ -1,4 +1,4 @@
-// GitHub Pages 圖片編輯：本地預覽，資料只保存相對路徑，圖片另行下載發布。
+// 網頁空間圖片編輯：本地預覽，資料只保存相對路徑，圖片另行下載發布。
 export function editorHtml(value) {
   return UI.questionText(value).split('\u2029').map(part =>
     `<div>${UI.questionInlineHtml(part).replace(/\n/g, '<br>') || '<br>'}</div>`).join('');
@@ -107,7 +107,7 @@ export class QuestionImageEditor {
     </div>
     <div class="question-image-path hidden"><label>圖片路徑<input class="form-control" data-path placeholder="images/example.png"></label><button type="button" class="btn btn-primary" data-action="insert">插入</button></div>
     <div class="question-image-settings hidden"><label>寬度（px）<input class="form-control" type="number" min="40" max="1200" step="10" data-width></label><label>圖片說明<input class="form-control" data-alt></label><button type="button" class="btn btn-ghost" data-action="remove">移除圖片</button></div>
-    <div class="question-image-hint">圖片插入游標位置；點選圖片可調整大小。新增圖片會在儲存時下載，請解壓後將 images 資料夾內的圖片上傳到 GitHub 同名資料夾。</div>`;
+    <div class="question-image-hint">圖片插入游標位置；點選圖片可調整大小。新增圖片會在儲存時下載，請解壓後將 images 資料夾內的圖片上傳至網頁空間的同名資料夾。</div>`;
     this.status = controls.querySelector('.question-image-status');
     this.settings = controls.querySelector('.question-image-settings');
     this.width = controls.querySelector('[data-width]');
@@ -197,7 +197,7 @@ export class QuestionImageEditor {
         event.preventDefault(); this.selectImage(image); this.width.focus();
       }
     });
-    image.addEventListener('error', () => { image.classList.add('is-missing'); image.title = '找不到圖片，請確認已上傳至 GitHub，並等待網站發布完成'; });
+    image.addEventListener('error', () => { image.classList.add('is-missing'); image.title = '找不到圖片，請確認已上傳至網頁空間，並等待網站發布完成'; });
     image.addEventListener('load', () => image.classList.remove('is-missing'));
   }
 
