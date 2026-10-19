@@ -216,6 +216,7 @@
           ${item('exams', '', '試卷管理')}
           ${navRole === 'admin' ? group('題庫管理',item('textbooks',I.navTextbooks20,'課本管理')+item('questions',I.navQuestions20,'題目維護')+item('import',I.navImport20,'題目匯入')+item('reverse-import',I.navBooklet20,'題本轉檔')) : ''}
           ${navRole === 'admin' ? group('設定',item('settings',I.navSettings20,'進階設定')+item('account-admin',I.navAccounts20,'帳號管理','settings.html?view=accounts')) : item('settings','','設定')}
+          <a href="user-guide.html" target="_blank" rel="noopener" aria-label="使用說明（另開分頁）"><span>使用說明</span></a>
         </nav>
         <div id="siteAccount" class="site-account"></div>`;
       if (previousAccount) el.querySelector('#siteAccount').replaceChildren(...previousAccount.childNodes);
