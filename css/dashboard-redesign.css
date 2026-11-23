@@ -80,3 +80,26 @@
 #green-comic-test .gc-mode-favorite input{width:17px;height:17px;margin:0;accent-color:#4b8064;cursor:pointer}
 #green-comic-test .gc-mode-favorite:has(input:disabled){opacity:.65;cursor:wait}
 #green-comic-test .gc-footer{padding:32px 20px 22px;color:#99a99d;font-size:11px;line-height:1.6;text-align:center}
+
+/* 首頁出題方式：輕量進場與背景霧化 */
+#green-comic-test .gc-overlay{
+  background:rgba(20,47,41,.24);
+  -webkit-backdrop-filter:blur(5px);
+  backdrop-filter:blur(5px);
+}
+#green-comic-test .gc-overlay:not([hidden]){
+  animation:gc-overlay-enter .22s ease-out both;
+}
+#green-comic-test .gc-overlay:not([hidden]) .gc-modal{
+  animation:gc-mode-enter .28s cubic-bezier(.2,.75,.25,1) both;
+  transform-origin:50% 55%;
+}
+@keyframes gc-overlay-enter{from{opacity:0}to{opacity:1}}
+@keyframes gc-mode-enter{
+  from{opacity:0;transform:translateY(14px) scale(.97)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+@media(prefers-reduced-motion:reduce){
+  #green-comic-test .gc-overlay:not([hidden]),
+  #green-comic-test .gc-overlay:not([hidden]) .gc-modal{animation:none}
+}
