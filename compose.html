@@ -6,10 +6,10 @@
 <link rel="stylesheet" href="css/theme.css?v=20261124-dialog-tape">
 <link rel="stylesheet" href="css/process-bar.css">
 
-<link rel="stylesheet" href="css/exam-compose.css?v=20261012-chapter-controls-18">
+<link rel="stylesheet" href="css/exam-compose.css?v=20261124-individual-display">
 <link rel="stylesheet" href="css/site-redesign.css?v=20261016-yellow-titles">
 <link rel="stylesheet" href="css/compose-redesign.css?v=20261014-heading-description">
-<link rel="stylesheet" href="css/compose-papercraft.css?v=20261124-replace-button-size">
+<link rel="stylesheet" href="css/compose-papercraft.css?v=20261124-unboxed-totals">
 
 </head>
 <body class="exam-compose-page computer-selection-page selection-redesign-page">
@@ -100,7 +100,7 @@
 </div>
 
 <script type="module">
-import { renderScopePanel, mountScopeSelector } from './js/exam-scope.js?v=20261013-no-default-subject';
+import { renderScopePanel, mountScopeSelector } from './js/exam-scope.js?v=20261124-empty-chart';
 import { guardPage } from './js/auth-guard.js';
 import { showExamPreview, showHeaderSettings, newExamHeader, loadAppearance, mountInlineHeaderEditor, buildHeaderHtml, fontStackById, togglePreviewPanel } from './js/exam-preview.js?v=20261015-selected-scope';
 import { allocateTypeScores, AUTO_SCORE_WEIGHTS } from './js/score-allocation.js?v=20261007-weighted-scores';
@@ -663,6 +663,8 @@ function composeQuestionSummary(q) {
 }
 const expandedComposeQuestions = new Set();
 window.setComposeQDisplay = full => {
+  expandedComposeQuestions.clear();
+  document.querySelectorAll('#composePanel3 .result-q.is-expanded').forEach(row => row.classList.remove('is-expanded'));
   document.getElementById('composePanel3').classList.toggle('compose-list-view',!full);
   for(const [id,active] of [['composeListBtn',!full],['composeFullBtn',full]]) {
     const button=document.getElementById(id);
@@ -670,7 +672,6 @@ window.setComposeQDisplay = full => {
   }
 };
 function toggleComposeQuestion(row) {
-  if(!document.getElementById('composePanel3').classList.contains('compose-list-view')) return;
   const id=row.dataset.questionId;
   const expanded=!expandedComposeQuestions.has(id);
   if(expanded) expandedComposeQuestions.add(id);else expandedComposeQuestions.delete(id);

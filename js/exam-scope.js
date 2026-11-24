@@ -27,7 +27,7 @@ export function mountScopeSelector({ cache, dataService, onChange }) {
     for (const q of questions) byType[q.type] = (byType[q.type] || 0) + 1;
     document.getElementById('scopeTotal').innerHTML = `${questions.length.toLocaleString()} <span>題</span>`;
     const max = Math.max(...Object.values(byType), 1);
-    document.getElementById('scopeChart').innerHTML = Object.entries(QUESTION_TYPES).filter(([code]) => byType[code] > 0).map(([code, name], index) => `<div class="scope-bar-item"><span class="scope-bar-label">${escapeTreeText(name)}</span><div class="scope-bar-track"><div class="scope-bar-fill" style="width:${Math.round(byType[code] / max * 100)}%;background:${chartColors[Object.keys(QUESTION_TYPES).indexOf(code)]}"></div></div><span class="scope-bar-count">${byType[code].toLocaleString()}</span></div>`).join('') || '<div class="scope-empty">此範圍尚無題目資料</div>';
+    document.getElementById('scopeChart').innerHTML = Object.entries(QUESTION_TYPES).filter(([code]) => byType[code] > 0).map(([code, name], index) => `<div class="scope-bar-item"><span class="scope-bar-label">${escapeTreeText(name)}</span><div class="scope-bar-track"><div class="scope-bar-fill" style="width:${Math.round(byType[code] / max * 100)}%;background:${chartColors[Object.keys(QUESTION_TYPES).indexOf(code)]}"></div></div><span class="scope-bar-count">${byType[code].toLocaleString()}</span></div>`).join('');
   }
   const escapeTreeText = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   let bookQuestions = [];

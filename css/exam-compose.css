@@ -276,6 +276,10 @@ body:is(.booklet-page,.exam-compose-page){height:100vh;height:100dvh;overflow:hi
 #composePanel3 .result-q.drag-over-after{box-shadow:inset 0 -2px var(--primary)}
 .compose-list-view .result-q.is-expanded .compose-full-question{display:block}
 .compose-list-view .result-q.is-expanded .compose-compact-question{display:none}
+/* 個別切換為目前全域模式的例外；重選全域模式時清除例外。 */
+:is(#composePanel3:not(.compose-list-view),#manualPanel2:not(.manual-list-view),#codedPanel2:not(.coded-list-view)) .result-q.is-expanded :is(.compose-full-question,.manual-full-question,.coded-full-question){display:none}
+:is(#composePanel3:not(.compose-list-view),#manualPanel2:not(.manual-list-view),#codedPanel2:not(.coded-list-view)) .result-q.is-expanded :is(.compose-compact-question,.manual-compact-question,.coded-compact-question){display:flex}
+:is(#composePanel3,#manualPanel2,#codedPanel2) .result-q{cursor:pointer}
 
 /* 選題頁標籤與試卷管理編輯頁使用相同尺寸和字重。 */
 :is(#composePanel3,#manualPanel2,#codedPanel2) .result-q :is(.q-catalog-num,.q-source,.badge,.replace-question){display:inline-flex;align-items:center;box-sizing:border-box;height:calc(1.23rem + 4px);padding:2px 8px;font-size:.82rem;line-height:1.5;border:0;border-radius:6px}

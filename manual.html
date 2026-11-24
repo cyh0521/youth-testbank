@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="css/theme.css?v=20261124-dialog-tape">
 <link rel="stylesheet" href="css/process-bar.css">
 
-<link rel="stylesheet" href="css/exam-compose.css?v=20261012-chapter-controls-18">
+<link rel="stylesheet" href="css/exam-compose.css?v=20261124-individual-display">
 <style>
 .manual-layout{display:block}
 .manual-panel[hidden]{display:none}
@@ -23,7 +23,6 @@
 .manual-panel .result-section-title:has(.result-type-toggle){padding:0}
 .result-list{border:0;border-radius:0}
 #manualPanel2 .result-section{border:0;border-radius:0;box-shadow:none}
-#bankList .result-q{cursor:default}
 .manual-panel .result-q{gap:6px}
 .manual-panel .result-q .q-num{width:auto;min-width:18px;text-align:left}
 .result-q.selected{background:#eaf1f8}
@@ -43,7 +42,7 @@
 .manual-list-view .manual-full-question{display:none}
 .manual-list-view .manual-compact-question{display:flex}
 .manual-list-view .result-q{align-items:flex-start}
-#manualPanel2.manual-list-view .result-q{cursor:pointer}
+#manualPanel2 .result-q{cursor:pointer}
 .manual-list-view .result-q.is-expanded .manual-full-question{display:block}
 .manual-list-view .result-q.is-expanded .manual-compact-question{display:none}
 .manual-list-view .result-q .q-body{min-width:0}
@@ -74,11 +73,16 @@
 </style>
 <link rel="stylesheet" href="css/site-redesign.css?v=20261016-yellow-titles">
 <link rel="stylesheet" href="css/compose-redesign.css?v=20261014-filter-menu-right-padding">
+<link rel="stylesheet" href="css/compose-papercraft.css?v=20261124-unboxed-totals">
+<link rel="stylesheet" href="css/manual-papercraft.css?v=20261124-unboxed-totals">
 </head>
-<body class="exam-compose-page selection-redesign-page">
+<body class="exam-compose-page manual-selection-page selection-redesign-page">
 <script src="js/icons.js"></script>
 <script src="js/core.js?v=20261008-choice-images"></script>
 <div class="layout">
+<div class="paper-corner paper-corner--left" aria-hidden="true"><svg viewBox="0 0 120 145"><g style="filter:drop-shadow(2px 3px 2px #66543429)"><path d="M-5-4 112-4 17 91-5 110Z" fill="#dacaac"/><path d="M-5-4 112-4 17 89" fill="#f0e4c9"/></g><g style="filter:drop-shadow(2px 4px 2px #43563730)"><path d="M-5 14 90-2 4 135-5 126Z" fill="#94a586"/><path d="M-5 14 90-2 29 58Z" fill="#bfcaab"/><path d="M29 58 90-2 4 135Z" fill="#a9b89a"/></g><g style="filter:drop-shadow(1px 2px 1px #7e663329)"><path d="M-5-3 43-3-5 45Z" fill="#ddbf77"/><path d="M-5-3 43-3-5 38Z" fill="#edda9e"/></g></svg></div>
+<div class="paper-corner paper-corner--right" aria-hidden="true"><svg viewBox="0 0 120 145"><g style="filter:drop-shadow(2px 3px 2px #66543429)"><path d="M-5-4 108-4 17 91-5 110Z" fill="#dacaac"/><path d="M-5-4 108-4 17 89" fill="#f0e4c9"/></g><g style="filter:drop-shadow(2px 4px 2px #43563730)"><path d="M-5 14 87-2 4 123-5 118Z" fill="#94a586"/><path d="M-5 14 87-2 29 58Z" fill="#bfcaab"/><path d="M29 58 87-2 4 123Z" fill="#a9b89a"/></g><g style="filter:drop-shadow(1px 2px 1px #7e663329)"><path d="M-5-3 35-3-5 37Z" fill="#ddbf77"/><path d="M-5-3 35-3-5 31Z" fill="#edda9e"/></g></svg></div>
+
   <header class="site-header" id="sidebar"></header>
   <script src="js/shell.js?v=20261019-user-guide"></script>
   <div class="main" inert>
@@ -87,18 +91,18 @@
       <div class="topbar-breadcrumb"><span>首頁</span> › 手動選題</div>
     </div>
     <div class="page-content">
-<header class="compose-page-heading"><div class="compose-page-title"><h1>手動選題</h1><p>逐題挑選，彈性組卷</p></div><section class="import-progress" aria-label="手動選題流程" style="--process-step-count:5;--process-initial-width:20%"><div class="steps" role="list"><div class="step active" id="manualStep1" role="listitem"><span class="step-num">1</span><span class="step-copy"><strong>出題範圍</strong></span></div><div class="step" id="manualStep2" role="listitem"><span class="step-num">2</span><span class="step-copy"><strong>選擇題目</strong></span></div><div class="step" id="manualStep3" role="listitem"><span class="step-num">3</span><span class="step-copy"><strong>題型與配分</strong></span></div><div class="step" id="manualStep4" role="listitem"><span class="step-num">4</span><span class="step-copy"><strong>試卷設定</strong></span></div><div class="step" id="manualStep5" role="listitem"><span class="step-num">5</span><span class="step-copy"><strong>預覽試卷</strong></span></div></div><div class="import-progress-track" id="manualProgressTrack" role="progressbar" aria-label="手動選題進度" aria-valuemin="1" aria-valuemax="5" aria-valuenow="1"><div class="import-progress-fill" id="manualProgressFill"></div></div></section></header><div class="manual-layout"><section id="manualPanel1" class="manual-panel"><div id="examScope"></div></section><section id="manualPanel2" class="manual-panel manual-list-view" hidden><div class="selection-layout">        <div class="card">
+<header class="compose-page-heading"><div class="compose-page-title"><h1>手動選題</h1><p>逐題挑選，彈性組卷</p></div><section class="import-progress" aria-label="手動選題流程" style="--process-step-count:5;--process-initial-width:20%"><div class="steps" role="list"><div class="step active" id="manualStep1" role="listitem"><span class="step-num">1</span><span class="step-copy"><strong>出題範圍</strong></span></div><div class="step" id="manualStep2" role="listitem"><span class="step-num">2</span><span class="step-copy"><strong>選擇題目</strong></span></div><div class="step" id="manualStep3" role="listitem"><span class="step-num">3</span><span class="step-copy"><strong>題型與配分</strong></span></div><div class="step" id="manualStep4" role="listitem"><span class="step-num">4</span><span class="step-copy"><strong>試卷設定</strong></span></div><div class="step" id="manualStep5" role="listitem"><span class="step-num">5</span><span class="step-copy"><strong>預覽試卷</strong></span></div></div><div class="import-progress-track" id="manualProgressTrack" role="progressbar" aria-label="手動選題進度" aria-valuemin="1" aria-valuemax="5" aria-valuenow="1"><div class="import-progress-fill" id="manualProgressFill"></div></div></section></header><div class="manual-layout compose-layout"><section id="manualPanel1" class="manual-panel"><div id="examScope"></div></section><section id="manualPanel2" class="manual-panel" hidden><div class="selection-layout">        <div class="card">
           <div class="card-header">
             <div class="scope-title"><h2>題目庫</h2><span class="scope-available" id="bankCount">︱共 0 題</span></div>
           </div>
-          <div class="selection-scroll-area"><div class="manual-filters manual-bank-tools"><div class="manual-filter-menu" id="manualFilterMenu"><button class="btn btn-ghost btn-sm ep-panel-toggle" type="button" id="manualFilterToggle" aria-expanded="false" aria-controls="manualFilterPanel" onclick="toggleManualFilterMenu()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h11M4 17h16"/><circle cx="18" cy="12" r="2"/></svg><span>條件選擇</span></button><div class="manual-filter-popover" id="manualFilterPanel" hidden><fieldset><legend>題型</legend><div id="manualTypeChecks"></div></fieldset><fieldset><legend>難度</legend><div id="manualDifficultyChecks"></div></fieldset></div></div>
+          <div class="selection-scroll-area"><div class="manual-filters manual-bank-tools"><div class="edit-q-view-toggle" role="group" aria-label="題目庫顯示模式"><button id="manualBankListBtn" class="active" type="button" onclick="setManualQDisplay(false,'bank')" aria-pressed="true" aria-controls="bankList"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>清單</button><button id="manualBankFullBtn" type="button" onclick="setManualQDisplay(true,'bank')" aria-pressed="false" aria-controls="bankList"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 10 5-10 5L2 7l10-5ZM2 12l10 5 10-5M2 17l10 5 10-5"/></svg>完整</button></div><div class="manual-filter-menu" id="manualFilterMenu"><button class="btn btn-ghost btn-sm ep-panel-toggle" type="button" id="manualFilterToggle" aria-expanded="false" aria-controls="manualFilterPanel" onclick="toggleManualFilterMenu()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h11M4 17h16"/><circle cx="18" cy="12" r="2"/></svg><span>條件選擇</span></button><div class="manual-filter-popover" id="manualFilterPanel" hidden><fieldset><legend>題型</legend><div id="manualTypeChecks"></div></fieldset><fieldset><legend>難度</legend><div id="manualDifficultyChecks"></div></fieldset></div></div>
               <div class="form-group">
                 <input class="form-control" id="fKeyword" aria-label="搜尋題目" placeholder="搜尋題目…" oninput="applyFilters()">
               </div>
 
 </div>
 
-          <div class="bank-list"  id="bankList">
+          <div class="bank-list manual-list-view"  id="bankList">
             <div class="scope-empty">請先在「出題範圍」選擇有題目的章節。</div>
           </div></div>
           <div class="pag-wrap" id="bankPag"></div>
@@ -109,9 +113,9 @@
               <div class="scope-title"><h2>已選題目</h2><span class="sr-only" id="selCountLabel">︱已選 0 題</span></div>
 <div class="scope-header-actions"><button class="btn btn-previous btn-sm" onclick="goManualStep(1)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10.5 6-6 6 6 6"/><path d="m18 6-6 6 6 6" stroke-opacity=".5"/></svg>上一步</button><button class="btn btn-primary btn-sm" onclick="goManualStep(3)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m13.5 6 6 6-6 6"/><path d="m6 6 6 6-6 6" stroke-opacity=".5"/></svg>下一步：題型與配分</button></div>
             </div>
-            <div class="selection-scroll-area"><div class="compose-result-info selected-result-info"><div id="selectedStats" class="preview-stats" aria-live="polite"><div class="preview-stat">共 <strong>0</strong> 題</div><div class="preview-stat">題型 <strong>0</strong> 種</div></div><div class="compose-result-tools"><div class="edit-q-view-toggle" role="group" aria-label="題目顯示模式"><button id="manualListBtn" class="active" type="button" onclick="setManualQDisplay(false)" aria-pressed="true" aria-controls="bankList selList"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>清單</button><button id="manualFullBtn" type="button" onclick="setManualQDisplay(true)" aria-pressed="false" aria-controls="bankList selList"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 10 5-10 5L2 7l10-5ZM2 12l10 5 10-5M2 17l10 5 10-5"/></svg>完整</button></div></div></div>
-            <div id="selList" class="selected-list">
-              <div style="text-align:center;padding:32px;color:var(--text-muted);font-size:.9rem">點擊「加入」將題目加入試卷</div>
+            <div class="selection-scroll-area"><div class="compose-result-info selected-result-info"><div id="selectedStats" class="preview-stats" aria-live="polite"><div class="preview-stat">共 <strong>0</strong> 題</div><div class="preview-stat">題型 <strong>0</strong> 種</div></div><div class="compose-result-tools"><div class="edit-q-view-toggle" role="group" aria-label="已選題目顯示模式"><button id="manualListBtn" class="active" type="button" onclick="setManualQDisplay(false)" aria-pressed="true" aria-controls="selList"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>清單</button><button id="manualFullBtn" type="button" onclick="setManualQDisplay(true)" aria-pressed="false" aria-controls="selList"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 10 5-10 5L2 7l10-5ZM2 12l10 5 10-5M2 17l10 5 10-5"/></svg>完整</button></div></div></div>
+            <div id="selList" class="selected-list manual-list-view">
+              <div style="text-align:center;padding:32px;color:var(--text-muted);font-size:.9rem">點擊「選題」將題目加入試卷</div>
             </div></div>
 </div></div></section><section id="manualPanel3" class="manual-panel" hidden><section class="card"><div class="card-header"><div class="scope-title"><h2>每題配分</h2><span class="type-title-note">︱自動配分或手動調整</span></div><div class="scope-header-actions"><button class="btn btn-previous btn-sm" onclick="goManualStep(2)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10.5 6-6 6 6 6"/><path d="m18 6-6 6 6 6" stroke-opacity=".5"/></svg>上一步</button><button class="btn btn-primary btn-sm" onclick="goManualStep(4)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m13.5 6 6 6-6 6"/><path d="m6 6 6 6-6 6" stroke-opacity=".5"/></svg>下一步：試卷設定</button></div></div><div class="type-card-body"><div class="score-cfg" id="scoreCfg"></div><div class="total-score-bar" id="totalScoreBar"><span id="totalScoreVal">總計：0 分</span></div><div class="score-tools"><label class="integer-score-option"><input type="checkbox" id="manualIntegerScores" checked onchange="toggleManualIntegerScores()">以整數配分（未勾選時以 0.5 分為調整單位）</label><div class="score-tools-actions"><button type="button" class="btn btn-ghost btn-sm" onclick="clearManualScores()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 3 5 5a2 2 0 0 1 0 3L11 21H6l-4-4a2 2 0 0 1 0-3L13 3a2 2 0 0 1 3 0zM8 8l8 8M11 21h11"/></svg>清除配分</button><button class="btn btn-auto-score btn-sm" onclick="autoManualScores()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3-1.9 5.8L4 10l5.8 1.9L12 18l1.9-5.8L20 10l-5.8-1.9zM5 18l-.7 1.4L3 20l1.3.6L5 22l.7-1.4L7 20l-1.3-.6zM19 16l-.7 1.4L17 18l1.3.6L19 20l.7-1.4L21 18l-1.3-.6z"/></svg>自動配分</button></div></div></div></section></section><section id="manualPanel4" class="manual-panel" hidden>
           <div class="scope-layout settings-layout">
@@ -147,7 +151,7 @@
 </div>
 
 <script type="module">
-import { renderScopePanel, mountScopeSelector } from './js/exam-scope.js?v=20261013-no-default-subject';
+import { renderScopePanel, mountScopeSelector } from './js/exam-scope.js?v=20261124-empty-chart';
 import { guardPage } from './js/auth-guard.js';
 import { showExamPreview, showHeaderSettings, newExamHeader, loadAppearance, mountInlineHeaderEditor, buildHeaderHtml, fontStackById, togglePreviewPanel } from './js/exam-preview.js?v=20261015-selected-scope';
 import { allocateTypeScores, AUTO_SCORE_WEIGHTS } from './js/score-allocation.js?v=20261007-weighted-scores';
@@ -235,12 +239,13 @@ function manualQuestionBody(q, action = '') {
     <div class="q-ans"><span class="answer-label">答案</span><span class="answer-text">${UI.questionHtml(q.answer || '—')}</span></div></div>`;
 }
 
-const expandedManualQuestions = new Set();
+const expandedManualQuestions = { bank:new Set(), selected:new Set() };
+function manualQuestionSide(row) { return row.closest('#bankList') ? 'bank' : 'selected'; }
 function toggleManualQuestionDisplay(row) {
-  if(!document.getElementById('manualPanel2').classList.contains('manual-list-view')) return;
   const id=row.dataset.id;
-  const expanded=!expandedManualQuestions.has(id);
-  if(expanded) expandedManualQuestions.add(id); else expandedManualQuestions.delete(id);
+  const overrides=expandedManualQuestions[manualQuestionSide(row)];
+  const expanded=!overrides.has(id);
+  if(expanded) overrides.add(id); else overrides.delete(id);
   row.classList.toggle('is-expanded',expanded);
 }
 for(const listId of ['bankList','selList']) {
@@ -256,10 +261,14 @@ for(const listId of ['bankList','selList']) {
     }
   });
 }
-window.setManualQDisplay = full => {
-  document.getElementById('manualPanel2').classList.toggle('manual-list-view',!full);
-  const list=document.getElementById('manualListBtn');
-  const complete=document.getElementById('manualFullBtn');
+window.setManualQDisplay = (full, side = 'selected') => {
+  const root=document.getElementById(side === 'bank' ? 'bankList' : 'selList');
+  expandedManualQuestions[side].clear();
+  root.querySelectorAll('.result-q.is-expanded').forEach(row => row.classList.remove('is-expanded'));
+  root.classList.toggle('manual-list-view',!full);
+  const prefix=side === 'bank' ? 'manualBank' : 'manual';
+  const list=document.getElementById(prefix+'ListBtn');
+  const complete=document.getElementById(prefix+'FullBtn');
   list.classList.toggle('active',!full); complete.classList.toggle('active',full);
   list.setAttribute('aria-pressed',String(!full)); complete.setAttribute('aria-pressed',String(full));
 };
@@ -314,10 +323,10 @@ function renderBank() {
       <div class="result-list" id="manual-bank-${tCode}"${collapsedManualTypes.bank.has(tCode) ? ' hidden' : ''}>
         ${!qs.length ? '<div class="scope-empty">此題型的題目皆已加入試卷</div>' : ''}
         ${qs.map((q, index) => {
-          return `<div class="result-q${expandedManualQuestions.has(String(q.id)) ? ' is-expanded' : ''}" id="qcard-${q.id}" data-id="${q.id}" tabindex="0">
+          return `<div class="result-q${expandedManualQuestions.bank.has(String(q.id)) ? ' is-expanded' : ''}" id="qcard-${q.id}" data-id="${q.id}" tabindex="0">
             <span class="q-num">${index+1}.</span>
             <div class="q-body">
-              ${manualQuestionBody(q, `<button type="button" class="btn btn-ghost btn-sm replace-question si-remove" onclick="toggleQ('${q.id}',true)">加入</button>`)}
+              ${manualQuestionBody(q, `<button type="button" class="btn btn-ghost btn-sm replace-question si-remove" onclick="toggleQ('${q.id}',true)">選題</button>`)}
             </div>
 
           </div>`;
@@ -341,6 +350,8 @@ function buildRange(cur, total) {
 window.goPage = p => { curPage=p; renderBank(); };
 window.toggleQ = (id, add, silent=false) => {
   const q = allQs.find(x=>x.id===id); if (!q) return;
+  expandedManualQuestions.bank.delete(String(id));
+  expandedManualQuestions.selected.delete(String(id));
   if (add) { selectedIds.add(id); if (!selectedOrder.includes(id)) selectedOrder.push(id); selQuestions[id]=q; }
   else { selectedIds.delete(id); selectedOrder=selectedOrder.filter(x=>x!==id); delete selQuestions[id]; }
   if (!silent) {
@@ -358,7 +369,7 @@ function renderSelected() {
   document.getElementById('selCountLabel').textContent = `︱已選 ${count} 題`;
   const list = document.getElementById('selList');
   if (!count) {
-    list.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-muted);font-size:.9rem">點擊「加入」將題目加入試卷</div>';
+    list.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-muted);font-size:.9rem">點擊「選題」將題目加入試卷</div>';
     document.getElementById('scoreCfg').style.display = 'none';
     document.getElementById('totalScoreBar').style.display = 'none';
     calcTotal();
@@ -381,7 +392,7 @@ function renderSelected() {
       <div class="result-section-title">${manualTypeToggle('selected', tCode, `${tLabel}（${items.length} 題${tCode === 'T4' ? `，共 ${items.reduce((sum,{q})=>sum+blankCount(q),0)} 格` : ''}）`)}</div>
       <div class="result-list" id="manual-selected-${tCode}"${collapsedManualTypes.selected.has(tCode) ? ' hidden' : ''}>
         ${items.map(({q, id}, index) => {
-          return `<div class="result-q${expandedManualQuestions.has(String(id)) ? ' is-expanded' : ''}" data-id="${id}" tabindex="0"
+          return `<div class="result-q${expandedManualQuestions.selected.has(String(id)) ? ' is-expanded' : ''}" data-id="${id}" tabindex="0"
             ondragover="dragOver(event,'${id}')" ondrop="dropOn(event,'${id}')" ondragend="dragEnd()">
             <button type="button" class="drag-handle" draggable="true" ondragstart="dragStart(event,'${id}')" title="拖曳排序" aria-label="拖曳調整${tLabel}第 ${index+1} 題順序"><svg width="16" height="18" viewBox="0 0 16 18" fill="currentColor" aria-hidden="true"><circle cx="5" cy="4" r="1.3"/><circle cx="11" cy="4" r="1.3"/><circle cx="5" cy="9" r="1.3"/><circle cx="11" cy="9" r="1.3"/><circle cx="5" cy="14" r="1.3"/><circle cx="11" cy="14" r="1.3"/></svg></button>
             <span class="q-num">${index+1}.</span>
@@ -519,7 +530,6 @@ function renderSettingsHeaderSample() {
 }
 
 function renderExamSummary() {
-  const colors = { T1:'#4b84cf', T2:'#3ca6a1', T3:'#cb9d36', T4:'#9670bf', T5:'#da8260', T6:'#6d819e' };
   const rows = settingsTypeOrder.map(code => ({code,label:QUESTION_TYPES[code],defaultScore:TYPE_SCORES[code]})).map(type => {
     const questions = selectedOrder.map(id=>selQuestions[id]).filter(q=>q?.type === type.code);
     const units = type.code === 'T4' ? questions.reduce((sum,q)=>sum+blankCount(q),0) : questions.length;
@@ -528,8 +538,7 @@ function renderExamSummary() {
   }).filter(type => type.count > 0);
   const total = Math.round(rows.reduce((sum, type) => sum + type.total, 0) * 10) / 10;
   document.getElementById('manualSummary').innerHTML = `
-    <div class="exam-score-chart" role="img" aria-label="各題型配分分布：${rows.map(type => `${type.label} ${type.total} 分`).join('、')}">${rows.map(type => `<span style="width:${total ? type.total / total * 100 : 0}%;background:${colors[type.code]}" title="${type.label}：${type.total} 分"></span>`).join('')}</div>
-    <div class="exam-summary-table-wrap"><table class="exam-summary-table"><thead><tr><th scope="col">題型</th><th scope="col">題數</th><th scope="col">配分</th><th scope="col">小計</th></tr></thead><tbody>${rows.map(type => `<tr draggable="true" data-type="${type.code}"><td><span class="exam-type-drag" aria-hidden="true">⠿</span><span class="exam-type-dot" style="background:${colors[type.code]}"></span>${type.label}</td><td>${type.count} 題${type.code === 'T4' ? `<small>共 ${type.units} 格</small>` : ''}</td><td>${type.score} 分／${type.code === 'T4' ? '格' : '題'}</td><td>${type.total} 分</td></tr>`).join('')}</tbody><tfoot><tr><td colspan="4">總分：${total} 分</td></tr></tfoot></table></div>`;
+    <div class="exam-summary-table-wrap"><table class="exam-summary-table"><thead><tr><th scope="col">題型</th><th scope="col">題數</th><th scope="col">配分</th><th scope="col">小計</th></tr></thead><tbody>${rows.map(type => `<tr draggable="true" data-type="${type.code}"><td><span class="exam-type-drag" aria-hidden="true">⠿</span>${type.label}</td><td>${type.count} 題${type.code === 'T4' ? `<small>共 ${type.units} 格</small>` : ''}</td><td>${type.score} 分／${type.code === 'T4' ? '格' : '題'}</td><td>${type.total} 分</td></tr>`).join('')}</tbody><tfoot><tr><td colspan="4">總分：${total} 分</td></tr></tfoot></table></div>`;
   const table = document.querySelector('#manualSummary tbody');
   let draggedType = null;
   table.addEventListener('dragstart', event => {

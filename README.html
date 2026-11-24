@@ -9,7 +9,7 @@
 @media print{.workspace{padding:0;max-width:none}.document{max-width:none}section{background:white;border:0;border-radius:0;padding:12px 0;margin-bottom:20px}.topic-block{margin-top:18px;padding-top:18px}.journal-entry{break-inside:avoid}.journal-entry dd,p,li{font-size:10pt}.section-title{break-after:avoid}table{table-layout:auto}}
 </style></head>
 <body id="top"><div class="workspace"><aside class="rail"><div class="mark">PROJECT NOTEBOOK / 02</div><h2>幼獅題庫系統</h2><nav aria-label="工作筆記目錄"><a href="#overview"><small>01</small>專案定位</a><a href="#features"><small>02</small>重點特色</a><a href="#engineering"><small>03</small>編寫重點</a><a href="#development"><small>04</small>開發過程與階段紀錄</a><a href="#usage"><small>05</small>操作與資料更新</a><a href="#maintenance"><small>06</small>維護與驗證</a><a href="#limitations"><small>07</small>修正筆記與待驗收項目</a></nav><div class="rail-foot"><button class="button" type="button" onclick="window.print()">列印筆記</button><a href="index.html">開啟系統</a></div></aside>
-<main class="document"><header class="hero"><p class="eyebrow">開發工作筆記 · 整理至 2026 年 11 月 23 日</p><h1>從題庫建置<br>到試卷輸出的開發紀錄</h1><p class="lead">記下功能如何形成、程式為什麼這樣安排，以及修正後還需要確認什麼。保留足夠脈絡，讓後續維護能接續工作。</p><div class="metadata"><span>原生前端 + Firebase</span><span>靜態題庫 2,309 題／6 冊</span><span>驗證與部署分開記錄</span></div></header><section id="overview" aria-labelledby="overview-title"><div class="section-title"><span>01</span><h2 id="overview-title">專案定位</h2></div>
+<main class="document"><header class="hero"><p class="eyebrow">開發工作筆記 · 整理至 2026 年 11 月 24 日</p><h1>從題庫建置<br>到試卷輸出的開發紀錄</h1><p class="lead">記下功能如何形成、程式為什麼這樣安排，以及修正後還需要確認什麼。保留足夠脈絡，讓後續維護能接續工作。</p><div class="metadata"><span>原生前端 + Firebase</span><span>靜態題庫 9,153 題／21 冊</span><span>驗證與部署分開記錄</span></div></header><section id="overview" aria-labelledby="overview-title"><div class="section-title"><span>01</span><h2 id="overview-title">專案定位</h2></div>
 <p>幼獅文化線上命題系統，供教師與管理員建立題庫、組卷、保存試卷及紙本輸出。採 HTML、CSS 與原生 JavaScript，搭配 Firebase 驗證／資料儲存及網頁空間靜態題庫。</p>
 <p>教師管理自己的試卷；管理員另負責課本目錄、題目匯入與維護及帳號管理。班級、姓名、座號是試卷表頭內容，目前不提供學生帳號、線上作答或成績管理。</p>
 <div class="note"><strong>筆記的閱讀方式</strong><p>先看目前功能與編寫決策，再沿時間查看開發紀錄。歷史紀錄保留當時做法，已被改版取代的導覽、表頭或輸出功能，請以目前說明為準。</p></div></section><section id="features" aria-labelledby="features-title"><div class="section-title"><span>02</span><h2 id="features-title">重點特色</h2></div><div class="section-opening">
@@ -43,7 +43,14 @@
 </div><div class="topic-block"><h3>試卷快照：預設與成品分開</h3>
 <p>使用者的 <code>examPreferences</code> 保存新試卷預設；每張試卷另保存表頭與外觀。修改帳號預設前，為尚無快照的舊試卷保存當時值；草稿修改保留在草稿。這個分界避免改一次字型或表頭就改動其他已完成試卷。</p></div><div class="topic-block"><h3>反譯模組與圖片匯入</h3>
 <p><code>js/reverse-import.js</code> 以本地 JSZip 讀取 DOCX 的 XML 與關係檔，解析題目並使用 <code>assets/reverse-import/choice.docx</code>、<code>other.docx</code> 組裝入題檔。<code>js/reverse-import-page.js</code> 負責管理員驗證、檔案狀態、目錄比對、欄位編輯與下載。</p>
-<p>反譯檔案在瀏覽器處理，不直接寫題庫。題目匯入用 Mammoth 提取 PNG／JPG，預覽時保留圖片標記，正式匯入取得題號後再命名圖片；題目與圖片檔分開發布，避免把圖片內容塞進 Firestore。</p></div></section><section id="development" aria-labelledby="development-title"><div class="section-title"><span>04</span><h2 id="development-title">開發過程與階段紀錄</h2></div><article class="journal-entry"><header><time>2026/11/23</time><h3>首頁、試卷管理與電腦選題：輕紙藝改版</h3></header><dl>
+<p>反譯檔案在瀏覽器處理，不直接寫題庫。題目匯入用 Mammoth 提取 PNG／JPG，預覽時保留圖片標記，正式匯入取得題號後再命名圖片；題目與圖片檔分開發布，避免把圖片內容塞進 Firestore。</p></div></section><section id="development" aria-labelledby="development-title"><div class="section-title"><span>04</span><h2 id="development-title">開發過程與階段紀錄</h2></div><article class="journal-entry"><header><time datetime="2026-11-24">2026/11/24</time><h3>電腦選題與手動選題：紙感介面及顯示操作</h3></header><dl>
+<div><dt>已提交</dt><dd>提交 <code>3704d48</code> 整理首頁、試卷管理及電腦選題的紙藝樣式。電腦選題五步流程統一流程列、暖紙面、範圍卡片、題型與配分、試卷表頭、內嵌預覽及膠帶對話框；相關樣式置於原樣式之後，並更新載入版本參數。</dd></div>
+<div><dt>手動選題</dt><dd>本機已延伸至手動選題五步流程，共用 <code>css/compose-papercraft.css</code>，以新增的 <code>css/manual-papercraft.css</code> 處理題目庫、已選題目、選取與滑過狀態、選題／移除按鈕及拖曳提示。題目庫與已選清單可各自選擇「清單／完整」，互不影響；加入或移除題目時清除該題的個別顯示狀態。</dd></div>
+<div><dt>操作細節</dt><dd>電腦、手動及編碼選題都可在清單或完整模式下，對單題切換顯示；切換整體模式時清除個別切換，避免殘留狀態。手動題目庫按鈕改稱「選題」。配分與總分改為較輕量的呈現，調整下載視窗間距；未選科目或冊別時，題型圖表不再顯示多餘空資料提示。</dd></div>
+<div><dt>提交範圍</dt><dd>手動專用樣式、兩側獨立檢視、單題切換與後續總分／間距微調目前仍在工作目錄，尚未提交。編碼選題及題本僅有共用行為或載入版本調整，不代表已完成整頁紙藝改版。</dd></div>
+<div><dt>既有驗證</dt><dd>先前手動選題筆記記錄範圍、儲存與選題相關 10 項測試通過，並以離線範例檢查 1440、768、390px 的五步外框、選取色與膠帶位置；此為前次驗證，本次未重跑該視覺檢查。</dd></div>
+<div><dt>本次檢查</dt><dd>重新執行手動範圍、電腦重選、題序及範圍概況四組 Node 測試，共 12 項全部通過。靜態題庫驗證通過：9,153 題、21 冊；另有 1 個舊題目檔未被 manifest 引用。本次未連接正式 Firebase、重跑瀏覽器完整流程，或驗收 Word 與實際列印。</dd></div>
+</dl></article><article class="journal-entry"><header><time>2026/11/23</time><h3>首頁、試卷管理與電腦選題：輕紙藝改版</h3></header><dl>
 <div><dt>整體風格</dt><dd>暖象牙白紙面、米色底襯、柔和陰影與綠黃主色；頂欄加入薄紙邊、淡黃色目前頁面標記及紙片式下拉選單，左右上角採輕量疊紙裝飾。</dd></div>
 <div><dt>首頁</dt><dd>維持 21 冊配置，卡片改為正方形；三張試作科目圖最終恢復原始版本。常用科目勾選框在滑過時顯示並隨卡片浮動，保留鍵盤與觸控操作。女老師咖啡插圖改為剪紙風，移除筆電背板圓圈，人物跨出介紹紙箋，紙飛機獨立定位。首頁改用全寬主區域捲動，捲軸貼齊右緣。</dd></div>
 <div><dt>試卷管理</dt><dd>列表採薄紙卡與暖燕麥色表頭，滑過為淡蜂蜜色；科目以較明顯的分類色點與文字表示。下載、儲存為綠色，刪除、關閉為紅色，一般操作採淡色細框。列表及預覽、編輯工具列統一按鈕高度與內距，移除明顯高光和外凸陰影。</dd></div>
@@ -85,7 +92,10 @@
 <p>輸出全文新細明體；填空連續底線使用 Times New Roman，僅選擇題簡答欄英數字使用全形。圖片保留原尺寸，以段內換行附圖；選擇題題幹圖片移至結尾，選項／解析圖片仍保留所在欄位。</p>
 </div><div class="topic-block"><h3>10/15 匯入圖片與檔案清單更新</h3>
 <p>轉檔與入題預覽會提示含圖片題目；可核對題型、來源檔、題目位置與圖片欄位。正式匯入後，依新題號建立圖片檔名，完成畫面下載的 ZIP 只收錄成功寫入批次的圖片，再將 images 資料夾隨網站發布。</p>
-<p>已匯入檔案列表依科目、冊別與原檔名整理，同冊同檔名合併計數；可展開／收合冊別、選取多筆及批次刪除。刪除後若要反映到出題頁，仍需重新匯出完整靜態題庫。</p></div></section><section id="maintenance" aria-labelledby="maintenance-title"><div class="section-title"><span>06</span><h2 id="maintenance-title">維護與驗證</h2></div><div class="section-opening">
+<p>已匯入檔案列表依科目、冊別與原檔名整理，同冊同檔名合併計數；可展開／收合冊別、選取多筆及批次刪除。刪除後若要反映到出題頁，仍需重新匯出完整靜態題庫。</p></div></section><section id="maintenance" aria-labelledby="maintenance-title"><div class="section-title"><span>06</span><h2 id="maintenance-title">維護與驗證</h2></div><div class="topic-block"><h3>2026-11-24 最新檢查</h3>
+<p>本次以 <code>node scripts/verify-textbank.mjs</code> 驗證靜態題庫，共 9,153 題、21 冊通過；1 個舊版題目檔未被索引引用，確認新版發布後可另行清理，本次未刪檔。</p>
+<pre><code>node --test tests/manual-scope.test.mjs tests/compose-regeneration.test.mjs tests/compose-question-order.test.mjs tests/scope-overview.test.mjs</code></pre>
+<p>上述 12 項測試全部通過，涵蓋空章節、章節／小節邊界、重選、題序、題數概況與頂欄進入時不預選科目。這些測試不涵蓋本次所有 CSS 外觀或新加入的雙側顯示操作；仍需登入後確認單題切換、選題／移除、配分、儲存及預覽。未重跑完整測試套件或正式網站、Word、列印驗收。</p></div><div class="section-opening">
 <p>網站無建置步驟；使用 ES Modules，請透過 HTTP Server 開啟，例如 <code>npx serve .</code>，入口為 <code>index.html</code>。</p>
 <pre><code>node scripts/verify-textbank.mjs
 node --test tests/*.test.mjs

@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="css/theme.css?v=20261124-dialog-tape">
 <link rel="stylesheet" href="css/process-bar.css">
 
-<link rel="stylesheet" href="css/exam-compose.css?v=20261012-chapter-controls-18">
+<link rel="stylesheet" href="css/exam-compose.css?v=20261124-individual-display">
 <style>
 .coded-layout{display:block}
 .coded-panel[hidden]{display:none}
@@ -110,7 +110,7 @@
 </div>
 
 <script type="module">
-import { renderScopePanel, mountScopeSelector } from './js/exam-scope.js?v=20261013-no-default-subject';
+import { renderScopePanel, mountScopeSelector } from './js/exam-scope.js?v=20261124-empty-chart';
 import { guardPage } from './js/auth-guard.js';
 import { showExamPreview, showHeaderSettings, newExamHeader, loadAppearance, mountInlineHeaderEditor, buildHeaderHtml, fontStackById, togglePreviewPanel } from './js/exam-preview.js?v=20261015-selected-scope';
 import { examScopeSnapshot } from './js/preview-scope.js?v=20261015-scope-audit';
@@ -180,6 +180,8 @@ function codedSelectedQuestionBody(q, action) {
 }
 const expandedCodedQuestions = new Set();
 window.setCodedQDisplay = full => {
+  expandedCodedQuestions.clear();
+  document.querySelectorAll('#codedPanel2 .result-q.is-expanded').forEach(row => row.classList.remove('is-expanded'));
   document.getElementById('codedPanel2').classList.toggle('coded-list-view',!full);
   for (const [id,active] of [['codedListBtn',!full],['codedFullBtn',full]]) {
     const button = document.getElementById(id);
@@ -188,7 +190,6 @@ window.setCodedQDisplay = full => {
   }
 };
 function toggleCodedQuestionDisplay(row) {
-  if (!document.getElementById('codedPanel2').classList.contains('coded-list-view')) return;
   const id = row.dataset.id;
   const expanded = !expandedCodedQuestions.has(id);
   if (expanded) expandedCodedQuestions.add(id); else expandedCodedQuestions.delete(id);
