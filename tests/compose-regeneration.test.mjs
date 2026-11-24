@@ -36,7 +36,7 @@ test('整卷重選會將所有題型混合亂序，並保留手動配分；取�
     },
     shuffleQuestions:items=>{shuffled++;return items[0].type==='T1'?mixed.slice(0,4):mixed.slice(4);},
     updateScoreRows:()=>assert.deepEqual(context.scoreOverrides,{T1:7.5,T2:35}),
-    renderPreview:groups=>{rendered=groups;},setComposeStep:step=>assert.equal(step,3),
+    expandedComposeQuestions:new Set(['old-expanded']),renderPreview:groups=>{assert.equal(context.expandedComposeQuestions.size,0);rendered=groups;},setComposeStep:step=>assert.equal(step,3),
     confirmAction:async options=>{assert.equal(options.actionLabel,'重新選題');return confirmResult;},
     UI:{toast(){}},
   };
@@ -98,7 +98,7 @@ test('每次按自動選題都重新選取；返回上一步後讀取最新章�
     UI:{escapeHtml:value=>String(value),toast:(message,level)=>{if(level!=='success')assert.fail(message);}},
     validateTypeCounts:()=>true, confirmAction:async()=>assert.fail('配分為100分，不應出現確認視窗'),
     autoAllocateScores() {}, updateScoreRows() {}, shuffleQuestions:questions=>[...questions],
-    renderPreview:groups=>previews.push(groups.flatMap(group=>group.items)),
+    expandedComposeQuestions:new Set(),renderPreview:groups=>previews.push(groups.flatMap(group=>group.items)),
   };
   const code = [
     page.slice(page.indexOf('function setComposeStep('),page.indexOf('// ── 初始化')),
@@ -150,7 +150,7 @@ test('每次按自動選題都重新選取；返回上一步後讀取最新章�
   assert.equal(previews.length,3);
   assert.equal(node('composePanel3').hidden,false);
   assert.equal(node('generateBtn').disabled,false);
-  assert.equal(node('generateBtnLabel').textContent,'下一步：自動選題');
+  assert.equal(node('generateBtnLabel').textContent,'下一步：檢視題目');
   assert.equal(node('regenerateAllBtn').disabled,false);
   assert.equal(node('regenerateAllBtnLabel').textContent,'重新選題');
 });
@@ -170,7 +170,7 @@ test('實際自動選題按鈕：3節有5道配合題，出2題可成功；改�
     generatedQuestions:[],generatedScopeChapters:[],scoreOverrides:{},sectionWeights:{'1-1':3,'1-2':2,'1-3':1},currentSections:()=>sections,difficultyHardRatio:()=>1,
     scopeSelector:{getQuestions:()=>pool,getSelectedChapters:()=>['1']},selectSectionQuestions,
     validateTypeCounts:()=>true,confirmAction:async()=>assert.fail('配分100分不應詢問確認'),
-    UI:{toast:message=>messages.push(message)},shuffleQuestions:q=>q,updateScoreRows(){},renderPreview(){},setComposeStep:step=>steps.push(step)};
+    UI:{toast:message=>messages.push(message)},shuffleQuestions:q=>q,updateScoreRows(){},expandedComposeQuestions:new Set(),renderPreview(){},setComposeStep:step=>steps.push(step)};
   runInNewContext(page.slice(page.indexOf('function chooseWeightedQuestions('),page.indexOf('function renderExamSettings('))+
     page.slice(page.indexOf('window.doGenerate ='),page.indexOf('const collapsedResultTypes =')),context);
   await context.window.doGenerate();
@@ -191,11 +191,11 @@ test('實際個別換題：總題數少於節數可跨節，不少於節數則�
     const questions=[original,...Array.from({length:total-1},(_,i)=>({id:`fixed-${i}`,type:'T1',chapterNum:1,sectionNum:i+2}))];
     const messages=[];
     const context={window:{_allBookQs:[replacement]},document:{querySelectorAll:()=>[{dataset:{ch:'1'}}],getElementById:()=>({value:'01'})},
-      cSubject:{value:'A1'},generatedQuestions:questions,TYPE_CONFIGS:[{code:'T1'},{code:'T5'}],filterComposePool:()=>[replacement],
+      expandedComposeQuestions:new Set(['old']),cSubject:{value:'A1'},generatedQuestions:questions,TYPE_CONFIGS:[{code:'T1'},{code:'T5'}],filterComposePool:()=>[replacement],
       currentSections:()=>sections,questionInSection,requiresSectionCoverage,UI:{toast:message=>messages.push(message)},renderPreview(){}};
     runInNewContext(page.slice(page.indexOf('async function replaceResultQuestion('),page.indexOf('window.openSaveModal =')),context);
     const button={disabled:false}; await context.replaceResultQuestion('old',button);
-    assert.equal(questions[0].id,total===2?'new':'old');
+    assert.equal(questions[0].id,total===2?'new':'old');assert.ok(context.expandedComposeQuestions.has(total===2?'new':'old'));
     assert.match(messages.at(-1),total===2?/已更換題目/:/此節必須保留至少一題/);
     assert.equal(button.disabled,false);
   }

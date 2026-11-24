@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>試卷管理 — 幼獅題庫系統</title>
-<link rel="stylesheet" href="css/theme.css?v=20261013-dialog-colors">
+<link rel="stylesheet" href="css/theme.css?v=20261124-dialog-tape">
 <link rel="stylesheet" href="css/dashboard.css?v=20261012-shared-exam-table">
 <link rel="stylesheet" href="css/exam-compose.css?v=20261011-scope-level-emphasis">
 
@@ -156,11 +156,14 @@ body.exam-editing .page-content{min-height:0;overflow-y:auto;overscroll-behavior
 </style>
 <link rel="stylesheet" href="css/site-redesign.css?v=20261016-yellow-titles">
 <link rel="stylesheet" href="css/exams-redesign.css?v=20261014-scope-selection-no-border">
+<link rel="stylesheet" href="css/exams-papercraft.css?v=20261124-panel-active-save">
 </head>
 <body class="exams-redesign-page">
 <script src="js/icons.js"></script>
-<script src="js/core.js?v=20261008-choice-images"></script>
+<script src="js/core.js?v=20261124-stable-question-fade"></script>
 <div class="layout">
+<div class="paper-corner paper-corner--left" aria-hidden="true"><svg viewBox="0 0 120 145"><g style="filter:drop-shadow(2px 3px 2px #66543429)"><path d="M-5-4 112-4 17 91-5 110Z" fill="#dacaac"/><path d="M-5-4 112-4 17 89" fill="#f0e4c9"/></g><g style="filter:drop-shadow(2px 4px 2px #43563730)"><path d="M-5 14 90-2 4 135-5 126Z" fill="#94a586"/><path d="M-5 14 90-2 29 58Z" fill="#bfcaab"/><path d="M29 58 90-2 4 135Z" fill="#a9b89a"/></g><g style="filter:drop-shadow(1px 2px 1px #7e663329)"><path d="M-5-3 43-3-5 45Z" fill="#ddbf77"/><path d="M-5-3 43-3-5 38Z" fill="#edda9e"/></g></svg></div>
+<div class="paper-corner paper-corner--right" aria-hidden="true"><svg viewBox="0 0 120 145"><g style="filter:drop-shadow(2px 3px 2px #66543429)"><path d="M-5-4 108-4 17 91-5 110Z" fill="#dacaac"/><path d="M-5-4 108-4 17 89" fill="#f0e4c9"/></g><g style="filter:drop-shadow(2px 4px 2px #43563730)"><path d="M-5 14 87-2 4 123-5 118Z" fill="#94a586"/><path d="M-5 14 87-2 29 58Z" fill="#bfcaab"/><path d="M29 58 87-2 4 123Z" fill="#a9b89a"/></g><g style="filter:drop-shadow(1px 2px 1px #7e663329)"><path d="M-5-3 35-3-5 37Z" fill="#ddbf77"/><path d="M-5-3 35-3-5 31Z" fill="#edda9e"/></g></svg></div>
   <header class="site-header" id="sidebar"></header>
   <script src="js/shell.js?v=20261019-user-guide"></script>
   <div class="main" inert>
@@ -181,7 +184,7 @@ body.exam-editing .page-content{min-height:0;overflow-y:auto;overscroll-behavior
       <section class="card hidden" id="editModal" aria-labelledby="editTitle" tabindex="-1">
   <div class="edit-card-inner">
     <div class="modal-header">
-      <div class="edit-card-heading"><div class="scope-title"><h3 id="editTitle">試卷</h3><button class="type-title-note edit-details-link" type="button" onclick="openEditDetails()">︱編輯<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button><button class="type-title-note edit-details-link" id="editScopeLink" type="button" onclick="openEditScope()" aria-haspopup="dialog" aria-controls="editScopeModal">︱命題範圍<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 10A9 9 0 1 1 14 3.5M16.8 11A5 5 0 1 1 13 7.2M20 4l-8 8M12 7v5h5"/><circle cx="12" cy="12" r="1"/></svg></button></div></div>
+      <div class="edit-card-heading"><div class="scope-title"><h3 id="editTitle">試卷</h3><button class="type-title-note edit-details-link" type="button" onclick="openEditDetails()">︱編輯名稱<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button><button class="type-title-note edit-details-link" id="editScopeLink" type="button" onclick="openEditScope()" aria-haspopup="dialog" aria-controls="editScopeModal">︱命題範圍<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 10A9 9 0 1 1 14 3.5M16.8 11A5 5 0 1 1 13 7.2M20 4l-8 8M12 7v5h5"/><circle cx="12" cy="12" r="1"/></svg></button></div></div>
       <div class="edit-card-actions">
         <button class="btn btn-ghost btn-sm" onclick="shuffleEditQs()" title="各題型內隨機重新排序"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m18 14 4 4-4 4M18 2l4 4-4 4M2 18h2.5a6 6 0 0 0 5.1-3l4.8-8a6 6 0 0 1 5.1-3H22M2 6h2.5a6 6 0 0 1 5.1 3l.5.8M14 17.2a6 6 0 0 0 5.5 2.8H22"/></svg>重新排序</button>
         <button class="btn btn-ghost btn-sm" id="editTypeOrderToggle" type="button" onclick="openEditTypeOrder()" aria-haspopup="dialog" aria-controls="editTypeOrderModal"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/><path d="m8 3-2 3 2 3m8 6 2 3-2 3"/></svg>題型排序</button>
@@ -197,7 +200,7 @@ body.exam-editing .page-content{min-height:0;overflow-y:auto;overscroll-behavior
       </div>
       <div class="edit-list-toolbar">
         <span style="display:inline-flex;align-items:center;gap:6px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block;flex:none"><circle cx="12" cy="12" r="10"/><path d="M12 11v6M12 7h.01"/></svg>題目可拖曳排序、換題或刪除</span>
-        <span id="editQCount" style="font-weight:600;color:var(--primary);margin-left:auto"></span>
+        <span id="editQCount" style="font-weight:600;margin-left:auto"></span>
         <div class="edit-q-view-toggle" role="group" aria-label="題目顯示模式"><button id="editQCompactBtn" class="active" type="button" onclick="setEditQDisplay(false)" aria-pressed="true" aria-controls="editQList"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>清單</button><button id="editQFullBtn" type="button" onclick="setEditQDisplay(true)" aria-pressed="false" aria-controls="editQList"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 10 5-10 5L2 7l10-5ZM2 12l10 5 10-5M2 17l10 5 10-5"/></svg>完整</button></div>
       </div>
       <div id="editQList" style="border:1px solid var(--border);border-radius:var(--radius);background:white"></div>
@@ -744,8 +747,7 @@ window.toggleEditQSection = type => {
   else editCollapsedTypes.delete(type);
 };
 
-function renderEditQList(typeScores = getCurrentEditScores()) {
-  const container = document.getElementById('editQList');
+function renderEditQList(typeScores = getCurrentEditScores(), container = document.getElementById('editQList')) {
   if (!editQOrder.length) {
     container.innerHTML = '<div style="padding:32px;text-align:center;color:var(--text-muted)">尚無題目</div>';
     updateEditTotal();
@@ -778,7 +780,7 @@ function renderEditQList(typeScores = getCurrentEditScores()) {
       <span class="eq-compact-meta" style="flex-shrink:0">${UI.diffBadge(q.difficulty)}</span>
       <span class="eq-text" title="${UI.escapeHtml(summary)}">${UI.escapeHtml(summary)}</span></div>
       <div class="eq-full"><div class="eq-full-meta"><span class="eq-full-num">${UI.escapeHtml(q.qnum || '—')}</span>${UI.diffBadge(q.difficulty)}${UI.typeBadge(q.type)}<span class="eq-full-source">頁數 ${UI.escapeHtml(q.source || '未註明')}</span></div><div class="eq-full-question">${fullQuestion}</div>${q.type !== 'T2' && q.type !== 'T3' && q.tail ? `<div>${UI.questionHtml(q.tail)}</div>` : ''}<div class="eq-full-answer"><span class="eq-full-answer-label">答案</span><span class="eq-full-answer-text">${UI.questionHtml(q.answer || '—')}</span></div></div>
-      <div class="eq-question-actions"><button class="eq-full-replace" type="button" onclick="replaceEditQ('${id}',this)" title="換題" aria-label="更換此題"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16m-4-4 4 4-4 4M20 17H4m4-4-4 4 4 4"/></svg></button><button class="eq-remove" type="button" onclick="removeEditQ('${id}')" title="刪除題目" aria-label="從試卷刪除此題"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+      <div class="eq-question-actions"><button class="eq-full-replace" type="button" onclick="replaceEditQ('${id}',this)" title="換題" aria-label="更換此題"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16m-4-4 4 4-4 4M20 17H4m4-4-4 4 4 4"/></svg>換題</button><button class="eq-remove" type="button" onclick="removeEditQ('${id}')" title="刪除題目" aria-label="從試卷刪除此題"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>刪除</button></div>
     </div>`;
     }).join('') + '</div></div>';
   }).join('');
@@ -809,11 +811,22 @@ window.replaceEditQ = async (id, button) => {
     }
     const index = editQOrder.indexOf(id);
     if (index < 0 || editQOrder.includes(question.id)) return;
+    const oldRow = button.closest('.edit-q-item');
+    await UI.fadeQuestionContent?.(oldRow);
+
+    if (editDraftExam !== draft) return;
+    const wasExpanded = editExpandedQuestions.has(String(id));
+    editExpandedQuestions.delete(String(id));
+    if (wasExpanded) editExpandedQuestions.add(String(question.id));
     editQOrder[index] = question.id;
     editQMap[question.id] = question;
     allQuestions[question.id] = question;
-    renderEditQList(scores);
+    const fragment = document.createElement('div');
+    renderEditQList(scores, fragment);
+    const replacementRow = [...fragment.querySelectorAll('.edit-q-item')].find(row => row.dataset.id === String(question.id));
+    const newRow = UI.updateQuestionRow(oldRow, replacementRow);
     list.scrollTop = scrollTop;
+    await UI.fadeQuestionContent?.(newRow, true);
     UI.toast(sameSection ? '已更換同章節題目' : '原章節無可用題目，已從同冊更換', 'success');
   } catch (error) {
     UI.toast('換題失敗：' + error.message, 'danger');

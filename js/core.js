@@ -204,6 +204,36 @@ const UI = {
     return `<span class="badge badge-${type.toLowerCase()}">${QUESTION_TYPES[type]||type}</span>`;
   },
 
+  async fadeQuestionContent(row, incoming = false) {
+    if (!row || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    // 只淡化題文與答案內容；標籤、答案底色及選取背景保持穩定。
+    const nodes = [...row.querySelectorAll('.compose-compact-text,.q-text,.q-tail,.answer-text,.eq-text,.eq-full-question,.eq-full-answer-text')]
+      .filter(node => node.getClientRects().length && typeof node.animate === 'function');
+    const animations = nodes.map(node => node.animate(
+      incoming ? [{opacity:0},{opacity:1}] : [{opacity:1},{opacity:0}],
+      {duration:incoming ? 260 : 200,easing:'ease-in-out',fill:'both'}));
+    await Promise.all(animations.map(animation => animation.finished.catch(() => {})));
+    animations.forEach(animation => animation.cancel());
+  },
+
+  updateQuestionRow(current, next) {
+    // 保留原有列、標籤、答案底框及按鈕節點，只同步內容。
+    const sync = (target, source) => {
+      if (target.nodeType !== source.nodeType || target.nodeName !== source.nodeName) {
+        target.replaceWith(source.cloneNode(true)); return;
+      }
+      if (target.nodeType === Node.TEXT_NODE) { target.nodeValue = source.nodeValue; return; }
+      if (target.nodeType !== Node.ELEMENT_NODE) return;
+      for (const attribute of [...target.attributes]) if (!source.hasAttribute(attribute.name)) target.removeAttribute(attribute.name);
+      for (const attribute of source.attributes) if (target.getAttribute(attribute.name) !== attribute.value) target.setAttribute(attribute.name, attribute.value);
+      const children = [...source.childNodes];
+      children.forEach((child, index) => target.childNodes[index] ? sync(target.childNodes[index], child) : target.append(child.cloneNode(true)));
+      while (target.childNodes.length > children.length) target.lastChild.remove();
+    };
+    sync(current, next);
+    return current;
+  },
+
   diffBadge(diff) {
     if (diff === '◎') return `<span class="badge badge-hard">較難</span>`;
     if (diff === '△') return `<span class="badge badge-easy">簡易</span>`;

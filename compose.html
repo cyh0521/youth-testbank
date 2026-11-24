@@ -3,18 +3,21 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>電腦選題 — 幼獅題庫系統</title>
-<link rel="stylesheet" href="css/theme.css?v=20261013-dialog-colors">
+<link rel="stylesheet" href="css/theme.css?v=20261124-dialog-tape">
 <link rel="stylesheet" href="css/process-bar.css">
 
 <link rel="stylesheet" href="css/exam-compose.css?v=20261012-chapter-controls-18">
 <link rel="stylesheet" href="css/site-redesign.css?v=20261016-yellow-titles">
 <link rel="stylesheet" href="css/compose-redesign.css?v=20261014-heading-description">
+<link rel="stylesheet" href="css/compose-papercraft.css?v=20261124-replace-button-size">
 
 </head>
 <body class="exam-compose-page computer-selection-page selection-redesign-page">
 <script src="js/icons.js"></script>
-<script src="js/core.js?v=20261008-choice-images"></script>
+<script src="js/core.js?v=20261124-stable-question-fade"></script>
 <div class="layout">
+<div class="paper-corner paper-corner--left" aria-hidden="true"><svg viewBox="0 0 120 145"><g style="filter:drop-shadow(2px 3px 2px #66543429)"><path d="M-5-4 112-4 17 91-5 110Z" fill="#dacaac"/><path d="M-5-4 112-4 17 89" fill="#f0e4c9"/></g><g style="filter:drop-shadow(2px 4px 2px #43563730)"><path d="M-5 14 90-2 4 135-5 126Z" fill="#94a586"/><path d="M-5 14 90-2 29 58Z" fill="#bfcaab"/><path d="M29 58 90-2 4 135Z" fill="#a9b89a"/></g><g style="filter:drop-shadow(1px 2px 1px #7e663329)"><path d="M-5-3 43-3-5 45Z" fill="#ddbf77"/><path d="M-5-3 43-3-5 38Z" fill="#edda9e"/></g></svg></div>
+<div class="paper-corner paper-corner--right" aria-hidden="true"><svg viewBox="0 0 120 145"><g style="filter:drop-shadow(2px 3px 2px #66543429)"><path d="M-5-4 108-4 17 91-5 110Z" fill="#dacaac"/><path d="M-5-4 108-4 17 89" fill="#f0e4c9"/></g><g style="filter:drop-shadow(2px 4px 2px #43563730)"><path d="M-5 14 87-2 4 123-5 118Z" fill="#94a586"/><path d="M-5 14 87-2 29 58Z" fill="#bfcaab"/><path d="M29 58 87-2 4 123Z" fill="#a9b89a"/></g><g style="filter:drop-shadow(1px 2px 1px #7e663329)"><path d="M-5-3 35-3-5 37Z" fill="#ddbf77"/><path d="M-5-3 35-3-5 31Z" fill="#edda9e"/></g></svg></div>
   <header class="site-header" id="sidebar"></header>
   <script src="js/shell.js?v=20261019-user-guide"></script>
   <div class="main" inert>
@@ -28,7 +31,7 @@
 <section class="import-progress" aria-label="電腦選題流程" style="--process-step-count:5;--process-initial-width:20%"><div class="steps" role="list">
 <div class="step active" id="composeStep1" role="listitem" aria-current="step"><span class="step-num">1</span><span class="step-copy"><strong>出題範圍</strong></span></div>
 <div class="step" id="composeStep2" role="listitem"><span class="step-num">2</span><span class="step-copy"><strong>題型與配分</strong></span></div>
-<div class="step" id="composeStep3" role="listitem"><span class="step-num">3</span><span class="step-copy"><strong>自動選題</strong></span></div>
+<div class="step" id="composeStep3" role="listitem"><span class="step-num">3</span><span class="step-copy"><strong>檢視題目</strong></span></div>
 <div class="step" id="composeStep4" role="listitem"><span class="step-num">4</span><span class="step-copy"><strong>試卷設定</strong></span></div>
 <div class="step" id="composeStep5" role="listitem"><span class="step-num">5</span><span class="step-copy"><strong>預覽試卷</strong></span></div>
 </div><div class="import-progress-track" id="composeProgressTrack" role="progressbar" aria-label="電腦選題進度" aria-valuemin="0" aria-valuemax="5" aria-valuenow="1" aria-valuetext="第 1 步，共 5 步"><div class="import-progress-fill" id="composeProgressFill"></div></div></section></header>
@@ -43,13 +46,13 @@
               <section class="card type-count-card"><div class="card-header"><div class="scope-title"><h2>題型與題數</h2><span class="type-title-note">︱調整各題型題數</span></div><div class="scope-header-actions"><button type="button" class="btn btn-ghost btn-sm" id="openSectionWeights" aria-haspopup="dialog" aria-controls="sectionWeightModal"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/><path d="M8 3v6M16 9v6M10 15v6"/></svg>章節題目比重</button></div></div><div class="type-card-body"><div id="typeRows"></div></div></section>
               <section class="card difficulty-card"><div class="card-header"><div class="scope-title"><h2>試卷難易度</h2><span class="type-title-note">︱調整難易題配置比例</span></div></div><div class="card-body"><div class="form-group"><div class="difficulty-ratio-row"><output id="difficultyRatio" for="cDifficulty" class="difficulty-ratio" aria-live="polite"><span>簡易題 <strong id="difficultyEasy">50%</strong></span><span class="difficulty-ratio-divider" aria-hidden="true">｜</span><span>較難題 <strong id="difficultyHard">50%</strong></span></output></div><label class="sr-only" for="cDifficulty">較難題比例</label><input type="range" class="difficulty-range" id="cDifficulty" min="0" max="100" step="10" value="50" aria-valuetext="較難題 50%，簡易題 50%"><div class="difficulty-scale" aria-hidden="true"><span data-difficulty="easy">偏易</span><span data-difficulty="medium" class="is-current">適中</span><span data-difficulty="hard">偏難</span></div><p class="difficulty-note">比例僅供參考，實際配置會依題型與可用題目調整。</p></div></div></section>
             </div>
-            <section class="card"><div class="card-header"><div class="scope-title"><h2>每題配分</h2><span class="type-title-note">︱自動配分或手動調整</span></div><div class="scope-header-actions"><button class="btn btn-previous btn-sm" onclick="goComposeStep(1)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10.5 6-6 6 6 6"/><path d="m18 6-6 6 6 6" stroke-opacity=".5"/></svg>上一步</button><button class="btn btn-primary btn-sm" onclick="doGenerate()" id="generateBtn"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m13.5 6 6 6-6 6"/><path d="m6 6 6 6-6 6" stroke-opacity=".5"/></svg><span id="generateBtnLabel">下一步：自動選題</span></button></div></div><div class="type-card-body"><div id="scoreRows">請先設定題型與題數</div><div class="score-tools" id="scoreTools" hidden><label class="integer-score-option" id="integerScoreOption" hidden><input type="checkbox" id="integerScores" checked onchange="toggleIntegerScores()">以整數配分（未勾選時以 0.5 分為調整單位）</label><div class="score-tools-actions"><button type="button" class="btn btn-ghost btn-sm" onclick="clearComposeScores()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 3 5 5a2 2 0 0 1 0 3L11 21H6l-4-4a2 2 0 0 1 0-3L13 3a2 2 0 0 1 3 0zM8 8l8 8M11 21h11"/></svg>清除配分</button><button type="button" class="btn btn-auto-score btn-sm" onclick="autoAllocateScores()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3-1.9 5.8L4 10l5.8 1.9L12 18l1.9-5.8L20 10l-5.8-1.9zM5 18l-.7 1.4L3 20l1.3.6L5 22l.7-1.4L7 20l-1.3-.6zM19 16l-.7 1.4L17 18l1.3.6L19 20l.7-1.4L21 18l-1.3-.6z"/></svg>自動配分</button></div></div></div></section>
+            <section class="card"><div class="card-header"><div class="scope-title"><h2>每題配分</h2><span class="type-title-note">︱自動配分或手動調整</span></div><div class="scope-header-actions"><button class="btn btn-previous btn-sm" onclick="goComposeStep(1)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10.5 6-6 6 6 6"/><path d="m18 6-6 6 6 6" stroke-opacity=".5"/></svg>上一步</button><button class="btn btn-primary btn-sm" onclick="doGenerate()" id="generateBtn"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m13.5 6 6 6-6 6"/><path d="m6 6 6 6-6 6" stroke-opacity=".5"/></svg><span id="generateBtnLabel">下一步：檢視題目</span></button></div></div><div class="type-card-body"><div id="scoreRows"><p class="compose-help-note">請設定各題型題數</p></div><div class="score-tools" id="scoreTools" hidden><label class="integer-score-option" id="integerScoreOption" hidden><input type="checkbox" id="integerScores" checked onchange="toggleIntegerScores()">以整數配分（未勾選時以 0.5 分為調整單位）</label><div class="score-tools-actions"><button type="button" class="btn btn-ghost btn-sm" onclick="clearComposeScores()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 3 5 5a2 2 0 0 1 0 3L11 21H6l-4-4a2 2 0 0 1 0-3L13 3a2 2 0 0 1 3 0zM8 8l8 8M11 21h11"/></svg>清除配分</button><button type="button" class="btn btn-auto-score btn-sm" onclick="autoAllocateScores()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3-1.9 5.8L4 10l5.8 1.9L12 18l1.9-5.8L20 10l-5.8-1.9zM5 18l-.7 1.4L3 20l1.3.6L5 22l.7-1.4L7 20l-1.3-.6zM19 16l-.7 1.4L17 18l1.3.6L19 20l.7-1.4L21 18l-1.3-.6z"/></svg>自動配分</button></div></div></div></section>
             <div id="sectionWeightError" class="alert alert-danger hidden section-weight-error" role="alert"></div>
           </div>
         </section>
         <section id="composePanel3" class="compose-panel compose-list-view" hidden>
           <section class="card result-card">
-            <div class="card-header"><div class="scope-title"><h2>自動選題</h2><span class="type-title-note">︱檢視題目與答案</span></div><div class="scope-header-actions"><button type="button" class="btn btn-previous btn-sm" onclick="goComposeStep(2)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10.5 6-6 6 6 6"/><path d="m18 6-6 6 6 6" stroke-opacity=".5"/></svg>上一步</button><button type="button" class="btn btn-primary btn-sm" onclick="goComposeStep(4)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m13.5 6 6 6-6 6"/><path d="m6 6 6 6-6 6" stroke-opacity=".5"/></svg>下一步：試卷設定</button></div></div>
+            <div class="card-header"><div class="scope-title"><h2>檢視題目</h2><span class="type-title-note">︱檢視題目、排序或換題</span></div><div class="scope-header-actions"><button type="button" class="btn btn-previous btn-sm" onclick="goComposeStep(2)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10.5 6-6 6 6 6"/><path d="m18 6-6 6 6 6" stroke-opacity=".5"/></svg>上一步</button><button type="button" class="btn btn-primary btn-sm" onclick="goComposeStep(4)"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m13.5 6 6 6-6 6"/><path d="m6 6 6 6-6 6" stroke-opacity=".5"/></svg>下一步：試卷設定</button></div></div>
             <div class="card-body"><div class="compose-result-info"><div id="previewStats" class="preview-stats"></div><div class="compose-result-tools"><button id="regenerateAllBtn" type="button" class="btn btn-ghost btn-sm" onclick="doGenerate(true)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5M6 7a7 7 0 0 1 12-2l2 2M18 17a7 7 0 0 1-12 2l-2-2"/></svg><span id="regenerateAllBtnLabel">重新選題</span></button><div class="edit-q-view-toggle" role="group" aria-label="題目顯示模式"><button id="composeListBtn" class="active" type="button" onclick="setComposeQDisplay(false)" aria-pressed="true" aria-controls="previewArea"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>清單</button><button id="composeFullBtn" type="button" onclick="setComposeQDisplay(true)" aria-pressed="false" aria-controls="previewArea"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 10 5-10 5L2 7l10-5ZM2 12l10 5 10-5M2 17l10 5 10-5"/></svg>完整</button></div></div></div><div id="previewArea"></div></div>
           </section>
         </section>
@@ -68,7 +71,7 @@
 
 <div class="modal-overlay hidden" id="sectionWeightModal">
   <div class="modal section-weight-modal" role="dialog" aria-modal="true" aria-labelledby="sectionWeightTitle" aria-describedby="sectionWeightNote">
-    <div class="modal-header"><div class="section-weight-heading"><h3 id="sectionWeightTitle">章節題目比重</h3><span id="sectionWeightNote" class="section-weight-note">調整各章節出題比重</span></div><button type="button" class="modal-close" data-close-section-weights aria-label="關閉">✕</button></div>
+    <div class="modal-header"><div class="section-weight-heading"><h3 id="sectionWeightTitle">章節題目比重</h3><span id="sectionWeightNote" class="section-weight-note">︱調整各章節出題比重</span></div><button type="button" class="modal-close" data-close-section-weights aria-label="關閉">✕</button></div>
     <div class="modal-body"><div id="sectionWeights"></div><p class="difficulty-note">比重為選題參考，實際題數會依題型、填空格數與可用題目調整。</p></div>
     <div class="modal-footer"><button type="button" class="btn btn-ghost" id="resetSectionWeights">恢復預設</button><button type="button" class="btn btn-primary" data-close-section-weights>完成</button></div>
   </div>
@@ -168,10 +171,9 @@ const TYPE_CONFIGS = [
 ];
 document.getElementById('typeRows').innerHTML = TYPE_CONFIGS.map(t => `
   <div class="type-row" id="typerow-${t.code}" style="display:none">
-    <span class="type-label">${t.label}<span class="type-pool" id="pool-${t.code}"></span></span>
-    <div class="number-stepper"><input class="form-control score-input" type="number" id="cnt-${t.code}" value="0" min="0" step="1" aria-label="${t.label}${t.code === 'T4' ? '格數' : '題數'}" oninput="updateScoreRows()"><div class="number-stepper-buttons"><button type="button" tabindex="-1" aria-label="增加${t.label}${t.code === 'T4' ? '格數' : '題數'}" onclick="adjustComposeNumber('cnt-${t.code}',1)">▲</button><button type="button" tabindex="-1" aria-label="減少${t.label}${t.code === 'T4' ? '格數' : '題數'}" onclick="adjustComposeNumber('cnt-${t.code}',-1)">▼</button></div></div>
+    <span class="type-label">${t.label}<span class="type-pool" id="pool-${t.code}"></span><span class="type-error" id="cnt-error-${t.code}" role="alert"></span></span>
+    <div class="number-stepper"><input class="form-control score-input" type="number" id="cnt-${t.code}" value="0" min="0" step="1" aria-label="${t.label}${t.code === 'T4' ? '格數' : '題數'}" oninput="updateScoreRows()" onblur="if(this.value==='' &amp;&amp; !this.validity.badInput){this.value='0';updateScoreRows();}"><div class="number-stepper-buttons"><button type="button" tabindex="-1" aria-label="增加${t.label}${t.code === 'T4' ? '格數' : '題數'}" onclick="adjustComposeNumber('cnt-${t.code}',1)">▲</button><button type="button" tabindex="-1" aria-label="減少${t.label}${t.code === 'T4' ? '格數' : '題數'}" onclick="adjustComposeNumber('cnt-${t.code}',-1)">▼</button></div></div>
     <span class="row-unit">${t.code === 'T4' ? '格' : '題'}</span>
-    <span class="type-error" id="cnt-error-${t.code}" role="alert"></span>
   </div>
 `).join('');
 
@@ -204,7 +206,6 @@ function renderSettingsHeaderSample() {
 }
 
 function renderExamSummary() {
-  const colors = { T1:'#4b84cf', T2:'#3ca6a1', T3:'#cb9d36', T4:'#9670bf', T5:'#da8260', T6:'#6d819e' };
   const rows = settingsTypeOrder.map(code => TYPE_CONFIGS.find(type => type.code === code)).map(type => {
     const questions = generatedQuestions.filter(q => q.type === type.code);
     const units = type.code === 'T4' ? questions.reduce((sum, q) => sum + blankCount(q), 0) : questions.length;
@@ -213,8 +214,7 @@ function renderExamSummary() {
   }).filter(type => type.count > 0);
   const total = Math.round(rows.reduce((sum, type) => sum + type.total, 0) * 10) / 10;
   document.getElementById('examSummary').innerHTML = `
-    <div class="exam-score-chart" role="img" aria-label="各題型配分分布：${rows.map(type => `${type.label} ${type.total} 分`).join('、')}">${rows.map(type => `<span style="width:${total ? type.total / total * 100 : 0}%;background:${colors[type.code]}" title="${type.label}：${type.total} 分"></span>`).join('')}</div>
-    <div class="exam-summary-table-wrap"><table class="exam-summary-table"><thead><tr><th scope="col">題型</th><th scope="col">題數</th><th scope="col">配分</th><th scope="col">小計</th></tr></thead><tbody>${rows.map(type => `<tr draggable="true" data-type="${type.code}"><td><span class="exam-type-drag" aria-hidden="true">⠿</span><span class="exam-type-dot" style="background:${colors[type.code]}"></span>${type.label}</td><td>${type.count} 題${type.code === 'T4' ? `<small>共 ${type.units} 格</small>` : ''}</td><td>${type.score} 分／${type.code === 'T4' ? '格' : '題'}</td><td>${type.total} 分</td></tr>`).join('')}</tbody><tfoot><tr><td colspan="4">總分：${total} 分</td></tr></tfoot></table></div>`;
+    <div class="exam-summary-table-wrap"><table class="exam-summary-table"><thead><tr><th scope="col">題型</th><th scope="col">題數</th><th scope="col">配分</th><th scope="col">小計</th></tr></thead><tbody>${rows.map(type => `<tr draggable="true" data-type="${type.code}"><td><span class="exam-type-drag" aria-hidden="true">⠿</span>${type.label}</td><td>${type.count} 題${type.code === 'T4' ? `<small>共 ${type.units} 格</small>` : ''}</td><td>${type.score} 分／${type.code === 'T4' ? '格' : '題'}</td><td>${type.total} 分</td></tr>`).join('')}</tbody><tfoot><tr><td colspan="4">總分：${total} 分</td></tr></tfoot></table></div>`;
   const table = document.querySelector('#examSummary tbody');
   let draggedType = null;
   table.addEventListener('dragstart', event => {
@@ -365,11 +365,12 @@ function validateTypeCounts(focusFirst = false) {
     const input = document.getElementById('cnt-' + t.code);
     const row = document.getElementById('typerow-' + t.code);
     const available = Number(input.dataset.poolCount) || 0;
+    if (input.value === '' && !input.validity.badInput && document.activeElement !== input) input.value = '0';
     const count = Number(input.value);
     let message = '';
     const unit = t.code === 'T4' ? '格' : '題';
-    if (available && (input.value === '' || !Number.isSafeInteger(count) || count < 0)) message = `請填寫 0～${available} 的整數${unit}數`;
-    else if (count > available) message = `此題型最多可選 ${available} ${unit}，請重新填寫`;
+    if (available && (input.validity.badInput || !Number.isSafeInteger(count) || count < 0)) message = `請填寫 0～${available} 的整數${unit}數`;
+    else if (count > available) message = '超過可選題數';
     else if (t.code === 'T4' && count > 0 && !fillReachable[count]) {
       const possible = fillReachable.flatMap((yes, n) => yes && n > 0 ? [n] : [])
         .sort((a, b) => Math.abs(a - count) - Math.abs(b - count)).slice(0, 6).sort((a, b) => a - b);
@@ -508,6 +509,7 @@ window.normalizeComposeScore = input => {
   recalcTotal(input);
 };
 window.updateScoreRows = () => {
+  TYPE_CONFIGS.forEach(t => document.getElementById('typerow-' + t.code)?.classList.toggle('has-count', Number(document.getElementById('cnt-' + t.code)?.value) > 0));
   validateTypeCounts();
   const typeCounts = TYPE_CONFIGS.map(t => ({
     ...t,
@@ -519,7 +521,7 @@ window.updateScoreRows = () => {
 
   if (!typeCounts.length) {
     document.getElementById('scoreRows').innerHTML =
-      '<span style="color:var(--text-muted);font-size:.88rem">請設定各題型題數</span>';
+      '<p class="compose-help-note">請設定各題型題數</p>';
     return;
   }
 
@@ -621,6 +623,8 @@ window.doGenerate = async (reselect = false) => {
     generatedScopeChapters = generatedQuestions.length ? [...chapters] : [];
     Object.assign(scoreOverrides, configuredScores);
     updateScoreRows();
+    // 重新產生題目時清除個別展開狀態，整批沿用清單／完整模式。
+    expandedComposeQuestions.clear();
     renderPreview(allPicked);
     if (generatedQuestions.length) {
       setComposeStep(3);
@@ -633,7 +637,7 @@ window.doGenerate = async (reselect = false) => {
     error.scrollIntoView({block:'nearest',behavior:'smooth'});
     UI.toast('選題失敗：'+e.message, 'danger');
   } finally {
-    btn.disabled = false; document.getElementById('generateBtnLabel').textContent = '下一步：自動選題';
+    btn.disabled = false; document.getElementById('generateBtnLabel').textContent = '下一步：檢視題目';
     reselectBtn.disabled = false;
     document.getElementById('regenerateAllBtnLabel').textContent = '重新選題';
   }
@@ -741,7 +745,7 @@ composeDragArea.addEventListener('drop', event => {
 });
 composeDragArea.addEventListener('dragend', clearComposeDrag);
 
-function renderPreview(grouped) {
+function renderPreview(grouped, detached = false) {
   const typeScore = type => {
     const value = Number(document.getElementById('score-' + type.code)?.value);
     return Number.isFinite(value) && value > 0 ? value : type.defaultScore;
@@ -752,7 +756,7 @@ function renderPreview(grouped) {
   const totalScore = Math.round(grouped.reduce((sum, type) => sum + scoreUnits(type) * typeScore(type), 0) * 10) / 10;
 
   // stats
-  document.getElementById('previewStats').innerHTML = `
+  if (!detached) document.getElementById('previewStats').innerHTML = `
     <div class="preview-stat">共 <strong>${total}</strong> 題</div>
     <div class="preview-stat score-stat">總分 <strong>${totalScore}</strong> 分</div>
     <div class="preview-stat">題型 <strong>${grouped.filter(t => t.items.length).length}</strong> 種</div>
@@ -775,8 +779,8 @@ function renderPreview(grouped) {
           <div class="result-q${expandedComposeQuestions.has(String(q.id)) ? ' is-expanded' : ''}" data-question-id="${UI.escapeHtml(String(q.id))}" data-question-type="${t.code}" tabindex="0">
             <button type="button" class="compose-question-drag-handle" draggable="true" title="拖曳調整題目順序" aria-label="拖曳調整${t.label}第 ${qNum} 題順序"><svg width="16" height="18" viewBox="0 0 16 18" fill="currentColor" aria-hidden="true"><circle cx="5" cy="4" r="1.3"/><circle cx="11" cy="4" r="1.3"/><circle cx="5" cy="9" r="1.3"/><circle cx="11" cy="9" r="1.3"/><circle cx="5" cy="14" r="1.3"/><circle cx="11" cy="14" r="1.3"/></svg></button>
             <span class="q-num">${qNum++}.</span>
-            <div class="q-body"><div class="compose-compact-question"><span class="q-catalog-num">${UI.escapeHtml(q.qnum || '—')}</span>${UI.diffBadge(q.difficulty)}<span class="compose-compact-text">${composeQuestionSummary(q)}</span><button type="button" class="btn btn-ghost btn-sm replace-question" data-replace-question="${UI.escapeHtml(String(q.id))}" aria-label="更換第 ${qNum - 1} 題">換題</button></div><div class="compose-full-question">
-              <div class="q-meta"><span class="q-catalog-num">${UI.escapeHtml(q.qnum || '—')}</span>${UI.diffBadge(q.difficulty)}${UI.typeBadge(q.type)}<span class="q-source">頁數 ${UI.escapeHtml(q.source || '未註明')}</span><button type="button" class="btn btn-ghost btn-sm replace-question" data-replace-question="${UI.escapeHtml(String(q.id))}" aria-label="更換第 ${qNum - 1} 題">換題</button></div>
+            <div class="q-body"><div class="compose-compact-question"><span class="q-catalog-num">${UI.escapeHtml(q.qnum || '—')}</span>${UI.diffBadge(q.difficulty)}<span class="compose-compact-text">${composeQuestionSummary(q)}</span><button type="button" class="btn btn-ghost btn-sm replace-question" data-replace-question="${UI.escapeHtml(String(q.id))}" aria-label="更換第 ${qNum - 1} 題"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16m-4-4 4 4-4 4M20 17H4m4-4-4 4 4 4"/></svg>換題</button></div><div class="compose-full-question">
+              <div class="q-meta"><span class="q-catalog-num">${UI.escapeHtml(q.qnum || '—')}</span>${UI.diffBadge(q.difficulty)}${UI.typeBadge(q.type)}<span class="q-source">頁數 ${UI.escapeHtml(q.source || '未註明')}</span><button type="button" class="btn btn-ghost btn-sm replace-question" data-replace-question="${UI.escapeHtml(String(q.id))}" aria-label="更換第 ${qNum - 1} 題"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16m-4-4 4 4-4 4M20 17H4m4-4-4 4 4 4"/></svg>換題</button></div>
               <div class="q-text">${q.type === 'T2' || q.type === 'T3' ? UI.choiceQuestionHtml(q, '—') : q.type === 'T5' ? UI.matchingQuestionHtml(q.text) : UI.questionHtml(q.text || '—')}</div>
               ${q.type !== 'T2' && q.type !== 'T3' && q.tail ? '<div class="q-tail">' + UI.questionHtml(q.tail) + '</div>' : ''}
               <div class="q-ans"><span class="answer-label">答案</span><span class="answer-text">${UI.questionHtml(q.answer || '—')}</span></div>
@@ -787,6 +791,7 @@ function renderPreview(grouped) {
     </div>`;
   }
 
+  if (detached) { const fragment = document.createElement('div'); fragment.innerHTML = html; return fragment; }
   document.getElementById('previewArea').innerHTML = html;
 }
 
@@ -810,8 +815,21 @@ async function replaceResultQuestion(questionId, button) {
       return;
     }
     const replacement = candidates[Math.floor(Math.random() * candidates.length)];
+    const oldRow = button.closest?.('.result-q');
+    await UI.fadeQuestionContent?.(oldRow);
+
+    const wasExpanded = expandedComposeQuestions.has(String(original.id));
+    expandedComposeQuestions.delete(String(original.id));
+    if (wasExpanded) expandedComposeQuestions.add(String(replacement.id));
     generatedQuestions[index] = { ...replacement, _typeLabel:original._typeLabel, _icon:original._icon };
-    renderPreview(TYPE_CONFIGS.map(t => ({ ...t, items:generatedQuestions.filter(q => q.type === t.code) })).filter(t => t.items.length));
+    const grouped = TYPE_CONFIGS.map(t => ({ ...t, items:generatedQuestions.filter(q => q.type === t.code) })).filter(t => t.items.length);
+    let newRow;
+    if (oldRow && UI.updateQuestionRow) {
+      const fragment = renderPreview(grouped, true);
+      const replacementRow = [...fragment.querySelectorAll('.result-q')].find(row => row.dataset.questionId === String(replacement.id));
+      newRow = UI.updateQuestionRow(oldRow, replacementRow);
+    } else renderPreview(grouped);
+    await UI.fadeQuestionContent?.(newRow, true);
     UI.toast('已更換題目', 'success');
   } catch (error) {
     UI.toast('更換失敗：' + error.message, 'danger');

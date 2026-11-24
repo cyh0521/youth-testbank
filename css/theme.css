@@ -335,6 +335,35 @@ textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.6; }
   display: flex; align-items: center; justify-content: space-between;
   position: sticky; top: 0; background: #f3f6ed; z-index: 1;
 }
+/* 紙膠帶跨出上緣；內容區獨立捲動，避免裁掉裝飾。 */
+.modal-overlay:not(#epModal):not(#editModal) > .modal {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+}
+.modal-overlay:not(#epModal):not(#editModal) > .modal > .modal-header {
+  flex: none;
+  border-top-left-radius: inherit;
+  border-top-right-radius: inherit;
+}
+.modal-overlay:not(#epModal):not(#editModal) > .modal > .modal-body {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.modal-overlay:not(#epModal):not(#editModal) > .modal > .modal-footer {
+  flex: none;
+  border-bottom-left-radius: inherit;
+  border-bottom-right-radius: inherit;
+}
+.modal-overlay:not(#epModal):not(#editModal) > .modal > .modal-header::after {
+  content: ''; position: absolute; left: 28px; top: -9px;
+  width: 72px; height: 18px; background: #d7ba7380;
+  transform: rotate(-3deg);
+  clip-path: polygon(2% 0,100% 0,97% 100%,0 100%);
+  pointer-events: none;
+}
 .modal-header h3 {
   display: inline-flex; align-items: center; gap: 9px; min-width: 0;
   font-family: var(--font-sans); font-size: 1.2rem; font-weight: 700;

@@ -9,7 +9,7 @@
 @media print{.workspace{padding:0;max-width:none}.document{max-width:none}section{background:white;border:0;border-radius:0;padding:12px 0;margin-bottom:20px}.topic-block{margin-top:18px;padding-top:18px}.journal-entry{break-inside:avoid}.journal-entry dd,p,li{font-size:10pt}.section-title{break-after:avoid}table{table-layout:auto}}
 </style></head>
 <body id="top"><div class="workspace"><aside class="rail"><div class="mark">PROJECT NOTEBOOK / 02</div><h2>幼獅題庫系統</h2><nav aria-label="工作筆記目錄"><a href="#overview"><small>01</small>專案定位</a><a href="#features"><small>02</small>重點特色</a><a href="#engineering"><small>03</small>編寫重點</a><a href="#development"><small>04</small>開發過程與階段紀錄</a><a href="#usage"><small>05</small>操作與資料更新</a><a href="#maintenance"><small>06</small>維護與驗證</a><a href="#limitations"><small>07</small>修正筆記與待驗收項目</a></nav><div class="rail-foot"><button class="button" type="button" onclick="window.print()">列印筆記</button><a href="index.html">開啟系統</a></div></aside>
-<main class="document"><header class="hero"><p class="eyebrow">開發工作筆記 · 整理至 2026 年 10 月 16 日</p><h1>從題庫建置<br>到試卷輸出的開發紀錄</h1><p class="lead">記下功能如何形成、程式為什麼這樣安排，以及修正後還需要確認什麼。保留足夠脈絡，讓後續維護能接續工作。</p><div class="metadata"><span>原生前端 + Firebase</span><span>靜態題庫 2,309 題／6 冊</span><span>驗證與部署分開記錄</span></div></header><section id="overview" aria-labelledby="overview-title"><div class="section-title"><span>01</span><h2 id="overview-title">專案定位</h2></div>
+<main class="document"><header class="hero"><p class="eyebrow">開發工作筆記 · 整理至 2026 年 11 月 23 日</p><h1>從題庫建置<br>到試卷輸出的開發紀錄</h1><p class="lead">記下功能如何形成、程式為什麼這樣安排，以及修正後還需要確認什麼。保留足夠脈絡，讓後續維護能接續工作。</p><div class="metadata"><span>原生前端 + Firebase</span><span>靜態題庫 2,309 題／6 冊</span><span>驗證與部署分開記錄</span></div></header><section id="overview" aria-labelledby="overview-title"><div class="section-title"><span>01</span><h2 id="overview-title">專案定位</h2></div>
 <p>幼獅文化線上命題系統，供教師與管理員建立題庫、組卷、保存試卷及紙本輸出。採 HTML、CSS 與原生 JavaScript，搭配 Firebase 驗證／資料儲存及網頁空間靜態題庫。</p>
 <p>教師管理自己的試卷；管理員另負責課本目錄、題目匯入與維護及帳號管理。班級、姓名、座號是試卷表頭內容，目前不提供學生帳號、線上作答或成績管理。</p>
 <div class="note"><strong>筆記的閱讀方式</strong><p>先看目前功能與編寫決策，再沿時間查看開發紀錄。歷史紀錄保留當時做法，已被改版取代的導覽、表頭或輸出功能，請以目前說明為準。</p></div></section><section id="features" aria-labelledby="features-title"><div class="section-title"><span>02</span><h2 id="features-title">重點特色</h2></div><div class="section-opening">
@@ -43,7 +43,16 @@
 </div><div class="topic-block"><h3>試卷快照：預設與成品分開</h3>
 <p>使用者的 <code>examPreferences</code> 保存新試卷預設；每張試卷另保存表頭與外觀。修改帳號預設前，為尚無快照的舊試卷保存當時值；草稿修改保留在草稿。這個分界避免改一次字型或表頭就改動其他已完成試卷。</p></div><div class="topic-block"><h3>反譯模組與圖片匯入</h3>
 <p><code>js/reverse-import.js</code> 以本地 JSZip 讀取 DOCX 的 XML 與關係檔，解析題目並使用 <code>assets/reverse-import/choice.docx</code>、<code>other.docx</code> 組裝入題檔。<code>js/reverse-import-page.js</code> 負責管理員驗證、檔案狀態、目錄比對、欄位編輯與下載。</p>
-<p>反譯檔案在瀏覽器處理，不直接寫題庫。題目匯入用 Mammoth 提取 PNG／JPG，預覽時保留圖片標記，正式匯入取得題號後再命名圖片；題目與圖片檔分開發布，避免把圖片內容塞進 Firestore。</p></div></section><section id="development" aria-labelledby="development-title"><div class="section-title"><span>04</span><h2 id="development-title">開發過程與階段紀錄</h2></div><p class="section-intro">保留每個階段的成果與實作脈絡，依時間由新到舊排列。此處記錄本機開發，提交與部署以 Git 和正式網站為準。</p><div class="journal"><article class="journal-entry"><header><time datetime="2026-10-15">10/15 晚間</time><h3>儲存視窗狀態修正與登入頁調整</h3></header><dl>
+<p>反譯檔案在瀏覽器處理，不直接寫題庫。題目匯入用 Mammoth 提取 PNG／JPG，預覽時保留圖片標記，正式匯入取得題號後再命名圖片；題目與圖片檔分開發布，避免把圖片內容塞進 Firestore。</p></div></section><section id="development" aria-labelledby="development-title"><div class="section-title"><span>04</span><h2 id="development-title">開發過程與階段紀錄</h2></div><article class="journal-entry"><header><time>2026/11/23</time><h3>首頁、試卷管理與電腦選題：輕紙藝改版</h3></header><dl>
+<div><dt>整體風格</dt><dd>暖象牙白紙面、米色底襯、柔和陰影與綠黃主色；頂欄加入薄紙邊、淡黃色目前頁面標記及紙片式下拉選單，左右上角採輕量疊紙裝飾。</dd></div>
+<div><dt>首頁</dt><dd>維持 21 冊配置，卡片改為正方形；三張試作科目圖最終恢復原始版本。常用科目勾選框在滑過時顯示並隨卡片浮動，保留鍵盤與觸控操作。女老師咖啡插圖改為剪紙風，移除筆電背板圓圈，人物跨出介紹紙箋，紙飛機獨立定位。首頁改用全寬主區域捲動，捲軸貼齊右緣。</dd></div>
+<div><dt>試卷管理</dt><dd>列表採薄紙卡與暖燕麥色表頭，滑過為淡蜂蜜色；科目以較明顯的分類色點與文字表示。下載、儲存為綠色，刪除、關閉為紅色，一般操作採淡色細框。列表及預覽、編輯工具列統一按鈕高度與內距，移除明顯高光和外凸陰影。</dd></div>
+<div><dt>預覽與編輯</dt><dd>閱讀區統一暖象牙白；管理預覽章節欄固定展開、移除底框與收合控制，選取採淡橄欖色且不加左側陰影，調整上緣對齊與選取底色寬度。編輯頁「清單／完整」選取文字為深棕色，題數／總分為深灰綠色，題幹及選項為深灰褐色，名稱操作改為「編輯名稱」。列印與下載的白底黑字規則維持原樣。</dd></div>
+<div><dt>對話框</dt><dd>以首頁模式選擇視窗為基準，統一預覽與編輯中的列印、下載、設定與確認視窗紙面、底襯、標題及關閉鈕；保留各用途的尺寸與操作配置。試卷類型選項移除文字底框，保留核取方塊。</dd></div>
+<div><dt>電腦選題</dt><dd>套用紙藝頂欄、角落裝飾、流程列、範圍卡片、題數配分、選題結果、內嵌預覽及對話框。命題範圍頂欄改為暖米色，章節選取加深為淡橄欖色，滑過為淡蜂蜜色，部分選取另有淡色提示。本次未全面套用至手動選題、編碼選題、題本列印或管理功能頁。</dd></div>
+<div><dt>維護檔案</dt><dd>頁面為 dashboard.html、exams.html、compose.html；專用樣式為 css/dashboard-papercraft.css、css/exams-papercraft.css、css/compose-papercraft.css，載入於舊樣式之後。首頁插畫使用 images/illustrations/teacher-coffee-papercraft-v1.png。頁面樣式版本參數同步更新以避免快取。</dd></div>
+<div><dt>驗證</dt><dd>曾以離線瀏覽器檢查首頁 21 冊、三種角色、多種寬度與四種模式連結；試卷管理搜尋排序、預覽、字體面板、編輯顯示切換、名稱及下載對話框。電腦選題通過空冊、停用章節、父子選取、下一步與過期請求測試，以及選題、重選、題序與配分共 15 項測試。部分後續外觀微調僅檢查差異，並非每次重跑完整測試；未存取正式 Firebase，也未執行本次改版的正式部署、Word 開檔或實際列印驗收。</dd></div>
+</dl></article><p class="section-intro">保留每個階段的成果與實作脈絡，依時間由新到舊排列。此處記錄本機開發，提交與部署以 Git 和正式網站為準。</p><div class="journal"><article class="journal-entry"><header><time datetime="2026-10-15">10/15 晚間</time><h3>儲存視窗狀態修正與登入頁調整</h3></header><dl>
 <div><dt>完成內容</dt><dd>電腦、手動及編碼選題的儲存視窗統一取消與關閉行為；登入頁改用手繪標語圖片，新增手機版插畫，調整窄螢幕主視覺與登入標題底線。</dd></div>
 <div><dt>實作重點</dt><dd>開啟儲存視窗時記錄名稱與說明；取消或關閉還原當次開啟前的內容，並清除錯誤提示。成功儲存後保留名稱與說明供下次開啟使用；失敗時保留輸入與視窗，可直接重試。登入頁透過 picture 在 700px 以下切換手機插畫，標語圖片提供替代文字及預載；欄位文案改稱「帳號」，驗證仍使用電子信箱。</dd></div>
 <div><dt>驗證／限制</dt><dd>對應提交為 3fcc6b5、3fc93ea。新增三種選題模式各兩項儲存視窗回歸測試；10/16 完整套件 105 項全部通過。登入頁手機／桌面實際視覺與正式網站部署仍需另行確認。</dd></div>
@@ -129,4 +138,5 @@ node --test tests/*.test.mjs</code></pre>
 <p>答案開關原會改變括號寬度，改為固定作答區；解析以標籤與內文分區，讓換行對齊正文。跨頁過渡曾造成側欄短暫消失，改為同步繪製導覽；Word、預覽與直接列印共用內容，但採各自適合的排版。</p>
 </div><div class="topic-block"><h3>仍要用真實資料確認</h3>
 <ul><li>兩個帳號、兩台裝置的設定同步與舊瀏覽器設定轉移。</li><li>新舊試卷表頭及外觀隔離、換題與題序保存、不同角色的權限。</li><li>長題目、選項圖片、解析續行、題本章節分隔線，以及單雙欄輸出。</li><li>真正的 Word 開檔、字型、分頁與列印設定。靜態檢查與模擬 DOM 測試只證明其涵蓋的邏輯。</li></ul></div><div class="topic-block"><h3>反譯與圖片的人工核對</h3><p>舊題本排版差異可能影響題目切分、答案與圖片位置，工具驗證欄位不代表已確認題意。外部連結、遺失或非 PNG／JPG 圖片須先在 Word 嵌入或轉換；文字辨識、章節歸屬與輸出檔仍需人工檢查。</p></div></section><footer class="footer">本頁記錄本機實作與歷史驗證，正式網站部署另行確認。 <a href="#top">回到頁首 ↑</a></footer></main></div>
+
 </body></html>

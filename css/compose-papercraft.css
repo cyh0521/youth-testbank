@@ -1,0 +1,280 @@
+/* 電腦選題：薄紙卡、暖象牙白閱讀面，僅作用於本頁。 */
+.computer-selection-page{--compose-green:#607e58;--compose-ink:#4d5e43;--compose-line:#e0d5bf;--compose-soft:#f5efdf;--text-primary:#4d5e43;--text-secondary:#827763;--border:#dfd4bd;--border-light:#e9e1d1;background:#e9dfcc}
+.computer-selection-page>.layout{isolation:isolate;background:linear-gradient(90deg,transparent calc(50% - 1px),#9a816118 50%,#fffdf94a calc(50% + 1px),transparent calc(50% + 2px)),linear-gradient(145deg,#f1eadb,#e9dfcc 65%,#ddd0b6)}
+.computer-selection-page>.layout>.main{background:transparent}
+.computer-selection-page .compose-page-title h1{color:#4d5e43}
+.computer-selection-page .compose-page-title p{color:#897b65}
+.computer-selection-page .compose-layout .card{background:#f6f1e7;border:0;border-radius:4px;box-shadow:inset 1px 1px 0 #fff,3px 4px 0 #d5c7ab,0 7px 14px #59432412}
+.computer-selection-page .compose-layout .card-header{background:linear-gradient(180deg,#fffdf7,#f4edde);border-color:#e3d7c1}
+.computer-selection-page .compose-layout .card-header h2{color:#4d5e43}
+.computer-selection-page .compose-layout :is(.scope-tree,.scope-overview,.card-body,.type-card-body){background:#f6f1e7}
+.computer-selection-page .compose-layout :is(.form-control,.scope-overview-filters .form-control){background:#fffdf7;border-color:#ded3bb;border-radius:4px;color:#5b654c;box-shadow:inset 0 1px 2px #66543413}
+.computer-selection-page .compose-layout .form-control:focus{border-color:#99ad89;box-shadow:0 0 0 2px #99ad8926}
+.computer-selection-page .scope-question-total{color:#4d5e43}
+.computer-selection-page :is(.scope-bar-label,.scope-bar-count,.type-title-note,.scope-available){color:#8a7b62}
+.computer-selection-page .scope-bar-track{background:#e9dfcb}
+.computer-selection-page .compose-layout .btn{border:1px solid #d8d1bf;border-radius:4px;background:#fffdf7;color:#637158;box-shadow:none;transform:none}
+.computer-selection-page .compose-layout .btn:hover{background:#e9eddf;border-color:#aebca0;color:#3f5e43;box-shadow:none;transform:none}
+.computer-selection-page .compose-layout .btn-primary{background:#607e58;border-color:#607e58;color:#fffdf7}
+.computer-selection-page .compose-layout .btn-primary:hover{background:#4f6f49;border-color:#4f6f49;color:#fffdf7}
+.computer-selection-page .compose-layout .btn-danger{background:#b95547;border-color:#b95547;color:#fffdf7}
+.computer-selection-page .compose-layout .btn-danger:hover{background:#a4463a;border-color:#a4463a;color:#fffdf7}
+.computer-selection-page .compose-layout .btn-sm{height:30px;min-height:30px;box-sizing:border-box;padding:0 10px;line-height:1;font-size:.85rem}
+.computer-selection-page .step-num{border:0;background:#e7deca;color:#958568;box-shadow:inset 0 1px 0 #fff8}
+.computer-selection-page .step.active .step-num{background:#607e58;color:#fffdf7}
+.computer-selection-page .step.done .step-num{background:#dbe4ce;color:#56724c}
+.computer-selection-page .step-copy strong{color:#a09176}
+.computer-selection-page :is(.step.active,.step.done) .step-copy strong{color:#4d5e43}
+.computer-selection-page .import-progress-track{background:#ded2b9;box-shadow:inset 0 1px 2px #6654341c}
+.computer-selection-page .import-progress-fill{background:#80966d}
+.computer-selection-page :is(input[type="checkbox"],input[type="radio"],input[type="range"]){accent-color:#6f8a60}
+.computer-selection-page :is(.chapter-item,.section-item,.subsection-item){color:#6c7057}
+.computer-selection-page :is(.chapter-item,.section-item,.subsection-item):hover{background:#f2e6cc}
+.computer-selection-page :is(.chapter-item,.section-item,.subsection-item):has(>input:checked){background:#e5ead8}
+.computer-selection-page :is(.score-total,.preview-stat){background:#eee5cf;color:#5b644b;border-color:#dfd1b5}
+.computer-selection-page :is(.score-total strong,.preview-stat strong,#scoreTotal){color:#4d5e43}
+.computer-selection-page .result-section-title{background:#e9dfc9;color:#6b5d43;border-color:#dfd4bd}
+.computer-selection-page .result-q{background:transparent;color:#3f3b33;border-color:#e9e1d1}
+.computer-selection-page .result-q:hover{background:#f2e6cc}
+.computer-selection-page :is(.q-text,.q-tail,.compose-compact-text){color:#3f3b33}
+.computer-selection-page :is(.q-catalog-num,.q-source){background:#ece5d4;color:#827763}
+.computer-selection-page .q-ans{background:#edf0e4;color:#48623f}
+.computer-selection-page .compose-preview-layout{background:#f6f1e7}
+@media(prefers-reduced-motion:reduce){.computer-selection-page .import-progress-fill{transition:none}}
+/* 首頁紙藝頂欄：保持導覽尺寸，僅調整紙面與狀態。 */
+.computer-selection-page .site-header{background:linear-gradient(110deg,#fffdf8,#faf6eb);box-shadow:inset 0 -1px 0 #fffdf9,0 2px 0 #ded2ba,0 5px 10px #624b2512}
+.computer-selection-page .site-nav>a,.computer-selection-page .site-nav summary{isolation:isolate;color:#4d5e43}
+.computer-selection-page .site-nav>a::after,.computer-selection-page .site-nav-group>summary::after{content:'';position:absolute;z-index:-1;top:50%;bottom:auto;left:-9px;right:-9px;height:29px;border-radius:1px;transform:translateY(-50%);background:#eee6d3;opacity:0;clip-path:polygon(2% 0,100% 4%,97% 100%,0 96%);transition:opacity .15s ease;pointer-events:none}
+.computer-selection-page .site-nav>a:hover::after,.computer-selection-page .site-nav-group>summary:hover::after{opacity:.75}
+.computer-selection-page .site-nav>a.active::after,.computer-selection-page .site-nav-group.active>summary::after{background:linear-gradient(100deg,#ecd69c,#f2e1b4);opacity:1;box-shadow:inset 0 1px 0 #fff8}
+.computer-selection-page .site-nav>a:hover,.computer-selection-page .site-nav summary:hover{color:#38513c}
+.computer-selection-page .site-nav-menu,.computer-selection-page .site-account .account-menu{background:linear-gradient(135deg,#fffdf7,#f7f0e2);border:0;border-radius:4px;box-shadow:inset 1px 1px 0 #fff,3px 4px 0 #dfd1b7,0 10px 22px #59432426}
+.computer-selection-page .site-nav-menu a,.computer-selection-page .site-account .account-menu a,.computer-selection-page .site-account .account-menu button{border-radius:2px;color:#5d614b}
+.computer-selection-page .site-nav-menu a:hover,.computer-selection-page .site-account .account-menu a:hover,.computer-selection-page .site-account .account-menu button:hover{background:#eee5d0;color:#3f5e43}
+@media(max-width:820px){.computer-selection-page .site-nav>a::after,.computer-selection-page .site-nav-group>summary::after{left:-5px;right:-5px;height:26px}}
+@media(prefers-reduced-motion:reduce){.computer-selection-page .site-nav>a::after,.computer-selection-page .site-nav-group>summary::after{transition:none}}
+/* 輕量角落疊紙：三片色紙，投影只在局部折片運算。 */
+.computer-selection-page>.layout::before,.computer-selection-page>.layout::after{display:none}
+.paper-corner{position:fixed;top:60px;width:105px;height:auto;z-index:-1;pointer-events:none}
+.paper-corner svg{display:block;width:100%;height:auto;overflow:visible}
+.paper-corner--left{left:0}
+.paper-corner--right{right:0;transform:scaleX(-1);width:95px}
+@media(max-width:1100px){.paper-corner{width:72px}.paper-corner--right{width:65px}}
+@media(max-width:820px){.paper-corner{top:90px;width:56px}.paper-corner--right{width:50px}}
+@media(max-width:480px){.paper-corner{display:none}}
+
+/* 一般對話框採首頁模式視窗的紙面、層次與標題，不改動內嵌預覽／編輯。 */
+body.computer-selection-page .modal-overlay:not(#epModal):not(#editModal){background:rgba(61,52,37,.37);backdrop-filter:none;-webkit-backdrop-filter:none}
+body.computer-selection-page .modal-overlay:not(#epModal):not(#editModal)>.modal{position:relative;isolation:isolate;border:0;border-radius:5px;background:linear-gradient(135deg,#fffdf7,#f6f0e3);box-shadow:inset 1px 1px 0 #fff,5px 6px 0 #d5c4a6,-4px 10px 0 #c4af8e,0 20px 34px #30251430}
+body.computer-selection-page .modal-overlay:not(#epModal):not(#editModal)>.modal>.modal-header{background:transparent;border:0;padding:24px 26px 17px;gap:14px}
+body.computer-selection-page .modal-overlay:not(#epModal):not(#editModal)>.modal>.modal-header h3{color:#465940;font-size:1.3rem;line-height:1.4;font-weight:700;letter-spacing:.025em}
+body.computer-selection-page .modal-overlay:not(#epModal):not(#editModal)>.modal>.modal-header .modal-close{display:inline-flex;align-items:center;justify-content:center;flex:none;width:30px;height:30px;padding:0;border:1px solid #ded3bb;border-radius:3px;background:#f0e7d4;color:#8d7b60;box-shadow:none;line-height:1}
+body.computer-selection-page .modal-overlay:not(#epModal):not(#editModal)>.modal>.modal-header .modal-close:hover{background:#e6dbc3;color:#4e5d43}
+body.computer-selection-page .modal-overlay:not(#epModal):not(#editModal)>.modal>.modal-body{padding:8px 26px 22px;color:#6e654f;font-size:.9rem}
+body.computer-selection-page .modal-overlay:not(#epModal):not(#editModal)>.modal>.modal-footer{margin:0 26px;padding:17px 0 22px;border-top:1px solid #e2d7c2;background:transparent;gap:10px}
+body.computer-selection-page .modal-overlay:not(#epModal):not(#editModal) .modal-footer .btn{border:1px solid #d8d1bf;border-radius:4px;background:#fffdf7;color:#637158;box-shadow:none;font-size:.9rem}
+body.computer-selection-page .modal-overlay:not(#epModal):not(#editModal) .modal-footer .btn-primary{border-color:#607e58;background:#607e58;color:#fffdf7}
+body.computer-selection-page .modal-overlay:not(#epModal):not(#editModal) .modal-footer .btn-primary:hover{border-color:#4f6f49;background:#4f6f49}
+body.computer-selection-page .modal-overlay:not(#epModal):not(#editModal) .modal-footer .btn-danger{border-color:#b95547;background:#b95547;color:#fffdf7}
+body.computer-selection-page .modal-overlay:not(#epModal):not(#editModal) .modal-footer .btn-danger:hover{border-color:#a4463a;background:#a4463a}
+body.computer-selection-page .modal-overlay:not(#epModal):not(#editModal) .modal-footer .btn-ghost:hover{background:#e9eddf;border-color:#aebca0}
+body.computer-selection-page #epPaperSizeModal :is(.ep-layout-option,.ep-download-types label){background:#fffdf7;color:#756a54;border-color:#dfd5c0;border-radius:4px;box-shadow:none}
+body.computer-selection-page #epPaperSizeModal :is(.ep-layout-option,.ep-download-types label):has(input:checked){background:#e7ecd9;border-color:#a5b58f;color:#4d6843;box-shadow:none}
+body.computer-selection-page #epPaperSizeModal :is(input[type="radio"],input[type="checkbox"]){accent-color:#6f8a60}
+body.computer-selection-page #epPaperSizeModal :is(legend,.ep-layout-visual){color:#827357}
+body.computer-selection-page :is(#hdModal,#editDetailsModal) .form-control{background:#fffdf7;color:#5b654c;border:1px solid #ded3bb;border-radius:4px;box-shadow:inset 0 1px 2px #66543413}
+@media(max-width:480px){body.computer-selection-page .modal-overlay:not(#epModal):not(#editModal)>.modal>.modal-header{padding:20px 18px 14px}body.computer-selection-page .modal-overlay:not(#epModal):not(#editModal)>.modal>.modal-body{padding:6px 18px 18px}body.computer-selection-page .modal-overlay:not(#epModal):not(#editModal)>.modal>.modal-footer{margin:0 18px;padding:15px 0 18px}}
+
+body.computer-selection-page #epPaperSizeModal .ep-download-types label,body.computer-selection-page #epPaperSizeModal .ep-download-types label:has(input:checked){background:transparent;border-color:transparent;box-shadow:none;color:#756a54}
+body.computer-selection-page #epModal.compose-inline-preview{background:#f6f1e7}
+body.computer-selection-page #epModal.compose-inline-preview :is(.ep-preview-modal,#epBody,#epScopePaperHost,#epPaper){background:#f6f1e7}
+body.computer-selection-page #epModal.compose-inline-preview :is(.ep-preview-options,.ep-inline-header,.ep-toolbar){background:#f5efdf;color:#6f654f;border-radius:4px;box-shadow:inset 0 1px 0 #fff9}
+body.computer-selection-page #epModal.compose-inline-preview .ep-scope-card{background:transparent;border:0;box-shadow:none}
+body.computer-selection-page #epModal.compose-inline-preview .ep-scope-select[aria-pressed="true"]{background:#e5e6d2;color:#4d5e43;box-shadow:none}
+body.computer-selection-page #epModal.compose-inline-preview .ep-scope-select:hover{background:#eee3c9}
+body.computer-selection-page #epModal.compose-inline-preview .btn{border-radius:4px;box-shadow:none}body.computer-selection-page .compose-page-heading{background:linear-gradient(110deg,#fffdf7,#f1ead9);border:0;border-radius:4px;box-shadow:inset 0 1px 0 #fff,0 3px 0 #d8cab0}
+body.computer-selection-page .compose-page-heading::before,body.computer-selection-page .compose-page-heading::after{display:none}
+body.computer-selection-page .compose-page-heading .step.active .step-num{background:#607e58;color:#fffdf7;box-shadow:0 0 0 4px #e3e8d6}
+body.computer-selection-page .compose-page-heading .step.done .step-num{background:#dbe4ce;color:#56724c}
+body.computer-selection-page .compose-page-heading .step::before,body.computer-selection-page .compose-page-heading .step::after{border-color:#d8cbb1}
+body.computer-selection-page .compose-layout .scope-empty{color:#96886e}/* 範圍頂欄與選取狀態：提高暖紙色及橄欖色的區辨度。 */
+body.computer-selection-page .compose-layout .card>.card-header{background:linear-gradient(180deg,#fffdf7,#f4edde);border-bottom:1px solid #e3d7c1;box-shadow:none}
+body.computer-selection-page #chapterTree .chapter-item:not(.is-disabled):hover{background:#eee3c7}
+body.computer-selection-page #chapterTree .chapter-item:has(input:checked){background:#dce4c8;color:#435d37;border-radius:3px}
+body.computer-selection-page #chapterTree .chapter-item:has(input:checked):hover{background:#d1ddba}
+body.computer-selection-page #chapterTree .chapter-item:has(input:checked) .ch-count{color:#567046}
+body.computer-selection-page #chapterTree .chapter-item:has(input:indeterminate){background:#e8ecd9;color:#536846}/* 次要操作透出紙面漸層；主操作及危險操作維持實心。 */
+body.computer-selection-page .btn:is(.btn-ghost,.btn-outline,.btn-secondary,.btn-previous,.btn-auto-score):not(.btn-primary):not(.btn-danger):not([onclick="window._epDoExport()"]):not([aria-expanded="true"]){background:transparent!important;border:1px solid #b7c0a9!important;color:#6d7b60!important;box-shadow:none!important}
+body.computer-selection-page .btn:is(.btn-ghost,.btn-outline,.btn-secondary,.btn-previous,.btn-auto-score):not(.btn-primary):not(.btn-danger):not([onclick="window._epDoExport()"]):not([aria-expanded="true"]):hover{background:#eee7d6!important;border-color:#9eae8e!important;color:#4d6544!important;box-shadow:none!important}
+body.computer-selection-page .btn.ep-panel-toggle[aria-expanded="true"]{background:#e5ead8!important;border-color:#a5b58f!important;color:#45653f!important}/* 題型與配分列改用暖紙色，避免殘留舊版偏冷綠底。 */
+body.computer-selection-page :is(.type-row,.score-config-row){background:#eae0cb;color:#62563f;border-radius:4px;box-shadow:inset 0 1px 0 #ffffff60}
+body.computer-selection-page .type-row .type-pool{color:#958263}
+body.computer-selection-page :is(.type-row,.score-config-row) .row-unit{color:#8a795c}
+body.computer-selection-page .number-stepper{background:#fffdf7;border-color:#d6c6a9;border-radius:4px}
+body.computer-selection-page .number-stepper .form-control{border:0;border-radius:0;box-shadow:none;color:#625b49;background:#fffdf7}
+body.computer-selection-page .number-stepper-buttons{border-left-color:#d6c6a9}
+body.computer-selection-page .number-stepper-buttons button{background:#f3ead7;color:#7a795a}
+body.computer-selection-page .number-stepper-buttons button+button{border-top-color:#ded0b5}
+body.computer-selection-page .number-stepper-buttons button:hover{background:#e5d5b4;color:#536846}
+body.computer-selection-page .type-row.invalid{background:#f6e3d9;box-shadow:none}/* 題型清單以分隔線取代整列色塊，已設定題數才提示。 */
+body.computer-selection-page :is(.type-row,.score-config-row){background:transparent;border-radius:0;border-bottom:1px solid #e3dac7;margin-bottom:0;padding:12px 10px;box-shadow:none}
+body.computer-selection-page .type-row .type-label{color:#514a3c;font-weight:600}
+body.computer-selection-page .type-row .type-pool{color:#95866e;font-weight:400;font-size:.8rem}
+body.computer-selection-page .type-row.has-count{background:#e8ecda;border-radius:3px}
+body.computer-selection-page .type-row.invalid{background:#f6e3d9;box-shadow:none}
+body.computer-selection-page .type-card-body :is(.type-row,.score-config-row):last-child{border-bottom:0}/* 章節比重以清單呈現，透出對話框紙面。 */
+body.computer-selection-page #sectionWeightModal .section-weight-row{background:transparent;border:0;border-bottom:1px solid #e3dac7;border-radius:0;box-shadow:none;margin-bottom:0;padding:16px 0;gap:16px}
+body.computer-selection-page #sectionWeightModal .section-weight-row:last-child{border-bottom:0}
+body.computer-selection-page #sectionWeightModal .section-weight-name{color:#625b49}
+body.computer-selection-page #sectionWeightModal .section-weight-note{color:#8a7b62}
+body.computer-selection-page #sectionWeightModal .section-weight-scale{color:#a0937c}
+body.computer-selection-page #sectionWeightModal .section-weight-scale .is-current{color:#4d5e43;font-weight:600}
+body.computer-selection-page #sectionWeightModal .section-weight-range::-webkit-slider-runnable-track{background:#ded5c1}
+body.computer-selection-page #sectionWeightModal .section-weight-range::-webkit-slider-thumb{background:#78906a;box-shadow:0 0 0 3px #78906a16}
+body.computer-selection-page #sectionWeightModal .section-weight-range:hover::-webkit-slider-thumb{box-shadow:0 0 0 4px #78906a25}
+body.computer-selection-page #sectionWeightModal .section-weight-range::-moz-range-track{background:#ded5c1}
+body.computer-selection-page #sectionWeightModal .section-weight-range::-moz-range-thumb{background:#78906a;box-shadow:0 0 0 3px #78906a16}
+body.computer-selection-page #sectionWeightModal .section-weight-range:focus-visible{outline-color:#78906a}/* 說明提高對比；難易度沿用章節比重的滑桿語彙。 */
+body.computer-selection-page #sectionWeightModal .section-weight-note,
+body.computer-selection-page .difficulty-note{color:#71644f;font-size:.85rem;line-height:1.65}
+body.computer-selection-page #sectionWeightModal .section-weight-scale,
+body.computer-selection-page .difficulty-scale{color:#88785f;font-size:.82rem}
+body.computer-selection-page .difficulty-ratio{color:#625b49}
+body.computer-selection-page .difficulty-ratio strong,
+body.computer-selection-page .difficulty-scale .is-current{color:#4d5e43;font-weight:600}
+body.computer-selection-page .difficulty-ratio-divider{color:#9b8b71}
+body.computer-selection-page .difficulty-range::-webkit-slider-runnable-track{background:#ded5c1}
+body.computer-selection-page .difficulty-range::-webkit-slider-thumb{background:#78906a;box-shadow:0 0 0 3px #78906a16}
+body.computer-selection-page .difficulty-range:hover::-webkit-slider-thumb{box-shadow:0 0 0 4px #78906a25}
+body.computer-selection-page .difficulty-range::-moz-range-track{background:#ded5c1}
+body.computer-selection-page .difficulty-range::-moz-range-thumb{background:#78906a;box-shadow:0 0 0 3px #78906a16}
+body.computer-selection-page .difficulty-range:focus-visible{outline-color:#78906a}
+body.computer-selection-page #sectionWeightModal .section-weight-heading{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 8px}
+body.computer-selection-page #sectionWeightModal .section-weight-heading h3{margin:0}
+body.computer-selection-page #sectionWeightModal .section-weight-heading .section-weight-note{margin:0;line-height:1.4;font-size:.85rem}
+
+body.computer-selection-page #sectionWeightModal>.modal>.modal-header{padding-bottom:8px}
+body.computer-selection-page #sectionWeightModal>.modal>.modal-body{padding-top:0}
+body.computer-selection-page #sectionWeightModal .section-weight-row:first-child{padding-top:8px}
+/* 後續流程：沿用同一組文字、紙面與互動層級。 */
+body.computer-selection-page .compose-help-note{margin:0;color:#71644f;font-size:.85rem;font-weight:400;line-height:1.65}
+body.computer-selection-page #composePanel3 :is(.preview-stat,.preview-stat strong){background:transparent;color:#4d5e43}
+body.computer-selection-page #composePanel3 .edit-q-view-toggle{background:#ece4d1;border-radius:4px}
+body.computer-selection-page #composePanel3 .edit-q-view-toggle::before{background:#fffdf7;border-radius:3px;box-shadow:0 1px 3px #59432418}
+body.computer-selection-page #composePanel3 .edit-q-view-toggle button{color:#928168;border-radius:3px}
+body.computer-selection-page #composePanel3 .edit-q-view-toggle button.active,
+body.computer-selection-page #composePanel3 .edit-q-view-toggle button.active:hover{color:#5b4430}
+body.computer-selection-page #composePanel3 .result-section-title{background:#e9dfc9;border:0;color:#6b5d43;border-radius:4px}
+body.computer-selection-page #composePanel3 .result-section-score{color:#827357}
+body.computer-selection-page #composePanel3 .result-q{background:transparent;color:#3f3b33;border-color:#e9e1d1}
+body.computer-selection-page #composePanel3 .result-q:hover{background:#f2e6cc}
+body.computer-selection-page #composePanel3 .result-q.is-expanded{background:#f6f1e7}
+body.computer-selection-page #composePanel3 :is(.q-num,.q-text,.q-tail,.compose-compact-text){color:#3f3b33}
+body.computer-selection-page #composePanel3 :is(.q-catalog-num,.q-source){background:#ece5d4;color:#827763;border-radius:3px}
+body.computer-selection-page #composePanel3 .q-ans{background:#edf0e4;color:#48623f}
+body.computer-selection-page #composePanel4 .exam-summary-table thead th{background:#e5d7bd;color:#6b5d43;border-color:#d9caac}
+body.computer-selection-page #composePanel4 .exam-summary-table :is(tbody td,tfoot td){background:transparent;color:#625b49;border-color:#e3dac7}
+body.computer-selection-page #composePanel4 .exam-summary-table tbody tr:hover{background:#f2e6cc}
+body.computer-selection-page #composePanel4 .exam-summary-table tfoot td{color:#4d5e43;background:#eee7d6}
+body.computer-selection-page #composePanel4 :is(.settings-header-sample,.ep-inline-header){background:#f6f1e7;border-color:#dfd4bd}
+body.computer-selection-page #composePanel4 .form-label{color:#75674e}
+body.computer-selection-page #composePanel5 #epModal.compose-inline-preview :is(.modal-header,.ep-preview-options,.ep-inline-header,.ep-toolbar){background:linear-gradient(180deg,#fffdf7,#f4edde);border-color:#e3d7c1;border-radius:4px;box-shadow:none;color:#6f654f}
+body.computer-selection-page #composePanel5 #epModal :is(.ep-preview-options label,.ep-toolbar label,.ep-toolbar .val){color:#71644f}
+body.computer-selection-page #composePanel5 #epModal .ep-preview-options label:has(input:checked){color:#45653f}
+body.computer-selection-page #composePanel5 #epModal :is(.ep-preview-options input,input[type="range"]){accent-color:#78906a}
+body.computer-selection-page #composePanel5 #epModal .form-control{background:#fffdf7;border-color:#ded3bb;color:#5b654c;border-radius:4px}
+body.computer-selection-page #composePanel5 #epModal .ep-scope-card{background:transparent;border:0;box-shadow:none}
+body.computer-selection-page #composePanel5 #epModal .ep-scope-select{color:#71684f;box-shadow:none}
+body.computer-selection-page #composePanel5 #epModal .ep-scope-select:hover{background:#eee3c9}
+body.computer-selection-page #composePanel5 #epModal .ep-scope-select[aria-pressed="true"]{background:#e5e6d2;color:#4d5e43;box-shadow:none}
+body.computer-selection-page #composePanel5 #epModal .ep-scope-select small{color:#96866c}
+body.computer-selection-page #composePanel5 #epModal .modal-header .btn{height:30px;min-height:30px;max-height:30px;box-sizing:border-box;padding:0 10px;border-radius:4px;line-height:1;font-size:.85rem;box-shadow:none}
+body.computer-selection-page #composePanel5 #epModal .modal-header .btn[onclick="window._epDoExport()"]{background:#607e58;border:1px solid #607e58;color:#fffdf7}
+body.computer-selection-page #composePanel5 #epModal .modal-header .btn[onclick="window._epDoExport()"]:hover{background:#4f6f49;border-color:#4f6f49}
+@media screen{body.computer-selection-page #composePanel5 #epModal :is(.ep-preview-modal,#epBody,#epScopePaperHost,#epPaper){background:#f6f1e7}}
+/* 移除題型容器的舊白底，讓列邊緣與外層紙面銜接。 */
+body.computer-selection-page #composePanel3 :is(.result-section,.result-list,.result-q){background:transparent}
+body.computer-selection-page #composePanel3 .result-q:hover{background:#f2e6cc}
+body.computer-selection-page #composePanel3 .result-q.is-expanded{background:#f6f1e7}
+/* 題目資訊與答案增加對比，尺寸與題文層級維持一致。 */
+body.computer-selection-page #composePanel3 .result-q :is(.q-catalog-num,.q-source){background:#ece3d0;color:#66583f;border:1px solid #d7c9ad;border-radius:4px}
+body.computer-selection-page #composePanel3 .result-q .badge{border:1px solid transparent;border-radius:4px}
+body.computer-selection-page #composePanel3 .result-q .badge-hard{background:#f0ddd5;color:#9c4032;border-color:#e2bdb0}
+body.computer-selection-page #composePanel3 .result-q .badge-easy{background:#e0e8d5;color:#4d713f;border-color:#bfceaa}
+body.computer-selection-page #composePanel3 .result-q .badge-normal{background:#e7e3d9;color:#6e6452;border-color:#d3cab9}
+body.computer-selection-page #composePanel3 .result-q .badge-t1{background:#dfe8e9;color:#466c79;border-color:#beced0}
+body.computer-selection-page #composePanel3 .result-q .badge-t2{background:#e0e8d5;color:#4d713f;border-color:#bfceaa}
+body.computer-selection-page #composePanel3 .result-q .badge-t3{background:#eee3c6;color:#8b6a27;border-color:#dac79b}
+body.computer-selection-page #composePanel3 .result-q .badge-t4{background:#e9dfe8;color:#825777;border-color:#d2bdcd}
+body.computer-selection-page #composePanel3 .result-q .badge-t5{background:#eedfcf;color:#956338;border-color:#d9bfa4}
+body.computer-selection-page #composePanel3 .result-q .badge-t6{background:#e7e3d9;color:#6e6452;border-color:#d3cab9}
+body.computer-selection-page #composePanel3 .result-q .q-ans{background:#dfe6ce;color:#3f3b33;border-radius:4px;padding:9px 12px}
+body.computer-selection-page #composePanel3 .result-q .answer-label{color:#415d36;font-weight:700}
+body.computer-selection-page #composePanel3 .result-q .replace-question{height:28px;min-height:28px;max-height:28px;box-sizing:border-box;padding:0 8px;justify-content:center;font-size:.82rem;line-height:1;border-radius:4px;border-color:#9aa98b!important;color:#526746!important;gap:5px}
+body.computer-selection-page #composePanel3 .result-q .replace-question:hover{border-color:#7c9269!important;color:#3e5934!important}
+body.computer-selection-page #composePanel3 .result-q .replace-question svg{display:block;flex:none;width:15px;height:15px}
+body.computer-selection-page .type-row .type-label{font-weight:600;flex-wrap:wrap;row-gap:4px}
+body.computer-selection-page .type-row .type-error{width:auto;padding-left:0;font-weight:400}
+body.computer-selection-page .type-row.invalid .type-error{display:inline-flex;align-items:center;gap:5px;font-weight:600}
+body.computer-selection-page .type-row.invalid .type-error::before{content:'';display:inline-block;flex:none;width:15px;height:15px;background:currentColor;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M10.3 3.9 2 18.3A2 2 0 0 0 3.7 21h16.6a2 2 0 0 0 1.7-2.7L13.7 3.9a2 2 0 0 0-3.4 0ZM12 9v4m0 4h.01'/%3E%3C/svg%3E") center/contain no-repeat}
+body.computer-selection-page .type-row .type-label{align-items:center}
+body.computer-selection-page .type-row :is(.type-pool,.type-error){font-size:.82rem;line-height:1.5}
+body.computer-selection-page .type-row.invalid .type-error{align-items:center}
+body.computer-selection-page .type-row.invalid .type-error::before{align-self:center}
+
+body.computer-selection-page #composePanel3 .result-q .q-source{background:#f0dce4;color:#94516c;border:1px solid #d7afbf}
+
+/* 第五步與試卷管理預覽對齊；目錄為獨立欄，控制列在考卷上方。 */
+body.computer-selection-page #composePanel5 .selection-preview-body{padding:16px 20px 20px;grid-template-columns:260px minmax(0,1fr);gap:20px;background:#f6f1e7}
+body.computer-selection-page #composeScopePreview .ep-scope-card{background:transparent;border:0;border-radius:0;box-shadow:none}
+body.computer-selection-page #composeScopePreview :is(.ep-scope-heading,.ep-scope-toggle,.ep-scope-reopen){display:none!important}
+body.computer-selection-page #composeScopePreview .ep-scope-content{padding:0 2px 14px}
+body.computer-selection-page #composeScopePreview .ep-scope-select{padding:7px 12px;background:transparent;color:#71684f;border:0;border-radius:4px;box-shadow:none}
+body.computer-selection-page #composeScopePreview .ep-scope-select:hover{background:#eee3c9}
+body.computer-selection-page #composeScopePreview .ep-scope-select[aria-pressed="true"]{background:#e5e6d2;color:#4d5e43;box-shadow:none;font-weight:600}
+body.computer-selection-page #composeScopePreview .ep-scope-select small{color:#96866c;font-weight:400}
+body.computer-selection-page #composePanel5 .compose-preview-tools{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+body.computer-selection-page #composePanel5 .compose-preview-tools .btn{height:30px;min-height:30px;max-height:30px;box-sizing:border-box;padding:0 10px;border:1px solid #b7c0a9;border-radius:4px;font-size:.85rem;font-weight:500;line-height:1;box-shadow:none;transform:none}
+body.computer-selection-page #composePanel5 .compose-preview-tools .btn-primary{background:#607e58;border-color:#607e58;color:#fffdf7}
+body.computer-selection-page #composePanel5 .compose-preview-tools .btn-primary:hover{background:#4f6f49;border-color:#4f6f49}
+body.computer-selection-page #composePanel5 #epModal.compose-inline-preview :is(.ep-preview-options,.ep-inline-header,.ep-toolbar){background:#f5efdf;border:0;border-radius:4px;box-shadow:inset 0 1px 0 #fff9,0 2px 0 #e5dac3;color:#6f654f}
+body.computer-selection-page #composePanel5 #epModal .ep-preview-options label,
+body.computer-selection-page #composePanel5 #epModal .ep-preview-options label:hover,
+body.computer-selection-page #composePanel5 #epModal .ep-preview-options label:has(input:checked){background:transparent;border:0;box-shadow:none;color:#74674e}
+body.computer-selection-page #composePanel5 #epModal .ep-preview-options label:has(input:checked){color:#45653f}
+@media(max-width:850px){body.computer-selection-page #composePanel5 .selection-preview-body{grid-template-columns:minmax(0,1fr)}}
+/* 預覽設定區：平貼燕麥紙面，與閱讀區保持明度差。 */
+body.computer-selection-page #composePanel5 #epModal.compose-inline-preview :is(.ep-toolbar,.ep-inline-header,.ep-preview-options){background:#ede3ce;border:0;border-radius:4px;box-shadow:none}
+body.computer-selection-page #composePanel5 #epModal.compose-inline-preview .ep-toolbar .group{gap:8px}
+body.computer-selection-page #composePanel5 #epModal.compose-inline-preview .ep-toolbar :is(.group label,.val){color:#716149}
+body.computer-selection-page #composePanel5 #epModal.compose-inline-preview .ep-toolbar .val{font-variant-numeric:tabular-nums;min-width:42px;text-align:right}
+body.computer-selection-page #composePanel5 #epModal.compose-inline-preview .ep-toolbar input[type="range"]{appearance:none;-webkit-appearance:none;direction:ltr;height:26px;padding:0;margin:0;background:transparent;border:0;box-shadow:none;cursor:pointer;accent-color:#78906a}
+body.computer-selection-page #composePanel5 #epModal.compose-inline-preview .ep-toolbar input[type="range"]::-webkit-slider-runnable-track{height:5px;border:0;border-radius:5px;background:#cbbfa6}
+body.computer-selection-page #composePanel5 #epModal.compose-inline-preview .ep-toolbar input[type="range"]::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:16px;height:16px;margin-top:-5.5px;border:0;border-radius:50%;background:#78906a;box-shadow:0 0 0 3px #78906a16}
+body.computer-selection-page #composePanel5 #epModal.compose-inline-preview .ep-toolbar input[type="range"]:hover::-webkit-slider-thumb{box-shadow:0 0 0 4px #78906a25}
+body.computer-selection-page #composePanel5 #epModal.compose-inline-preview .ep-toolbar input[type="range"]::-moz-range-track{height:5px;border:0;border-radius:5px;background:#cbbfa6}
+body.computer-selection-page #composePanel5 #epModal.compose-inline-preview .ep-toolbar input[type="range"]::-moz-range-progress{height:5px;border-radius:5px;background:#cbbfa6}
+body.computer-selection-page #composePanel5 #epModal.compose-inline-preview .ep-toolbar input[type="range"]::-moz-range-thumb{width:16px;height:16px;border:0;border-radius:50%;background:#78906a;box-shadow:0 0 0 3px #78906a16}
+body.computer-selection-page #composePanel5 #epModal.compose-inline-preview .ep-toolbar input[type="range"]:focus-visible{outline:2px solid #78906a;outline-offset:3px;border-radius:4px}
+body.computer-selection-page #composePanel5 #epModal.compose-inline-preview .ep-preview-options{background:transparent;border:0;box-shadow:none}
+
+/* 設定區以留白與細線分區，不再鋪底色。 */
+body.computer-selection-page #composePanel5 #epModal.compose-inline-preview :is(.ep-toolbar,.ep-inline-header){background:transparent;border:0;border-bottom:1px solid #dfd4bd;border-radius:0;box-shadow:none;padding-top:14px;padding-bottom:14px}
+/* 右側第一列與章節項目的 7px 上內距對齊。 */
+body.computer-selection-page #composePanel5 #epModal.compose-inline-preview .ep-preview-controls{padding-top:0!important}
+body.computer-selection-page #composePanel5 #epModal.compose-inline-preview .ep-preview-options{padding-top:3px;padding-bottom:10px;align-items:center}
+body.computer-selection-page #composePanel5 #epModal.compose-inline-preview .ep-preview-options label{line-height:1.5;padding-top:4px;padding-bottom:4px}
+body.computer-selection-page #composePanel5 #epModal.compose-inline-preview .ep-toolbar{padding-top:7px}
+/* 設定列與第一章共用起始上緣，兩列控制項共用左緣。 */
+body.computer-selection-page #composePanel5 #epModal.compose-inline-preview .ep-toolbar{margin-top:0;padding:0 0 12px;align-items:flex-start;gap:14px}
+body.computer-selection-page #composePanel5 #epModal.compose-inline-preview .ep-toolbar .group{align-items:center;min-height:30px;margin:0}
+body.computer-selection-page #composePanel5 #epModal.compose-inline-preview .ep-toolbar .group label{margin:0;padding:0;line-height:30px}
+body.computer-selection-page #composePanel5 #epModal.compose-inline-preview .ep-toolbar select{height:30px;box-sizing:border-box}
+body.computer-selection-page #composePanel5 #epModal.compose-inline-preview .ep-preview-options{padding:0 0 10px;margin-left:0;align-items:center}
+body.computer-selection-page #composePanel5 #epModal.compose-inline-preview .ep-preview-options label{padding-left:0;padding-right:0;margin-left:0}
+body.computer-selection-page #composeScopePreview .ep-scope-select.ep-scope-group-heading{padding-top:0;padding-bottom:7px;min-height:30px;align-items:center}
+/* 表頭設定與其他控制列共用起點，不額外向內縮。 */
+body.computer-selection-page #composePanel5 #epModal.compose-inline-preview .ep-inline-header{padding:0 0 12px;margin-top:0}
+body.computer-selection-page #composePanel5 #epModal.compose-inline-preview .ep-inline-header .ep-inline-header-fields{margin:0;padding:0}
+body.computer-selection-page #composePanel5 #epModal.compose-inline-preview .ep-inline-header .form-group{margin-top:0;margin-left:0}
+body.computer-selection-page #composePanel5 #epModal.compose-inline-preview .ep-inline-header .form-label{margin-top:0;padding-left:0}
