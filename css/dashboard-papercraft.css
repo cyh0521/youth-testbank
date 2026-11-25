@@ -9,8 +9,8 @@
 #green-comic-test{color:var(--paper-ink);font-variant-numeric:tabular-nums;--gc-line:#d8cbb3}
 #green-comic-test .gc-home{background:none;position:relative}
 /* 一張橫放的問候紙箋，與下方選題紙卡分開。 */
-#green-comic-test .gc-welcome{isolation:isolate;min-height:185px;margin:0 5px 40px;padding:22px 32px;background:linear-gradient(115deg,#fbf8ef 0 68%,#f0ead9 68%);border:0;border-radius:3px;box-shadow:inset 1px 1px 0 #fff,0 5px 15px #624b2517;overflow:visible}
-#green-comic-test .gc-welcome::before{content:'';position:absolute;z-index:-1;inset:0;width:auto;height:auto;top:0;right:0;background:transparent;border-radius:3px;transform:none;box-shadow:4px 5px 0 #dacbad,0 8px 12px #624b2515;pointer-events:none}
+#green-comic-test .gc-welcome{isolation:isolate;min-height:185px;margin:0 5px 40px;padding:22px 32px;background:#f6f0e3;border:0;border-radius:3px;box-shadow:inset 0 1px 0 #fffaf080,0 3px 10px #624b250b;overflow:visible}
+#green-comic-test .gc-welcome::before{content:'';position:absolute;z-index:-1;inset:0;width:auto;height:auto;top:0;right:0;background:transparent;border-radius:3px;transform:none;box-shadow:2px 3px 0 #dfd3bc,0 5px 9px #624b250a;pointer-events:none}
 #green-comic-test .gc-welcome::after{content:'';position:absolute;left:28px;top:-8px;bottom:auto;width:64px;height:18px;background:#d4b76e85;transform:rotate(-5deg);clip-path:polygon(3% 0,100% 0,97% 100%,0 100%);pointer-events:none}
 #green-comic-test .gc-welcome-copy{width:64%;padding:0;z-index:2}
 #green-comic-test .gc-welcome h2{color:#4c5e42;font-size:clamp(25px,2.55vw,36px);line-height:1.5;letter-spacing:.035em}
@@ -91,10 +91,10 @@ body.dashboard-page>.layout>.main>.page-content{flex:0 0 auto;min-height:100%;ov
 #green-comic-test .gc-welcome{min-height:160px;margin-bottom:53px}
 #green-comic-test .gc-welcome-copy{width:59%}
 #green-comic-test .gc-teacher-paper{width:43%;max-width:570px;max-height:none;height:auto;object-fit:contain;right:-2px;top:50%;transform:translateY(-50%)}
-#green-comic-test .gc-paper-flight{right:4%;top:4px;width:105px}
-@media(max-width:1100px){.dashboard-page>.layout>.main>.page-content{padding-top:56px}#green-comic-test .gc-teacher-paper{width:42%}#green-comic-test .gc-paper-flight{width:86px;top:0;right:3%}}
-@media(min-width:481px) and (max-width:767px){#green-comic-test .gc-welcome-copy{width:60%}#green-comic-test .gc-welcome h2{font-size:clamp(17px,2.6vw,21px)}#green-comic-test .gc-teacher-paper{width:43%;right:-5px}#green-comic-test .gc-paper-flight{width:70px;top:7px;right:1%}}
-@media(max-width:480px){.dashboard-page>.layout>.main>.page-content{padding-top:45px}#green-comic-test .gc-welcome{min-height:260px;align-items:flex-end;padding:145px 13px 20px;margin-bottom:35px}#green-comic-test .gc-welcome-copy{width:100%}#green-comic-test .gc-teacher-paper{width:89%;max-width:320px;right:5%;top:-23px;transform:none}#green-comic-test .gc-paper-flight{width:65px;right:3%;top:14px}}/* 輕量角落疊紙：三片色紙，投影只在局部折片運算。 */
+#green-comic-test .gc-paper-flight{right:4%;top:4px;width:84px}
+@media(max-width:1100px){.dashboard-page>.layout>.main>.page-content{padding-top:56px}#green-comic-test .gc-teacher-paper{width:42%}#green-comic-test .gc-paper-flight{width:72px;top:0;right:3%}}
+@media(min-width:481px) and (max-width:767px){#green-comic-test .gc-welcome-copy{width:60%}#green-comic-test .gc-welcome h2{font-size:clamp(17px,2.6vw,21px)}#green-comic-test .gc-teacher-paper{width:43%;right:-5px}#green-comic-test .gc-paper-flight{width:60px;top:7px;right:1%}}
+@media(max-width:480px){.dashboard-page>.layout>.main>.page-content{padding-top:45px}#green-comic-test .gc-welcome{min-height:260px;align-items:flex-end;padding:145px 13px 20px;margin-bottom:35px}#green-comic-test .gc-welcome-copy{width:100%}#green-comic-test .gc-teacher-paper{width:89%;max-width:320px;right:5%;top:-23px;transform:none}#green-comic-test .gc-paper-flight{width:54px;right:3%;top:14px}}/* 輕量角落疊紙：三片色紙，投影只在局部折片運算。 */
 .dashboard-page>.layout::before,.dashboard-page>.layout::after{display:none}
 .paper-corner{position:fixed;top:60px;width:105px;height:auto;z-index:-1;pointer-events:none}
 .paper-corner svg{display:block;width:100%;height:auto;overflow:visible}
@@ -114,3 +114,106 @@ body.dashboard-page>.layout>.main>.page-content{flex:0 0 auto;min-height:100%;ov
 .dashboard-page .site-nav-menu a:hover,.dashboard-page .site-account .account-menu a:hover,.dashboard-page .site-account .account-menu button:hover{background:#eee5d0;color:#3f5e43}
 @media(max-width:820px){.dashboard-page .site-nav>a::after,.dashboard-page .site-nav-group>summary::after{left:-5px;right:-5px;height:26px}}
 @media(prefers-reduced-motion:reduce){.dashboard-page .site-nav>a::after,.dashboard-page .site-nav-group>summary::after{transition:none}}
+
+/* 問候區退為陪襯，科目區以細線承接；剪紙人物輕跨線條。 */
+#green-comic-test .gc-welcome{display:flex;align-items:center;position:relative;min-height:175px;box-sizing:border-box;margin:0 5px 0;padding:22px 36% 24px 18px;background:transparent;box-shadow:none;border-radius:0;border-bottom:1px solid #cbbc9f}
+#green-comic-test .gc-welcome::before,#green-comic-test .gc-welcome::after{display:none}
+#green-comic-test .gc-welcome-copy{width:100%;min-width:0;padding:0}
+#green-comic-test .gc-welcome h2{margin:0;font-size:clamp(21px,2vw,28px);line-height:1.7;letter-spacing:.025em}
+#green-comic-test .gc-coffee-line{display:block;font-size:.85em;color:#748066;margin-bottom:4px}
+#green-comic-test .gc-work-line{display:block;margin-left:0;white-space:nowrap}
+#green-comic-test .gc-teacher-paper{position:absolute;z-index:2;display:block;width:32%;max-width:350px;max-height:none;height:auto;right:18px;top:auto;bottom:-18px;transform:none;object-fit:contain}
+#green-comic-test .gc-paper-flight{width:66px;left:auto;right:34%;top:18px;transform:rotate(-8deg)}
+#green-comic-test .gc-heading{margin-top:28px;margin-bottom:20px}
+@media(min-width:768px) and (max-width:1100px){#green-comic-test .gc-welcome{min-height:155px;padding-left:10px}#green-comic-test .gc-welcome h2{font-size:23px}#green-comic-test .gc-teacher-paper{width:34%;right:4px;bottom:-14px}#green-comic-test .gc-paper-flight{width:56px;right:35%;top:10px}}
+@media(min-width:601px) and (max-width:767px){#green-comic-test .gc-welcome{min-height:140px;padding-left:4px;padding-right:37%}#green-comic-test .gc-welcome h2{font-size:19px}#green-comic-test .gc-teacher-paper{width:35%;right:0;bottom:-12px}#green-comic-test .gc-paper-flight{width:44px;right:36%;top:3px}}
+@media(max-width:600px){#green-comic-test .gc-welcome{display:block;min-height:235px;margin:0 3px;padding:4px 0 130px}#green-comic-test .gc-welcome-copy{width:100%}#green-comic-test .gc-welcome h2{font-size:clamp(18px,4.5vw,24px);line-height:1.6}#green-comic-test .gc-coffee-line{margin-bottom:2px}#green-comic-test .gc-teacher-paper{width:68%;max-width:260px;right:0;top:auto;bottom:-14px}#green-comic-test .gc-paper-flight{width:54px;left:8%;right:auto;top:117px}#green-comic-test .gc-heading{margin-top:28px}}
+
+/* 放大陪襯插圖，問候語靠近人物，紙飛機位於頭部右側。 */
+#green-comic-test .gc-welcome{min-height:225px;padding:20px 40% 22px 12%;justify-content:flex-end}
+#green-comic-test .gc-welcome h2{font-size:clamp(25px,2.45vw,35px)}
+#green-comic-test .gc-teacher-paper{width:39%;max-width:460px;right:20px;bottom:-32px}
+#green-comic-test .gc-paper-flight{width:70px;left:auto;right:0;top:12px;transform:rotate(5deg)}
+#green-comic-test .gc-heading{margin-top:40px;margin-bottom:20px}
+@media(min-width:768px) and (max-width:1100px){#green-comic-test .gc-welcome{min-height:195px;padding-left:3%;padding-right:41%}#green-comic-test .gc-welcome h2{font-size:clamp(23px,2.65vw,29px)}#green-comic-test .gc-teacher-paper{width:40%;right:10px;bottom:-28px}#green-comic-test .gc-paper-flight{width:58px;right:0;top:20px}}
+@media(min-width:601px) and (max-width:767px){#green-comic-test .gc-welcome{min-height:175px;padding-left:0;padding-right:42%}#green-comic-test .gc-welcome h2{font-size:21px}#green-comic-test .gc-teacher-paper{width:42%;right:0;bottom:-26px}#green-comic-test .gc-paper-flight{width:48px;right:0;top:24px}}
+@media(max-width:600px){#green-comic-test .gc-welcome{min-height:285px;padding:4px 0 180px}#green-comic-test .gc-welcome h2{font-size:clamp(21px,5vw,27px)}#green-comic-test .gc-teacher-paper{width:86%;max-width:330px;right:8px;bottom:-28px}#green-comic-test .gc-paper-flight{width:50px;left:auto;right:0;top:120px}}
+
+/* 問候語等級一致，分隔線與人物下移，飛機貼近頭側。 */
+#green-comic-test .gc-welcome{min-height:249px;padding-bottom:46px}
+#green-comic-test .gc-coffee-line{font-size:1em;color:inherit}
+#green-comic-test .gc-paper-flight{width:86px;right:4%;top:39px}
+@media(min-width:768px) and (max-width:1100px){#green-comic-test .gc-welcome{min-height:219px}#green-comic-test .gc-paper-flight{width:72px;right:3%;top:45px}}
+@media(min-width:601px) and (max-width:767px){#green-comic-test .gc-welcome{min-height:199px}#green-comic-test .gc-paper-flight{width:60px;right:2%;top:48px}}
+@media(max-width:600px){#green-comic-test .gc-welcome{min-height:309px;padding-bottom:204px}#green-comic-test .gc-paper-flight{width:62px;right:3%;top:147px}}
+
+/* 分隔線置於科目標題下，人物隨線下移；第二句縮排一字。 */
+#green-comic-test .gc-welcome{border-bottom:0}
+#green-comic-test .gc-work-line{margin-left:1em}
+#green-comic-test .gc-heading{position:relative;margin-top:28px;margin-bottom:44px;padding-bottom:16px;border-bottom:1px solid #cbbc9f}
+#green-comic-test .gc-teacher-paper{bottom:-112px}
+#green-comic-test .gc-paper-flight{top:119px}
+@media(min-width:768px) and (max-width:1100px){#green-comic-test .gc-teacher-paper{bottom:-108px}#green-comic-test .gc-paper-flight{top:125px}}
+@media(min-width:601px) and (max-width:767px){#green-comic-test .gc-teacher-paper{bottom:-106px}#green-comic-test .gc-paper-flight{top:128px}}
+@media(max-width:600px){#green-comic-test .gc-work-line{margin-left:.65em}#green-comic-test .gc-teacher-paper{bottom:-108px}#green-comic-test .gc-paper-flight{top:227px}}
+
+/* 收緊首頁上緣與科目間距；人物疊在線條上方。 */
+.dashboard-page>.layout>.main>.page-content{padding-top:28px}
+#green-comic-test .gc-welcome{isolation:auto;min-height:215px;padding:16px 39% 24px 17%;z-index:1}
+#green-comic-test .gc-welcome-copy{position:relative;z-index:2}
+#green-comic-test .gc-teacher-paper{z-index:4;bottom:-82px}
+#green-comic-test .gc-paper-flight{z-index:5;top:84px}
+#green-comic-test .gc-heading{z-index:0;margin-top:20px;margin-bottom:24px;padding-bottom:14px}
+@media(min-width:768px) and (max-width:1100px){.dashboard-page>.layout>.main>.page-content{padding-top:28px}#green-comic-test .gc-welcome{min-height:195px;padding-left:5%;padding-right:41%}#green-comic-test .gc-teacher-paper{bottom:-78px}#green-comic-test .gc-paper-flight{top:90px}}
+@media(min-width:601px) and (max-width:767px){#green-comic-test .gc-welcome{min-height:175px;padding-left:0;padding-right:42%}#green-comic-test .gc-teacher-paper{bottom:-76px}#green-comic-test .gc-paper-flight{top:93px}}
+@media(max-width:600px){.dashboard-page>.layout>.main>.page-content{padding-top:24px}#green-comic-test .gc-welcome{min-height:275px;padding:4px 0 180px}#green-comic-test .gc-teacher-paper{bottom:-78px}#green-comic-test .gc-paper-flight{top:192px}}
+
+/* 問候語落在咖啡左側，靠近科目分隔線。 */
+#green-comic-test .gc-welcome-copy{position:absolute;right:40%;bottom:-20px;width:max-content;max-width:60%;padding:0}
+#green-comic-test .gc-teacher-paper{bottom:-66px}
+#green-comic-test .gc-paper-flight{top:68px}
+@media(min-width:768px) and (max-width:1100px){#green-comic-test .gc-welcome-copy{right:41%;max-width:59%}#green-comic-test .gc-teacher-paper{bottom:-62px}#green-comic-test .gc-paper-flight{top:74px}}
+@media(min-width:601px) and (max-width:767px){#green-comic-test .gc-welcome-copy{right:42%;max-width:58%}#green-comic-test .gc-teacher-paper{bottom:-60px}#green-comic-test .gc-paper-flight{top:77px}}
+@media(max-width:600px){#green-comic-test .gc-welcome-copy{position:relative;right:auto;bottom:auto;width:100%;max-width:none}#green-comic-test .gc-teacher-paper{bottom:-62px}#green-comic-test .gc-paper-flight{top:176px}}
+
+/* 微調上緣、插圖位置與問候語行距。 */
+.dashboard-page>.layout>.main>.page-content{padding-top:18px}
+#green-comic-test .gc-welcome h2{line-height:1.45}
+#green-comic-test .gc-coffee-line{margin-bottom:0}
+#green-comic-test .gc-teacher-paper{bottom:-74px}
+#green-comic-test .gc-paper-flight{top:76px}
+@media(min-width:768px) and (max-width:1100px){.dashboard-page>.layout>.main>.page-content{padding-top:18px}#green-comic-test .gc-teacher-paper{bottom:-70px}#green-comic-test .gc-paper-flight{top:82px}}
+@media(min-width:601px) and (max-width:767px){#green-comic-test .gc-teacher-paper{bottom:-68px}#green-comic-test .gc-paper-flight{top:85px}}
+@media(max-width:600px){.dashboard-page>.layout>.main>.page-content{padding-top:16px}#green-comic-test .gc-teacher-paper{bottom:-70px}#green-comic-test .gc-paper-flight{top:184px}}
+
+/* 壓縮橫幅高度，杯墊輕壓分隔線，文字貼近線上方。 */
+.dashboard-page>.layout>.main>.page-content{padding-top:12px}
+#green-comic-test .gc-welcome{min-height:175px}
+#green-comic-test .gc-welcome-copy{bottom:-32px}
+#green-comic-test .gc-teacher-paper{bottom:-88px}
+#green-comic-test .gc-paper-flight{top:50px}
+@media(min-width:768px) and (max-width:1100px){.dashboard-page>.layout>.main>.page-content{padding-top:12px}#green-comic-test .gc-welcome{min-height:155px}#green-comic-test .gc-teacher-paper{bottom:-84px}#green-comic-test .gc-paper-flight{top:56px}}
+@media(min-width:601px) and (max-width:767px){#green-comic-test .gc-welcome{min-height:145px}#green-comic-test .gc-teacher-paper{bottom:-82px}#green-comic-test .gc-paper-flight{top:69px}}
+@media(max-width:600px){.dashboard-page>.layout>.main>.page-content{padding-top:12px}#green-comic-test .gc-welcome{min-height:255px}#green-comic-test .gc-welcome-copy{bottom:auto}#green-comic-test .gc-teacher-paper{bottom:-84px}#green-comic-test .gc-paper-flight{top:178px}}
+
+/* 杯墊減少跨線幅度，問候語往右下收攏；飛行軌跡向左延伸。 */
+.dashboard-page>.layout>.main>.page-content{padding-top:8px}
+#green-comic-test .gc-welcome{min-height:159px}
+#green-comic-test .gc-welcome-copy{right:37%;bottom:-46px}
+#green-comic-test .gc-teacher-paper{bottom:-80px}
+#green-comic-test .gc-paper-flight{width:118px;top:36px}
+@media(min-width:768px) and (max-width:1100px){.dashboard-page>.layout>.main>.page-content{padding-top:8px}#green-comic-test .gc-welcome{min-height:139px}#green-comic-test .gc-welcome-copy{right:38%}#green-comic-test .gc-teacher-paper{bottom:-76px}#green-comic-test .gc-paper-flight{width:99px;top:42px}}
+@media(min-width:601px) and (max-width:767px){#green-comic-test .gc-welcome{min-height:129px}#green-comic-test .gc-welcome-copy{right:39%}#green-comic-test .gc-teacher-paper{bottom:-74px}#green-comic-test .gc-paper-flight{width:82px;top:55px}}
+@media(max-width:600px){.dashboard-page>.layout>.main>.page-content{padding-top:8px}#green-comic-test .gc-welcome{min-height:239px}#green-comic-test .gc-welcome-copy{right:auto;bottom:auto}#green-comic-test .gc-teacher-paper{bottom:-76px}#green-comic-test .gc-paper-flight{width:85px;top:164px}}
+
+/* 科目標題書籤與字級相稱，使用 flex 垂直置中。 */
+#green-comic-test .gc-heading h1{display:flex;align-items:center;gap:11px}
+#green-comic-test .gc-heading h1::before{display:block;flex:none;width:.48em;height:1em;margin-right:0;vertical-align:baseline}
+
+/* 固定手寫問候語圖像，避免字型載入造成跳動。 */
+#green-comic-test .gc-welcome-copy{width:min(32.7vw,467px)}
+#green-comic-test .gc-welcome-copy h2{line-height:0}
+#green-comic-test .gc-greeting-image{display:block;width:100%;height:auto}
+@media(min-width:768px) and (max-width:1100px){#green-comic-test .gc-welcome-copy{width:36.2vw}}
+@media(min-width:601px) and (max-width:767px){#green-comic-test .gc-welcome-copy{width:282px}}
+@media(max-width:600px){#green-comic-test .gc-welcome-copy{width:min(100%,360px)}}

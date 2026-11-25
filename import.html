@@ -170,11 +170,16 @@
 </style>
 <link rel="stylesheet" href="css/site-redesign.css?v=20261016-yellow-titles">
 <link rel="stylesheet" href="css/testbank-redesign.css?v=20261016-card-titles">
+<link rel="stylesheet" href="css/compose-papercraft.css?v=20261125-testbank-ui">
+<link rel="stylesheet" href="css/testbank-papercraft.css?v=20261125-import-hierarchy">
 </head>
 <body class="testbank-redesign-page">
 <script src="js/icons.js"></script>
 <script src="js/core.js?v=20261008-choice-images"></script>
-<div class="layout">
+<div class="layout"><div class="paper-corner paper-corner--left" aria-hidden="true"><svg viewBox="0 0 120 145"><g style="filter:drop-shadow(2px 3px 2px #66543429)"><path d="M-5-4 112-4 17 91-5 110Z" fill="#dacaac"/><path d="M-5-4 112-4 17 89" fill="#f0e4c9"/></g><g style="filter:drop-shadow(2px 4px 2px #43563730)"><path d="M-5 14 90-2 4 135-5 126Z" fill="#94a586"/><path d="M-5 14 90-2 29 58Z" fill="#bfcaab"/><path d="M29 58 90-2 4 135Z" fill="#a9b89a"/></g><g style="filter:drop-shadow(1px 2px 1px #7e663329)"><path d="M-5-3 43-3-5 45Z" fill="#ddbf77"/><path d="M-5-3 43-3-5 38Z" fill="#edda9e"/></g></svg></div>
+<div class="paper-corner paper-corner--right" aria-hidden="true"><svg viewBox="0 0 120 145"><g style="filter:drop-shadow(2px 3px 2px #66543429)"><path d="M-5-4 108-4 17 91-5 110Z" fill="#dacaac"/><path d="M-5-4 108-4 17 89" fill="#f0e4c9"/></g><g style="filter:drop-shadow(2px 4px 2px #43563730)"><path d="M-5 14 87-2 4 123-5 118Z" fill="#94a586"/><path d="M-5 14 87-2 29 58Z" fill="#bfcaab"/><path d="M29 58 87-2 4 123Z" fill="#a9b89a"/></g><g style="filter:drop-shadow(1px 2px 1px #7e663329)"><path d="M-5-3 35-3-5 37Z" fill="#ddbf77"/><path d="M-5-3 35-3-5 31Z" fill="#edda9e"/></g></svg></div>
+
+
   <header class="site-header" id="sidebar"></header>
   <script src="js/shell.js?v=20261019-user-guide"></script>
   <div class="main" inert>
@@ -203,9 +208,9 @@
 
         <!-- 格式說明 -->
         <section class="card import-card">
-          <div class="card-header section-heading"><div><h2>入題檔格式說明</h2><p>上傳前確認 Word 表格欄位</p></div><div class="import-header-actions"><button class="btn btn-outline btn-sm" onclick="openImportedFiles()"><span id="importedFilesButtonIcon"></span>已匯入檔案列表</button><button class="btn btn-primary btn-sm" onclick="goStep2()"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m13.5 6 6 6-6 6"/><path d="m6 6 6 6-6 6" stroke-opacity=".5"/></svg>下一步：上傳檔案</button></div></div><div class="card-body import-card-body">
+          <div class="card-header section-heading"><div><h2>入題檔格式說明</h2><p>上傳前確認 Word 表格欄位</p></div><div class="import-header-actions"><button class="btn btn-outline btn-sm" onclick="openImportedFiles()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>已匯入檔案列表</button><button class="btn btn-primary btn-sm" onclick="goStep2()"><svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m13.5 6 6 6-6 6"/><path d="m6 6 6 6-6 6" stroke-opacity=".5"/></svg>下一步：上傳檔案</button></div></div><div class="card-body import-card-body">
             <div class="import-action" style="margin-bottom:14px">
-              <button class="btn btn-outline btn-sm" id="exportTextbankBtn" onclick="openTextbankExport()">匯出靜態題庫</button>
+              <button class="btn btn-outline btn-sm" id="exportTextbankBtn" onclick="openTextbankExport()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>匯出靜態題庫</button>
               <span class="field-hint">下載並解壓後，請上傳至網頁空間的網站根目錄。</span>
             </div>
             <div class="table-wrapper">
@@ -475,7 +480,6 @@ window.exportStaticTextbank = async () => {
   }
 };
 document.getElementById('uploadIcon').innerHTML = I.upload;
-document.getElementById('importedFilesButtonIcon').innerHTML = I.list16;
 const nextStepIcon = '<svg class="step-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m13.5 6 6 6-6 6"/><path d="m6 6 6 6-6 6" stroke-opacity=".5"/></svg>';
 document.getElementById('parseBtnIcon').innerHTML = nextStepIcon;
 document.getElementById('importBtnIcon').innerHTML = nextStepIcon;
@@ -504,7 +508,7 @@ function renderImportedFiles() {
   importedFileRows = [...files].sort(([a],[b]) => JSON.parse(a)[0].localeCompare(JSON.parse(b)[0],'zh-Hant') || JSON.parse(a)[1].localeCompare(JSON.parse(b)[1],'zh-Hant',{numeric:true}) || JSON.parse(a)[2].localeCompare(JSON.parse(b)[2],'zh-Hant'));
   importedFileSelection = new Set([...importedFileSelection].filter(name => files.has(name)));
   let previousSubject = null, previousBook = null;
-  document.getElementById('importedFilesBody').innerHTML = files.size ? `<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px"><button class="btn btn-danger btn-sm" id="deleteImportedFilesBtn" style="${importedFileSelection.size < 2 ? 'display:none' : ''}" onclick="deleteImportedFiles()" ${!importedFileSelection.size || importedFilesBusy ? 'disabled' : ''}>${ICONS.trash16}批次刪除</button><span>已選 ${importedFileSelection.size} 個檔案</span></div><table class="data-table"><thead><tr><th><input type="checkbox" aria-label="全選檔案" ${importedFileSelection.size === files.size ? 'checked' : ''} ${importedFilesBusy ? 'disabled' : ''} onchange="selectAllImportedFiles(this.checked)"></th><th>Word 檔名</th><th>題目數</th><th>操作</th></tr></thead><tbody>${importedFileRows.map(([name,count],i) => {
+  document.getElementById('importedFilesBody').innerHTML = files.size ? `<div class="imported-files-toolbar"><button class="btn btn-danger btn-sm" id="deleteImportedFilesBtn" style="${importedFileSelection.size < 2 ? 'display:none' : ''}" onclick="deleteImportedFiles()" ${!importedFileSelection.size || importedFilesBusy ? 'disabled' : ''}>${ICONS.trash16}批次刪除</button><span>已選 ${importedFileSelection.size} 個檔案</span></div><table class="data-table"><colgroup><col style="width:70px"><col><col style="width:80px"><col style="width:210px"></colgroup><thead><tr><th aria-label="選取"></th><th>檔名</th><th>題目數</th><th>操作</th></tr></thead><tbody>${importedFileRows.map(([name,count],i) => {
     const [subject,book,filename] = JSON.parse(name);
     const inSubject = importedFileRows.filter(([key]) => JSON.parse(key)[0] === subject);
     let heading = previousSubject !== subject ? '<tr class="imported-subject-heading"><th colspan="4">'+UI.escapeHtml(subject ? tbSubjectName(subject) : '未分類')+'（'+inSubject.length+' 個檔案，'+inSubject.reduce((sum,[,n]) => sum+n,0)+' 題）</th></tr>' : '';

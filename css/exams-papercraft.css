@@ -79,15 +79,16 @@
 @media(max-width:1100px){.paper-corner{width:72px}.paper-corner--right{width:65px}}
 @media(max-width:820px){.paper-corner{top:90px;width:56px}.paper-corner--right{width:50px}}
 @media(max-width:480px){.paper-corner{display:none}}
-/* 科目以色點辨識，避免在列表紙面上再堆疊小紙片。 */
-.exams-redesign-page #listView .subject-tag{--subject-dot:#819576;display:inline-flex;align-items:center;gap:8px;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;color:#62705a;font-size:.88rem;font-weight:500;line-height:1.5;min-height:26px}
-.exams-redesign-page #listView .subject-tag::before{content:'';display:block;flex:none;width:9px;height:9px;border-radius:50%;background:var(--subject-dot)}
-.exams-redesign-page #listView .subject-tag.tone-0{--subject-dot:#4c88ad}
-.exams-redesign-page #listView .subject-tag.tone-1{--subject-dot:#60974b}
-.exams-redesign-page #listView .subject-tag.tone-2{--subject-dot:#9970b3}
-.exams-redesign-page #listView .subject-tag.tone-3{--subject-dot:#c4942e}
-.exams-redesign-page #listView .subject-tag.tone-4{--subject-dot:#c5765c}
-.exams-redesign-page #listView .subject-tag.tone-5{--subject-dot:#409685}/* 列表操作：一般按鈕保留淡框，刪除以紅色清楚標示。 */
+/* 科目沿用帳號身份的淡底、細框標籤。 */
+.exams-redesign-page #listView .subject-tag{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border:1px solid #bfceaa;border-radius:4px;background:#e0e8d5;box-shadow:none;color:#4d713f;font-size:.84rem;font-weight:400;line-height:1.5;min-height:0}
+.exams-redesign-page #listView .subject-tag::before{content:none}
+.exams-redesign-page #listView .subject-tag.tone-0{background:#dfe8e9;color:#466c79;border-color:#beced0}
+.exams-redesign-page #listView .subject-tag.tone-1{background:#e0e8d5;color:#4d713f;border-color:#bfceaa}
+.exams-redesign-page #listView .subject-tag.tone-2{background:#e9dfe8;color:#825777;border-color:#d2bdcd}
+.exams-redesign-page #listView .subject-tag.tone-3{background:#eee3c6;color:#8b6a27;border-color:#dac79b}
+.exams-redesign-page #listView .subject-tag.tone-4{background:#eedfcf;color:#956338;border-color:#d9bfa4}
+.exams-redesign-page #listView .subject-tag.tone-5{background:#dce9df;color:#415d36;border-color:#b5cbb9}
+/* 列表操作：一般按鈕保留淡框，刪除以紅色清楚標示。 */
 .exams-redesign-page #listView .recent-exam-actions .btn-ghost{border:1px solid #d8d1bf;background:#fffdf7;color:#637158;box-shadow:none}
 .exams-redesign-page #listView .recent-exam-actions .btn-ghost:hover{border-color:#aebca0;background:#e9eddf;color:#3f5e43}
 .exams-redesign-page #listView .recent-exam-actions .btn-danger{border:1px solid #b95547;background:#b95547;color:#fffdf7;box-shadow:none}

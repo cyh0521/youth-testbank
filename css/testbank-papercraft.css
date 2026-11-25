@@ -1,0 +1,121 @@
+/* 題庫管理：課本、題目維護、匯入與題本轉檔共用紙感介面。 */
+body.testbank-redesign-page #batchBar{margin-left:22px;margin-right:22px;background:#eee5d1;color:#4d5e43;border:1px solid #dfd1b5;border-radius:4px;box-shadow:none}
+@media(max-width:600px){body.testbank-redesign-page #batchBar{margin-left:14px;margin-right:14px}}
+body.testbank-redesign-page #batchBar .btn.btn-ghost{background:#f6f1e7!important;color:#6d7b60!important;border:1px solid #b7c0a9!important}
+body.testbank-redesign-page #batchBar .btn.btn-ghost:hover{background:#f6f1e7!important;color:#4d6544!important;border-color:#9eae8e!important}
+body.testbank-redesign-page .view-toggle{background:#ece4d1;border-radius:4px}
+body.testbank-redesign-page .view-toggle::before{background:#fffdf7;border-radius:3px;box-shadow:0 1px 3px #59432418}
+body.testbank-redesign-page .view-toggle button{color:#928168;border-radius:3px}
+body.testbank-redesign-page .view-toggle button.active,
+body.testbank-redesign-page .view-toggle button.active:hover,
+body.testbank-redesign-page .view-toggle button:hover{color:#5b4430;background:transparent}
+body.testbank-redesign-page .view-toggle button:focus-visible{outline-color:#78906a;border-radius:3px}
+body.testbank-redesign-page{--primary:#607e58;--primary-light:#a5b58f;--bg-card:#f6f1e7;--bg-base:#f6f1e7;--text-primary:#4d5e43;--text-secondary:#827763;--text-muted:#827763;--border:#dfd4bd;--border-light:#e9e1d1}
+body.testbank-redesign-page .testbank-page-heading{margin-bottom:18px}
+body.testbank-redesign-page :is(.testbank-page-heading,.import-page-title) h1{color:#4d5e43;font-size:1.5rem;text-shadow:0 1px #fff8}
+body.testbank-redesign-page :is(.testbank-page-heading,.import-page-title) p{color:#897b65}
+body.testbank-redesign-page .page-content :is(.card,.tb-panel,.question-section,.import-card){background:#f6f1e7;border:0;border-radius:4px;box-shadow:inset 1px 1px 0 #fff,3px 4px 0 #d5c7ab,0 7px 14px #59432412}
+body.testbank-redesign-page :is(.tb-panel,.import-card) .section-heading,
+body.testbank-redesign-page .card>.card-header{background:linear-gradient(180deg,#fffdf7,#f4edde);border-bottom:1px solid #e3d7c1}
+body.testbank-redesign-page :is(.section-heading,.card-header) h2{color:#4d5e43}
+body.testbank-redesign-page :is(.section-heading p,.field-hint,.difficulty-note){color:#827763}
+body.testbank-redesign-page :is(.tb-panel,.import-card) .card-body{background:#f6f1e7}
+body.testbank-redesign-page .form-control{background:#fffdf7;color:#5b654c;border-color:#ded3bb;border-radius:4px;box-shadow:inset 0 1px 2px #66543413}
+body.testbank-redesign-page .form-control:focus{border-color:#99ad89;box-shadow:0 0 0 2px #99ad8926}
+body.testbank-redesign-page .form-label{color:#75674e;font-size:.88rem;font-weight:500}
+body.testbank-redesign-page .btn{border:1px solid #b7c0a9;border-radius:4px;background:transparent;color:#6d7b60;box-shadow:none;transform:none}
+body.testbank-redesign-page .btn:hover{background:#eee7d6;border-color:#9eae8e;color:#4d6544;box-shadow:none;transform:none}
+body.testbank-redesign-page .btn-primary{background:#607e58;border-color:#607e58;color:#fffdf7}
+body.testbank-redesign-page .btn-primary:hover{background:#4f6f49;border-color:#4f6f49;color:#fffdf7}
+body.testbank-redesign-page .btn-danger{background:#b95547;border-color:#b95547;color:#fffdf7}
+body.testbank-redesign-page .btn-danger:hover{background:#a4463a;border-color:#a4463a;color:#fffdf7}
+body.testbank-redesign-page :is(.tb-table,.question-table,.preview-table,.data-table) th{background:#e5d7bd;color:#6b5d43;border-color:#cdbc9c}
+body.testbank-redesign-page :is(.tb-table,.question-table,.preview-table,.data-table) td{border-color:#eee6d7;color:#625b49}
+body.testbank-redesign-page :is(.tb-table,.question-table,.preview-table,.data-table) tbody tr,
+body.testbank-redesign-page :is(.tb-table,.question-table,.preview-table,.data-table) tbody tr:nth-child(even){background:#f6f1e7}
+body.testbank-redesign-page :is(.tb-table,.question-table,.preview-table,.data-table) tbody tr:hover{background:#f2e6cc}
+body.testbank-redesign-page .tb-table tbody tr.tb-item-active{background:#e5ead8;box-shadow:inset 3px 0 #78906a}
+body.testbank-redesign-page :is(.tb-code,.chapter-title){color:#827763}
+body.testbank-redesign-page .tb-action-menu{background:#fffdf7;border-color:#ded3bb;border-radius:4px;box-shadow:0 8px 20px #59432426}
+body.testbank-redesign-page .tb-action-menu button:hover{background:#eee3c9}
+body.testbank-redesign-page :is(.level-names-box,.section-row,.selected-subject-info,.parse-stat,.question-image-path,.question-image-settings){background:#eee7d6!important;border-color:#dfd4bd;border-radius:4px!important;color:#625b49}
+body.testbank-redesign-page .question-section .filter-bar{background:linear-gradient(180deg,#fffdf7,#f4edde);border-color:#e3d7c1}
+body.testbank-redesign-page .q-card-item{background:#f6f1e7;border-color:#dfd4bd;border-radius:4px}
+body.testbank-redesign-page .q-card-item:hover{border-color:#a5b58f;box-shadow:none}
+body.testbank-redesign-page .q-card-item.selected{background:#e5ead8;border-color:#a5b58f}
+body.testbank-redesign-page .question-table .q-answer{color:#4d713f}
+body.testbank-redesign-page .upload-zone{background:#f6f1e7;border-color:#c6b99d;border-radius:4px}
+body.testbank-redesign-page .upload-zone:hover,body.testbank-redesign-page .upload-zone.drag-over{background:#eee3c9;border-color:#aa9871}
+body.testbank-redesign-page :is(.upload-icon,.file-row .fr-icon){background:#e5ead8;color:#607e58}
+body.testbank-redesign-page :is(.upload-title,.file-row .fr-name){color:#4d5e43}
+body.testbank-redesign-page .file-row{background:#fffdf7;border-color:#dfd4bd;border-radius:4px}
+body.testbank-redesign-page .parse-stat-num{color:#607e58}
+body.testbank-redesign-page .import-page-heading{background:linear-gradient(110deg,#fffdf7,#f1ead9);border:0;border-radius:4px;box-shadow:inset 0 1px 0 #fff,0 3px 0 #d8cab0}
+body.testbank-redesign-page .import-page-heading::before,body.testbank-redesign-page .import-page-heading::after{display:none}
+body.testbank-redesign-page .import-page-heading .step.active .step-num{background:#607e58;border-color:#607e58;box-shadow:0 0 0 4px #e3e8d6}
+body.testbank-redesign-page .import-page-heading .step.done .step-num{background:#dbe4ce;color:#56724c;border-color:#dbe4ce}
+body.testbank-redesign-page .import-page-heading .step-copy strong{color:#a09176}
+body.testbank-redesign-page .import-page-heading .step:is(.active,.done) .step-copy strong{color:#4d5e43}
+body.testbank-redesign-page .modal-overlay>.modal{overflow:visible}
+body.testbank-redesign-page .modal-overlay>.modal>.modal-header{position:relative}
+body.testbank-redesign-page #qModal :is(.form-control,.btn,.question-image-path,.question-image-settings){border-radius:4px}
+body.testbank-redesign-page .chapter-picker-item:hover{background:#eee3c9}
+body.testbank-redesign-page .chapter-picker-item.selected{background:#e5ead8;color:#4d5e43}
+@media(max-width:650px){body.testbank-redesign-page :is(.testbank-page-heading,.import-page-title) h1{font-size:1.2rem}body.testbank-redesign-page :is(.testbank-page-heading,.import-page-title) p{font-size:.8rem}}
+
+/* 題目維護內容沿用選題／試卷編輯的資訊標籤與答案層級。 */
+body.testbank-redesign-page :is(.q-card-meta,.question-table) :is(.badge,.qnum,.q-number,.chapter,.page-source){display:inline-flex;align-items:center;box-sizing:border-box;min-height:calc(1.23rem + 4px);padding:2px 8px;border:1px solid transparent;border-radius:4px;font-size:.82rem;font-weight:400;line-height:1.5}
+body.testbank-redesign-page :is(.q-card-meta .qnum,.question-table .q-number,.q-card-meta .chapter){background:#ece3d0;color:#66583f;border-color:#d7c9ad}
+body.testbank-redesign-page .q-card-meta .page-source{background:#f0dce4;color:#94516c;border-color:#d7afbf}
+body.testbank-redesign-page :is(.q-card-meta,.question-table) .badge-hard{background:#f0ddd5;color:#9c4032;border-color:#e2bdb0}
+body.testbank-redesign-page :is(.q-card-meta,.question-table) :is(.badge-easy,.badge-t2){background:#e0e8d5;color:#4d713f;border-color:#bfceaa}
+body.testbank-redesign-page :is(.q-card-meta,.question-table) :is(.badge-normal,.badge-t6){background:#e7e3d9;color:#6e6452;border-color:#d3cab9}
+body.testbank-redesign-page :is(.q-card-meta,.question-table) .badge-t1{background:#dfe8e9;color:#466c79;border-color:#beced0}
+body.testbank-redesign-page :is(.q-card-meta,.question-table) .badge-t3{background:#eee3c6;color:#8b6a27;border-color:#dac79b}
+body.testbank-redesign-page :is(.q-card-meta,.question-table) .badge-t4{background:#e9dfe8;color:#825777;border-color:#d2bdcd}
+body.testbank-redesign-page :is(.q-card-meta,.question-table) .badge-t5{background:#eedfcf;color:#956338;border-color:#d9bfa4}
+body.testbank-redesign-page :is(.q-card-text,.question-table .q-text){color:#3f3b33}
+body.testbank-redesign-page .q-card-answer{padding:9px 12px;background:#dce9df;border:1px solid #b5cbb9;border-radius:4px;align-items:flex-start}
+body.testbank-redesign-page .q-card-answer .ans-label{color:#415d36;font-weight:700;flex:none}
+body.testbank-redesign-page .q-card-answer .ans-val{color:#3f3b33;font-family:inherit;font-weight:400}
+body.testbank-redesign-page .question-table .q-answer{background:#dce9df;color:#3f3b33;border:1px solid #b5cbb9;border-radius:4px;padding:2px 6px}
+
+/* 匯入管理視窗：暖紙面、科目分組與一致的操作區。 */
+body.testbank-redesign-page :is(#importedFilesModal,#textbankExportModal)>.modal{background:#f6f1e7!important;border:1px solid #d8ccb3;border-radius:4px;box-shadow:3px 4px 0 #cabb9e,0 16px 40px #493c2926;overflow:visible}
+body.testbank-redesign-page :is(#importedFilesModal,#textbankExportModal)>.modal>.modal-header{background:#f6f1e7!important;border-bottom:0}
+body.testbank-redesign-page :is(#importedFilesModal,#textbankExportModal)>.modal>.modal-body{background:#f6f1e7!important;scrollbar-color:#c6b99d #eee7d6}
+body.testbank-redesign-page :is(#importedFilesModal,#textbankExportModal)>.modal>.modal-footer{background:#f6f1e7!important;border-top-color:#d8ccb3}
+body.testbank-redesign-page :is(#importedFilesModal,#textbankExportModal) .modal-footer .btn:not(.btn-primary):not(.btn-danger){background:transparent!important;border-color:#b7c0a9;color:#637158}
+body.testbank-redesign-page :is(#importedFilesModal,#textbankExportModal) .modal-footer .btn:not(.btn-primary):not(.btn-danger):hover{background:#eee7d6!important}
+body.testbank-redesign-page #importedFilesModal .imported-files-heading{gap:2px 4px}
+body.testbank-redesign-page #importedFilesModal .imported-files-note{color:#827763}
+body.testbank-redesign-page #importedFilesModal .imported-files-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;padding:10px 12px;background:#eee7d6;border:1px solid #dfd4bd;border-radius:4px;color:#75674e}
+body.testbank-redesign-page #importedFilesModal .data-table{background:#f6f1e7;border:1px solid #dfd4bd;border-radius:4px}
+body.testbank-redesign-page #importedFilesModal .data-table thead th{background:#e5d7bd;color:#6b5d43;border-color:#cdbc9c;font-weight:500}
+body.testbank-redesign-page #importedFilesModal .data-table .imported-subject-heading>th{background:#e0e6d3;color:#4d5e43;border-bottom:1px solid #c7d1b7}
+body.testbank-redesign-page #importedFilesModal .data-table .imported-book-heading>th{background:#eee7d6;border-bottom:1px solid #dfd4bd}
+body.testbank-redesign-page #importedFilesModal .imported-book-heading button{color:#75674e}
+body.testbank-redesign-page #importedFilesModal .data-table tr.file-selected{background:#e5ead8}
+body.testbank-redesign-page #importedFilesModal .data-table tr[data-file-index]:hover{background:#f2e6cc}
+body.testbank-redesign-page #importedFilesModal .data-table tr.file-selected:hover{background:#dce4c8}
+body.testbank-redesign-page #importedFilesModal .data-table td:nth-child(2){overflow-wrap:anywhere}
+body.testbank-redesign-page #textbankExportModal .export-select-all{padding:10px 12px;background:#eee7d6;border:1px solid #dfd4bd;border-radius:4px;color:#625b49}
+body.testbank-redesign-page #textbankExportModal #exportBookList{display:grid;gap:12px;padding:12px 0;background:transparent;border:0}
+body.testbank-redesign-page #textbankExportModal .subject-node{margin:0;background:#eee7d6;border:1px solid #dfd4bd;border-radius:4px;overflow:hidden}
+body.testbank-redesign-page #textbankExportModal .subject-node>summary{padding:10px 12px;background:#e0e6d3;color:#4d5e43;font-weight:500;border-bottom:1px solid #c7d1b7;cursor:pointer}
+body.testbank-redesign-page #textbankExportModal .book-node{margin:0;padding:9px 12px;background:#f6f1e7;color:#625b49;border:0;border-bottom:1px solid #e5dcc9;border-radius:0;cursor:pointer}
+body.testbank-redesign-page #textbankExportModal .book-node:last-child{border-bottom:0}
+body.testbank-redesign-page #textbankExportModal .book-node:hover{background:#f2e6cc}
+body.testbank-redesign-page #textbankExportModal .book-node:has(input:checked){background:#e5ead8;color:#4d5e43}
+body.testbank-redesign-page #textbankExportModal #exportBookStatus{padding-top:10px;border-color:#dfd4bd;color:#827763}
+body.testbank-redesign-page :is(#importedFilesModal,#textbankExportModal) input[type=checkbox]{accent-color:#607e58}
+
+/* 科目 → 冊別 → 檔案逐層縮排，固定勾選欄避免被表格自動撐寬。 */
+body.testbank-redesign-page #importedFilesModal .data-table{table-layout:fixed}
+body.testbank-redesign-page #importedFilesModal .data-table .imported-subject-heading>th{padding-left:12px}
+body.testbank-redesign-page #importedFilesModal .data-table .imported-book-heading>th{padding-left:28px}
+body.testbank-redesign-page #importedFilesModal .data-table thead th:first-child,
+body.testbank-redesign-page #importedFilesModal .data-table tr[data-file-index]>td:first-child{box-sizing:border-box;width:70px;padding:8px 8px 8px 44px}
+body.testbank-redesign-page #importedFilesModal .data-table input[type=checkbox]{margin:0}
+body.testbank-redesign-page #importedFilesModal .data-table thead th:nth-child(2),
+body.testbank-redesign-page #importedFilesModal .data-table tr[data-file-index]>td:nth-child(2){padding-left:0}
