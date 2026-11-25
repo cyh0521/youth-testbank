@@ -1,5 +1,4 @@
 /* 題庫管理三個頁面共用新版標題、卡片與綠色控制項。 */
-.testbank-redesign-page>.layout>.main>.topbar{display:none}
 .testbank-redesign-page .testbank-page-heading{display:flex;align-items:baseline;gap:8px;margin:0 0 14px}
 .testbank-redesign-page .testbank-page-heading h1{margin:0;color:#214a35;font-size:1.65rem;font-weight:700;line-height:1.35;letter-spacing:.025em}
 .testbank-redesign-page .testbank-page-heading p{margin:0;color:#718775;font-size:.9rem;line-height:1.6}

@@ -1,0 +1,55 @@
+/* 僅套用進階設定；帳號管理保留自己的樣式。 */
+body.settings-redesign-page{--primary:#607e58;--primary-light:#a5b58f;--bg-card:#f6f1e7;--text-primary:#4d5e43;--text-secondary:#827763;--text-muted:#827763;--border:#dfd4bd;--border-light:#e9e1d1}
+body.settings-redesign-page .settings-page-heading{padding:0;background:transparent;border:0;border-radius:0;box-shadow:none}
+body.settings-redesign-page .settings-page-heading h1{color:#4d5e43;font-size:1.5rem;font-weight:700;line-height:1.35;letter-spacing:.025em;text-shadow:0 1px #fff8}
+body.settings-redesign-page .settings-page-heading p{color:#897b65}
+body.settings-redesign-page :is(.settings-page-heading p,.settings-card-description)::before{color:#b7a88a}
+body.settings-redesign-page .settings-page-heading p::before{color:#b3a68d}
+body.settings-redesign-page .settings-tabs{width:min(900px,100%);gap:4px;padding-top:0;border:0;margin-bottom:20px}
+body.settings-redesign-page .settings-tab{position:relative;min-height:44px;padding:11px 14px 10px;border:0;border-radius:0;background:transparent;color:#827763;font-weight:500;box-shadow:none}
+body.settings-redesign-page .settings-tab:hover{background:transparent;color:#4d5e43}
+body.settings-redesign-page .settings-tab.active{background:transparent;color:#4d5e43;font-weight:700;box-shadow:none}
+body.settings-redesign-page .settings-tab.active::before{content:'';position:absolute;bottom:0;left:14px;right:14px;height:2px;background:#607e58;border-radius:1px;pointer-events:none}
+body.settings-redesign-page .settings-page .card{border:0;border-radius:4px;background:#f6f1e7;box-shadow:inset 1px 1px 0 #fff,3px 4px 0 #d5c7ab,0 7px 14px #59432412}
+body.settings-redesign-page .settings-page .card-header{background:linear-gradient(180deg,#fffdf7,#f4edde);border-bottom:1px solid #e3d7c1}
+body.settings-redesign-page .settings-page .card-header h2{color:#4d5e43}
+body.settings-redesign-page .settings-card-description{color:#8a7b62}
+body.settings-redesign-page .settings-page .card-body{background:#f6f1e7}
+body.settings-redesign-page .settings-page .card-header+.card-body.card-body-with-description{padding-top:18px}
+body.settings-redesign-page #spanel-appearance :is(.grid-3,.exam-margins-grid)>.form-group{margin-bottom:0}
+body.settings-redesign-page #spanel-appearance :is(.catalog-actions,.ep-inline-header-actions){margin-top:16px;margin-bottom:0}
+body.settings-redesign-page .form-control{background:#fffdf7;border-color:#ded3bb;border-radius:4px;color:#5b654c;box-shadow:inset 0 1px 2px #66543413}
+body.settings-redesign-page .form-control:focus{border-color:#99ad89;box-shadow:0 0 0 2px #99ad8926}
+body.settings-redesign-page .form-control:disabled{background:#eee7d6;border-color:#ded3bb;color:#99896d}
+body.settings-redesign-page .form-control::placeholder{color:#998b73}
+body.settings-redesign-page :is(.form-label,.password-field label){color:#75674e}
+body.settings-redesign-page :is(.password-hint,.field-hint,.profile-detail){color:#827763}
+body.settings-redesign-page .btn{border-radius:4px;border:1px solid #b7c0a9;background:transparent;color:#6d7b60;box-shadow:none;transform:none}
+body.settings-redesign-page .btn:hover{background:#eee7d6;border-color:#9eae8e;color:#4d6544;box-shadow:none;transform:none}
+body.settings-redesign-page .btn-primary{background:#607e58;border-color:#607e58;color:#fffdf7}
+body.settings-redesign-page .btn-primary:hover{background:#4f6f49;border-color:#4f6f49;color:#fffdf7}
+body.settings-redesign-page .btn-danger{background:#b95547;border-color:#b95547;color:#fffdf7}
+body.settings-redesign-page .btn-danger:hover{background:#a4463a;border-color:#a4463a;color:#fffdf7}
+body.settings-redesign-page :is(.settings-tab,.btn):focus-visible{outline:2px solid #78906a;outline-offset:2px}
+body.settings-redesign-page :is(input[type=checkbox],input[type=radio]){accent-color:#6f8a60}
+body.settings-redesign-page .catalog-subject{border-color:#dfd4bd;border-radius:4px}
+body.settings-redesign-page .catalog-subject-header{background:#eee5d1;color:#625b49}
+body.settings-redesign-page .catalog-books{background:#f6f1e7}
+body.settings-redesign-page .catalog-books label:hover{color:#435d37}
+body.settings-redesign-page .role-badge{border-radius:4px}
+body.settings-redesign-page .role-admin{background:#eee3c6;color:#8b6a27}
+body.settings-redesign-page .role-teacher{background:#e0e8d5;color:#4d713f}
+body.settings-redesign-page :is(.pw-eye,.password-toggle){border-radius:4px;color:#8a7b62}
+body.settings-redesign-page :is(.pw-eye,.password-toggle):hover{background:#eee7d6;color:#4d6544}
+body.settings-redesign-page .avatar-choice{background:#fffdf7;border-color:#ded3bb;border-radius:4px}
+body.settings-redesign-page .avatar-choice:hover{background:#eee3c9;border-color:#baa982}
+body.settings-redesign-page .avatar-choice[aria-pressed="true"]{background:#e5ead8;border-color:#a5b58f}
+/* 允許紙膠帶超出視窗，內容區維持獨立捲動。 */
+body.settings-redesign-page .modal-overlay:not(#epModal):not(#editModal)>.modal{overflow:visible}
+body.settings-redesign-page .modal-overlay:not(#epModal):not(#editModal)>.modal>.modal-header{position:relative}
+body.settings-redesign-page .modal-overlay:not(#epModal):not(#editModal)>.modal>.modal-footer{background:transparent}
+@media(max-width:600px){body.settings-redesign-page .settings-page-heading{padding:0}body.settings-redesign-page .settings-page .card-header+.card-body.card-body-with-description{padding-top:16px}body.settings-redesign-page .settings-page .card .btn{white-space:normal;height:auto;min-height:34px;line-height:1.4}}
+@media(max-width:650px){body.settings-redesign-page .settings-page-heading h1{font-size:1.2rem}body.settings-redesign-page .settings-page-heading p{font-size:.8rem}}
+@media(max-width:600px){body.settings-redesign-page .settings-tabs{gap:4px}body.settings-redesign-page .settings-tab{padding:10px;flex:1 1 auto;justify-content:center}}
+
+@media(max-width:600px){body.settings-redesign-page .settings-tab.active::before{left:10px;right:10px}}

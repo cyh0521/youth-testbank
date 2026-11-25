@@ -1,0 +1,15 @@
+/* 編碼選題專用輸入與題目狀態，其餘沿用共用紙面與設定圖卡。 */
+.coded-selection-page{--primary:#607e58;--primary-light:#a5b58f;--bg-card:#f6f1e7}
+body.coded-selection-page :is(.selected-list,.selection-scroll-area,.selected-result-info){background:#f6f1e7}
+body.coded-selection-page #codedPanel2 .coded-compact-text{color:#3f3b33}
+body.coded-selection-page #codedPanel2 .result-q.is-expanded{background:transparent}
+body.coded-selection-page #codedPanel2 .result-q.is-expanded:hover{background:#f2e6cc}
+body.coded-selection-page #codedPanel2 .result-q .si-remove{background:transparent!important;border-color:#c99485!important;color:#a4463a!important}
+body.coded-selection-page #codedPanel2 .result-q .si-remove:hover{background:#f2e0d6!important;border-color:#b66e5e!important;color:#933e32!important}
+body.coded-selection-page #selList .result-q:has(.dragging){opacity:.4;background:#e5ead8}
+body.coded-selection-page #selList .result-q.drag-over{box-shadow:inset 0 2px #78906a}
+body.coded-selection-page .drag-handle{color:#99896d}
+body.coded-selection-page #lookupResult .result-q{cursor:default}
+body.coded-selection-page #lookupResult .result-q:hover{background:transparent}
+body.coded-selection-page #saveModal .form-control{background:#fffdf7;border-color:#ded3bb;border-radius:4px;color:#5b654c;box-shadow:inset 0 1px 2px #66543413}
+body.coded-selection-page .btn-auto-score:focus-visible{outline-color:#78906a}

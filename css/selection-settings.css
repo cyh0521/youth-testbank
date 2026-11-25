@@ -1,0 +1,17 @@
+/* 手動與編碼選題：合併的配分、排序及表頭設定頁。 */
+body:is(.manual-selection-page,.coded-selection-page) :is(#manualSummary,#codedSummary) .exam-summary-table tbody tr{cursor:default}
+body:is(.manual-selection-page,.coded-selection-page) :is(#manualSummary,#codedSummary) .exam-type-drag{padding:0 3px;border:0;border-radius:3px;background:transparent;font:inherit;color:#99896d;cursor:grab;user-select:none}
+body:is(.manual-selection-page,.coded-selection-page) :is(#manualSummary,#codedSummary) .exam-type-drag:active{cursor:grabbing}
+body:is(.manual-selection-page,.coded-selection-page) :is(#manualSummary,#codedSummary) .exam-type-drag:focus-visible{outline:2px solid #78906a;outline-offset:2px}
+body:is(.manual-selection-page,.coded-selection-page) :is(#manualSummary,#codedSummary) input{cursor:text;user-select:text}
+body:is(.manual-selection-page,.coded-selection-page) :is(#manualPanel3,#codedPanel3) .settings-layout{grid-template-columns:repeat(2,minmax(0,1fr))}
+body:is(.manual-selection-page,.coded-selection-page) :is(#manualSummary,#codedSummary) .selection-summary-score{display:flex;align-items:center;gap:6px}
+body:is(.manual-selection-page,.coded-selection-page) :is(#manualSummary,#codedSummary) .number-stepper{width:80px;min-width:80px}
+body:is(.manual-selection-page,.coded-selection-page) :is(#manualSummary,#codedSummary) .number-stepper .form-control{width:100%;min-width:0}
+body:is(.manual-selection-page,.coded-selection-page) :is(#manualSummary,#codedSummary) .row-unit{font-size:.8rem;color:#8a795c}
+body:is(.manual-selection-page,.coded-selection-page) :is(#manualSummary,#codedSummary) tbody input:invalid{border-color:#b95547;background:#f6e3d9}
+body:is(.manual-selection-page,.coded-selection-page) :is(#manualSummary,#codedSummary) .exam-summary-table :is(th,td){padding-left:8px;padding-right:8px}
+body:is(.manual-selection-page,.coded-selection-page) :is(#manualSummary,#codedSummary) .exam-summary-table small{display:block;margin-left:0;white-space:nowrap}
+body:is(.manual-selection-page,.coded-selection-page) :is(#manualPanel3,#codedPanel3) .score-tools{margin-top:10px}
+@media(max-width:1100px){body:is(.manual-selection-page,.coded-selection-page) :is(#manualPanel3,#codedPanel3) .settings-layout{grid-template-columns:1fr}}
+@media(max-width:600px){body:is(.manual-selection-page,.coded-selection-page) :is(#manualSummary,#codedSummary) .number-stepper{width:64px;min-width:64px}body:is(.manual-selection-page,.coded-selection-page) :is(#manualSummary,#codedSummary) .selection-summary-score{flex-wrap:wrap;gap:2px}body:is(.manual-selection-page,.coded-selection-page) :is(#manualSummary,#codedSummary) .exam-summary-table :is(th,td){padding-left:4px;padding-right:4px}body:is(.manual-selection-page,.coded-selection-page) :is(#manualSummary,#codedSummary) .exam-type-drag{margin-right:2px}}

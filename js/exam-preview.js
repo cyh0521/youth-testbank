@@ -883,6 +883,31 @@ export function buildHeaderHtml(h) {
   return `<div class="ep-exam-header">${title ? `<div class="ep-header-row title-row"><span style="white-space:pre-wrap"><strong>${escapeHeader(title)}</strong></span></div>` : ''}<div class="ep-header-row">${studentRow}</div></div>`;
 }
 
+export function mountInlinePreviewLayout(scopeHost, paperHost) {
+  const modal = document.getElementById('epModal');
+  paperHost.append(modal);
+  modal.classList.add('compose-inline-preview');
+  modal.removeAttribute('aria-modal');
+  const options = modal.querySelector('.ep-preview-options');
+  options.id = 'epPreviewOptions';
+  options.dataset.alwaysVisible = 'true';
+  options.hidden = false;
+  modal.querySelector('.ep-preview-controls').append(options);
+  const scopePanel = modal.querySelector('#epScopePanel');
+  scopeHost.hidden = !scopePanel;
+  paperHost.closest('.selection-preview-body')?.classList.toggle('preview-without-scope', !scopePanel);
+  if (scopePanel) {
+    scopeHost.replaceChildren(scopePanel);
+    modal.querySelector('.ep-scope-layout').classList.add('ep-scope-detached');
+  }
+  return modal;
+}
+
+export function buildHeaderSampleHtml(examData, questions) {
+  return buildPaperHtml(examData, questions, {firstQuestionOnly:true, answers:false, analysis:false, source:false, difficulty:false}, false)
+    .replace('<div id="epPaper">', '<div class="settings-paper-sample">');
+}
+
 function buildPaperHtml(examData, questions, previewOptions, includeAnswerSheet = true) {
   if (examData.booklet) previewOptions = {answers:true, analysis:true, source:true, difficulty:true, ...(previewOptions || examData.display || {}), booklet:true};
   if (examData.booklet) return buildBookletHtml(examData, questions, previewOptions);
@@ -895,6 +920,7 @@ function buildPaperHtml(examData, questions, previewOptions, includeAnswerSheet 
 
   html += '<div class="ep-question-columns">';
   types.forEach((type, secIdx) => {
+    if (previewOptions?.firstQuestionOnly && secIdx > 0) return;
     const qs    = grouped[type];
     const score = typeScores[type] || 2;
     const byBlank = type === 'T4' && examData.scoreUnits?.T4 === 'blank';
@@ -902,7 +928,7 @@ function buildPaperHtml(examData, questions, previewOptions, includeAnswerSheet 
     const total = (byBlank ? blanks : qs.length) * score;
     html += examData.booklet ? `<div class="ep-section-head">${ROMANS[secIdx]}、${TYPE_LABELS[type]}（${qs.length} 題）</div>` : `<div class="ep-section-head">${ROMANS[secIdx]}、${TYPE_LABELS[type]}（${byBlank ? `${qs.length} 題，共 ${blanks} 格；每格` : '每題'} ${score} 分，共 ${total} 分）</div>`;
     if (previewOptions?.answerSheet) html += renderAnswerGrid(qs, type, previewOptions.answers);
-    else qs.forEach((q, i) => { html += renderQPreview(q, i+1, type, previewOptions); });
+    else (previewOptions?.firstQuestionOnly ? qs.slice(0,1) : qs).forEach((q, i) => { html += renderQPreview(q, i+1, type, previewOptions); });
   });
 
   html += '</div>';

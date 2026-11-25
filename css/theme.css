@@ -449,8 +449,8 @@ body .modal-footer .btn{height:34px;min-height:34px;box-sizing:border-box;paddin
 .ep-layout-modal { max-width: 560px; width: 96%; display: flex; flex-direction: column; overflow: hidden; }
 .ep-layout-modal > .modal-header, .ep-layout-modal > .modal-footer { flex: none; }
 .ep-layout-body { padding: 18px 20px; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
-.ep-layout-with-types { max-width: 900px; }
-.ep-layout-with-types .ep-layout-body { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+.ep-layout-with-types { max-width: 760px; }
+.ep-layout-with-types .ep-layout-body { display: grid; grid-template-columns: minmax(0, 1fr) max-content; gap: 24px; align-items: start; }
 .ep-layout-paper { min-width: 0; }
 .ep-layout-with-types #epDownloadTypes { padding-left: 24px; border-left: 1px solid var(--border-light); }
 .ep-download-types { display: flex; flex-direction: column; gap: 14px; }

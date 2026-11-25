@@ -1,6 +1,5 @@
 /* 四種出題流程共用首頁的草綠、米黃與輕描線條；試卷正文沿用原排版。 */
 .selection-redesign-page{--compose-green:#34774d;--compose-ink:#214a35;--compose-line:#dce6d8;--compose-soft:#f5f8f1}
-.selection-redesign-page>.layout>.main>.topbar{display:none}
 .selection-redesign-page .step-num{background:#f0f4eb;color:#7d9580;border:1px solid #e1e9db}
 .selection-redesign-page .step.active .step-num,.selection-redesign-page .step.done .step-num{background:var(--compose-green);color:#fff;border-color:var(--compose-green)}
 .selection-redesign-page .step-copy strong{color:#7d8f80;font-size:14px;font-weight:500}
@@ -123,26 +122,26 @@
 @media(max-width:1000px){.selection-redesign-page .compose-page-heading .import-progress{top:0;align-self:center}}
 
 /* 預覽功能與設定區沿用電腦選題的草綠樣式，試卷正文不受影響。 */
-.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) .compose-preview-tools{gap:8px}
-.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) .ep-panel-toggle[aria-expanded="true"],.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) .ep-panel-toggle[aria-expanded="true"]:hover{background:#e6efdc;border-color:#adc79b;color:#315940;box-shadow:none}
-.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) :is(#epHeaderPanel,#epToolbar,#epPreviewOptions){padding:12px 14px;background:#f3f6ed;border:0;border-radius:12px;color:#315940;margin:0 0 14px;font-family:var(--font-sans);font-size:.88rem;font-weight:400;line-height:1.5}
-.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) .ep-preview-options{gap:16px}
-.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) .ep-preview-options label{justify-content:flex-start;min-width:0;padding:4px 0;border:0;border-radius:0;background:transparent;color:#315940;font-family:var(--font-sans);font-size:.88rem;font-weight:500;line-height:1.5;box-shadow:none}
-.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) .ep-preview-options label:hover{background:transparent;color:#34774d}
-.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) .ep-preview-options label:has(input:checked){background:transparent;color:#315940;box-shadow:none}
-.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) .ep-preview-options label:has(input:focus-visible){outline:2px solid #34774d;outline-offset:2px}
-.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) .ep-preview-options input{width:16px;height:16px;accent-color:#34774d;margin:0}
-.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) .ep-toolbar{gap:14px;flex-wrap:wrap}
-.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) .ep-toolbar .group{gap:6px}
-.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) .ep-toolbar .group label{font-family:var(--font-sans);font-size:.88rem;font-weight:500;line-height:1.5;color:#315940}
-.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) .ep-toolbar .val{font-family:var(--font-sans);font-size:.88rem;font-weight:500;line-height:1.5;color:#315940}
-.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) .ep-toolbar .info-pill{background:#e7eedc;color:#4f6d4c;border-color:#dce6d2}
-.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) .ep-toolbar input[type=range]{accent-color:#34774d}
-.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) #epHeaderPanel .form-label{color:#315940;font-family:var(--font-sans);font-size:.88rem;font-weight:500;line-height:1.5}
-.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) :is(#epHeaderPanel,#epToolbar) .form-control{background:#fff;border-color:#d5e2cb;border-radius:7px}
-.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) :is(#epHeaderPanel,#epToolbar) .form-control:focus{border-color:#83ad8d;box-shadow:0 0 0 3px #43845b18}
-.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) .ep-inline-header-actions{gap:8px;flex-wrap:wrap}
-@media(max-width:600px){.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) :is(#epHeaderPanel,#epToolbar,#epPreviewOptions){padding:12px 14px}.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) .ep-toolbar .group{flex-wrap:wrap}}
+.selection-redesign-page :is(#composePanel5,#manualPanel4,#codedPanel4,#bookletPanel2) .compose-preview-tools{gap:8px}
+.selection-redesign-page :is(#composePanel5,#manualPanel4,#codedPanel4,#bookletPanel2) .ep-panel-toggle[aria-expanded="true"],.selection-redesign-page :is(#composePanel5,#manualPanel4,#codedPanel4,#bookletPanel2) .ep-panel-toggle[aria-expanded="true"]:hover{background:#e6efdc;border-color:#adc79b;color:#315940;box-shadow:none}
+.selection-redesign-page :is(#composePanel5,#manualPanel4,#codedPanel4,#bookletPanel2) :is(#epHeaderPanel,#epToolbar,#epPreviewOptions){padding:12px 14px;background:#f3f6ed;border:0;border-radius:12px;color:#315940;margin:0 0 14px;font-family:var(--font-sans);font-size:.88rem;font-weight:400;line-height:1.5}
+.selection-redesign-page :is(#composePanel5,#manualPanel4,#codedPanel4,#bookletPanel2) .ep-preview-options{gap:16px}
+.selection-redesign-page :is(#composePanel5,#manualPanel4,#codedPanel4,#bookletPanel2) .ep-preview-options label{justify-content:flex-start;min-width:0;padding:4px 0;border:0;border-radius:0;background:transparent;color:#315940;font-family:var(--font-sans);font-size:.88rem;font-weight:500;line-height:1.5;box-shadow:none}
+.selection-redesign-page :is(#composePanel5,#manualPanel4,#codedPanel4,#bookletPanel2) .ep-preview-options label:hover{background:transparent;color:#34774d}
+.selection-redesign-page :is(#composePanel5,#manualPanel4,#codedPanel4,#bookletPanel2) .ep-preview-options label:has(input:checked){background:transparent;color:#315940;box-shadow:none}
+.selection-redesign-page :is(#composePanel5,#manualPanel4,#codedPanel4,#bookletPanel2) .ep-preview-options label:has(input:focus-visible){outline:2px solid #34774d;outline-offset:2px}
+.selection-redesign-page :is(#composePanel5,#manualPanel4,#codedPanel4,#bookletPanel2) .ep-preview-options input{width:16px;height:16px;accent-color:#34774d;margin:0}
+.selection-redesign-page :is(#composePanel5,#manualPanel4,#codedPanel4,#bookletPanel2) .ep-toolbar{gap:14px;flex-wrap:wrap}
+.selection-redesign-page :is(#composePanel5,#manualPanel4,#codedPanel4,#bookletPanel2) .ep-toolbar .group{gap:6px}
+.selection-redesign-page :is(#composePanel5,#manualPanel4,#codedPanel4,#bookletPanel2) .ep-toolbar .group label{font-family:var(--font-sans);font-size:.88rem;font-weight:500;line-height:1.5;color:#315940}
+.selection-redesign-page :is(#composePanel5,#manualPanel4,#codedPanel4,#bookletPanel2) .ep-toolbar .val{font-family:var(--font-sans);font-size:.88rem;font-weight:500;line-height:1.5;color:#315940}
+.selection-redesign-page :is(#composePanel5,#manualPanel4,#codedPanel4,#bookletPanel2) .ep-toolbar .info-pill{background:#e7eedc;color:#4f6d4c;border-color:#dce6d2}
+.selection-redesign-page :is(#composePanel5,#manualPanel4,#codedPanel4,#bookletPanel2) .ep-toolbar input[type=range]{accent-color:#34774d}
+.selection-redesign-page :is(#composePanel5,#manualPanel4,#codedPanel4,#bookletPanel2) #epHeaderPanel .form-label{color:#315940;font-family:var(--font-sans);font-size:.88rem;font-weight:500;line-height:1.5}
+.selection-redesign-page :is(#composePanel5,#manualPanel4,#codedPanel4,#bookletPanel2) :is(#epHeaderPanel,#epToolbar) .form-control{background:#fff;border-color:#d5e2cb;border-radius:7px}
+.selection-redesign-page :is(#composePanel5,#manualPanel4,#codedPanel4,#bookletPanel2) :is(#epHeaderPanel,#epToolbar) .form-control:focus{border-color:#83ad8d;box-shadow:0 0 0 3px #43845b18}
+.selection-redesign-page :is(#composePanel5,#manualPanel4,#codedPanel4,#bookletPanel2) .ep-inline-header-actions{gap:8px;flex-wrap:wrap}
+@media(max-width:600px){.selection-redesign-page :is(#composePanel5,#manualPanel4,#codedPanel4,#bookletPanel2) :is(#epHeaderPanel,#epToolbar,#epPreviewOptions){padding:12px 14px}.selection-redesign-page :is(#composePanel5,#manualPanel4,#codedPanel4,#bookletPanel2) .ep-toolbar .group{flex-wrap:wrap}}
 
 /* 下載視窗掛在 body，仍需使用電腦選題頁的主題。 */
 .selection-redesign-page #epPaperSizeModal .ep-layout-modal{border:1px solid #dce6d8;border-radius:14px;box-shadow:0 18px 55px #254d3524;background:#fff}
@@ -213,7 +212,6 @@
 .selection-redesign-page :is(#composePanel3,#manualPanel2,#codedPanel2) .preview-stat strong{font-family:inherit;font-size:inherit;font-weight:700;line-height:inherit;vertical-align:baseline;font-variant-numeric:tabular-nums;color:#315940}
 
 /* 手動與編碼模式保留各自的選題工具及拖曳操作。 */
-.selection-redesign-page :is(.manual-layout,.coded-layout) .total-score-bar{background:#edf4e6;color:#34774d;border:0;border-radius:9px}
 .selection-redesign-page :is(.manual-layout,.coded-layout,.booklet-layout) .btn-outline{border-color:#b5cca9;color:#41674c;background:#fff}
 .selection-redesign-page :is(.manual-layout,.coded-layout,.booklet-layout) .btn-outline:hover{background:#edf4e6;border-color:#83ad8d}
 .selection-redesign-page :is(#manualPanel2,#codedPanel2) .result-q.selected{background:#edf4e6}
@@ -260,6 +258,6 @@
 .selection-redesign-page #manualPanel2 .selection-scroll-area :is(.bank-list,.selected-list,.manual-bank-tools,.selected-result-info){box-sizing:border-box;min-width:0;width:100%;max-width:100%}
 
 /* 資訊選項與 epPaper 共用 4px 左側留白，四種預覽皆不加底框。 */
-.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) #epModal .ep-preview-options{padding:4px 4px 0;margin:0 0 14px;background:transparent;border:0;border-radius:0;box-shadow:none;gap:16px;color:#315940}
-.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) #epModal .ep-preview-options label,.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) #epModal .ep-preview-options label:hover,.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) #epModal .ep-preview-options label:has(input:checked){padding:4px 0;background:transparent;border:0;border-radius:0;box-shadow:none;color:#315940;font-size:.88rem;font-weight:500}
-.selection-redesign-page :is(#composePanel5,#manualPanel5,#codedPanel5,#bookletPanel2) #epModal .ep-preview-options input{width:16px;height:16px;margin:0;accent-color:#34774d}
+.selection-redesign-page :is(#composePanel5,#manualPanel4,#codedPanel4,#bookletPanel2) #epModal .ep-preview-options{padding:4px 4px 0;margin:0 0 14px;background:transparent;border:0;border-radius:0;box-shadow:none;gap:16px;color:#315940}
+.selection-redesign-page :is(#composePanel5,#manualPanel4,#codedPanel4,#bookletPanel2) #epModal .ep-preview-options label,.selection-redesign-page :is(#composePanel5,#manualPanel4,#codedPanel4,#bookletPanel2) #epModal .ep-preview-options label:hover,.selection-redesign-page :is(#composePanel5,#manualPanel4,#codedPanel4,#bookletPanel2) #epModal .ep-preview-options label:has(input:checked){padding:4px 0;background:transparent;border:0;border-radius:0;box-shadow:none;color:#315940;font-size:.88rem;font-weight:500}
+.selection-redesign-page :is(#composePanel5,#manualPanel4,#codedPanel4,#bookletPanel2) #epModal .ep-preview-options input{width:16px;height:16px;margin:0;accent-color:#34774d}

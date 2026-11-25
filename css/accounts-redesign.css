@@ -1,5 +1,4 @@
 /* 帳號管理沿用新版試卷管理的標題、工具列與綠色表格。 */
-.accounts-redesign-page>.layout>.main>.topbar{display:none}
 .accounts-redesign-page .accounts-page-heading{display:flex;align-items:baseline;gap:8px;margin:0 0 14px}
 .accounts-redesign-page .accounts-page-heading h1{margin:0;color:#214a35;font-size:1.65rem;font-weight:700;line-height:1.35;letter-spacing:.025em}
 .accounts-redesign-page .accounts-page-heading p{margin:0;color:#718775;font-size:.9rem;line-height:1.6}

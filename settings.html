@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>進階設定 — 幼獅題庫系統</title>
-<link rel="stylesheet" href="css/theme.css?v=20261124-dialog-tape">
+<link rel="stylesheet" href="css/theme.css?v=20261125-download-spacing">
 <link rel="stylesheet" href="css/dashboard.css">
 
 <style>
@@ -118,8 +118,14 @@
 <link rel="stylesheet" href="css/site-redesign.css?v=20261016-yellow-titles">
 <link rel="stylesheet" href="css/accounts-redesign.css?v=20261014-label-radius">
 <link rel="stylesheet" href="css/settings-redesign.css?v=20261014-settings">
+<link rel="stylesheet" href="css/compose-papercraft.css?v=20261125-accounts-ui">
+<link rel="stylesheet" href="css/settings-papercraft.css?v=20261125-text-tabs">
+<link rel="stylesheet" href="css/accounts-papercraft.css?v=20261125-info-layout">
 </head>
 <body>
+<script data-settings-view>
+document.body.classList.add(new URLSearchParams(location.search).get('view') === 'accounts' ? 'accounts-redesign-page' : 'settings-redesign-page');
+</script>
 <script src="js/icons.js"></script>
 <script src="js/core.js?v=20261008-choice-images"></script>
 <script src="js/avatar.js"></script>
@@ -127,9 +133,6 @@
   <header class="site-header" id="sidebar"></header>
   <script src="js/shell.js?v=20261019-user-guide"></script>
   <div class="main" inert>
-    <div class="topbar">
-      <span class="topbar-title" id="settingsPageTitle">進階設定</span>
-    </div>
     <div class="page-content settings-page" id="pageContent">
       <!-- 動態填入 Tabs -->
     </div>
@@ -149,7 +152,7 @@
       <div class="err-box" id="umErr"></div>
       <input type="hidden" id="umUid">
       <div class="form-group">
-        <label class="form-label">身份 <span class="required">*</span></label>
+        <div class="account-email-label"><label class="form-label" for="umRole">身份 <span class="required">*</span></label><span class="account-email-info"><button class="account-email-info-button" type="button" aria-label="身份變更說明" aria-describedby="accountRoleHelp"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7v2"/></svg></button><span class="account-email-tooltip" id="accountRoleHelp" role="tooltip">身份由 Firestore 的 users/{UID} 文件中 role 欄位決定：admin 為主要管理員、manager 為管理員、teacher 為教師。網站不提供主要管理員身份變更，須由維護人員修改此欄位，不必修改 Firebase Authentication；完成後請登出再登入。交接時，請先將新帳號設為 admin 並確認可登入管理，再調整原帳號，避免沒有主要管理員。</span></span></div>
         <select class="form-control" id="umRole" onchange="onUmRoleChange()">
           <option value="teacher">教師</option>
           <option value="manager">管理員</option>
@@ -158,7 +161,7 @@
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">電子信箱 <span class="required">*</span></label>
+          <div class="account-email-label"><label class="form-label" for="umEmail">電子信箱 <span class="required">*</span></label><span class="account-email-info"><button class="account-email-info-button" type="button" aria-label="電子信箱變更說明" aria-describedby="accountEmailHelp"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7v2"/></svg></button><span class="account-email-tooltip" id="accountEmailHelp" role="tooltip">目前系統不提供變更既有帳號信箱。需要變更時，請由維護人員同步修改 Firebase Authentication 的登入信箱與 Firestore 中該使用者的 email 欄位，並保留原 UID。請勿刪除後重建帳號，以免影響試卷關聯。修改後請登出，再以新信箱登入。</span></span></div>
           <input class="form-control" type="email" id="umEmail" placeholder="登入用信箱">
         </div>
         <div class="form-group">
@@ -189,7 +192,7 @@
       </div>
       <div class="form-group hidden" id="umPasswordResetGroup">
         <button class="btn btn-secondary" type="button" id="umPasswordResetBtn" onclick="sendUserPasswordReset()">寄送密碼重設信</button>
-        <div class="field-hint" id="umPasswordResetHint" role="status">寄送至此帳號的電子信箱，由使用者自行設定新密碼。完成重設前，原密碼仍可使用。</div>
+        <div class="field-hint" id="umPasswordResetHint" role="status">使用者忘記密碼時，由管理員發送密碼重設信至此帳號的電子信箱。使用者完成重設前，原密碼仍可使用。</div>
       </div>
     </div>
     <div class="modal-footer">
@@ -207,13 +210,14 @@
       <button class="modal-close" type="button" onclick="closeAccountInfo()" aria-label="關閉">✕</button>
     </div>
     <div class="modal-body">
-      <p id="accountInfoIdentity" style="margin:0 0 16px;color:var(--text-secondary)"></p>
-      <div class="account-info-grid">
+      <div id="accountInfoIdentity"><strong id="accountInfoName"></strong><p id="accountInfoEmail"></p></div>
+      <div class="account-info-grid"><div class="account-info-item"><span>身份</span><strong id="accountInfoRole"></strong></div>
         <div class="account-info-item"><span>登入次數</span><strong id="accountInfoLogins">—</strong></div>
         <div class="account-info-item"><span>最後登入時間</span><strong id="accountInfoLastLogin">—</strong></div>
         <div class="account-info-item"><span>累計建立試卷</span><strong id="accountInfoCreated">—</strong></div>
         <div class="account-info-item"><span>目前保留試卷</span><strong id="accountInfoCurrent">—</strong></div>
       </div>
+      <div class="account-info-uid"><span class="account-uid-label">UID<span class="account-email-info"><button class="account-email-info-button" type="button" aria-label="UID 用途說明" aria-describedby="accountUidHelp"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7v2"/></svg></button><span class="account-email-tooltip" id="accountUidHelp" role="tooltip">UID 是帳號的唯一識別碼，用來關聯登入帳號、個人資料與試卷。維護人員可用它在 Firebase 找到同一帳號；修改信箱或身份時應保留原 UID，請勿刪除後重建帳號。</span></span></span><code id="accountInfoUid"></code><button class="btn btn-ghost btn-sm" type="button" id="copyAccountUid" aria-label="複製帳號 UID" title="複製帳號 UID"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h4"/></svg></button></div>
       <p class="account-info-note">登入與累計建卷次數從統計啟用後開始記錄；其他帳號的保留試卷數取自帳號統計，可能有更新延遲，未有紀錄時顯示「—」。</p>
     </div>
     <div class="modal-footer"><button class="btn btn-ghost" type="button" onclick="closeAccountInfo()">關閉</button></div>
@@ -293,8 +297,10 @@ import { confirmAction, confirmDeletion } from './js/confirm-exam-deletion.js';
 import { DEFAULT_WORD_MARGINS, loadWordMargins, saveWordMargins, resetWordMargins, FONT_OPTIONS, FONT_SIZE_RANGE, LINE_HEIGHT_RANGE, loadAppearance, saveAppearance, loadHeader, saveHeader, HEADER_BLANK_LABELS, HEADER_BLANK_DEFAULTS, headerBlankParts, mountInlineHeaderEditor } from './js/exam-preview.js?v=20261012-simple-header-v2';
 
 const settingsView = new URLSearchParams(location.search).get('view');
-document.body.classList.toggle('accounts-redesign-page', settingsView === 'accounts');
-document.body.classList.toggle('settings-redesign-page', settingsView !== 'accounts');
+document.querySelector('.layout').insertAdjacentHTML('afterbegin', `<div class="paper-corner paper-corner--left" aria-hidden="true"><svg viewBox="0 0 120 145"><g style="filter:drop-shadow(2px 3px 2px #66543429)"><path d="M-5-4 112-4 17 91-5 110Z" fill="#dacaac"/><path d="M-5-4 112-4 17 89" fill="#f0e4c9"/></g><g style="filter:drop-shadow(2px 4px 2px #43563730)"><path d="M-5 14 90-2 4 135-5 126Z" fill="#94a586"/><path d="M-5 14 90-2 29 58Z" fill="#bfcaab"/><path d="M29 58 90-2 4 135Z" fill="#a9b89a"/></g><g style="filter:drop-shadow(1px 2px 1px #7e663329)"><path d="M-5-3 43-3-5 45Z" fill="#ddbf77"/><path d="M-5-3 43-3-5 38Z" fill="#edda9e"/></g></svg></div>
+<div class="paper-corner paper-corner--right" aria-hidden="true"><svg viewBox="0 0 120 145"><g style="filter:drop-shadow(2px 3px 2px #66543429)"><path d="M-5-4 108-4 17 91-5 110Z" fill="#dacaac"/><path d="M-5-4 108-4 17 89" fill="#f0e4c9"/></g><g style="filter:drop-shadow(2px 4px 2px #43563730)"><path d="M-5 14 87-2 4 123-5 118Z" fill="#94a586"/><path d="M-5 14 87-2 29 58Z" fill="#bfcaab"/><path d="M29 58 87-2 4 123Z" fill="#a9b89a"/></g><g style="filter:drop-shadow(1px 2px 1px #7e663329)"><path d="M-5-3 35-3-5 37Z" fill="#ddbf77"/><path d="M-5-3 35-3-5 31Z" fill="#edda9e"/></g></svg></div>
+
+`);
 document.getElementById('accountInfoTitle').innerHTML = `<span class="modal-title-icon" aria-hidden="true">${ICONS.info20}</span>帳號資訊`;
 window._activeNav = settingsView === 'accounts' ? 'account-admin' : 'settings';
 const user = await guardPage();
@@ -304,7 +310,6 @@ const isPrimaryAdmin = DataService.isPrimaryAdmin();
 if (settingsView === 'accounts' && !isAdmin) location.replace('settings.html');
 const pageTitle = settingsView === 'accounts' ? '帳號管理' : '進階設定';
 document.title = `${pageTitle} — 幼獅題庫系統`;
-document.getElementById('settingsPageTitle').textContent = pageTitle;
 
 // ══════════════════════════════════════════════════
 //  Tab 結構
@@ -351,7 +356,7 @@ function buildTextbankPanel() {
     <div class="card-header"><h2>全站題庫來源</h2><span class="settings-card-description">切換讀題請求所使用來源，已載入頁面須重新整理</span></div>
     <div class="card-body card-body-with-description">
 
-      <p id="textbankModeStatus" role="status" style="margin:16px 0;font-weight:700"></p>
+      <p id="textbankModeStatus" role="status" style="margin:0 0 16px;font-weight:700"></p>
       <div class="import-action" style="display:flex;gap:10px;flex-wrap:wrap">
         <button class="btn btn-outline" type="button" data-textbank-mode="static">使用網頁空間靜態題庫</button>
         <button class="btn btn-outline" type="button" data-textbank-mode="firestore">緊急改用 Firestore</button>
@@ -425,8 +430,8 @@ function buildAccountsPanel() {
             <option value="manager">管理員</option>
             <option value="teacher">教師</option>
           </select>
-          <span class="user-count" id="userCount"></span>
-          <button class="btn btn-primary btn-sm" id="addUserBtn">${ICONS.plus16}新增帳號</button>
+          <div class="account-list-actions"><span class="user-count" id="userCount"></span>
+          <button class="btn btn-primary btn-sm" id="addUserBtn">${ICONS.plus16}新增帳號</button></div>
         </div>
         <div class="table-wrapper">
           <table class="data-table" id="userTable">
@@ -480,17 +485,29 @@ window.filterUsers = () => {
       <td><div class="account-row-actions">
         <button class="btn btn-sm btn-ghost" type="button" onclick="openAccountInfo('${u.id||u.uid}')">${ICONS.info16}資訊</button>
         ${(isPrimaryAdmin || u.role==='teacher' || u.uid===self.uid) ? `<button class="btn btn-sm btn-ghost" onclick="openUserModal('${u.id||u.uid}')">${ICONS.edit16}編輯</button>` : ''}
-        ${u.uid!==self.uid && u.role!=='admin' && (isPrimaryAdmin || u.role==='teacher')?`<button class="btn btn-sm btn-danger" onclick="doDelete('${u.id||u.uid}')">${ICONS.trash16}刪除</button>`:''}
+        ${u.role==='admin' ? `<button class="btn btn-sm btn-danger" type="button" disabled title="無法刪除主要管理員帳號">${ICONS.trash16}刪除</button>` : u.uid!==self.uid && (isPrimaryAdmin || u.role==='teacher') ? `<button class="btn btn-sm btn-danger" onclick="doDelete('${u.id||u.uid}')">${ICONS.trash16}刪除</button>` : ''}
       </div></td>
     </tr>`).join('');
 };
 
 let accountInfoPreviousFocus = null;
+document.getElementById('copyAccountUid').addEventListener('click', async () => {
+  const uid = document.getElementById('accountInfoUid').textContent;
+  try {
+    await navigator.clipboard.writeText(uid);
+    UI.toast('已複製UID', 'success');
+  } catch {
+    UI.toast('無法複製，請選取 UID 手動複製', 'warning');
+  }
+});
 window.openAccountInfo = async uid => {
   const target = allUsers.find(u => u.uid === uid);
   if (!target) { UI.toast('找不到帳號', 'danger'); return; }
   accountInfoPreviousFocus = document.activeElement;
-  document.getElementById('accountInfoIdentity').textContent = `${target.displayName || '—'} · ${target.email || '—'}`;
+  document.getElementById('accountInfoUid').textContent = uid;
+  document.getElementById('accountInfoName').textContent = target.displayName || '—';
+  document.getElementById('accountInfoEmail').textContent = target.email || '—';
+  document.getElementById('accountInfoRole').textContent = {admin:'主要管理員',manager:'管理員',teacher:'教師'}[target.role] || '—';
   document.getElementById('accountInfoLogins').textContent = target.loginCount ?? '—';
   document.getElementById('accountInfoLastLogin').textContent = UI.formatDateTime(target.lastLoginAt);
   document.getElementById('accountInfoCreated').textContent = target.examCreatedCount ?? '—';
@@ -559,7 +576,7 @@ window.openUserModal = (uid) => {
   document.getElementById('umErr').style.display = 'none';
   document.getElementById('umPasswordFields').classList.toggle('hidden', !!uid);
   document.getElementById('umPasswordResetGroup').classList.toggle('hidden', !uid);
-  document.getElementById('umPasswordResetHint').textContent = '寄送至此帳號的電子信箱，由使用者自行設定新密碼。完成重設前，原密碼仍可使用。';
+  document.getElementById('umPasswordResetHint').textContent = '使用者忘記密碼時，由管理員發送密碼重設信至此帳號的電子信箱。使用者完成重設前，原密碼仍可使用。';
 
   if (uid) {
     const u = allUsers.find(x => (x.id||x.uid)===uid);
@@ -619,7 +636,7 @@ window.onUmRoleChange = () => {
   const req  = document.getElementById('umSchoolReq');
   const hint = document.getElementById('umSchoolHint');
   if (role==='teacher') { req.textContent='*'; hint.textContent='教師必填'; }
-  else { req.textContent=''; hint.textContent='管理員選填'; }
+  else { req.textContent=''; hint.textContent=''; }
 };
 
 window.saveUser = async () => {

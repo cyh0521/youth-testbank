@@ -226,8 +226,6 @@ body.exams-redesign-page .modal-overlay:not(#epModal):not(#editModal) .modal-foo
 body.exams-redesign-page .modal-overlay:not(#epModal):not(#editModal) .modal-footer .btn-danger{border-color:#b95547;background:#b95547;color:#fffdf7}
 body.exams-redesign-page .modal-overlay:not(#epModal):not(#editModal) .modal-footer .btn-danger:hover{border-color:#a4463a;background:#a4463a}
 body.exams-redesign-page .modal-overlay:not(#epModal):not(#editModal) .modal-footer .btn-ghost:hover{background:#e9eddf;border-color:#aebca0}
-body.exams-redesign-page #epPaperSizeModal .ep-layout-with-types{max-width:760px}
-@media(min-width:761px){body.exams-redesign-page #epPaperSizeModal .ep-layout-with-types .ep-layout-body{grid-template-columns:minmax(0,1fr) max-content}}
 body.exams-redesign-page #epPaperSizeModal :is(.ep-layout-option,.ep-download-types label){background:#fffdf7;color:#756a54;border-color:#dfd5c0;border-radius:4px;box-shadow:none}
 body.exams-redesign-page #epPaperSizeModal :is(.ep-layout-option,.ep-download-types label):has(input:checked){background:#e7ecd9;border-color:#a5b58f;color:#4d6843;box-shadow:none}
 body.exams-redesign-page #epPaperSizeModal :is(input[type="radio"],input[type="checkbox"]){accent-color:#6f8a60}
@@ -303,7 +301,7 @@ body.exams-redesign-page #epModal.ep-management-preview .ep-toolbar .group label
 body.exams-redesign-page #epModal.ep-management-preview .ep-toolbar select{height:30px;box-sizing:border-box}
 body.exams-redesign-page #epModal.ep-management-preview .ep-preview-options{padding:0 0 10px;margin-left:0;align-items:center}
 body.exams-redesign-page #epModal.ep-management-preview .ep-preview-options label{padding-left:0;padding-right:0;margin-left:0}
-body.exams-redesign-page #epModal.ep-management-preview #epScopePanel .ep-scope-select.ep-scope-group-heading{padding-top:0;padding-bottom:7px;min-height:30px;align-items:center}
+body.exams-redesign-page #epModal.ep-management-preview #epScopePanel .ep-scope-select.ep-scope-group-heading{padding-top:7px;padding-bottom:7px;min-height:30px;align-items:center}
 /* 表頭設定與其他控制列共用起點，不額外向內縮。 */
 body.exams-redesign-page #epModal.ep-management-preview .ep-inline-header{padding:0 0 12px;margin-top:0}
 body.exams-redesign-page #epModal.ep-management-preview .ep-inline-header .ep-inline-header-fields{margin:0;padding:0}
@@ -313,8 +311,22 @@ body.exams-redesign-page #editModal #editHeaderPanel{padding:0 0 12px;margin-top
 /* 管理預覽舊版帶有額外控制區選擇器，明確統一內距。 */
 body.exams-redesign-page #epModal.ep-management-preview .ep-preview-controls #epHeaderPanel{padding:0 0 12px;margin-top:0;border:0;border-bottom:1px solid #dfd4bd;border-radius:0;background:transparent;box-shadow:none}
 body.exams-redesign-page #epModal.ep-management-preview .ep-preview-controls #epToolbar{padding:0 0 12px;margin-top:0;border:0;border-bottom:1px solid #dfd4bd;border-radius:0;background:transparent;box-shadow:none}
-body.exams-redesign-page #epModal.ep-management-preview .ep-preview-controls #epPreviewOptions{padding:0 0 10px;margin-left:0;background:transparent;border:0;box-shadow:none}
+body.exams-redesign-page #epModal.ep-management-preview .ep-preview-controls #epPreviewOptions{padding:0 0 10px;margin:0 0 10px;background:transparent;border:0;border-bottom:1px solid #dfd4bd;border-radius:0;box-shadow:none}
+body.exams-redesign-page #epModal.ep-management-preview #epPaper{padding:0}
+body.exams-redesign-page #epModal.ep-management-preview #epPaper>.ep-exam-header{padding:0 0 10px;text-align:left}
 body.exams-redesign-page #epModal.ep-management-preview .ep-preview-controls #epPreviewOptions label{padding-left:0;padding-right:0}
 /* 表頭編輯器的確認操作與頁面主要按鈕一致。 */
 body.exams-redesign-page :is(#editHeaderPanel,#epHeaderPanel) [data-header-save]{background:#607e58;border:1px solid #607e58;color:#fffdf7;box-shadow:none}
 body.exams-redesign-page :is(#editHeaderPanel,#epHeaderPanel) [data-header-save]:hover{background:#4f6f49;border-color:#4f6f49;color:#fffdf7}
+
+/* 管理預覽依章、節、子節呈現階層，題數維持靠右對齊。 */
+body.exams-redesign-page #epModal.ep-management-preview #epScopePanel .ep-scope-group-heading{padding-left:12px}
+body.exams-redesign-page #epModal.ep-management-preview #epScopePanel .ep-scope-level-1{padding-left:28px}
+body.exams-redesign-page #epModal.ep-management-preview #epScopePanel .ep-scope-level-2{padding-left:44px}
+
+/* 各層選取與滑過色塊保留對稱的上下內距。 */
+body.exams-redesign-page #epModal.ep-management-preview #epScopePanel .ep-scope-group-item{padding-top:7px;padding-bottom:7px;align-items:center}
+
+/* 列表次要按鈕固定紙色，避免透出資料列的滑過底色。 */
+body.exams-redesign-page #listView .recent-exam-actions .btn.btn-ghost,
+body.exams-redesign-page #listView .recent-exam-actions .btn.btn-ghost:hover{background:#f6f1e7!important}

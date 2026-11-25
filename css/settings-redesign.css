@@ -1,5 +1,4 @@
 /* 進階設定沿用新版頁面的綠色控制項與卡片。 */
-.settings-redesign-page>.layout>.main>.topbar{display:none}
 .settings-redesign-page .settings-page-heading{display:flex;align-items:baseline;gap:8px;margin:0 0 18px}
 .settings-redesign-page .settings-page-heading h1{margin:0;color:#214a35;font-size:1.65rem;font-weight:700;line-height:1.35;letter-spacing:.025em}
 .settings-redesign-page .settings-page-heading p{margin:0;color:#718775;font-size:.9rem;line-height:1.6}

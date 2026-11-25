@@ -1,0 +1,75 @@
+/* 帳號管理：沿用試卷管理的暖紙列表與操作層級。 */
+.account-info-uid{display:flex;align-items:center;flex-wrap:wrap;gap:6px 10px;margin:0 0 16px;color:#827763;font-size:.82rem}
+.account-info-uid code{min-width:0;overflow-wrap:anywhere;user-select:text;font-size:inherit;color:#75674e}
+.account-info-uid [role=status]{flex-basis:100%}
+.account-email-label{position:relative;display:flex;align-items:center;gap:5px;margin-bottom:7px}
+.account-email-label .form-label{margin-bottom:0!important}
+.account-email-info{display:inline-flex;align-items:center}
+.account-email-info-button{display:inline-flex;padding:0;border:0;background:transparent;color:#8a7b62;cursor:help;vertical-align:middle}
+.account-email-info-button:focus-visible{outline:2px solid #78906a;outline-offset:3px;border-radius:50%}
+.account-email-tooltip{position:absolute;z-index:10;top:calc(100% + 8px);left:0;width:280px;max-width:100%;padding:12px 14px;border:1px solid #d8cbb1;border-radius:4px;background:#fffdf7;color:#625b49;font-size:.82rem;font-weight:400;line-height:1.7;overflow-wrap:anywhere;box-shadow:0 6px 18px #59432426;visibility:hidden;opacity:0;pointer-events:none}
+.account-email-info:hover .account-email-tooltip,.account-email-info:focus-within .account-email-tooltip{visibility:visible;opacity:1;pointer-events:auto}
+body:is(.accounts-redesign-page,.settings-redesign-page) .modal .form-label{display:flex;align-items:center;gap:4px}
+body:is(.accounts-redesign-page,.settings-redesign-page) .modal .form-label .required{display:inline-flex;align-items:center;justify-content:center;align-self:center;margin-left:0;line-height:1;transform:translateY(.15em)}
+body.accounts-redesign-page{--primary:#607e58;--primary-light:#a5b58f;--bg-card:#f6f1e7;--text-primary:#4d5e43;--text-secondary:#827763;--text-muted:#827763;--border:#dfd4bd;--border-light:#e9e1d1}
+body.accounts-redesign-page .accounts-page-heading{margin-bottom:18px}
+body.accounts-redesign-page .accounts-page-heading h1{color:#4d5e43;font-size:1.5rem;text-shadow:0 1px #fff8}
+body.accounts-redesign-page .accounts-page-heading p{color:#897b65}
+body.accounts-redesign-page .accounts-page-heading p::before{color:#b3a68d}
+body.accounts-redesign-page .settings-page .accounts-card{border:0;border-radius:4px;background:#f6f1e7;box-shadow:inset 1px 1px 0 #fff,3px 4px 0 #d5c7ab,0 7px 14px #59432412}
+body.accounts-redesign-page .settings-page .accounts-card .search-bar{background:linear-gradient(180deg,#fffdf7,#f4edde);border-color:#e3d7c1}
+body.accounts-redesign-page .form-control{background:#fffdf7;color:#5b654c;border-color:#ded3bb;border-radius:4px;box-shadow:inset 0 1px 2px #66543413}
+body.accounts-redesign-page .form-control:focus{border-color:#99ad89;box-shadow:0 0 0 2px #99ad8926}
+body.accounts-redesign-page :is(.user-count,.account-info-item span,.account-info-note){color:#827763}
+body.accounts-redesign-page .settings-page .accounts-card .data-table th{background:#e5d7bd;color:#6b5d43;border-color:#cdbc9c;box-shadow:inset 0 1px 0 #ffffff90}
+body.accounts-redesign-page .settings-page .accounts-card .data-table td{color:#625b49;border-color:#eee6d7}
+body.accounts-redesign-page .settings-page .accounts-card .data-table tbody tr{background:#f6f1e7}
+body.accounts-redesign-page .settings-page .accounts-card .data-table tbody tr:nth-child(even){background:#f6f1e7}
+body.accounts-redesign-page .settings-page .accounts-card .data-table tbody tr:hover{background:#f2e6cc}
+body.accounts-redesign-page :is(.role-badge,.account-self-badge){border-radius:4px}
+body.accounts-redesign-page .role-badge{border:1px solid transparent}
+body.accounts-redesign-page .role-admin{background:#eee3c6;color:#8b6a27;border-color:#dac79b}
+body.accounts-redesign-page :is(.role-teacher,.account-self-badge){background:#e0e8d5;color:#4d713f}
+body.accounts-redesign-page .role-teacher{border-color:#bfceaa}
+body.accounts-redesign-page .role-manager{background:#dfe8e9;color:#466c79;border-color:#beced0}
+body.accounts-redesign-page .btn{border:1px solid #b7c0a9;border-radius:4px;background:transparent;color:#6d7b60;box-shadow:none;transform:none}
+body.accounts-redesign-page .btn:hover{background:#eee7d6;border-color:#9eae8e;color:#4d6544;box-shadow:none;transform:none}
+body.accounts-redesign-page .btn-primary{background:#607e58;border-color:#607e58;color:#fffdf7}
+body.accounts-redesign-page .btn-primary:hover{background:#4f6f49;border-color:#4f6f49;color:#fffdf7}
+body.accounts-redesign-page .btn-danger{background:#b95547;border-color:#b95547;color:#fffdf7}
+body.accounts-redesign-page .btn-danger:hover{background:#a4463a;border-color:#a4463a;color:#fffdf7}
+body.accounts-redesign-page .account-row-actions .btn{height:30px;min-height:30px;padding:0 10px;font-size:.85rem;line-height:1}
+body.accounts-redesign-page #userTable .account-row-actions .btn.btn-ghost{background:#f6f1e7!important}
+body.accounts-redesign-page #userTable .account-row-actions .btn.btn-ghost:hover{background:#f6f1e7!important;border-color:#9eae8e;color:#4d6544}
+body.accounts-redesign-page .settings-page .accounts-card .search-bar{padding-right:18px}
+body.accounts-redesign-page .account-list-actions{display:flex;align-items:center;gap:12px;margin-left:auto}
+body.accounts-redesign-page .account-row-actions{justify-content:flex-end}
+@media(max-width:600px){body.accounts-redesign-page .settings-page .accounts-card .search-bar{padding-right:14px}body.accounts-redesign-page .account-list-actions{margin-left:auto}}
+body.accounts-redesign-page :is(.btn,.form-control):focus-visible{outline:2px solid #78906a;outline-offset:2px}
+body.accounts-redesign-page #accountInfoIdentity{position:relative;padding:0 0 12px;margin:0 0 4px;background:transparent;border:0;border-bottom:1px solid #dfd4bd;border-radius:0;color:#625b49}
+body.accounts-redesign-page #accountInfoIdentity::after{content:'';position:absolute;bottom:-1px;left:0;width:30px;height:2px;background:#b6a16c}
+body.accounts-redesign-page #accountInfoName{display:block;font-size:1.3rem;font-weight:700;line-height:1.4;letter-spacing:.03em;color:#4d5e43}
+body.accounts-redesign-page #accountInfoEmail{margin:7px 0 0;color:#827763;font-size:.86rem;line-height:1.6;overflow-wrap:anywhere}
+body.accounts-redesign-page #copyAccountUid{padding:4px;min-width:26px;min-height:26px;border:0!important;background:transparent!important}
+body.accounts-redesign-page #accountInfoModal .account-info-grid{grid-template-columns:1fr;padding-top:4px;border:0;gap:0}
+body.accounts-redesign-page #accountInfoModal .account-info-item{display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:6px 0;background:transparent;border:0;border-radius:0}
+body.accounts-redesign-page #accountInfoModal .account-info-item>span{margin:0;flex:none}
+body.accounts-redesign-page #accountInfoModal .account-info-item>strong{font-size:.95rem;font-weight:600;line-height:1.5;text-align:right;font-variant-numeric:tabular-nums}
+body.accounts-redesign-page #accountInfoModal .account-info-uid{position:relative;display:flex;justify-content:flex-start;gap:6px;margin:8px 0 0;padding-top:10px;border-top:1px solid #dfd4bd}
+body.accounts-redesign-page #accountInfoModal .account-info-uid>span:first-child{font-size:.75rem;letter-spacing:.04em}
+body.accounts-redesign-page #accountInfoModal .account-info-note{padding-top:0;border:0}
+body.accounts-redesign-page #accountInfoModal .account-info-note{margin:10px 0 0;font-size:.76rem;line-height:1.75;color:#93856f}
+body.accounts-redesign-page #umPasswordResetGroup{background:transparent;border:1px solid #ded3bb;border-radius:4px;color:#625b49}
+body.accounts-redesign-page #umPasswordResetBtn.btn{background:#a67b3d!important;border-color:#a67b3d!important;color:#fffdf7!important}
+body.accounts-redesign-page #umPasswordResetBtn.btn:hover:not(:disabled){background:#8c6530!important;border-color:#8c6530!important;color:#fffdf7!important}
+body.accounts-redesign-page :is(#userModal,#accountInfoModal) .form-label,
+body.accounts-redesign-page .account-info-item>span{font-size:.88rem;font-weight:500;line-height:1.5;color:#75674e}
+body.accounts-redesign-page .account-info-item strong{color:#4d5e43}
+body.accounts-redesign-page .account-info-note{border-color:#dfd4bd}
+body.accounts-redesign-page .modal-overlay:not(#epModal):not(#editModal)>.modal{overflow:visible}
+body.accounts-redesign-page .modal-overlay:not(#epModal):not(#editModal)>.modal>.modal-header{position:relative}
+body.accounts-redesign-page :is(input[type=checkbox],input[type=radio]){accent-color:#6f8a60}
+@media(max-width:650px){body.accounts-redesign-page .accounts-page-heading h1{font-size:1.2rem}body.accounts-redesign-page .accounts-page-heading p{font-size:.8rem}}
+
+.account-uid-label{display:inline-flex;align-items:center;gap:4px;margin-right:4px}
+body.accounts-redesign-page #accountUidHelp{top:auto;bottom:calc(100% + 8px)}

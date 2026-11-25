@@ -1,6 +1,6 @@
 /* 手動選題專用狀態；紙面、流程、預覽與對話框沿用 compose-papercraft.css。 */
 .manual-selection-page{--primary:#607e58;--primary-light:#a5b58f;--bg-card:#f6f1e7}
-body.manual-selection-page :is(.bank-list,.selected-list,.score-cfg,.selection-scroll-area,.selected-result-info,.manual-bank-tools){background:#f6f1e7}
+body.manual-selection-page :is(.bank-list,.selected-list,.selection-scroll-area,.selected-result-info,.manual-bank-tools){background:#f6f1e7}
 body.manual-selection-page #manualPanel2 .card:has(#manualFilterMenu)>.card-header{border-radius:4px 4px 0 0}
 body.manual-selection-page #manualPanel2 .manual-filter-popover{background:linear-gradient(135deg,#fffdf7,#f7f0e2);border:1px solid #dfd4bd;border-radius:4px;box-shadow:3px 4px 0 #dfd1b7,0 10px 22px #59432426;color:#625b49}
 body.manual-selection-page .manual-filter-popover legend{color:#75674e}
@@ -22,9 +22,6 @@ body.manual-selection-page #manualPanel2 .result-q .si-remove{background:transpa
 body.manual-selection-page #manualPanel2 .result-q .si-remove:hover{background:#f2e0d6!important;border-color:#b66e5e!important;color:#933e32!important}
 body.manual-selection-page #bankList .result-q .replace-question{border-color:#9aa98b!important;color:#526746!important}
 body.manual-selection-page #bankList .result-q .replace-question:hover{background:#e5ead8!important;border-color:#7c9269!important;color:#3e5934!important}
-body.manual-selection-page #manualPanel3 .total-score-bar{background:transparent;color:#4d5e43;border:0;border-radius:0;margin:0;padding:10px;justify-content:flex-end;text-align:right;font-size:1.15rem;line-height:24px}
-body.manual-selection-page #manualPanel3 #scoreCfg .score-config-row:last-child{border-bottom:1px solid #e3dac7}
-body.manual-selection-page #manualPanel3 .score-config-row .score-label{color:#625b49}
 body.manual-selection-page .btn-auto-score:focus-visible{outline-color:#78906a}
 body.manual-selection-page #saveModal .form-control{background:#fffdf7;border-color:#ded3bb;border-radius:4px;color:#5b654c;box-shadow:inset 0 1px 2px #66543413}
 body.manual-selection-page .pag-wrap{background:#f6f1e7;border-color:#e3dac7}

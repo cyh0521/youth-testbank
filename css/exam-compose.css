@@ -3,7 +3,6 @@
 body:is(.booklet-page,.exam-compose-page){height:100vh;height:100dvh;overflow:hidden}
 :is(.booklet-page,.exam-compose-page) .layout{height:100%;min-height:0;overflow:hidden}
 :is(.booklet-page,.exam-compose-page) .main{height:100%;min-height:0;overflow:hidden}
-:is(.booklet-page,.exam-compose-page) .topbar{flex-shrink:0}
 :is(.booklet-page,.exam-compose-page) .page-content{min-height:0;overflow-y:auto;overscroll-behavior:contain}
 
 .compose-layout{display:block}
@@ -123,8 +122,6 @@ body:is(.booklet-page,.exam-compose-page){height:100vh;height:100dvh;overflow:hi
 .compose-preview-tools .btn svg{width:16px;height:16px;flex:none;transform:none;border:0;border-radius:0;background:transparent}
 .settings-layout{grid-template-columns:minmax(0,1fr)}
 .settings-layout .card-header{flex-wrap:wrap}
-.exam-score-chart{display:flex;height:12px;border-radius:6px;overflow:hidden;background:var(--bg-base);margin-bottom:16px}
-.exam-score-chart span{height:100%}
 .exam-summary-table-wrap{overflow-x:auto}
 .exam-summary-table{width:100%;border-collapse:separate;border-spacing:0;font-size:.88rem;white-space:nowrap}
 .exam-summary-table th{padding:9px 10px;text-align:left;background:var(--bg-base);color:var(--text-secondary);font-weight:500}
@@ -138,7 +135,6 @@ body:is(.booklet-page,.exam-compose-page){height:100vh;height:100dvh;overflow:hi
 .exam-type-drag{display:inline-block;color:var(--text-muted);margin-right:8px;font-size:1.1rem}
 .exam-summary-table td{height:45px;box-sizing:border-box;padding:10px;border-bottom:1px solid var(--border-light);line-height:24px}
 .exam-summary-table th:last-child,.exam-summary-table td:last-child{text-align:right}
-.exam-type-dot{display:inline-block;width:1em;height:1em;border-radius:3px;margin-right:6px;vertical-align:-.1em}
 .exam-summary-table small{display:inline;margin-left:8px;color:var(--text-muted);font-size:.79rem}
 .exam-summary-table tfoot td{height:45px;padding:10px;background:#e1f3e9;color:#176d49;border-radius:8px;font-size:1.15rem;font-weight:700;border-bottom:0;text-align:left;line-height:24px}
 .settings-header-sample{padding:14px;margin-bottom:16px;background:#f5f8fc;border:1px solid var(--border-light);border-radius:8px;overflow-x:auto;font-size:.88rem;line-height:1.6}
