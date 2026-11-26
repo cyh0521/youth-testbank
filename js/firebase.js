@@ -196,7 +196,7 @@ window.DataService = {
           try {
             const snap = await getDoc(doc(db, 'users', firebaseUser.uid));
             if (snap.exists()) {
-              DataService._currentUser = { uid: firebaseUser.uid, ...snap.data() };
+              DataService._currentUser = { ...snap.data(), uid: firebaseUser.uid };
               await migrateLegacyExamPreferences();
               await watchTextbankMode();
               if (DataService._currentUser.examCurrentCount == null) {
@@ -267,7 +267,7 @@ window.DataService = {
       const cred = await signInWithEmailAndPassword(auth, email, password);
       const snap = await getDoc(doc(db, 'users', cred.user.uid));
       if (!snap.exists()) return { ok: false, msg: '使用者資料不存在' };
-      DataService._currentUser = { uid: cred.user.uid, ...snap.data() };
+      DataService._currentUser = { ...snap.data(), uid: cred.user.uid };
       await migrateLegacyExamPreferences();
       return { ok: true, user: DataService._currentUser };
     } catch(e) {
@@ -340,7 +340,7 @@ window.DataService = {
     // id 欄位即為 Firebase UID，方便前端使用
     return snap.docs.map(d => {
       const data = d.data();
-      return { id: d.id, uid: d.id, ...data, createdAt: ts2str(data.createdAt), updatedAt: ts2str(data.updatedAt), lastLoginAt: ts2str(data.lastLoginAt), metricsStartedAt: ts2str(data.metricsStartedAt) };
+      return { ...data, id: d.id, uid: d.id, createdAt: ts2str(data.createdAt), updatedAt: ts2str(data.updatedAt), lastLoginAt: ts2str(data.lastLoginAt), metricsStartedAt: ts2str(data.metricsStartedAt) };
     });
   },
 

@@ -41,3 +41,29 @@ test('teacher cannot enter admin page even with forged cached navigation role',a
 test('unsupported account role is logged out',async()=>{const r=await guard({role:'student'});assert.equal(r.result,null);assert.ok(r.events.includes('logout'));});
 test('both administrator roles pass management guard',async()=>{for(const role of ['admin','manager']){const user={role};const r=await guard(user,['admin','manager']);assert.equal(r.result,user);assert.ok(r.events.includes('confirmed'));}});
 test('all management entry points declare restricted guard',()=>{for(const name of ['textbooks.html','questions.html','import.html','import-textbooks.html','js/reverse-import-page.js'])assert.match(read(name),/guardPage\(\['admin',\s*'manager'\]\)/,name);const settings=read('settings.html');assert.match(settings,/settingsView === 'accounts' && !isAdmin/);assert.match(settings,/settingsView === 'accounts' && isAdmin\) buildAccountsPanel/);});
+
+
+test('stored account identity cannot override trusted document or Auth identity',()=>{
+ const source=read('js/firebase.js');
+ assert.match(source, /\{ \.\.\.snap.data\(\), uid: firebaseUser.uid \}/);
+ assert.match(source, /\{ \.\.\.snap.data\(\), uid: cred.user.uid \}/);
+ const mapping=source.match(/return (\{ \.\.\.data, id: d.id, uid: d.id,.*?\});/)[1];
+ const mapped=runInNewContext('('+mapping+')',{data:{id:"bad-id",uid:"bad-uid"},d:{id:'trusted'},ts2str:v=>v});
+ assert.equal(mapped.id,'trusted'); assert.equal(mapped.uid,'trusted');
+});
+
+test('account list binds actions as listeners, never inline JavaScript containing identity',()=>{
+ const source=read('settings.html');
+ assert.doesNotMatch(source,/onclick="(?:openAccountInfo|openUserModal|doDelete)\('/);
+ assert.match(source,/data-account-id="\$\{UI.escapeHtml\(u.id\|\|u.uid\)\}"/);
+ assert.match(source,/actions\[button.dataset.accountAction\]\?\.\(button.dataset.accountId\)/);
+});
+
+test('self-update rule uses explicit keys excluding identity, email, role and creation time',()=>{
+ const source=read('firestore.rules');
+ const allowed=source.split('function validSelfUpdate()')[1].split('changed.hasOnly([')[1].split('])')[0];
+ for(const key of ['id','uid','email','role','createdAt']) assert.ok(!allowed.includes("'"+key+"'"),key);
+ for(const key of ['nickname','examPreferences','visibleCatalog','homeFavoriteBooks']) assert.ok(allowed.includes("'"+key+"'"),key);
+ assert.match(source,/&& validSelfUpdate\(\)/);
+ assert.match(source,/d.loginCount == resource.data.get\('loginCount', 0\) \+ 1/);
+});

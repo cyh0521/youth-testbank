@@ -15,6 +15,34 @@ service cloud.firestore {
     function isAdmin() { return isSignedIn() && (role() == 'admin' || role() == 'manager'); }
     function isTeacher() { return isSignedIn() && (role() == 'teacher' || role() == 'admin' || role() == 'manager'); }
 
+    // 本人只能修改明確列出的設定；識別值、信箱、建立日期及角色不可自行寫入。
+    function validSelfUpdate() {
+      let changed = request.resource.data.diff(resource.data).affectedKeys();
+      let d = request.resource.data;
+      return changed.hasOnly([
+        'displayName', 'nickname', 'school', 'serviceUnit', 'avatar',
+        'visibleCatalog', 'homeFavoriteBooks', 'examPreferences',
+        'textbankStatusVisible', 'updatedAt', 'loginCount', 'lastLoginAt',
+        'examCreatedCount', 'examCurrentCount', 'metricsStartedAt'
+      ])
+      && (!changed.hasAny(['displayName']) || (resource.data.role != 'teacher' && d.displayName is string && d.displayName.size() <= 200))
+      && (!changed.hasAny(['nickname']) || (d.nickname is string && d.nickname.size() <= 200))
+      && (!changed.hasAny(['school']) || (d.school == null || (d.school is string && d.school.size() <= 500)))
+      && (!changed.hasAny(['serviceUnit']) || d.serviceUnit == null || (d.serviceUnit is string && d.serviceUnit.size() <= 500))
+      && (!changed.hasAny(['avatar']) || (d.avatar is string && d.avatar.size() <= 240000))
+      && (!changed.hasAny(['visibleCatalog']) || d.visibleCatalog is map)
+      && (!changed.hasAny(['homeFavoriteBooks']) || (d.homeFavoriteBooks is list && d.homeFavoriteBooks.size() <= 500))
+      && (!changed.hasAny(['examPreferences']) || d.examPreferences is map)
+      && (!changed.hasAny(['textbankStatusVisible']) || d.textbankStatusVisible is bool)
+      && (!changed.hasAny(['updatedAt']) || d.updatedAt == request.time)
+      && (!changed.hasAny(['lastLoginAt']) || d.lastLoginAt == request.time)
+      && (!changed.hasAny(['metricsStartedAt']) || (resource.data.get('metricsStartedAt', null) == null && d.metricsStartedAt == request.time))
+      && (!changed.hasAny(['loginCount']) || (d.loginCount is int && d.loginCount == resource.data.get('loginCount', 0) + 1))
+      // 試卷數仍由用戶端同步，僅為顯示統計，不能用於授權或稽核。
+      && (!changed.hasAny(['examCreatedCount']) || (d.examCreatedCount is int && (d.examCreatedCount == resource.data.get('examCreatedCount', 0) + 1 || (resource.data.get('examCreatedCount', null) == null && d.examCreatedCount == 0))))
+      && (!changed.hasAny(['examCurrentCount']) || (d.examCurrentCount is int && d.examCurrentCount >= 0));
+    }
+
     // ── users ─────────────────────────────────────────────────
     match /users/{uid} {
       // 使用者只能讀取自己的資料
@@ -26,13 +54,16 @@ service cloud.firestore {
       allow create: if isAdmin() && request.resource.data.role == 'teacher'
                     || isPrimaryAdmin() && request.resource.data.role == 'manager';
       allow update: if isPrimaryAdmin() && request.auth.uid != uid
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'role', 'school', 'updatedAt'])
                     && resource.data.role != 'admin'
                     && request.resource.data.role in ['manager', 'teacher']
                     || isAdmin() && request.auth.uid != uid
                     && resource.data.role == 'teacher'
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'role', 'school', 'updatedAt'])
                     && request.resource.data.role == 'teacher'
                     || isSignedIn() && request.auth.uid == uid
                     && request.resource.data.role == resource.data.role
+                    && validSelfUpdate()
                     && (resource.data.role != 'teacher'
                       || request.resource.data.get('displayName', null) == resource.data.get('displayName', null));
       allow delete: if request.auth.uid != uid && (

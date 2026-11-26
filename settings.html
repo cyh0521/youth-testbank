@@ -485,11 +485,17 @@ window.filterUsers = () => {
       <td>${UI.escapeHtml(u.school||'—')}</td>
       <td style="color:var(--text-muted)">${fmtDate(u.createdAt)}</td>
       <td><div class="account-row-actions">
-        <button class="btn btn-sm btn-ghost" type="button" onclick="openAccountInfo('${u.id||u.uid}')">${ICONS.info16}資訊</button>
-        ${(isPrimaryAdmin || u.role==='teacher' || u.uid===self.uid) ? `<button class="btn btn-sm btn-ghost" onclick="openUserModal('${u.id||u.uid}')">${ICONS.edit16}編輯</button>` : ''}
-        ${u.role==='admin' ? `<button class="btn btn-sm btn-danger" type="button" disabled title="無法刪除主要管理員帳號">${ICONS.trash16}刪除</button>` : u.uid!==self.uid && (isPrimaryAdmin || u.role==='teacher') ? `<button class="btn btn-sm btn-danger" onclick="doDelete('${u.id||u.uid}')">${ICONS.trash16}刪除</button>` : ''}
+        <button class="btn btn-sm btn-ghost" type="button" data-account-action="openAccountInfo" data-account-id="${UI.escapeHtml(u.id||u.uid)}">${ICONS.info16}資訊</button>
+        ${(isPrimaryAdmin || u.role==='teacher' || u.uid===self.uid) ? `<button class="btn btn-sm btn-ghost" data-account-action="openUserModal" data-account-id="${UI.escapeHtml(u.id||u.uid)}">${ICONS.edit16}編輯</button>` : ''}
+        ${u.role==='admin' ? `<button class="btn btn-sm btn-danger" type="button" disabled title="無法刪除主要管理員帳號">${ICONS.trash16}刪除</button>` : u.uid!==self.uid && (isPrimaryAdmin || u.role==='teacher') ? `<button class="btn btn-sm btn-danger" data-account-action="doDelete" data-account-id="${UI.escapeHtml(u.id||u.uid)}">${ICONS.trash16}刪除</button>` : ''}
       </div></td>
     </tr>`).join('');
+  tbody.querySelectorAll('[data-account-action]').forEach(button => {
+    button.addEventListener('click', () => {
+      const actions = { openAccountInfo, openUserModal, doDelete };
+      actions[button.dataset.accountAction]?.(button.dataset.accountId);
+    });
+  });
 };
 
 let accountInfoPreviousFocus = null;
