@@ -77,3 +77,9 @@ body:not(.dashboard-page) :is(.compose-page-title,.import-page-title,.exams-page
 body:not(.dashboard-page) .topbar-title::after{content:'';position:absolute;z-index:-1;left:-2px;right:-3px;bottom:1px;height:7px;border-radius:3px;background:#efd17b;transform:rotate(-2deg);pointer-events:none}
 body:not(.dashboard-page) .page-content .card-header h2{display:inline-flex;align-items:center;gap:9px}
 body:not(.dashboard-page) .page-content .card-header h2::before{content:'';width:5px;height:17px;flex:none;border-radius:3px;background:#d4b457;transform:rotate(8deg);pointer-events:none}
+
+/* 管理頁標題與電腦選題採用相同的上緣位置。 */
+body:not(.dashboard-page) :is(.settings-page-heading,.accounts-page-heading,.testbank-page-heading,.exams-page-heading){padding-top:10px}
+body.exams-redesign-page>.layout>.main>.page-content{padding-top:26px}
+@media(max-width:600px){body:not(.dashboard-page) :is(.settings-page-heading,.accounts-page-heading,.testbank-page-heading,.exams-page-heading){padding-top:6px}}
+@media(max-width:470px){body.exams-redesign-page>.layout>.main>.page-content{padding-top:24px}}

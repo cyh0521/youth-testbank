@@ -321,3 +321,21 @@ body:is(.computer-selection-page,.manual-selection-page,.coded-selection-page,.b
 body:is(.computer-selection-page,.manual-selection-page,.coded-selection-page,.booklet-selection-page,.settings-redesign-page,.accounts-redesign-page,.testbank-redesign-page) .type-row.has-count:not(.invalid) .number-stepper-buttons button{background:#e1e7d2;color:#526c45}
 body:is(.computer-selection-page,.manual-selection-page,.coded-selection-page,.booklet-selection-page,.settings-redesign-page,.accounts-redesign-page,.testbank-redesign-page) .type-row.has-count:not(.invalid) .number-stepper-buttons button+button{border-top-color:#bbc7a7}
 body:is(.computer-selection-page,.manual-selection-page,.coded-selection-page,.booklet-selection-page,.settings-redesign-page,.accounts-redesign-page,.testbank-redesign-page) .type-row.has-count:not(.invalid) .number-stepper-buttons button:hover{background:#d3ddc0;color:#3f5d35}
+
+/* 各選題方式共用無底框流程導覽。 */
+body:is(.computer-selection-page,.manual-selection-page,.coded-selection-page,.booklet-selection-page) .compose-page-heading{background:transparent;border:0;border-bottom:1px solid #d8cbb3;border-radius:0;box-shadow:none;min-height:0;padding:10px 0 18px;margin-bottom:20px;overflow:visible}
+@media(max-width:600px){body:is(.computer-selection-page,.manual-selection-page,.coded-selection-page,.booklet-selection-page) .compose-page-heading{padding:6px 0 14px;margin-bottom:16px}}
+
+/* 無底框流程的字級與對比：對齊試卷管理頁標題。 */
+body:is(.computer-selection-page,.manual-selection-page,.coded-selection-page,.booklet-selection-page) .compose-page-heading h1{font-size:1.5rem}
+body:is(.computer-selection-page,.manual-selection-page,.coded-selection-page,.booklet-selection-page) .compose-page-heading .step-copy strong{color:#756b56}
+body:is(.computer-selection-page,.manual-selection-page,.coded-selection-page,.booklet-selection-page) .compose-page-heading .step-num{background:#e7deca;color:#62583f;border:1px solid #bcad90;box-shadow:none}
+body:is(.computer-selection-page,.manual-selection-page,.coded-selection-page,.booklet-selection-page) .compose-page-heading .step.active .step-num{background:#607e58;color:#fffdf7;border-color:#526e4b;box-shadow:0 0 0 3px #cbd5bc}
+body:is(.computer-selection-page,.manual-selection-page,.coded-selection-page,.booklet-selection-page) .compose-page-heading .step.done .step-num{background:#dbe4ce;color:#405d36;border-color:#99ad88}
+body:is(.computer-selection-page,.manual-selection-page,.coded-selection-page,.booklet-selection-page) .compose-page-heading :is(.step.active,.step.done) .step-copy strong{color:#405638}
+body:is(.computer-selection-page,.manual-selection-page,.coded-selection-page,.booklet-selection-page) .compose-page-heading .step:not(:last-child)::after{background:repeating-linear-gradient(90deg,#a5b395 0 5px,transparent 5px 9px)}
+body:is(.computer-selection-page,.manual-selection-page,.coded-selection-page,.booklet-selection-page) .compose-page-heading .step:not(:last-child)::before{background:linear-gradient(90deg,#526f49,#819a6f)}
+@media(max-width:650px){body:is(.computer-selection-page,.manual-selection-page,.coded-selection-page,.booklet-selection-page) .compose-page-heading h1{font-size:1.2rem}}
+
+/* 對齊試卷管理頁標題的字體、字重與排版細節。 */
+body:is(.computer-selection-page,.manual-selection-page,.coded-selection-page,.booklet-selection-page) .compose-page-heading h1{font-family:var(--font-sans);font-weight:700;line-height:1.35;letter-spacing:.025em;text-shadow:0 1px #fff8}

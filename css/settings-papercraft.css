@@ -53,3 +53,6 @@ body.settings-redesign-page .modal-overlay:not(#epModal):not(#editModal)>.modal>
 @media(max-width:600px){body.settings-redesign-page .settings-tabs{gap:4px}body.settings-redesign-page .settings-tab{padding:10px;flex:1 1 auto;justify-content:center}}
 
 @media(max-width:600px){body.settings-redesign-page .settings-tab.active::before{left:10px;right:10px}}
+
+body.settings-redesign-page .settings-page-heading{padding-top:10px}
+@media(max-width:600px){body.settings-redesign-page .settings-page-heading{padding-top:6px}}

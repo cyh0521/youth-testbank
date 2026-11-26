@@ -119,3 +119,23 @@ body.testbank-redesign-page #importedFilesModal .data-table tr[data-file-index]>
 body.testbank-redesign-page #importedFilesModal .data-table input[type=checkbox]{margin:0}
 body.testbank-redesign-page #importedFilesModal .data-table thead th:nth-child(2),
 body.testbank-redesign-page #importedFilesModal .data-table tr[data-file-index]>td:nth-child(2){padding-left:0}
+
+/* 題目匯入與題本轉檔沿用選題頁的開放式流程上欄。 */
+body.testbank-redesign-page .import-page-heading{background:transparent;border:0;border-bottom:1px solid #d8cbb3;border-radius:0;box-shadow:none;min-height:0;padding:10px 0 18px;margin-bottom:20px;overflow:visible}
+body.testbank-redesign-page .import-page-heading h1{font-family:var(--font-sans);font-size:1.5rem;font-weight:700;line-height:1.35;letter-spacing:.025em;text-shadow:0 1px #fff8}
+body.testbank-redesign-page .import-page-heading .step-copy strong{color:#756b56}
+body.testbank-redesign-page .import-page-heading .step-num{background:#e7deca;color:#62583f;border:1px solid #bcad90;box-shadow:none}
+body.testbank-redesign-page .import-page-heading .step.active .step-num{background:#607e58;color:#fffdf7;border-color:#526e4b;box-shadow:0 0 0 3px #cbd5bc}
+body.testbank-redesign-page .import-page-heading .step.done .step-num{background:#dbe4ce;color:#405d36;border-color:#99ad88}
+body.testbank-redesign-page .import-page-heading .step:is(.active,.done) .step-copy strong{color:#405638}
+body.testbank-redesign-page .import-page-heading .step:not(:last-child)::after{background:repeating-linear-gradient(90deg,#a5b395 0 5px,transparent 5px 9px)}
+body.testbank-redesign-page .import-page-heading .step:not(:last-child)::before{background:linear-gradient(90deg,#526f49,#819a6f)}
+@media(max-width:650px){body.testbank-redesign-page .import-page-heading h1{font-size:1.2rem}}
+@media(max-width:600px){body.testbank-redesign-page .import-page-heading{padding:6px 0 14px;margin-bottom:16px}}
+
+/* 匯入冊別樹融入暖紙圖卡。 */
+body.testbank-redesign-page #importBookTree{background:transparent}
+body.testbank-redesign-page #importBookTree .book-node:hover,
+body.testbank-redesign-page #importBookTree .subject-node summary:hover{background:#eee7d6}
+body.testbank-redesign-page #importBookTree .book-node:has(input:checked){background:#e5ead8;color:#4d5e43}
+body.testbank-redesign-page #importBookTree input{accent-color:#607e58}
