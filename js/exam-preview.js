@@ -549,10 +549,10 @@ function ensurePreviewModal() {
 #epBody .ep-answer-slot{display:inline-flex;align-items:center;width:4em;white-space:nowrap;color:#000}
 #epBody .ep-answer-slot .ep-answer-value{display:inline-block;width:2em;text-align:center}
 #epBody .ep-answer-value,#epBody .ep-labeled-answer .ep-answer-label{color:#b4232c;font-weight:400}
-#epBody .ep-q-difficulty{display:inline-flex;align-items:center;height:1lh;margin-right:6px;color:#526780;font-size:inherit;font-weight:600;line-height:inherit;vertical-align:top;white-space:nowrap;--ep-difficulty-background:#edf1f6}
-#epBody .ep-q-difficulty>span{padding:2px 6px;border-radius:5px;background:var(--ep-difficulty-background);font-size:.75em;line-height:1.4}
-#epBody .ep-q-difficulty.is-hard{--ep-difficulty-background:#fff0e5;color:#a34d17}
-#epBody .ep-q-difficulty.is-easy{--ep-difficulty-background:#e3f3ec;color:#237553}
+#epBody .ep-q-difficulty{display:inline-flex;align-items:center;height:1lh;margin-right:6px;color:#6e6452;font-size:inherit;font-weight:400;line-height:inherit;vertical-align:top;white-space:nowrap;--ep-difficulty-background:#e7e3d9;--ep-difficulty-border:#d3cab9}
+#epBody .ep-q-difficulty>span{padding:2px 8px;border:1px solid var(--ep-difficulty-border);border-radius:4px;background:var(--ep-difficulty-background);font-size:.75em;line-height:1.4}
+#epBody .ep-q-difficulty.is-hard{--ep-difficulty-background:#f0ddd5;--ep-difficulty-border:#e2bdb0;color:#9c4032}
+#epBody .ep-q-difficulty.is-easy{--ep-difficulty-background:#e0e8d5;--ep-difficulty-border:#bfceaa;color:#4d713f}
 #epBody .ep-q-source{color:#27734c;white-space:nowrap}
 #epBody .ep-q-analysis{display:flex;margin:2px 0 0;color:#245fa5;font-size:1em;text-align:left}
 #epBody .ep-analysis-label{flex:none}
@@ -602,6 +602,7 @@ function ensurePreviewModal() {
         <label><input type="checkbox" id="epShowAnswers">解答</label>
         <label><input type="checkbox" id="epShowAnalysis">解析</label>
         <label><input type="checkbox" id="epShowSource">頁數</label>
+        <label class="hidden"><input type="checkbox" id="epShowPage">頁數</label>
         <label><input type="checkbox" id="epShowDifficulty">難易度</label>
       </div>
     </div>
@@ -668,7 +669,7 @@ function ensurePreviewModal() {
     onAppearChange();
     persistAppearance();
   };
-  ['epShowAnswers', 'epShowAnalysis', 'epShowSource', 'epShowDifficulty'].forEach(id => {
+  ['epShowAnswers', 'epShowAnalysis', 'epShowSource', 'epShowPage', 'epShowDifficulty'].forEach(id => {
     document.getElementById(id).addEventListener('change', () => window._epRefresh?.());
   });
 }
@@ -709,6 +710,7 @@ function previewDisplay() {
     answers: document.getElementById('epShowAnswers')?.checked ?? false,
     analysis: document.getElementById('epShowAnalysis')?.checked ?? false,
     source: document.getElementById('epShowSource')?.checked ?? false,
+    page: document.getElementById('epShowPage')?.checked ?? false,
     difficulty: document.getElementById('epShowDifficulty')?.checked ?? false,
   };
 }
@@ -750,6 +752,7 @@ export function showExamPreview(examData, questions, previewOptions = {}) {
   if (!examData.booklet) examData.header ??= loadHeader();
   document.getElementById('epHeaderToggle').classList.toggle('hidden', !!examData.booklet);
   document.querySelector('#epShowSource').parentElement.lastChild.textContent = examData.booklet ? '出處' : '頁數';
+  document.getElementById('epShowPage').parentElement.classList.toggle('hidden', !examData.booklet);
   examAppearance(examData);
   document.getElementById('epToolbar').classList.add('hidden');
   document.getElementById('epAppearanceToggle').setAttribute('aria-expanded', 'false');
@@ -763,6 +766,7 @@ export function showExamPreview(examData, questions, previewOptions = {}) {
   document.getElementById('epShowAnswers').checked = examData.booklet ? (examData.display?.answers ?? true) : false;
   document.getElementById('epShowAnalysis').checked = examData.booklet ? (examData.display?.analysis ?? true) : false;
   document.getElementById('epShowSource').checked = examData.booklet ? (examData.display?.source ?? true) : false;
+  document.getElementById('epShowPage').checked = examData.booklet ? (examData.display?.page ?? examData.display?.source ?? true) : false;
   document.getElementById('epShowDifficulty').checked = examData.booklet ? (examData.display?.difficulty ?? true) : false;
   window._epRefresh    = () => { const display = previewDisplay(); if (examData.booklet) examData.display = display; renderPaper(examData, questions, display); applyAppearance(); };
   window._epDoPrint    = () => printWithPaperChoice(examData, questions);
@@ -909,7 +913,10 @@ export function buildHeaderSampleHtml(examData, questions) {
 }
 
 function buildPaperHtml(examData, questions, previewOptions, includeAnswerSheet = true) {
-  if (examData.booklet) previewOptions = {answers:true, analysis:true, source:true, difficulty:true, ...(previewOptions || examData.display || {}), booklet:true};
+  if (examData.booklet) {
+    const options = previewOptions || examData.display || {};
+    previewOptions = {answers:true, analysis:true, source:true, difficulty:true, ...options, page:options.page ?? options.source ?? true, booklet:true};
+  }
   if (examData.booklet) return buildBookletHtml(examData, questions, previewOptions);
   const h = examData.header ?? loadHeader();
   const typeScores = examData.typeScores || {};
@@ -1060,10 +1067,11 @@ function renderBookletQuestion(q, num, type, display) {
   const sources = typeof SOURCE_CODES === 'undefined' ? {A1:'課本', A2:'四技二專考題'} : SOURCE_CODES;
   const meta = [`編碼：${escape(code)}`];
   if (display.difficulty) meta.push(`難易度：${difficulty}`);
-  if (display.source) {
+  if (display.source) meta.push(`出處：${escape(sources[q.sourceCode] || q.sourceCode || '未註明')}`);
+  if (display.page ?? display.source) {
     const page = String(q.source || '未註明').trim();
     const pageLabel = /^\d+(?:\s*[-–、,]\s*\d+)*$/.test(page) ? `P.${page}` : page;
-    meta.push(`出處：${escape(sources[q.sourceCode] || q.sourceCode || '未註明')}`, `頁數：${escape(pageLabel)}`);
+    meta.push(`頁數：${escape(pageLabel)}`);
   }
   // Reuse the exam question layout with numbering within each chapter's question type.
   const rendered = renderQPreview(q, num, type, {...display, booklet:false, source:false, difficulty:false});

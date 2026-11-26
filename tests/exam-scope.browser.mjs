@@ -82,7 +82,7 @@ try {
   assert.equal(await page.locator('#'+name+'Panel2').isVisible(),true);
   if(name!=='compose') {
    if(name==='coded'){await page.locator('#qnumInput').fill('42');await page.locator('#addBtn').click();}
-   else await page.locator('#bankList').getByRole('button',{name:'加入',exact:true}).click();
+   else await page.locator('#bankList').getByRole('button',{name:'選題',exact:true}).click();
    assert.match(await page.locator('#selCountLabel').innerText(),/1 題/);
    const statsRow = page.locator('.selected-result-info');
    assert.equal(await statsRow.locator('#'+name+'FullBtn').count(),1);

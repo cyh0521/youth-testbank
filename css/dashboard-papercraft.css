@@ -14,9 +14,9 @@
 #green-comic-test .gc-welcome::after{content:'';position:absolute;left:28px;top:-8px;bottom:auto;width:64px;height:18px;background:#d4b76e85;transform:rotate(-5deg);clip-path:polygon(3% 0,100% 0,97% 100%,0 100%);pointer-events:none}
 #green-comic-test .gc-welcome-copy{width:64%;padding:0;z-index:2}
 #green-comic-test .gc-welcome h2{color:#4c5e42;font-size:clamp(25px,2.55vw,36px);line-height:1.5;letter-spacing:.035em}
-#green-comic-test .gc-work-line{margin-left:1.1em}
-#green-comic-test .gc-work-line>strong::after{height:6px;background:#e5c675;bottom:0}
-#green-comic-test .gc-hand-heart{color:#6f8364}
+
+
+
 #green-comic-test .gc-paper-scene{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:37%;height:auto;max-height:220px;pointer-events:none;overflow:visible}
 #green-comic-test .gc-paper-flight{position:absolute;z-index:3;right:8px;top:-17px;width:132px;height:auto;overflow:visible;pointer-events:none}
 @media(max-width:767px){#green-comic-test .gc-paper-flight{width:100px;right:6px;top:-14px}}
@@ -120,14 +120,14 @@ body.dashboard-page>.layout>.main>.page-content{flex:0 0 auto;min-height:100%;ov
 #green-comic-test .gc-welcome::before,#green-comic-test .gc-welcome::after{display:none}
 #green-comic-test .gc-welcome-copy{width:100%;min-width:0;padding:0}
 #green-comic-test .gc-welcome h2{margin:0;font-size:clamp(21px,2vw,28px);line-height:1.7;letter-spacing:.025em}
-#green-comic-test .gc-coffee-line{display:block;font-size:.85em;color:#748066;margin-bottom:4px}
-#green-comic-test .gc-work-line{display:block;margin-left:0;white-space:nowrap}
+
+
 #green-comic-test .gc-teacher-paper{position:absolute;z-index:2;display:block;width:32%;max-width:350px;max-height:none;height:auto;right:18px;top:auto;bottom:-18px;transform:none;object-fit:contain}
 #green-comic-test .gc-paper-flight{width:66px;left:auto;right:34%;top:18px;transform:rotate(-8deg)}
 #green-comic-test .gc-heading{margin-top:28px;margin-bottom:20px}
 @media(min-width:768px) and (max-width:1100px){#green-comic-test .gc-welcome{min-height:155px;padding-left:10px}#green-comic-test .gc-welcome h2{font-size:23px}#green-comic-test .gc-teacher-paper{width:34%;right:4px;bottom:-14px}#green-comic-test .gc-paper-flight{width:56px;right:35%;top:10px}}
 @media(min-width:601px) and (max-width:767px){#green-comic-test .gc-welcome{min-height:140px;padding-left:4px;padding-right:37%}#green-comic-test .gc-welcome h2{font-size:19px}#green-comic-test .gc-teacher-paper{width:35%;right:0;bottom:-12px}#green-comic-test .gc-paper-flight{width:44px;right:36%;top:3px}}
-@media(max-width:600px){#green-comic-test .gc-welcome{display:block;min-height:235px;margin:0 3px;padding:4px 0 130px}#green-comic-test .gc-welcome-copy{width:100%}#green-comic-test .gc-welcome h2{font-size:clamp(18px,4.5vw,24px);line-height:1.6}#green-comic-test .gc-coffee-line{margin-bottom:2px}#green-comic-test .gc-teacher-paper{width:68%;max-width:260px;right:0;top:auto;bottom:-14px}#green-comic-test .gc-paper-flight{width:54px;left:8%;right:auto;top:117px}#green-comic-test .gc-heading{margin-top:28px}}
+@media(max-width:600px){#green-comic-test .gc-welcome{display:block;min-height:235px;margin:0 3px;padding:4px 0 130px}#green-comic-test .gc-welcome-copy{width:100%}#green-comic-test .gc-welcome h2{font-size:clamp(18px,4.5vw,24px);line-height:1.6}#green-comic-test .gc-teacher-paper{width:68%;max-width:260px;right:0;top:auto;bottom:-14px}#green-comic-test .gc-paper-flight{width:54px;left:8%;right:auto;top:117px}#green-comic-test .gc-heading{margin-top:28px}}
 
 /* 放大陪襯插圖，問候語靠近人物，紙飛機位於頭部右側。 */
 #green-comic-test .gc-welcome{min-height:225px;padding:20px 40% 22px 12%;justify-content:flex-end}
@@ -141,7 +141,7 @@ body.dashboard-page>.layout>.main>.page-content{flex:0 0 auto;min-height:100%;ov
 
 /* 問候語等級一致，分隔線與人物下移，飛機貼近頭側。 */
 #green-comic-test .gc-welcome{min-height:249px;padding-bottom:46px}
-#green-comic-test .gc-coffee-line{font-size:1em;color:inherit}
+
 #green-comic-test .gc-paper-flight{width:86px;right:4%;top:39px}
 @media(min-width:768px) and (max-width:1100px){#green-comic-test .gc-welcome{min-height:219px}#green-comic-test .gc-paper-flight{width:72px;right:3%;top:45px}}
 @media(min-width:601px) and (max-width:767px){#green-comic-test .gc-welcome{min-height:199px}#green-comic-test .gc-paper-flight{width:60px;right:2%;top:48px}}
@@ -149,13 +149,13 @@ body.dashboard-page>.layout>.main>.page-content{flex:0 0 auto;min-height:100%;ov
 
 /* 分隔線置於科目標題下，人物隨線下移；第二句縮排一字。 */
 #green-comic-test .gc-welcome{border-bottom:0}
-#green-comic-test .gc-work-line{margin-left:1em}
+
 #green-comic-test .gc-heading{position:relative;margin-top:28px;margin-bottom:44px;padding-bottom:16px;border-bottom:1px solid #cbbc9f}
 #green-comic-test .gc-teacher-paper{bottom:-112px}
 #green-comic-test .gc-paper-flight{top:119px}
 @media(min-width:768px) and (max-width:1100px){#green-comic-test .gc-teacher-paper{bottom:-108px}#green-comic-test .gc-paper-flight{top:125px}}
 @media(min-width:601px) and (max-width:767px){#green-comic-test .gc-teacher-paper{bottom:-106px}#green-comic-test .gc-paper-flight{top:128px}}
-@media(max-width:600px){#green-comic-test .gc-work-line{margin-left:.65em}#green-comic-test .gc-teacher-paper{bottom:-108px}#green-comic-test .gc-paper-flight{top:227px}}
+@media(max-width:600px){#green-comic-test .gc-teacher-paper{bottom:-108px}#green-comic-test .gc-paper-flight{top:227px}}
 
 /* 收緊首頁上緣與科目間距；人物疊在線條上方。 */
 .dashboard-page>.layout>.main>.page-content{padding-top:28px}
@@ -179,7 +179,7 @@ body.dashboard-page>.layout>.main>.page-content{flex:0 0 auto;min-height:100%;ov
 /* 微調上緣、插圖位置與問候語行距。 */
 .dashboard-page>.layout>.main>.page-content{padding-top:18px}
 #green-comic-test .gc-welcome h2{line-height:1.45}
-#green-comic-test .gc-coffee-line{margin-bottom:0}
+
 #green-comic-test .gc-teacher-paper{bottom:-74px}
 #green-comic-test .gc-paper-flight{top:76px}
 @media(min-width:768px) and (max-width:1100px){.dashboard-page>.layout>.main>.page-content{padding-top:18px}#green-comic-test .gc-teacher-paper{bottom:-70px}#green-comic-test .gc-paper-flight{top:82px}}

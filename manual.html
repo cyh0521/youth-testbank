@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>手動選題 — 幼獅題庫系統</title>
-<link rel="stylesheet" href="css/theme.css?v=20261125-download-spacing">
+<link rel="stylesheet" href="css/theme.css?v=20261126-inline-preview-frame-fix">
 <link rel="stylesheet" href="css/process-bar.css">
 
 <link rel="stylesheet" href="css/exam-compose.css?v=20261124-individual-display">
@@ -66,12 +66,12 @@
 @media(max-width:1100px){.selection-layout{grid-template-columns:1fr}}
 @media(max-width:760px){.manual-panel .card-header,.manual-panel .card-body,.bank-list,.selected-list{padding-left:14px;padding-right:14px}}
 </style>
-<link rel="stylesheet" href="css/site-redesign.css?v=20261126-heading-position">
+<link rel="stylesheet" href="css/site-redesign.css?v=20261126-account-role-border">
 <link rel="stylesheet" href="css/compose-redesign.css?v=20261125-coded-four-steps">
-<link rel="stylesheet" href="css/compose-papercraft.css?v=20261126-shared-process-header">
+<link rel="stylesheet" href="css/compose-papercraft.css?v=20261126-no-center-fold">
 <link rel="stylesheet" href="css/manual-papercraft.css?v=20261125-combined-settings">
 <link rel="stylesheet" href="css/selection-settings.css?v=20261125-score-input-drag">
-<link rel="stylesheet" href="css/selection-preview.css?v=20261125-four-step-previews">
+<link rel="stylesheet" href="css/selection-preview.css?v=20261126-self-audit">
 </head>
 <body class="exam-compose-page manual-selection-page selection-redesign-page">
 <script src="js/icons.js"></script>
@@ -81,7 +81,7 @@
 <div class="paper-corner paper-corner--right" aria-hidden="true"><svg viewBox="0 0 120 145"><g style="filter:drop-shadow(2px 3px 2px #66543429)"><path d="M-5-4 108-4 17 91-5 110Z" fill="#dacaac"/><path d="M-5-4 108-4 17 89" fill="#f0e4c9"/></g><g style="filter:drop-shadow(2px 4px 2px #43563730)"><path d="M-5 14 87-2 4 123-5 118Z" fill="#94a586"/><path d="M-5 14 87-2 29 58Z" fill="#bfcaab"/><path d="M29 58 87-2 4 123Z" fill="#a9b89a"/></g><g style="filter:drop-shadow(1px 2px 1px #7e663329)"><path d="M-5-3 35-3-5 37Z" fill="#ddbf77"/><path d="M-5-3 35-3-5 31Z" fill="#edda9e"/></g></svg></div>
 
   <header class="site-header" id="sidebar"></header>
-  <script src="js/shell.js?v=20261019-user-guide"></script>
+  <script src="js/shell.js?v=20261126-self-audit"></script>
   <div class="main" inert>
 
     <div class="page-content">
@@ -147,7 +147,7 @@
 <script type="module">
 import { renderScopePanel, mountScopeSelector } from './js/exam-scope.js?v=20261124-empty-chart';
 import { guardPage } from './js/auth-guard.js';
-import { showExamPreview, mountInlinePreviewLayout, showHeaderSettings, newExamHeader, loadAppearance, mountInlineHeaderEditor, buildHeaderHtml, buildHeaderSampleHtml, fontStackById, togglePreviewPanel } from './js/exam-preview.js?v=20261125-shared-preview';
+import { showExamPreview, mountInlinePreviewLayout, showHeaderSettings, newExamHeader, loadAppearance, mountInlineHeaderEditor, buildHeaderHtml, buildHeaderSampleHtml, fontStackById, togglePreviewPanel } from './js/exam-preview.js?v=20261126-self-audit';
 import { allocateTypeScores, AUTO_SCORE_WEIGHTS } from './js/score-allocation.js?v=20261007-weighted-scores';
 import { blankCount } from './js/blank-selection.js';
 import { examScopeSnapshot } from './js/preview-scope.js?v=20261015-selected-only';

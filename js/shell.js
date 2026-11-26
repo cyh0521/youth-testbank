@@ -4,9 +4,12 @@
  * 每頁仍由 auth-guard.js 驗證真實使用者與存取權限。
  */
 (() => {
+  const dialogKeyboard = document.createElement('script');
+  dialogKeyboard.src = new URL('dialog-keyboard.js?v=20261126-self-audit', document.currentScript.src).href;
+  document.head.appendChild(dialogKeyboard);
   const ROLE_KEY = 'youth.shellRole';
   const ACCOUNT_KEY = 'youth.shellAccount';
-  const AVATAR_URL = new URL('avatar.js', document.currentScript.src).href;
+  const AVATAR_URL = new URL('avatar.js?v=20261126-avatar-clean-lower-edge', document.currentScript.src).href;
   const avatarReady = window.Avatar ? Promise.resolve() : import(AVATAR_URL);
   const read = (storage, key) => { try { return window[storage].getItem(key); } catch { return null; } };
   const write = (storage, key, value) => { try { window[storage].setItem(key, value); } catch { /* Storage may be unavailable. */ } };

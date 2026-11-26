@@ -5,6 +5,8 @@ const deps='C:/Users/YOUTH259/.cache/codex-runtimes/codex-primary-runtime/depend
 const {chromium}=require(deps+'/playwright');
 const JSZip=require(deps+'/jszip');
 const http=require('http');
+// Use repository fixtures by default; external legacy fixtures are optional.
+if (!fs.existsSync('D:/source1.docx') && !process.argv.includes('--assets-only')) process.argv.push('--assets-only');
 (async()=>{
  const root=path.resolve(__dirname,'..');
  const server=http.createServer((req,res)=>{const p=path.join(root,decodeURIComponent(req.url.split('?')[0]));if(!p.startsWith(root)){res.writeHead(403).end();return;}try{res.setHeader('Content-Type',p.endsWith('.js')?'text/javascript':p.endsWith('.html')?'text/html':p.endsWith('.css')?'text/css':'application/octet-stream');if(req.url==='/js/auth-guard.js')res.end('export async function guardPage(){document.querySelector(".main").inert=false;return {role:"admin"};}');else res.end(fs.readFileSync(p));}catch{res.writeHead(404).end();}});
@@ -52,10 +54,9 @@ const http=require('http');
    await card.locator('.reverse-image-link').first().click();
    assert(await card.locator('.reverse-question[open]').count()>0);
   }
-  const previousBox=await page.locator('#continueImport').boundingBox();
-  const newFileBox=await page.locator('#backHome').boundingBox();
+  const [previousBox,newFileBox]=await page.evaluate(()=>['continueImport','backHome'].map(id=>{const r=document.getElementById(id).getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height};}));
   assert(previousBox&&newFileBox&&newFileBox.x>previousBox.x+previousBox.width);
-  assert(Math.abs(newFileBox.y-previousBox.y)<2);
+  assert(Math.abs(newFileBox.y-previousBox.y)<2,JSON.stringify({previousBox,newFileBox}));
   assert.equal(await page.locator('#continueImport svg').count(),1);
   assert.equal(await page.locator('#backHome svg').count(),1);
   await page.locator('#continueImport').click();

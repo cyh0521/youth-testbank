@@ -102,7 +102,7 @@ for(const mode of ['manual','coded'])test(`${mode} 填空按格、配合按題�
     source.slice(source.indexOf('window.doSaveExam ='),source.indexOf(`window.clear${name}Scores =`)),
     source.slice(source.indexOf(`window.auto${name}Scores =`),source.indexOf(`window.adjust${name}Score =`)),
   ].join('\n'),context);
-  context.calcTotal();assert.equal(node('totalScoreVal').textContent,'總計：24 分');
+  context.calcTotal();assert.equal(node('totalScoreVal').textContent,'總分：24 分');
   context.window.previewSelected();assert.equal(preview.scoreUnits.T4,'blank');assert.equal(preview.scoreUnits.T5,undefined);
   await context.window.doSaveExam();assert.equal(saved.totalScore,24);assert.equal(saved.questionCount,5);
   assert.equal(saved.scoreUnits.T4,'blank');assert.equal(saved.scoreUnits.T5,undefined);

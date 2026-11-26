@@ -83,3 +83,9 @@ body:not(.dashboard-page) :is(.settings-page-heading,.accounts-page-heading,.tes
 body.exams-redesign-page>.layout>.main>.page-content{padding-top:26px}
 @media(max-width:600px){body:not(.dashboard-page) :is(.settings-page-heading,.accounts-page-heading,.testbank-page-heading,.exams-page-heading){padding-top:6px}}
 @media(max-width:470px){body.exams-redesign-page>.layout>.main>.page-content{padding-top:24px}}
+
+/* 帳號選單身份沿用題目資訊標籤的淡底細框。 */
+body .account-menu .account-role{border:1px solid transparent;border-radius:4px;font-weight:400}
+body .account-menu .account-role--teacher{background:#e0e8d5;color:#4d713f;border-color:#bfceaa}
+body .account-menu .account-role--manager{background:#dfe8e9;color:#466c79;border-color:#beced0}
+body .account-menu .account-role--admin{background:#eee3c6;color:#8b6a27;border-color:#dac79b}

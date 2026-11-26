@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>編碼選題 — 幼獅題庫系統</title>
-<link rel="stylesheet" href="css/theme.css?v=20261125-download-spacing">
+<link rel="stylesheet" href="css/theme.css?v=20261126-inline-preview-frame-fix">
 <link rel="stylesheet" href="css/process-bar.css">
 
 <link rel="stylesheet" href="css/exam-compose.css?v=20261124-individual-display">
@@ -42,12 +42,12 @@
 .coded-input-cards{display:grid;gap:16px;min-width:0}.coded-input-cards .form-group{margin-bottom:0}.coded-input-row{display:flex;gap:8px;align-items:center}.coded-input-row .form-control{flex:1;min-width:0}#lookupResult:empty{display:none}#lookupResult{margin-top:12px}#lookupResult .result-q{padding-left:0;padding-right:0;background:transparent}#lookupResult .result-q:hover{background:transparent}#codedPanel2 .selection-layout{grid-template-columns:minmax(280px,1fr) minmax(0,1.4fr)}@media(max-width:1100px){#codedPanel2 .selection-layout{grid-template-columns:1fr}}
 .coded-single-input{align-items:stretch}.coded-single-input .form-control{font-size:.86rem;padding:5px 8px}.coded-single-input .btn{font-size:.86rem;padding:5px 10px;white-space:nowrap}#qnumHint:empty,#batchHint:empty{display:none}
 </style>
-<link rel="stylesheet" href="css/site-redesign.css?v=20261126-heading-position">
+<link rel="stylesheet" href="css/site-redesign.css?v=20261126-account-role-border">
 <link rel="stylesheet" href="css/compose-redesign.css?v=20261125-coded-four-steps">
-<link rel="stylesheet" href="css/compose-papercraft.css?v=20261126-shared-process-header">
+<link rel="stylesheet" href="css/compose-papercraft.css?v=20261126-no-center-fold">
 <link rel="stylesheet" href="css/selection-settings.css?v=20261125-score-input-drag">
 <link rel="stylesheet" href="css/coded-papercraft.css?v=20261125-coded-ui">
-<link rel="stylesheet" href="css/selection-preview.css?v=20261125-four-step-previews">
+<link rel="stylesheet" href="css/selection-preview.css?v=20261126-self-audit">
 </head>
 <body class="exam-compose-page coded-selection-page selection-redesign-page">
 <script src="js/icons.js"></script>
@@ -58,7 +58,7 @@
 
 
   <header class="site-header" id="sidebar"></header>
-  <script src="js/shell.js?v=20261019-user-guide"></script>
+  <script src="js/shell.js?v=20261126-self-audit"></script>
   <div class="main" inert>
 
     <div class="page-content">
@@ -112,7 +112,7 @@
 <script type="module">
 import { renderScopePanel, mountScopeSelector } from './js/exam-scope.js?v=20261124-empty-chart';
 import { guardPage } from './js/auth-guard.js';
-import { showExamPreview, mountInlinePreviewLayout, showHeaderSettings, newExamHeader, loadAppearance, mountInlineHeaderEditor, buildHeaderHtml, buildHeaderSampleHtml, fontStackById, togglePreviewPanel } from './js/exam-preview.js?v=20261125-shared-preview';
+import { showExamPreview, mountInlinePreviewLayout, showHeaderSettings, newExamHeader, loadAppearance, mountInlineHeaderEditor, buildHeaderHtml, buildHeaderSampleHtml, fontStackById, togglePreviewPanel } from './js/exam-preview.js?v=20261126-self-audit';
 import { examScopeSnapshot } from './js/preview-scope.js?v=20261015-scope-audit';
 import { allocateTypeScores, AUTO_SCORE_WEIGHTS } from './js/score-allocation.js?v=20261007-weighted-scores';
 import { blankCount } from './js/blank-selection.js';

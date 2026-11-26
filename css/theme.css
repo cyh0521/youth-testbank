@@ -798,3 +798,30 @@ body > .layout { height: 100%; min-height: 0; overflow: hidden; }
 body > .layout > .main { height: 100%; min-height: 0; overflow: hidden; }
 body > .layout > .main > .topbar { flex: none; }
 body > .layout > .main > .page-content { min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; }
+
+/* 全站浮動對話視窗：沿用頂欄下拉選單的紙邊與陰影。 */
+body .modal-overlay:not(.compose-inline-preview):not(.ep-management-preview)>.modal,body #green-comic-test .gc-modal{
+  position:relative;isolation:isolate;overflow:visible;
+  border:0!important;border-radius:4px!important;
+  box-shadow:inset 1px 1px 0 #fff,3px 4px 0 #dfd1b7,0 10px 22px #59432426!important;
+}
+body .modal-overlay:not(.compose-inline-preview):not(.ep-management-preview)>.modal::before,body #green-comic-test .gc-modal::before{
+  content:none!important;
+}
+
+/* 一般對話視窗全站共用，包含首頁及動態產生的登出／確認視窗。 */
+body .modal-overlay:not(#epModal):not(#editModal){background:rgba(61,52,37,.37);backdrop-filter:none;-webkit-backdrop-filter:none}
+body .modal-overlay:not(#epModal):not(#editModal)>.modal{position:relative;isolation:isolate;border:0;border-radius:5px;background:linear-gradient(135deg,#fffdf7,#f6f0e3);box-shadow:inset 1px 1px 0 #fff,2px 3px 0 #d9ccb3,0 10px 24px #3025141f}
+body .modal-overlay:not(#epModal):not(#editModal)>.modal>.modal-header{background:transparent;border:0;padding:24px 26px 17px;gap:14px}
+body .modal-overlay:not(#epModal):not(#editModal)>.modal>.modal-header h3{color:#465940;font-size:1.3rem;line-height:1.4;font-weight:700;letter-spacing:.025em}
+body .modal-overlay:not(#epModal):not(#editModal)>.modal>.modal-header .modal-close{display:inline-flex;align-items:center;justify-content:center;flex:none;width:30px;height:30px;padding:0;border:1px solid #ded3bb;border-radius:3px;background:#f0e7d4;color:#8d7b60;box-shadow:none;line-height:1}
+body .modal-overlay:not(#epModal):not(#editModal)>.modal>.modal-header .modal-close:hover{background:#e6dbc3;color:#4e5d43}
+body .modal-overlay:not(#epModal):not(#editModal)>.modal>.modal-body{padding:8px 26px 22px;color:#6e654f;font-size:.9rem}
+body .modal-overlay:not(#epModal):not(#editModal)>.modal>.modal-footer{margin:0 26px;padding:17px 0 22px;border-top:1px solid #e2d7c2;background:transparent;gap:10px}
+body .modal-overlay:not(#epModal):not(#editModal) .modal-footer .btn{border:1px solid #d8d1bf;border-radius:4px;background:#fffdf7;color:#637158;box-shadow:none;font-size:.9rem}
+body .modal-overlay:not(#epModal):not(#editModal) .modal-footer .btn-primary{border-color:#607e58;background:#607e58;color:#fffdf7}
+body .modal-overlay:not(#epModal):not(#editModal) .modal-footer .btn-primary:hover{border-color:#4f6f49;background:#4f6f49}
+body .modal-overlay:not(#epModal):not(#editModal) .modal-footer .btn-danger{border-color:#b95547;background:#b95547;color:#fffdf7}
+body .modal-overlay:not(#epModal):not(#editModal) .modal-footer .btn-danger:hover{border-color:#a4463a;background:#a4463a}
+body .modal-overlay:not(#epModal):not(#editModal) .modal-footer .btn-ghost:hover{background:#e9eddf;border-color:#aebca0}
+@media(max-width:480px){body .modal-overlay:not(#epModal):not(#editModal)>.modal>.modal-header{padding:20px 18px 14px}body .modal-overlay:not(#epModal):not(#editModal)>.modal>.modal-body{padding:6px 18px 18px}body .modal-overlay:not(#epModal):not(#editModal)>.modal>.modal-footer{margin:0 18px;padding:15px 0 18px}}

@@ -106,3 +106,12 @@ test('資訊列與題目同字級；是非、選擇及複選解析在表格下�
   const multiple = context.renderQPreview(question('複選題', 1, {type:'T3', analysis:'複選解析'}),1,'T3',{analysis:true});
   assert(multiple.indexOf('</table>') < multiple.indexOf('class="ep-q-analysis"'));
 });
+
+test('題本出處與頁數可分別顯示或隱藏', () => {
+  const q = question('題目', 1, {sourceCode:'A1', source:'25'});
+  for (const source of [false,true]) for (const page of [false,true]) {
+    const html = context.buildBookletHtml({}, [q], {source,page});
+    assert.equal(html.includes('出處：課本'),source);
+    assert.equal(html.includes('頁數：P.25'),page);
+  }
+});

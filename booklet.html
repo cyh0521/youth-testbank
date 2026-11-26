@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>題本列印 — 幼獅題庫系統</title>
-<link rel="stylesheet" href="css/theme.css?v=20261125-download-spacing">
+<link rel="stylesheet" href="css/theme.css?v=20261126-inline-preview-frame-fix">
 <link rel="stylesheet" href="css/process-bar.css">
 <link rel="stylesheet" href="css/exam-compose.css?v=20261012-chapter-controls-18">
 
-<link rel="stylesheet" href="css/site-redesign.css?v=20261126-heading-position">
+<link rel="stylesheet" href="css/site-redesign.css?v=20261126-account-role-border">
 <link rel="stylesheet" href="css/compose-redesign.css?v=20261125-coded-four-steps">
-<link rel="stylesheet" href="css/compose-papercraft.css?v=20261126-shared-process-header">
-<link rel="stylesheet" href="css/selection-preview.css?v=20261125-four-step-previews">
+<link rel="stylesheet" href="css/compose-papercraft.css?v=20261126-no-center-fold">
+<link rel="stylesheet" href="css/selection-preview.css?v=20261126-self-audit">
 </head>
 <body class="booklet-page booklet-selection-page selection-redesign-page">
 <script src="js/icons.js"></script>
@@ -21,7 +21,7 @@
 
 
   <header class="site-header" id="sidebar"></header>
-  <script src="js/shell.js?v=20261019-user-guide"></script>
+  <script src="js/shell.js?v=20261126-self-audit"></script>
   <div class="main" inert>
 
     <div class="page-content">
@@ -41,7 +41,7 @@
 </div>
 <script type="module">
 import { renderScopePanel, mountScopeSelector } from './js/exam-scope.js?v=20261124-empty-chart';
-import { showExamPreview, mountInlinePreviewLayout, loadAppearance } from './js/exam-preview.js?v=20261125-shared-preview';
+import { showExamPreview, mountInlinePreviewLayout, loadAppearance } from './js/exam-preview.js?v=20261126-self-audit';
 import { guardPage } from './js/auth-guard.js';
 window._activeNav = 'booklet';
 const user = await guardPage(['admin','manager','teacher']);

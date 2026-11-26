@@ -81,6 +81,3 @@ body.selection-redesign-page :is(#composePanel5,#manualPanel4,#codedPanel4,#book
 body.selection-redesign-page :is(#composePanel5,#manualPanel4,#codedPanel4,#bookletPanel2) #epScopePanel .ep-scope-group-heading{padding-left:12px}
 body.selection-redesign-page :is(#composePanel5,#manualPanel4,#codedPanel4,#bookletPanel2) #epScopePanel .ep-scope-level-1{padding-left:28px}
 body.selection-redesign-page :is(#composePanel5,#manualPanel4,#codedPanel4,#bookletPanel2) #epScopePanel .ep-scope-level-2{padding-left:44px}
-
-/* 勾選列下方留白包含標籤的 4px 內距，與分隔線上方一致。 */
-body.selection-redesign-page #bookletPanel2 #epModal.compose-inline-preview .ep-preview-controls #epPreviewOptions{margin-bottom:14px}

@@ -6,7 +6,8 @@ import assert from 'node:assert/strict';
 const require=createRequire(import.meta.url);
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE_PATH || 'playwright');
 process.chdir(fileURLToPath(new URL('../',import.meta.url)));
-const catalog=JSON.parse(await readFile('data/testbank/catalog-526e49109a0fa0f8.json','utf8'));
+const manifest=JSON.parse(await readFile('data/testbank/manifest.json','utf8'));
+const catalog=JSON.parse(await readFile(`data/testbank/${manifest.catalog}`,'utf8'));
 const fixture=`
 window._testUser={uid:'fixture',role:window._testRole||'teacher',displayName:'測試',email:'test@example.test',avatar:''};
 const catalog=${JSON.stringify(catalog)};
@@ -37,7 +38,8 @@ try{
   assert.equal(await page.locator('.gc-book').count(),21);
   await page.evaluate(()=>Promise.all([...document.querySelectorAll('.gc-book img,.gc-welcome-art')].map(image=>image.decode())));
   await page.evaluate(()=>document.fonts.ready);
-  assert.ok(await page.evaluate(()=>document.fonts.check('24px "Greeting Handwriting"','給辛苦的自己一杯咖啡，開始今天的命題吧！')));
+  await page.locator('.gc-greeting-image').evaluate(image=>image.decode());
+  assert.ok(await page.locator('.gc-greeting-image').evaluate(image=>image.naturalWidth>0 && !!image.alt));
   await page.locator('#toolbarAccount').waitFor();
   assert.ok((await page.locator('.site-header').boundingBox()).height<=61);
   await page.evaluate(role=>window.AppShell.mount(role,'compose'),role);

@@ -82,6 +82,7 @@ const script = source.match(/<script type="module">([\s\S]*?)<\/script>/)[1];
         for (const tab of tabs) {
           await page.locator('#stab-'+tab).click();
           assert(await page.locator('#spanel-'+tab).isVisible());
+          if (tab !== 'profile') assert(await page.locator('#spanel-profile').isHidden(), 'profile cards must follow tab visibility');
           await page.waitForFunction(id=>getComputedStyle(document.getElementById(id)).backgroundColor==='rgba(0, 0, 0, 0)','stab-'+tab);
           assert.equal(await page.locator('#stab-'+tab).evaluate(el=>getComputedStyle(el).backgroundColor),'rgba(0, 0, 0, 0)');
           assert.equal(await page.locator('.settings-tabs').evaluate(el=>getComputedStyle(el).borderBottomWidth),'0px');
@@ -116,6 +117,17 @@ const script = source.match(/<script type="module">([\s\S]*?)<\/script>/)[1];
           assert(await page.locator('#'+modal).isVisible());
           assert.equal(await page.locator('#'+modal+' .modal').evaluate(el=>getComputedStyle(el).overflow),'visible');
           assert.equal(await page.locator('#'+modal+' .modal-close').evaluate(el=>getComputedStyle(el).width),'30px');
+          if (modal === 'avatarModal') {
+            assert.equal(await page.locator('#amAvatarOptions .avatar-choice').count(),21);
+            const dimensions = await page.evaluate(() => [...document.querySelectorAll('#amAvatarOptions .user-avatar')].map(e => [e.offsetWidth,e.offsetHeight]));
+            assert(dimensions.every(([w,h])=>w===72 && h===72),'all preset circles share one size');
+            await page.locator('#avatarModal').evaluate(async dialog=>{await Promise.all(dialog.getAnimations({subtree:true}).map(animation=>animation.finished.catch(()=>{})));});
+            const preview = await page.locator('#amAvatarPreview').boundingBox();
+            for (let index=0;index<21;index++) {
+              await page.locator('#amAvatarOptions .avatar-choice').nth(index).evaluate(button=>button.click());
+              assert.deepEqual(await page.locator('#amAvatarPreview').boundingBox(),preview,'selection must not move or resize preview');
+            }
+          }
           await page.locator('#'+modal+' .modal-close').click();
         }
       }

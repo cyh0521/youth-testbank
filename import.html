@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>題目匯入 — 幼獅題庫系統</title>
-<link rel="stylesheet" href="css/theme.css?v=20261125-download-spacing">
+<link rel="stylesheet" href="css/theme.css?v=20261126-inline-preview-frame-fix">
 <link rel="stylesheet" href="css/process-bar.css">
 <link rel="stylesheet" href="css/dashboard.css">
 <link rel="stylesheet" href="css/exam-compose.css">
@@ -168,10 +168,10 @@
 #textbankExportModal #exportBookStatus{margin:0;padding-top:6px;border-top:1px solid var(--border-light)}
 #textbankExportModal .modal-footer{flex-wrap:wrap}
 </style>
-<link rel="stylesheet" href="css/site-redesign.css?v=20261126-heading-position">
+<link rel="stylesheet" href="css/site-redesign.css?v=20261126-account-role-border">
 <link rel="stylesheet" href="css/testbank-redesign.css?v=20261016-card-titles">
-<link rel="stylesheet" href="css/compose-papercraft.css?v=20261125-testbank-ui">
-<link rel="stylesheet" href="css/testbank-papercraft.css?v=20261126-import-tree">
+<link rel="stylesheet" href="css/compose-papercraft.css?v=20261126-no-center-fold">
+<link rel="stylesheet" href="css/testbank-papercraft.css?v=20261126-scrollbar-restored">
 </head>
 <body class="testbank-redesign-page">
 <script src="js/icons.js"></script>
@@ -181,7 +181,7 @@
 
 
   <header class="site-header" id="sidebar"></header>
-  <script src="js/shell.js?v=20261019-user-guide"></script>
+  <script src="js/shell.js?v=20261126-self-audit"></script>
   <div class="main" inert>
 
     <div class="page-content">
@@ -533,12 +533,6 @@ window.selectImportedFile = (event,index) => {
     else importedFileSelection.delete(importedFileRows[i][0]);
   }
   importedFileAnchor = index;
-  renderImportedFiles();
-};
-window.selectAllImportedFiles = checked => {
-  if (importedFilesBusy) return;
-  importedFileSelection = new Set(checked ? importedFileRows.map(([name]) => name) : []);
-  importedFileAnchor = null;
   renderImportedFiles();
 };
 let moveImportedSource = null, moveImportedTargets = [], moveImportedSaving = false;
