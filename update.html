@@ -9,7 +9,7 @@
 @media print{.workspace{padding:0;max-width:none}.document{max-width:none}section{background:white;border:0;border-radius:0;padding:12px 0;margin-bottom:20px}.topic-block{margin-top:18px;padding-top:18px}.journal-entry{break-inside:avoid}.journal-entry dd,p,li{font-size:10pt}.section-title{break-after:avoid}table{table-layout:auto}}
 </style></head>
 <body id="top"><div class="workspace"><aside class="rail"><div class="mark">PROJECT NOTEBOOK / 02</div><h2>幼獅題庫系統</h2><nav aria-label="工作筆記目錄"><a href="#overview"><small>01</small>專案定位</a><a href="#features"><small>02</small>重點特色</a><a href="#engineering"><small>03</small>編寫重點</a><a href="#development"><small>04</small>開發過程與階段紀錄</a><a href="#usage"><small>05</small>操作與資料更新</a><a href="#maintenance"><small>06</small>維護與驗證</a><a href="#limitations"><small>07</small>修正筆記與待驗收項目</a></nav><div class="rail-foot"><button class="button" type="button" onclick="window.print()">列印筆記</button><a href="index.html">開啟系統</a></div></aside>
-<main class="document"><header class="hero"><p class="eyebrow">開發工作筆記 · 整理至 2026 年 11 月 25 日</p><h1>從題庫建置<br>到試卷輸出的開發紀錄</h1><p class="lead">記下功能如何形成、程式為什麼這樣安排，以及修正後還需要確認什麼。保留足夠脈絡，讓後續維護能接續工作。</p><div class="metadata"><span>原生前端 + Firebase</span><span>靜態題庫 9,153 題／21 冊</span><span>驗證與部署分開記錄</span></div></header><section id="overview" aria-labelledby="overview-title"><div class="section-title"><span>01</span><h2 id="overview-title">專案定位</h2></div>
+<main class="document"><header class="hero"><p class="eyebrow">開發工作筆記 · 整理至 2026 年 11 月 26 日</p><h1>從題庫建置<br>到試卷輸出的開發紀錄</h1><p class="lead">記下功能如何形成、程式為什麼這樣安排，以及修正後還需要確認什麼。保留足夠脈絡，讓後續維護能接續工作。</p><div class="metadata"><span>原生前端 + Firebase</span><span>靜態題庫 9,153 題／21 冊</span><span>驗證與部署分開記錄</span></div></header><section id="overview" aria-labelledby="overview-title"><div class="section-title"><span>01</span><h2 id="overview-title">專案定位</h2></div>
 <p>幼獅文化線上命題系統，供教師與管理員建立題庫、組卷、保存試卷及紙本輸出。採 HTML、CSS 與原生 JavaScript，搭配 Firebase 驗證／資料儲存及網頁空間靜態題庫。</p>
 <p>教師管理自己的試卷；管理員另負責課本目錄、題目匯入與維護及帳號管理。班級、姓名、座號是試卷表頭內容，目前不提供學生帳號、線上作答或成績管理。</p>
 <div class="note"><strong>筆記的閱讀方式</strong><p>先看目前功能與編寫決策，再沿時間查看開發紀錄。歷史紀錄保留當時做法，已被改版取代的導覽、表頭或輸出功能，請以目前說明為準。</p></div></section><section id="features" aria-labelledby="features-title"><div class="section-title"><span>02</span><h2 id="features-title">重點特色</h2></div><div class="section-opening">
@@ -43,7 +43,31 @@
 </div><div class="topic-block"><h3>試卷快照：預設與成品分開</h3>
 <p>使用者的 <code>examPreferences</code> 保存新試卷預設；每張試卷另保存表頭與外觀。修改帳號預設前，為尚無快照的舊試卷保存當時值；草稿修改保留在草稿。這個分界避免改一次字型或表頭就改動其他已完成試卷。</p></div><div class="topic-block"><h3>反譯模組與圖片匯入</h3>
 <p><code>js/reverse-import.js</code> 以本地 JSZip 讀取 DOCX 的 XML 與關係檔，解析題目並使用 <code>assets/reverse-import/choice.docx</code>、<code>other.docx</code> 組裝入題檔。<code>js/reverse-import-page.js</code> 負責管理員驗證、檔案狀態、目錄比對、欄位編輯與下載。</p>
-<p>反譯檔案在瀏覽器處理，不直接寫題庫。題目匯入用 Mammoth 提取 PNG／JPG，預覽時保留圖片標記，正式匯入取得題號後再命名圖片；題目與圖片檔分開發布，避免把圖片內容塞進 Firestore。</p></div></section><section id="development" aria-labelledby="development-title"><div class="section-title"><span>04</span><h2 id="development-title">開發過程與階段紀錄</h2></div><article class="journal-entry"><header><time datetime="2026-11-25">2026/11/25</time><h3>設定與帳號管理：延伸紙感介面</h3></header><dl>
+<p>反譯檔案在瀏覽器處理，不直接寫題庫。題目匯入用 Mammoth 提取 PNG／JPG，預覽時保留圖片標記，正式匯入取得題號後再命名圖片；題目與圖片檔分開發布，避免把圖片內容塞進 Firestore。</p></div></section><section id="development" aria-labelledby="development-title"><div class="section-title"><span>04</span><h2 id="development-title">開發過程與階段紀錄</h2></div><article class="journal-entry"><header><time datetime="2026-11-26">2026/11/26</time><h3>介面調整2：首頁構圖與頁首層級</h3></header><dl>
+<div><dt>首頁</dt><dd>調整咖啡人物、紙飛機軌跡、分隔線與問候語的位置，縮減上方留白；問候語改為透明背景圖片，保留手寫字、第二行縮排、黃色底線、愛心及替代文字。「選擇出題科目」與冊數依文字基線對齊，標記改為共用黃色短斜線。首頁及其他主要頁面移除中間垂直折線，保留暖色漸層與角落剪紙。</dd></div>
+<div><dt>頁首</dt><dd>電腦、手動、編碼選題、題本、匯入與轉檔採無底框上欄，移除底色與疊紙陰影，保留標題、流程列及淡棕分隔線。標題字型、700 字重、行高、字距與高度位置同步整理至試卷、設定、帳號及題庫管理；加深未選步驟文字、數字與虛線，圓點加細框。</dd></div>
+<div><dt>維護</dt><dd>首頁出題方式視窗的關閉鈕對齊其他對話框。舊首頁插圖、未引用題庫檔與約 9.1 MB 的舊字型已移除，連同首頁字型預載標記清理。簡潔網址及發布目錄分離僅討論，未實作網址重寫或改變網站發布結構。</dd></div>
+</dl></article>
+<article class="journal-entry"><header><time datetime="2026-11-26">2026/11/26</time><h3>介面調整2：共用視窗、標籤與個人設定</h3></header><dl>
+<div><dt>共用視窗</dt><dd>經數輪試作後，最終採 4px 圓角、右下偏移 3×4px 的淡紙邊與柔和陰影，保留膠帶；一般視窗樣式移至全站共用層，補齊首頁登出視窗。頁內試卷預覽排除浮動視窗的紙邊底框及 ESC 關閉行為。原先嘗試統一捲軸的修改已撤回，不列為現行更新。</dd></div>
+<div><dt>鍵盤與標籤</dt><dd>ESC 只關閉最上層浮動視窗，沿用原關閉動作；有未儲存表單先確認，關閉鈕停用或操作中不強制關閉。帳號身分與共用預覽難易度標籤統一淡底、細框及 4px 圓角；較難為淡紅、簡易為淡綠，身分依角色配色。</dd></div>
+<div><dt>頭像</dt><dd>新增至 20 款人物頭像，加上原始線條頭像及自訂上傳；取消男女分組標題，依序排列。候選圖及選定預覽統一 72px 圓形裁切，校正白邊、編號殘留與線條頭像置中。上方保留固定選定預覽、右側上傳按鈕及分隔線，選取以勾號及預覽細圓框辨識。</dd></div>
+<div><dt>設定頁</dt><dd>帳號資訊與更新密碼採等寬雙欄、頂部對齊、16px 間距，每卡最多約 560px；手機上下排列。兩欄樣式移至內層容器，修正切換其他分頁後帳號資訊未隱藏的問題；編輯按鈕依文字決定寬度。</dd></div>
+</dl></article>
+<article class="journal-entry"><header><time datetime="2026-11-26">2026/11/26</time><h3>介面調整2：預覽相容與整體自查</h3></header><dl>
+<div><dt>修正</dt><dd>題本預覽與其他預覽的間距對齊；題本出處／頁數獨立勾選，一般試卷仍使用頁數選項，並保留舊設定相容。題庫左側樹狀選單移除白底，滑過及選取採暖紙與淡橄欖色。清理無用匯入全選函式、舊頭像分組與問候語樣式，以及過期測試和本機檔案依賴。</dd></div>
+<div><dt>既有驗證</dt><dd>依聊天「介面調整2」當輪自查紀錄：47 段程式無語法錯誤、125 項功能測試通過；首頁、選題、設定、預覽、轉檔等離線瀏覽器測試通過，未發現遺失資源或重複 ID。另檢查 11 頁動態視窗、20 款頭像、多層視窗及停用狀態。</dd></div>
+<div><dt>紀錄界線</dt><dd>上述為該聊天當時的測試結果，本次補記未重新執行完整套件或瀏覽器測試；離線測試未操作正式 Firebase，也不等於完成正式部署或 Word／列印驗收。本頁僅補齊最後保留的實作，不逐筆列入已撤回的樣式試作。</dd></div>
+</dl></article><article class="journal-entry"><header><time datetime="2026-11-26">2026/11/26</time><h3>帳號安全限制與 Firestore 規則發布</h3></header><dl>
+<div><dt>發現與修正</dt><dd>安全檢查發現本人文件可寫入過多欄位，文件 id／uid 又能覆蓋可信識別值並進入帳號列表的 inline onclick。改為固定使用 Auth／文件 ID、以事件監聽綁定按鈕；Firestore 本人更新加入欄位白名單與型別／長度限制，管理他人帳號也限定更新欄位。</dd></div>
+<div><dt>正式發布</dt><dd>在 Firebase Console 模擬教師更新暱稱與學校獲准，更新 id、uid、信箱、角色與建立日期被拒；本人帳號可讀，跨帳號及未登入讀取被拒。依授權於 11/26 下午 4:01 發布新規則，同時移除舊版管理員跨帳號列出試卷的例外。前端修正已納入 b08a0a7，正式網站檔案是否更新尚未驗證。</dd></div>
+<div><dt>驗證與待辦</dt><dd>安全與圖片相關 24 項測試通過。偏好、統計及管理員完整操作仍待驗收；DOCX 解壓資源上限及外部腳本完整性尚待改善。完整發現、模擬與發布紀錄見 <a href="security-review.md">security-review.md</a>。</dd></div>
+</dl></article>
+<article class="journal-entry"><header><time datetime="2026-11-26">2026/11/26</time><h3>預覽、頭像與對話框操作整理</h3></header><dl>
+<div><dt>完成內容</dt><dd>整理首頁、設定與各選題頁的版面；更新人物頭像素材及裁切顯示。題本預覽將「出處」與「頁數」分開控制，舊資料未記錄頁數選項時沿用來源設定。新增共用 dialog-keyboard.js 處理最上層對話框的 Escape 關閉，有未保存修改且具儲存操作時先確認。</dd></div>
+<div><dt>維護</dt><dd>介面與程式檢查更新納入 6fe20a6、200ad63；清除不再使用的首頁插畫、字型及未被索引引用的舊題目檔。開發工作筆記由 README.html 更名為 update.html，安全報告統一為 security-review.md，保留歷史檢查。</dd></div>
+<div><dt>統計問題</dt><dd>確認目前保留試卷數可能沿用不正確舊值，或在刪除成功、扣除統計失敗時產生偏差。可讓教師登出後由維護人員移除其 examCurrentCount，再登入重建；不要動正確的累計建立數。登入定期校正與刪除／統計原子提交目前僅討論，尚未實作。</dd></div>
+</dl></article><article class="journal-entry"><header><time datetime="2026-11-25">2026/11/25</time><h3>設定與帳號管理：延伸紙感介面</h3></header><dl>
 <div><dt>完成內容</dt><dd>個人設定與帳號管理加入疊紙角落、暖紙面、表格及對話框樣式，分別由 <code>css/settings-papercraft.css</code> 與 <code>css/accounts-papercraft.css</code> 管理。帳號資訊分列 UID、姓名、信箱與角色，新增複製 UID 按鈕及複製失敗提示；登入與試卷統計沿用原資料。</dd></div>
 <div><dt>實作重點</dt><dd>明確說明密碼重設信由管理員發送、使用者自行完成；使用者完成前原密碼仍有效。外觀依設定／帳號頁分開套用，既有角色權限與保存邏輯未改為新流程。</dd></div>
 <div><dt>提交與驗證</dt><dd>已納入 <code>8c71a59</code>。新增 <code>tests/settings-papercraft.browser.cjs</code> 作為設定頁離線瀏覽器回歸；本次文件整理未執行該測試、正式帳號操作或跨裝置驗收。</dd></div>
@@ -103,7 +127,7 @@
 <p>轉檔與入題預覽會提示含圖片題目；可核對題型、來源檔、題目位置與圖片欄位。正式匯入後，依新題號建立圖片檔名，完成畫面下載的 ZIP 只收錄成功寫入批次的圖片，再將 images 資料夾隨網站發布。</p>
 <p>已匯入檔案列表依科目、冊別與原檔名整理，同冊同檔名合併計數；可展開／收合冊別、選取多筆及批次刪除。刪除後若要反映到出題頁，仍需重新匯出完整靜態題庫。</p></div><div class="topic-block"><h3>手動／編碼選題的四步流程</h3>
 <p>手動為「出題範圍 → 選擇題目 → 試卷設定 → 預覽試卷」；編碼為「出題範圍 → 編碼選題 → 試卷設定 → 預覽試卷」。配分與試卷檢視合併於第三步，同一表格調整每題／每格配分、小計、總分及題型順序，旁邊設定表頭。</p>
-<p>表頭版型範例使用目前試卷依題型順序排列的實際第一題，並保留該題型的完整題數與配分摘要；尚無題目時僅顯示表頭，不產生示範題。電腦選題仍為五步，題本維持兩步。</p></div></section><section id="maintenance" aria-labelledby="maintenance-title"><div class="section-title"><span>06</span><h2 id="maintenance-title">維護與驗證</h2></div><div class="topic-block"><h3>2026-11-25 最新檢查</h3>
+<p>表頭版型範例使用目前試卷依題型順序排列的實際第一題，並保留該題型的完整題數與配分摘要；尚無題目時僅顯示表頭，不產生示範題。電腦選題仍為五步，題本維持兩步。</p></div></section><section id="maintenance" aria-labelledby="maintenance-title"><div class="section-title"><span>06</span><h2 id="maintenance-title">維護與驗證</h2></div><div class="topic-block"><h3>2026-11-26 最新檢查與發布狀態</h3><p>重新執行安全邊界及題目圖片測試，共 24 項通過；靜態題庫驗證通過，9,153 題、21 冊，未再提示未引用舊檔。文件結構、內部連結與差異空白檢查通過。</p><p>Firestore 規則已在 Console 發布；前端修正已提交，但本次未確認正式網站部署內容，亦未重跑完整套件、規則全部允許／拒絕情境、Word 與實際列印。較早段落的待發布說明為歷史狀態，以本段及安全報告最新紀錄為準。</p></div><div class="topic-block"><h3>2026-11-25 最新檢查</h3>
 <p>本次靜態題庫驗證通過：9,153 題、21 冊；1 個舊版題目檔未被索引引用，仍保留。重跑以下六組 Node 測試，共 25 項全部通過：</p>
 <pre><code>node --test tests/header-layout-sample.test.mjs tests/manual-scope.test.mjs tests/compose-regeneration.test.mjs tests/compose-question-order.test.mjs tests/preview-scope.test.mjs tests/booklet-preview.test.mjs</code></pre>
 <p>涵蓋實際第一題範例、填空格數摘要、空題庫表頭、選題範圍、重選、題序、章節標示與題本格式。今日前段筆記中的 12／19／29 項及離線瀏覽器驗證保留為當時結果，並非本次重跑；本次未執行完整套件、獨立瀏覽器測試、正式網站、Word 開檔與實際列印驗收。</p></div><div class="topic-block"><h3>2026-11-24 檢查紀錄</h3>
@@ -130,7 +154,7 @@ git diff --check</code></pre>
 <p>Firestore 保存 <code>users</code>、<code>questions</code>、<code>exams</code>、<code>textbooks</code> 及設定。Firebase 專案設定須同步修改 <code>index.html</code> 與 <code>js/firebase.js</code>；第一個主要管理員由維護人員在 Firebase Console 建立。前端無法完整刪除別人的 Auth 帳號或重設其密碼，需另用 Admin SDK／Cloud Functions。</p></div><div class="topic-block"><h3>2026-10-14 本次檢查</h3>
 <ul><li>靜態題庫驗證通過：1,998 題、4 冊。</li><li>Node 測試共 90 項，89 通過、1 失敗：<code>tests/question-images.test.mjs</code> 的「導覽列與首頁 Logo 都引用 images 中的現有檔案」檢查。此項仍待處理，不沿用 10/13 全數通過作為目前結果。</li><li>本次文件連結、章節 ID 與空白格式檢查通過；未執行 Playwright、正式網站或 Microsoft Word 目視驗收。</li></ul>
 <p><code>tests/reverse-import.browser.cjs</code> 為反譯的另行瀏覽器測試，使用指定本機依賴、Edge 及 <code>D:/source1.docx</code> 等來源測試檔；執行前須確認依賴及檔案齊備。</p></div><div class="topic-block"><h3>10/15 凌晨整理與當時檢查</h3>
-<ul><li>補記 10/14 晚間至 10/15 的題本轉檔作業，修正導覽入口、返回及重新選檔說明，補齊答案分離與關鍵檔案責任。文件沿用現行 <code>README.html</code>；Git 紀錄顯示舊 <code>READMD.html</code> 已於 10/14 整併移除。</li>
+<ul><li>補記 10/14 晚間至 10/15 的題本轉檔作業，修正導覽入口、返回及重新選檔說明，補齊答案分離與關鍵檔案責任。文件當時使用 <code>README.html</code>，目前已更名為 <code>update.html</code>；Git 紀錄顯示舊 <code>READMD.html</code> 已於 10/14 整併移除。</li>
 <li><code>node scripts/verify-textbank.mjs</code> 通過：1,998 題、4 冊。</li>
 <li><code>node --test tests/*.test.mjs</code> 初次摘要為 91 項、89 通過、2 失敗：Logo 測試仍預期首頁有兩個 <code>src="images/youth.png"</code>，實際符合數為 0；反譯測試因 <code>Cannot find module 'playwright'</code> 在載入時失敗，答案拆分案例未執行，不能記為功能驗證通過。</li>
 <li><code>tests/reverse-import.test.mjs</code> 雖以 Node 啟動，仍直接依賴 Playwright 與 Edge；需讓 Node 能解析 <code>playwright</code> 模組並備妥瀏覽器，才可重跑。修正後使用內建 Playwright 與 Edge 重跑，91 項全部通過，答案拆分案例已實際執行。其餘獨立瀏覽器測試、正式網站及 Microsoft Word 目視驗收本次未執行。</li></ul></div><div class="topic-block"><h3>10/15 凌晨測試修正與重跑方式</h3>
